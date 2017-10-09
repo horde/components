@@ -10,10 +10,6 @@
  * Boolean values may be true or false (never quotes).
  */
 
-/* Directory for git checkouts. Either the base directory of all checkouts, or
-/* the checkout of a monolithic repository. */
-$conf['horde_root'] = '';
-
 /* PEAR server name. Only change for testing purposes. */
 $conf['releaseserver'] = 'pear.horde.org';
 
