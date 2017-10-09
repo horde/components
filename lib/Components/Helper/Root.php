@@ -271,7 +271,6 @@ class Components_Helper_Root
     public function traverseHierarchy($start)
     {
         $i = 0;
-        $origin = $start;
         while ($start != '/' || $i < 10) {
             if ($this->_isValidRoot($start) !== false) {
                 return $start;

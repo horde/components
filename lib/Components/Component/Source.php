@@ -183,9 +183,9 @@ class Components_Component_Source extends Components_Component_Base
 
         switch($action) {
         case 'print':
-            return (string) $package_xml;
+            return (string)$package_xml;
         case 'diff':
-            $new = (string) $package_xml;
+            $new = (string)$package_xml;
             $old = file_get_contents($this->getPackageXmlPath());
             $renderer = new Horde_Text_Diff_Renderer_Unified();
             return $renderer->render(
@@ -194,7 +194,7 @@ class Components_Component_Source extends Components_Component_Base
                 )
             );
         default:
-            file_put_contents($this->getPackageXmlPath(), (string) $package_xml);
+            file_put_contents($this->getPackageXmlPath(), (string)$package_xml);
             if (!empty($options['commit'])) {
                 $options['commit']->add(
                     $this->getPackageXmlPath(), $this->_directory
@@ -247,7 +247,7 @@ class Components_Component_Source extends Components_Component_Base
             $package = $this->getPackageXml();
             $package->timestamp();
             $package->syncCurrentVersion();
-            file_put_contents($this->getPackageXmlPath(), (string) $package);
+            file_put_contents($this->getPackageXmlPath(), (string)$package);
             $result = sprintf(
                 'Marked package.xml "%s" with current timestamp and synchronized the change log.',
                 $this->getPackageXmlPath()
@@ -308,7 +308,7 @@ class Components_Component_Source extends Components_Component_Base
         if (empty($options['pretend'])) {
             $package = $this->getPackageXml();
             $package->setVersion($rel_version, $api_version);
-            file_put_contents($this->getPackageXmlPath(), (string) $package);
+            file_put_contents($this->getPackageXmlPath(), (string)$package);
             if (!empty($options['commit'])) {
                 $options['commit']->add(
                     $this->getPackageXmlPath(), $this->_directory
@@ -344,7 +344,7 @@ class Components_Component_Source extends Components_Component_Base
         if (empty($options['pretend'])) {
             $package = $this->getPackageXml();
             $package->setState($rel_state, $api_state);
-            file_put_contents($this->getPackageXmlPath(), (string) $package);
+            file_put_contents($this->getPackageXmlPath(), (string)$package);
             if (!empty($options['commit'])) {
                 $options['commit']->add(
                     $this->getPackageXmlPath(), $this->_directory
@@ -384,13 +384,14 @@ class Components_Component_Source extends Components_Component_Base
         $stability_api = null,
         $stability_release = null,
         $options = array()
-    ) {
+    )
+    {
         if (empty($options['pretend'])) {
             $package = $this->getPackageXml();
             $package->addNextVersion(
                 $version, $initial_note, $stability_api, $stability_release
             );
-            file_put_contents($this->getPackageXmlPath(), (string) $package);
+            file_put_contents($this->getPackageXmlPath(), (string)$package);
             $result = sprintf(
                 'Added next version "%s" with the initial note "%s" to %s.',
                 $version,
