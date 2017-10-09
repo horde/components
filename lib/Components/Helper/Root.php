@@ -293,9 +293,8 @@ class Components_Helper_Root
     {
         if (is_dir($directory)) {
             $objects = scandir($directory);
-            if (in_array('framework', $objects)
-                && in_array('horde', $objects)
-                && in_array('.gitignore', $objects)) {
+            if (in_array('.git', $objects) &&
+                in_array('.horde.yml', $objects)) {
                 return $directory;
             }
         }

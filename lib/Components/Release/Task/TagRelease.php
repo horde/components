@@ -37,8 +37,7 @@ extends Components_Release_Task_Base
      */
     public function run(&$options)
     {
-        $release = $this->getComponent()->getName() 
-            . '-' . $this->getComponent()->getVersion();
+        $release = 'v' . $this->getComponent()->getVersion();
         $this->getComponent()->tag(
             strtolower($release),
             'Released ' . $release . '.',
