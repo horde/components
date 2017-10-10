@@ -81,7 +81,7 @@ implements Components_Dependencies
                 );
                 break;
             case 'Horde_Cli':
-                require_once __DIR__ . '/../../../../framework/Cli/lib/Horde/Cli.php';
+                require_once __DIR__ . '/../../../../Cli/lib/Horde/Cli.php';
                 $this->_instances[$interface] = new Horde_Cli();
                 break;
             }

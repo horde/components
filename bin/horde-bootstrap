@@ -15,7 +15,7 @@ require_once 'PEAR/Command/Channels.php';
 require_once 'PEAR/Command/Install.php';
 require_once 'PEAR/Frontend/CLI.php';
 
-$framework = __DIR__ . '/../../framework';
+$framework = __DIR__ . '/../..';
 require_once $framework . '/Exception/lib/Horde/Exception.php';
 require_once $framework . '/Exception/lib/Horde/Exception/Pear.php';
 require_once $framework . '/Pear/lib/Horde/Pear/Package/Xml.php';

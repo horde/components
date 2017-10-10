@@ -102,17 +102,9 @@ class Components_Helper_Root
     public function getPackageXml($name)
     {
         $package_file = $this->getRoot() . '/' . $name . '/package.xml';
-        if (!file_exists($package_file)) {
-            $package_file = $this->getRoot() . '/framework/' . $name
-                . '/package.xml';
-        }
         if (!file_exists($package_file) && substr($name, 0, 6) == 'Horde_') {
-            $package_file = $this->getRoot() . '/framework/'
+            $package_file = $this->getRoot()
                 . substr($name, 6) . '/package.xml';
-        }
-        if (!file_exists($package_file)) {
-            $package_file = $this->getRoot() . '/bundles/' . $name
-                . '/package.xml';
         }
         if (!file_exists($package_file)) {
             throw new Components_Exception(sprintf('Unknown package %s.', $name));

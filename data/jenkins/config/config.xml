@@ -9,11 +9,7 @@ if (!isset($options['toolsdir'])) {
 $toolsdir = $options['toolsdir'];
 
 $directory = $config->getPath();
-if (basename(dirname($directory)) == 'framework') {
-    $sourcepath = 'framework/' . basename($directory);
-} else {
-    $sourcepath = basename($directory);
-}
+$sourcepath = basename($directory);
 
 $component = $config->getComponent();
 $description = $component->getDescription();
