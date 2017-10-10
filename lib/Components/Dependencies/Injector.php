@@ -32,6 +32,13 @@ extends Horde_Injector
 implements Components_Dependencies
 {
     /**
+     * Use a pager for Horde_Cli?
+     *
+     * @var boolean
+     */
+    protected $_usePager = false;
+
+    /**
      * Constructor.
      */
     public function __construct()
@@ -273,13 +280,21 @@ implements Components_Dependencies
     }
 
     /**
+     * Enables a pager for Horde_Cli objects.
+     */
+    public function useCliPager()
+    {
+        $this->_usePager = true;
+    }
+
+    /**
      * Create the CLI handler.
      *
      * @return Horde_Cli The CLI handler.
      */
     public function createCli()
     {
-        return Horde_Cli::init();
+        return Horde_Cli::init(array('pager' => $this->_usePager));
     }
 
     /**
