@@ -26,9 +26,9 @@ Version:        <?php print $component->getVersion() . "\n"; ?>
 Release:        1
 License:        <?php print $component->getLicense() . "\n"; ?>
 Group:          Development/Libraries/PHP
-Source0:        http://pear.horde.org/get/%{pear_name}-%{version}.tgz
+Source0:        https://pear.horde.org/get/%{pear_name}-%{version}.tgz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
-Url:            http://pear.horde.org/package/%{pear_name}
+Url:            https://pear.horde.org/package/%{pear_name}
 <?php print processDependencies($component);?>
 BuildArch:      noarch
 %define pear_name  <?php print $component->getName() . "\n";  ?>

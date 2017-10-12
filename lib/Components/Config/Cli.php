@@ -133,7 +133,7 @@ extends Components_Config_Base
                 '--allow-remote',
                 array(
                     'action' => 'store_true',
-                    'help'   => 'allow horde-components to access the remote http://pear.horde.org for dealing with stable releases. This option is not required in case you work locally in your git checkout and will only work for some actions that are able to operate on stable release packages.'
+                    'help'   => 'allow horde-components to access the remote https://pear.horde.org for dealing with stable releases. This option is not required in case you work locally in your git checkout and will only work for some actions that are able to operate on stable release packages.'
                 )
             )
         );

@@ -79,7 +79,7 @@ class Components_Component_Source extends Components_Component_Base
         $data->version = $package->getVersion();
         $data->releaseDate = $package->getDate()
             . ' ' . $package->getNodeText('/p:package/p:time');
-        $data->download = sprintf('http://pear.horde.org/get/%s-%s.tgz',
+        $data->download = sprintf('https://pear.horde.org/get/%s-%s.tgz',
                                   $data->name, $data->version);
         $data->hasCi = $this->_hasCi();
         return $data;
