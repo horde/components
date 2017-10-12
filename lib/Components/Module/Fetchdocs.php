@@ -8,7 +8,6 @@
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.fsf.org/copyleft/lgpl.html LGPL
- * @link     http://pear.horde.org/index.php?package=Components
  */
 
 /**
@@ -23,7 +22,6 @@
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.fsf.org/copyleft/lgpl.html LGPL
- * @link     http://pear.horde.org/index.php?package=Components
  */
 class Components_Module_Fetchdocs
 extends Components_Module_Base

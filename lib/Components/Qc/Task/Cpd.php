@@ -8,7 +8,6 @@
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
- * @link     http://pear.horde.org/index.php?package=Components
  */
 
 use SebastianBergmann\PHPCPD;
@@ -26,7 +25,6 @@ use SebastianBergmann\FinderFacade\FinderFacade;
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
- * @link     http://pear.horde.org/index.php?package=Components
  */
 class Components_Qc_Task_Cpd
 extends Components_Qc_Task_Base

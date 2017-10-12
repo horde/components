@@ -8,7 +8,6 @@
  * @category  Horde
  * @copyright 2013-2017 Horde LLC
  * @license   http://www.horde.org/licenses/lgpl21 LGPL 2.1
- * @link      http://pear.horde.org/index.php?package=Components
  * @package   Components
  */
 
@@ -19,7 +18,6 @@
  * @category  Horde
  * @copyright 2013-2017 Horde LLC
  * @license   http://www.horde.org/licenses/lgpl21 LGPL 2.1
- * @link      http://pear.horde.org/index.php?package=Components
  * @package   Components
  */
 class Components_Runner_Composer
