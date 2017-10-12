@@ -8,7 +8,6 @@
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
- * @link     http://pear.horde.org/index.php?package=Components
  */
 
 /**
@@ -23,7 +22,6 @@
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
- * @link     http://pear.horde.org/index.php?package=Components
  */
 class Components_Release_Task_Package
 extends Components_Release_Task_Base

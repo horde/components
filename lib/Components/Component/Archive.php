@@ -9,7 +9,6 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @author   Fabien Potencier <fabien.potencier@symfony-project.org>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
- * @link     http://pear.horde.org/index.php?package=Components
  */
 
 /**
@@ -25,7 +24,6 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @author   Fabien Potencier <fabien.potencier@symfony-project.org>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
- * @link     http://pear.horde.org/index.php?package=Components
  */
 class Components_Component_Archive extends Components_Component_Base
 {
