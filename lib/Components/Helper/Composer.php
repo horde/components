@@ -33,7 +33,7 @@ class Components_Helper_Composer
 
         $converter = new Package2XmlToComposer($package);
         $converter->setRepositories(array(
-            array('pear', 'http://pear.horde.org')
+            array('pear', 'https://pear.horde.org')
         ));
         $converter->output_file = dirname($package) . '/composer.json';
         $converter->convert();

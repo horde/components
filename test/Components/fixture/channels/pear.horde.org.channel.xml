@@ -8,8 +8,8 @@
  <servers>
   <primary>
    <rest>
-    <baseurl type="REST1.0">http://pear.horde.org/Chiara_PEAR_Server_REST/</baseurl>
-    <baseurl type="REST1.1">http://pear.horde.org/Chiara_PEAR_Server_REST/</baseurl>
+    <baseurl type="REST1.0">https://pear.horde.org/Chiara_PEAR_Server_REST/</baseurl>
+    <baseurl type="REST1.1">https://pear.horde.org/Chiara_PEAR_Server_REST/</baseurl>
    </rest>
   </primary>
  </servers>
