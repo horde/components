@@ -74,8 +74,10 @@ class Components_Helper_Website
             $doc_files,
             $this->_identifyDocFiles($source . '/docs')
         );
-        if (file_exists($source . '/README')) {
-            $doc_files[$source . '/README'] = 'README';
+        foreach (array('README', 'README.md', 'README.rst') as $readme) {
+            if (file_exists($source . '/' . $readme)) {
+                $doc_files[$source . '/' . $readme] = 'README';
+            }
         }
 
         if (preg_match('/^Horde_/', $component->getName())) {
