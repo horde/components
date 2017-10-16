@@ -39,7 +39,7 @@ extends Components_TestCase
 v4.0.1RC1
 ---------
 TEST',
-            file_get_contents($tmp_dir . '/docs/CHANGES')
+            file_get_contents($tmp_dir . '/doc/CHANGES')
         );
         $this->assertEquals(
             'class Application {
@@ -61,7 +61,7 @@ public $version = \'4.0.1RC1\';
 v4.0.1RC1
 ---------
 TEST',
-            file_get_contents($tmp_dir . '/docs/CHANGES')
+            file_get_contents($tmp_dir . '/doc/CHANGES')
         );
         $this->assertEquals(
             'class Horde_Bundle {
@@ -90,9 +90,9 @@ const VERSION = \'4.0.1RC1\';
         );
         $this->assertEquals(
             array(
-                sprintf('Would replace sentinel in %s/docs/CHANGES with "4.0.1RC1" now.', $tmp_dir),
+                sprintf('Would replace sentinel in %s/doc/CHANGES with "4.0.1RC1" now.', $tmp_dir),
                 sprintf('Would replace sentinel in %s/lib/Application.php with "4.0.1RC1" now.', $tmp_dir),
-                sprintf('Would run "git add %s/docs/CHANGES" now.', $tmp_dir),
+                sprintf('Would run "git add %s/doc/CHANGES" now.', $tmp_dir),
                 sprintf('Would run "git add %s/lib/Application.php" now.', $tmp_dir),
                 'Would run "git commit -m "Released Horde-4.0.1RC1"" now.'
             ),
@@ -118,9 +118,9 @@ const VERSION = \'4.0.1RC1\';
         );
         $this->assertEquals(
             array(
-                sprintf('Would replace sentinel in %s/docs/CHANGES with "4.0.1RC1" now.', $tmp_dir),
+                sprintf('Would replace sentinel in %s/doc/CHANGES with "4.0.1RC1" now.', $tmp_dir),
                 sprintf('Would replace sentinel in %s/lib/Bundle.php with "4.0.1RC1" now.', $tmp_dir),
-                sprintf('Would run "git add %s/docs/CHANGES" now.', $tmp_dir),
+                sprintf('Would run "git add %s/doc/CHANGES" now.', $tmp_dir),
                 sprintf('Would run "git add %s/lib/Bundle.php" now.', $tmp_dir),
                 'Would run "git commit -m "Released Horde-4.0.1RC1"" now.'
             ),
@@ -131,8 +131,8 @@ const VERSION = \'4.0.1RC1\';
     private function _prepareApplicationDirectory($bundle = false)
     {
         $tmp_dir = $this->getTemporaryDirectory();
-        mkdir($tmp_dir . '/docs');
-        file_put_contents($tmp_dir . '/docs/CHANGES', "---\nOLD\n---\nTEST");
+        mkdir($tmp_dir . '/doc');
+        file_put_contents($tmp_dir . '/doc/CHANGES', "---\nOLD\n---\nTEST");
         mkdir($tmp_dir . '/lib');
         if ($bundle) {
             file_put_contents($tmp_dir . '/lib/Bundle.php', "class Horde_Bundle {\nconst VERSION = '0.0.0';\n}\n");

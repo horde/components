@@ -180,7 +180,7 @@ The available tasks are:
  - unittest    : Perform unittests on the package.
  - timestamp   : Timestamp the package.xml and sync the change log.
  - composer    : Update the composer.json file.
- - sentinel    : Update the sentinels in docs/CHANGES and lib/Application.php.
+ - sentinel    : Update the sentinels in doc/CHANGES and lib/Application.php.
  - commit      : Commit any changes with an automated message.
  - package     : Prepare a *.tgz package.
    - upload    : Upload the package to pear.horde.org

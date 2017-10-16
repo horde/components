@@ -45,7 +45,7 @@ v5.0.0-git
 OLD
 ---
 TEST',
-            file_get_contents($tmp_dir . '/docs/CHANGES')
+            file_get_contents($tmp_dir . '/doc/CHANGES')
         );
         $this->assertEquals(
             'class Application {
@@ -75,9 +75,9 @@ public $version = \'5.0.0-git\';
         );
         $this->assertEquals(
             array(
-                sprintf('Would extend sentinel in %s/docs/CHANGES with "5.0.0-git" now.', $tmp_dir),
+                sprintf('Would extend sentinel in %s/doc/CHANGES with "5.0.0-git" now.', $tmp_dir),
                 sprintf('Would replace sentinel in %s/lib/Application.php with "5.0.0-git" now.', $tmp_dir),
-                sprintf('Would run "git add %s/docs/CHANGES" now.', $tmp_dir),
+                sprintf('Would run "git add %s/doc/CHANGES" now.', $tmp_dir),
                 sprintf('Would run "git add %s/lib/Application.php" now.', $tmp_dir),
                 'Would run "git commit -m "Development mode for Horde-5.0.0"" now.'
             ),
@@ -105,10 +105,10 @@ public $version = \'5.0.0-git\';
         $this->assertEquals(
             array(
                 sprintf('Would add next version "5.0.1" with the initial note "" to %s/package.xml now.', $tmp_dir),
-                sprintf('Would extend sentinel in %s/docs/CHANGES with "5.0.1-git" now.', $tmp_dir),
+                sprintf('Would extend sentinel in %s/doc/CHANGES with "5.0.1-git" now.', $tmp_dir),
                 sprintf('Would replace sentinel in %s/lib/Application.php with "5.0.1-git" now.', $tmp_dir),
                 sprintf('Would run "git add %s/package.xml" now.', $tmp_dir),
-                sprintf('Would run "git add %s/docs/CHANGES" now.', $tmp_dir),
+                sprintf('Would run "git add %s/doc/CHANGES" now.', $tmp_dir),
                 sprintf('Would run "git add %s/lib/Application.php" now.', $tmp_dir),
                 'Would run "git commit -m "Development mode for Horde-5.0.1"" now.'
             ),
@@ -136,10 +136,10 @@ public $version = \'5.0.0-git\';
         $this->assertEquals(
             array(
                 sprintf('Would add next version "5.0.0alpha2" with the initial note "" to %s/package.xml now.', $tmp_dir),
-                sprintf('Would extend sentinel in %s/docs/CHANGES with "5.0.0-git" now.', $tmp_dir),
+                sprintf('Would extend sentinel in %s/doc/CHANGES with "5.0.0-git" now.', $tmp_dir),
                 sprintf('Would replace sentinel in %s/lib/Application.php with "5.0.0-git" now.', $tmp_dir),
                 sprintf('Would run "git add %s/package.xml" now.', $tmp_dir),
-                sprintf('Would run "git add %s/docs/CHANGES" now.', $tmp_dir),
+                sprintf('Would run "git add %s/doc/CHANGES" now.', $tmp_dir),
                 sprintf('Would run "git add %s/lib/Application.php" now.', $tmp_dir),
                 'Would run "git commit -m "Development mode for Horde-5.0.0alpha2"" now.'
             ),
@@ -150,8 +150,8 @@ public $version = \'5.0.0-git\';
     private function _prepareApplicationDirectory()
     {
         $tmp_dir = $this->getTemporaryDirectory();
-        mkdir($tmp_dir . '/docs');
-        file_put_contents($tmp_dir . '/docs/CHANGES', "---\nOLD\n---\nTEST");
+        mkdir($tmp_dir . '/doc');
+        file_put_contents($tmp_dir . '/doc/CHANGES', "---\nOLD\n---\nTEST");
         mkdir($tmp_dir . '/lib');
         file_put_contents($tmp_dir . '/lib/Application.php', "class Application {\npublic \$version = '5.0.0';\n}\n");
         file_put_contents(
@@ -171,8 +171,8 @@ public $version = \'5.0.0-git\';
     private function _prepareAlphaApplicationDirectory()
     {
         $tmp_dir = $this->getTemporaryDirectory();
-        mkdir($tmp_dir . '/docs');
-        file_put_contents($tmp_dir . '/docs/CHANGES', "---\nOLD\n---\nTEST");
+        mkdir($tmp_dir . '/doc');
+        file_put_contents($tmp_dir . '/doc/CHANGES', "---\nOLD\n---\nTEST");
         mkdir($tmp_dir . '/lib');
         file_put_contents($tmp_dir . '/lib/Application.php', "class Application {\npublic \$version = '5.0.0-git';\n}\n");
         file_put_contents(

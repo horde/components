@@ -106,7 +106,7 @@ extends Components_Module_Base
                 '--sentinel',
                 array(
                     'action' => 'store_true',
-                    'help'   => 'Update the sentinels in docs/CHANGES and lib/Application.php too.'
+                    'help'   => 'Update the sentinels in doc/CHANGES and lib/Application.php too.'
                 )
             ),
         );

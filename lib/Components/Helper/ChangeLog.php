@@ -26,7 +26,10 @@
 class Components_Helper_ChangeLog
 {
     /** Path to the CHANGES file. */
-    const CHANGES = '/docs/CHANGES';
+    const CHANGES = '/doc/CHANGES';
+
+    /** Path to the CHANGES file up to Horde 5. */
+    const CHANGES_H5 = '/docs/CHANGES';
 
     /**
      * The output handler.
@@ -179,9 +182,11 @@ class Components_Helper_ChangeLog
      */
     public function changesFileExists($dir)
     {
-        $changes = $dir . self::CHANGES;
-        if (file_exists($changes)) {
-            return $changes;
+        foreach (array(self::CHANGES, self::CHANGES_H5) as $path) {
+            $changes = $dir . $path;
+            if (file_exists($changes)) {
+                return $changes;
+            }
         }
         return false;
     }

@@ -33,7 +33,7 @@ extends Components_Module_Base
 
     public function getOptionGroupDescription()
     {
-        return 'This module records a change log entry in package.xml (and docs/CHANGES in case it exists).';
+        return 'This module records a change log entry in package.xml (and doc/CHANGES in case it exists).';
     }
 
     public function getOptionGroupOptions()
@@ -98,7 +98,7 @@ extends Components_Module_Base
     public function getHelp($action)
     {
         return 'This module records a change log entry in package.xml and
-docs/CHANGES in case it exists.
+doc/CHANGES in case it exists.
 
 Move into the directory of the component you wish to record a change for
 and run
