@@ -6,5 +6,4 @@ description: >
   The package provides utility methods required when preparing a new component
   release for Horde. It also includes quality control checks.
 list: horde
-type: application
-type: application
+type: component
