@@ -1664,7 +1664,7 @@
     </dir> <!-- /data/qc_standards -->
    </dir> <!-- /data -->
    <dir name="doc">
-    <file name="TODO" role="doc" />
+    <file name="TODO.rst" role="doc" />
    </dir> <!-- /doc -->
    <dir name="lib">
     <dir name="Components">
@@ -3240,7 +3240,7 @@
    <install as="jenkins/pre-build/phpunit.xml" name="data/jenkins/pre-build/phpunit.xml" />
    <install as="qc_standards/phpcs.xml" name="data/qc_standards/phpcs.xml" />
    <install as="qc_standards/phpmd.xml" name="data/qc_standards/phpmd.xml" />
-   <install as="TODO" name="doc/TODO" />
+   <install as="TODO.rst" name="doc/TODO.rst" />
    <install as=".htaccess" name="lib/.htaccess" />
    <install as="Components.php" name="lib/Components.php" />
    <install as="Components/Component.php" name="lib/Components/Component.php" />
