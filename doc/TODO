@@ -23,7 +23,7 @@
      horde/lib)
 
  - Add validations (+ before release)
-   - COPYING
+   - LICENSE
    - Tests
    - phpDocumentor
    - Code style
