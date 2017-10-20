@@ -10,7 +10,7 @@
   <email>p@rdus.de</email>
   <active>yes</active>
  </lead>
- <date>2017-10-17</date>
+ <date>2017-10-20</date>
  <version>
   <release>0.99.1</release>
   <api>1.0</api>
@@ -2029,7 +2029,6 @@
      <file name="AllTests.php" role="test" />
      <file name="Autoload.php" role="test" />
      <file name="bootstrap.php" role="test" />
-     <file name="phpunit.xml" role="test" />
      <file name="StoryTestCase.php" role="test" />
      <file name="TestCase.php" role="test" />
     </dir> <!-- /test/Components -->
@@ -3418,7 +3417,6 @@
    <install as="Components/Integration/Components/Module/DocumentTest.php" name="test/Components/Integration/Components/Module/DocumentTest.php" />
    <install as="Components/Integration/Components/Module/InstallerTest.php" name="test/Components/Integration/Components/Module/InstallerTest.php" />
    <install as="Components/Integration/Components/Module/ReleaseTest.php" name="test/Components/Integration/Components/Module/ReleaseTest.php" />
-   <install as="Components/phpunit.xml" name="test/Components/phpunit.xml" />
    <install as="Components/StoryTestCase.php" name="test/Components/StoryTestCase.php" />
    <install as="Components/Stub/Config.php" name="test/Components/Stub/Config.php" />
    <install as="Components/Stub/Output.php" name="test/Components/Stub/Output.php" />
@@ -3473,7 +3471,7 @@
     <release>beta</release>
     <api>beta</api>
    </stability>
-   <date>2017-10-17</date>
+   <date>2017-10-20</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
 * [jan] Officially support PHP 7.
