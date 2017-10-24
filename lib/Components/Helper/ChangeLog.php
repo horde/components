@@ -84,9 +84,11 @@ class Components_Helper_ChangeLog
             return;
         }
 
-        if ($changelog = $this->changelogFileExists($this->_directory)) {
+        $changelog = $this->changelogFileExists();
+
+        if ($changelog) {
             if (empty($options['pretend'])) {
-                $version = $this->addChangelog($log, $this->_directory);
+                $version = $this->addChangelog($log);
                 $this->_output->ok(
                     sprintf(
                         'Added new note to version %s of %s.',
@@ -132,7 +134,7 @@ class Components_Helper_ChangeLog
      */
     public function addChangelog($entry)
     {
-        $hordeInfo = $this->_getHordeInfo($this->_directory);
+        $hordeInfo = $this->_getHordeInfo();
         $changelog = Horde_Yaml::loadFile($this->_directory . self::CHANGELOG);
         $version = $hordeInfo['version']['release'];
         $info = $changelog[$version];
@@ -191,7 +193,7 @@ class Components_Helper_ChangeLog
      */
     public function updatePackage($xml, $file, $options)
     {
-        $changelog = $this->changelogFileExists($this->_directory);
+        $changelog = $this->changelogFileExists();
         if (!$changelog || !file_exists($file)) {
             return;
         }
@@ -220,7 +222,7 @@ class Components_Helper_ChangeLog
      */
     public function changes($log, $options)
     {
-        if ($changes = $this->changesFileExists($this->_directory)) {
+        if ($changes = $this->changesFileExists()) {
             if (empty($options['pretend'])) {
                 $this->addChange($log, $changes);
                 $this->_output->ok(
@@ -250,7 +252,7 @@ class Components_Helper_ChangeLog
      */
     public function getChangelog($root)
     {
-        if ($changes = $this->changesFileExists($this->_directory)) {
+        if ($changes = $this->changesFileExists()) {
             $blob = trim(
                 $this->_systemInDirectory(
                     'git log --format="%H" HEAD^..HEAD',
@@ -316,13 +318,13 @@ class Components_Helper_ChangeLog
      */
     public function updateChanges($options)
     {
-        $changelog = $this->changelogFileExists($this->_directory);
-        $changes = $this->changesFileExists($this->_directory);
+        $changelog = $this->changelogFileExists();
+        $changes = $this->changesFileExists();
         if (!$changelog || !$changes) {
             return;
         }
 
-        $hordeInfo = $this->_getHordeInfo($this->_directory);
+        $hordeInfo = $this->_getHordeInfo();
         $allchanges = Horde_Yaml::loadFile($changelog);
 
         if (empty($options['pretend'])) {
