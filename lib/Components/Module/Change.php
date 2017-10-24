@@ -33,7 +33,7 @@ extends Components_Module_Base
 
     public function getOptionGroupDescription()
     {
-        return 'This module records a change log entry in package.xml (and doc/CHANGES in case it exists).';
+        return 'This module records a change log entry in doc/changelog.yml and package.xml (and doc/CHANGES in case it exists).';
     }
 
     public function getOptionGroupOptions()
@@ -97,8 +97,8 @@ extends Components_Module_Base
      */
     public function getHelp($action)
     {
-        return 'This module records a change log entry in package.xml and
-doc/CHANGES in case it exists.
+        return 'This module records a change log entry in doc/changelog.yml, package.xml, and
+doc/CHANGES in case they exist.
 
 Move into the directory of the component you wish to record a change for
 and run
@@ -112,7 +112,12 @@ command with the "--commit" flag:
 
 This will use the change log message as commit message. You might wish to
 ensure that you already added all changes you want to mark with that
-commit message by using "git add ..." before.';
+commit message by using "git add ..." before.
+
+If you edited changelog.yml manually you can run the command without an entry
+to just update package.xml and doc/CHANGES:
+
+  horde-components changed';
     }
 
     /**

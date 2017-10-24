@@ -71,7 +71,7 @@ class Components_Runner_Change
         if (count($arguments) > 1 && $arguments[0] == 'changed') {
             $log = $arguments[1];
         } else {
-            throw new Components_Exception('Please provide a change log entry as additional argument!');
+            $log = null;
         }
 
         if (!empty($options['commit'])) {

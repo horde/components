@@ -214,17 +214,35 @@ class Components_Component_Source extends Components_Component_Base
         $log, Components_Helper_ChangeLog $helper, $options
     )
     {
+        $file = $helper->changelogYml($log, $options);
+        if ($file && !empty($options['commit'])) {
+            $options['commit']->add($file, $this->_directory);
+        }
         if (empty($options['nopackage'])) {
-            $file = $helper->packageXml(
-                $log, $this->getPackageXml(), $this->getPackageXmlPath(), $options
-            );
+            if ($helper->changelogFileExists()) {
+                $file = $helper->updatePackage(
+                    $this->getPackageXml(),
+                    $this->getPackageXmlPath(),
+                    $options
+                );
+            } else {
+                $file = $helper->packageXml(
+                    $log,
+                    $this->getPackageXml(),
+                    $this->getPackageXmlPath(),
+                    $options
+                );
+            }
             if ($file && !empty($options['commit'])) {
                 $options['commit']->add($file, $this->_directory);
             }
         }
-
         if (empty($options['nochanges'])) {
-            $file = $helper->changes($log, $this->_directory, $options);
+            if ($helper->changelogFileExists()) {
+                $file = $helper->updateChanges($options);
+            } else {
+                $file = $helper->changes($log, $options);
+            }
             if ($file && !empty($options['commit'])) {
                 $options['commit']->add($file, $this->_directory);
             }

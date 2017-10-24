@@ -2093,6 +2093,10 @@
     <name>Horde_Release</name>
     <channel>pear.horde.org</channel>
    </package>
+   <package>
+    <name>Horde_Yaml</name>
+    <channel>pear.horde.org</channel>
+   </package>
   </required>
   <optional>
    <package>

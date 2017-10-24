@@ -25,6 +25,15 @@
  */
 class Components_Helper_ChangeLog
 {
+    /** Path to the .horde.yml file. */
+    const HORDE_INFO = '/.horde.yml';
+
+    /** Path to the changelog.yml file. */
+    const CHANGELOG = '/doc/changelog.yml';
+
+    /** Path to the changelog.yml file up to Horde 5. */
+    const CHANGELOG_H5 = '/docs/changelog.yml';
+
     /** Path to the CHANGES file. */
     const CHANGES = '/doc/CHANGES';
 
@@ -57,6 +66,42 @@ class Components_Helper_ChangeLog
     {
         $this->_output = $output;
         $this->_directory = $config->getPath();
+    }
+
+    /**
+     * Update changelog.yml file.
+     *
+     * @param string $log         The log entry.
+     * @param array  $options     Additional options.
+     *
+     * @return string  Path to the updated changelog.yml file.
+     */
+    public function changelogYml($log, $options)
+    {
+        if (!strlen($log)) {
+            return;
+        }
+
+        if ($changelog = $this->changelogFileExists($this->_directory)) {
+            if (empty($options['pretend'])) {
+                $version = $this->addChangelog($log, $this->_directory);
+                $this->_output->ok(
+                    sprintf(
+                        'Added new note to version %s of %s.',
+                        $version,
+                        $changelog
+                    )
+                );
+            } else {
+                $this->_output->info(
+                    sprintf(
+                        'Would add change log entry to %s now.',
+                        $changelog
+                    )
+                );
+            }
+            return $changelog;
+        }
     }
 
     /**
@@ -181,8 +226,24 @@ class Components_Helper_ChangeLog
     }
 
     /**
-     * Indicates if there is a CHANGES file for this component.
+     * Indicates if there is a changelog.yml file for this component.
      *
+     * @return string|boolean The path to the changelog.yml file if it exists,
+     *                        false otherwise.
+     */
+    public function changelogFileExists()
+    {
+        foreach (array(self::CHANGES, self::CHANGES_H5) as $path) {
+            $changes = $this->_directory . $path;
+            if (file_exists($changes)) {
+                return $changes;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Indicates if there is a CHANGES file for this component.
      *
      * @return string|boolean The path to the CHANGES file if it exists, false
      *                        otherwise.
@@ -196,6 +257,30 @@ class Components_Helper_ChangeLog
             }
         }
         return false;
+    }
+
+    /**
+     * Add a change log entry to changelog.yml
+     *
+     * @param string $entry      Change log entry to add.
+     *
+     * @returns string  The updated version.
+     */
+    public function addChangelog($entry)
+    {
+        $hordeInfo = $this->_getHordeInfo($this->_directory);
+        $changelog = Horde_Yaml::loadFile($this->_directory . self::CHANGELOG);
+        $version = $hordeInfo['version']['release'];
+        $info = $changelog[$version];
+        $notes = explode("\n", trim($info['notes']));
+        array_unshift($notes, $entry);
+        $info['notes'] = implode("\n", $notes) . "\n";
+        $changelog[$version] = $info;
+        file_put_contents(
+            $this->_directory . self::CHANGELOG,
+            Horde_Yaml::dump($changelog, array('wordwrap' => 0))
+        );
+        return $version;
     }
 
     /**
@@ -222,5 +307,108 @@ class Components_Helper_ChangeLog
         fclose($oldfp);
         fclose($newfp);
         system("mv -f $tmp $changes");
+    }
+
+    /**
+     * Updates package.xml from changelog.yml.
+     *
+     * @param Horde_Pear_Package_Xml $xml     The package xml handler.
+     * @param string                 $file    Path to the package.xml.
+     * @param array                  $options Additional options.
+     *
+     * @return string  Path to the updated package.xml file.
+     */
+    public function updatePackage($xml, $file, $options)
+    {
+        $changelog = $this->changelogFileExists($this->_directory);
+        if (!$changelog || !file_exists($file)) {
+            return;
+        }
+
+        if (empty($options['pretend'])) {
+            $allchanges = Horde_Yaml::loadFile($changelog);
+            $xml->setNotes($allchanges);
+            file_put_contents($file, (string)$xml);
+            $this->_output->ok(sprintf('Updated %s.', $file));
+        } else {
+            $this->_output->info(sprintf('Would update %s now.', $file));
+        }
+
+        return $file;
+    }
+
+    /**
+     * Updates CHANGES from changelog.yml.
+     *
+     * @param array $options     Additional options.
+     *
+     * @return string  Path to the updated CHANGES file.
+     */
+    public function updateChanges($options)
+    {
+        $changelog = $this->changelogFileExists($this->_directory);
+        $changes = $this->changesFileExists($this->_directory);
+        if (!$changelog || !$changes) {
+            return;
+        }
+
+        $hordeInfo = $this->_getHordeInfo($this->_directory);
+        $allchanges = Horde_Yaml::loadFile($changelog);
+
+        if (empty($options['pretend'])) {
+            $changesfp = fopen($changes, 'w');
+            $started = false;
+
+            foreach ($allchanges as $version => $info) {
+                if (!$started && $version != $hordeInfo['version']['release']) {
+                    continue;
+                }
+                if (!$started) {
+                    $version .= '-git';
+                } else {
+                    fwrite($changesfp, "\n\n");
+                }
+                $started = true;
+                $version = 'v' . $version;
+                $lines = str_repeat('-', strlen($version)) . "\n";
+                fwrite($changesfp, $lines . $version . "\n" . $lines);
+
+                $notes = explode("\n", $info['notes']);
+                foreach ($notes as $entry) {
+                    $entry = Horde_String::wrap($entry, 79, "\n      ");
+                    fwrite($changesfp, "\n" . $entry);
+                }
+            }
+            fclose($changesfp);
+            $this->_output->ok(
+                sprintf(
+                    'Updated %s.',
+                    $changes
+                )
+            );
+        } else {
+            $this->_output->info(
+                sprintf(
+                    'Would update %s now.',
+                    $changes
+                )
+            );
+        }
+
+        return $changes;
+    }
+
+    /**
+     * Returns the parsed information from the .horde.yml file.
+     *
+     * @return array  A Horde component information hash.
+     */
+    protected function _getHordeInfo()
+    {
+        $path = $this->_directory . self::HORDE_INFO;
+        if (!file_exists($path)) {
+            throw new Components_Exception($path . ' not found.');
+        }
+        return Horde_Yaml::loadFile($path);
     }
 }
