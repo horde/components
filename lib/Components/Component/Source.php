@@ -151,13 +151,13 @@ class Components_Component_Source extends Components_Component_Base
     }
 
     /**
-     * Updates the package.xml file for this component.
+     * Updates the information files for this component.
      *
      * @param string $action   The action to perform. Either "update", "diff",
      *                         or "print".
      * @param array  $options  Options for this operation.
      */
-    public function updatePackageXml($action, $options)
+    public function updatePackage($action, $options)
     {
         if (!file_exists($this->getPackageXmlPath())) {
             if (!empty($options['theme'])) {

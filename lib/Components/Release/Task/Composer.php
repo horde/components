@@ -52,7 +52,7 @@ extends Components_Release_Task_Base
         }
         $diff_options = $options;
         $diff_options['no_timestamp'] = true;
-        $diff = $this->getComponent()->updatePackageXml('diff', $diff_options);
+        $diff = $this->getComponent()->updatePackage('diff', $diff_options);
         if (!empty($diff)) {
             return array(
                 "The package.xml file is not up-to-date:\n$diff"

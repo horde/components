@@ -281,7 +281,7 @@ abstract class Components_Component_Base implements Components_Component
      *
      * @return NULL
      */
-    public function updatePackageXml($action, $options)
+    public function updatePackage($action, $options)
     {
         throw new Components_Exception(
             'Updating the package.xml is not supported!'

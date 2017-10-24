@@ -165,7 +165,7 @@ interface Components_Component
      *
      * @return NULL
      */
-    public function updatePackageXml($action, $options);
+    public function updatePackage($action, $options);
 
     /**
      * Update the component changelog.
