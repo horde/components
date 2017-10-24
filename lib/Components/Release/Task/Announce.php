@@ -81,7 +81,10 @@ extends Components_Release_Task_Base
             'The full list of changes can be viewed here:' .
             "\n\n" .
             $this->getComponent()->getChangelog(
-                new Components_Helper_ChangeLog($this->getOutput())
+                new Components_Helper_ChangeLog(
+                    $this->getOutput(),
+                    $this->getComponent()->getConfig()
+                )
             ) .
             "\n\n" .
             'Have fun!' .

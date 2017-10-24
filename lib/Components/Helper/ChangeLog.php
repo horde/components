@@ -34,18 +34,29 @@ class Components_Helper_ChangeLog
     /**
      * The output handler.
      *
-     * @param Component_Output
+     * @var Component_Output
      */
-    private $_output;
+    protected $_output;
+
+    /**
+     * The path to the component directory.
+     *
+     * @var string
+     */
+    protected $_directory;
 
     /**
      * Constructor.
      *
-     * @param Component_Output  $output  The output handler.
+     * @param Component_Output $output   The output handler.
+     * @param Components_Config $config  The configuration.
      */
-    public function __construct(Components_Output $output)
+    public function __construct(
+        Components_Output $output, Components_Config $config
+    )
     {
         $this->_output = $output;
+        $this->_directory = $config->getPath();
     }
 
     /**
@@ -83,15 +94,13 @@ class Components_Helper_ChangeLog
      * Update CHANGES file.
      *
      * @param string $log         The log entry.
-     * @param string $directory   The path to the component directory.
      * @param array  $options     Additional options.
      *
-     * @return NULL
+     * @return string  Path to the updated CHANGES file.
      */
-    public function changes($log, $directory, $options)
+    public function changes($log, $options)
     {
-        $changes = false;
-        if ($changes = $this->changesFileExists($directory)) {
+        if ($changes = $this->changesFileExists($this->_directory)) {
             if (empty($options['pretend'])) {
                 $this->addChange($log, $changes);
                 $this->_output->ok(
@@ -116,21 +125,20 @@ class Components_Helper_ChangeLog
      * Returns the link to the change log.
      *
      * @param string $root      The root of the component in the repository.
-     * @param string $directory The working directory.
      *
      * @return string|null The link to the change log.
      */
-    public function getChangelog($root, $directory)
+    public function getChangelog($root)
     {
-        if ($changes = $this->changesFileExists($directory)) {
+        if ($changes = $this->changesFileExists($this->_directory)) {
             $blob = trim(
                 $this->systemInDirectory(
                     'git log --format="%H" HEAD^..HEAD',
-                    $directory,
+                    $this->_directory,
                     array()
                 )
             );
-            $changes = preg_replace('#^' . $directory . '#', '', $changes);
+            $changes = preg_replace('#^' . $this->_directory . '#', '', $changes);
             return 'https://github.com/horde/horde/blob/' . $blob . $root . $changes;
         }
         return '';
@@ -175,15 +183,14 @@ class Components_Helper_ChangeLog
     /**
      * Indicates if there is a CHANGES file for this component.
      *
-     * @param string $dir The basic component directory.
      *
      * @return string|boolean The path to the CHANGES file if it exists, false
      *                        otherwise.
      */
-    public function changesFileExists($dir)
+    public function changesFileExists()
     {
         foreach (array(self::CHANGES, self::CHANGES_H5) as $path) {
-            $changes = $dir . $path;
+            $changes = $this->_directory . $path;
             if (file_exists($changes)) {
                 return $changes;
             }
