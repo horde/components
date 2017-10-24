@@ -68,6 +68,8 @@ class Components_Helper_ChangeLog
         $this->_directory = $config->getPath();
     }
 
+    /* changelog.yml methods */
+
     /**
      * Update changelog.yml file.
      *
@@ -105,6 +107,49 @@ class Components_Helper_ChangeLog
     }
 
     /**
+     * Indicates if there is a changelog.yml file for this component.
+     *
+     * @return string|boolean The path to the changelog.yml file if it exists,
+     *                        false otherwise.
+     */
+    public function changelogFileExists()
+    {
+        foreach (array(self::CHANGELOG, self::CHANGELOG_H5) as $path) {
+            $changes = $this->_directory . $path;
+            if (file_exists($changes)) {
+                return $changes;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Add a change log entry to changelog.yml
+     *
+     * @param string $entry  Change log entry to add.
+     *
+     * @returns string  The updated version.
+     */
+    public function addChangelog($entry)
+    {
+        $hordeInfo = $this->_getHordeInfo($this->_directory);
+        $changelog = Horde_Yaml::loadFile($this->_directory . self::CHANGELOG);
+        $version = $hordeInfo['version']['release'];
+        $info = $changelog[$version];
+        $notes = explode("\n", trim($info['notes']));
+        array_unshift($notes, $entry);
+        $info['notes'] = implode("\n", $notes) . "\n";
+        $changelog[$version] = $info;
+        file_put_contents(
+            $this->_directory . self::CHANGELOG,
+            Horde_Yaml::dump($changelog, array('wordwrap' => 0))
+        );
+        return $version;
+    }
+
+    /* package.xml methods */
+
+    /**
      * Update package.xml file.
      *
      * @param string                 $log     The log entry.
@@ -134,6 +179,36 @@ class Components_Helper_ChangeLog
             return $file;
         }
     }
+
+    /**
+     * Updates package.xml from changelog.yml.
+     *
+     * @param Horde_Pear_Package_Xml $xml     The package xml handler.
+     * @param string                 $file    Path to the package.xml.
+     * @param array                  $options Additional options.
+     *
+     * @return string  Path to the updated package.xml file.
+     */
+    public function updatePackage($xml, $file, $options)
+    {
+        $changelog = $this->changelogFileExists($this->_directory);
+        if (!$changelog || !file_exists($file)) {
+            return;
+        }
+
+        if (empty($options['pretend'])) {
+            $allchanges = Horde_Yaml::loadFile($changelog);
+            $xml->setNotes($allchanges);
+            file_put_contents($file, (string)$xml);
+            $this->_output->ok(sprintf('Updated %s.', $file));
+        } else {
+            $this->_output->info(sprintf('Would update %s now.', $file));
+        }
+
+        return $file;
+    }
+
+    /* CHANGES methods */
 
     /**
      * Update CHANGES file.
@@ -167,17 +242,17 @@ class Components_Helper_ChangeLog
     }
 
     /**
-     * Returns the link to the change log.
+     * Returns the link to the CHANGES file on GitHub.
      *
-     * @param string $root      The root of the component in the repository.
+     * @param string $root  The root of the component in the repository.
      *
-     * @return string|null The link to the change log.
+     * @return string  The link to the change log.
      */
     public function getChangelog($root)
     {
         if ($changes = $this->changesFileExists($this->_directory)) {
             $blob = trim(
-                $this->systemInDirectory(
+                $this->_systemInDirectory(
                     'git log --format="%H" HEAD^..HEAD',
                     $this->_directory,
                     array()
@@ -187,59 +262,6 @@ class Components_Helper_ChangeLog
             return 'https://github.com/horde/horde/blob/' . $blob . $root . $changes;
         }
         return '';
-    }
-
-    /**
-     * Run a system call.
-     *
-     * @param string $call       The system call to execute.
-     * @param string $target_dir Run the command in the provided target path.
-     * @param array  $options    Additional options.
-     *
-     * @return string The command output.
-     */
-    protected function systemInDirectory($call, $target_dir, $options)
-    {
-        $old_dir = getcwd();
-        chdir($target_dir);
-        $result = $this->system($call, $options);
-        chdir($old_dir);
-        return $result;
-    }
-
-    /**
-     * Run a system call.
-     *
-     * @param string $call    The system call to execute.
-     * @param array  $options Additional options.
-     *
-     * @return string The command output.
-     */
-    protected function system($call, $options)
-    {
-        if (empty($options['pretend'])) {
-            //@todo Error handling
-            return exec($call);
-        } else {
-            $this->_output->info(sprintf('Would run "%s" now.', $call));
-        }
-    }
-
-    /**
-     * Indicates if there is a changelog.yml file for this component.
-     *
-     * @return string|boolean The path to the changelog.yml file if it exists,
-     *                        false otherwise.
-     */
-    public function changelogFileExists()
-    {
-        foreach (array(self::CHANGES, self::CHANGES_H5) as $path) {
-            $changes = $this->_directory . $path;
-            if (file_exists($changes)) {
-                return $changes;
-            }
-        }
-        return false;
     }
 
     /**
@@ -257,30 +279,6 @@ class Components_Helper_ChangeLog
             }
         }
         return false;
-    }
-
-    /**
-     * Add a change log entry to changelog.yml
-     *
-     * @param string $entry      Change log entry to add.
-     *
-     * @returns string  The updated version.
-     */
-    public function addChangelog($entry)
-    {
-        $hordeInfo = $this->_getHordeInfo($this->_directory);
-        $changelog = Horde_Yaml::loadFile($this->_directory . self::CHANGELOG);
-        $version = $hordeInfo['version']['release'];
-        $info = $changelog[$version];
-        $notes = explode("\n", trim($info['notes']));
-        array_unshift($notes, $entry);
-        $info['notes'] = implode("\n", $notes) . "\n";
-        $changelog[$version] = $info;
-        file_put_contents(
-            $this->_directory . self::CHANGELOG,
-            Horde_Yaml::dump($changelog, array('wordwrap' => 0))
-        );
-        return $version;
     }
 
     /**
@@ -310,37 +308,9 @@ class Components_Helper_ChangeLog
     }
 
     /**
-     * Updates package.xml from changelog.yml.
-     *
-     * @param Horde_Pear_Package_Xml $xml     The package xml handler.
-     * @param string                 $file    Path to the package.xml.
-     * @param array                  $options Additional options.
-     *
-     * @return string  Path to the updated package.xml file.
-     */
-    public function updatePackage($xml, $file, $options)
-    {
-        $changelog = $this->changelogFileExists($this->_directory);
-        if (!$changelog || !file_exists($file)) {
-            return;
-        }
-
-        if (empty($options['pretend'])) {
-            $allchanges = Horde_Yaml::loadFile($changelog);
-            $xml->setNotes($allchanges);
-            file_put_contents($file, (string)$xml);
-            $this->_output->ok(sprintf('Updated %s.', $file));
-        } else {
-            $this->_output->info(sprintf('Would update %s now.', $file));
-        }
-
-        return $file;
-    }
-
-    /**
      * Updates CHANGES from changelog.yml.
      *
-     * @param array $options     Additional options.
+     * @param array $options  Additional options.
      *
      * @return string  Path to the updated CHANGES file.
      */
@@ -410,5 +380,41 @@ class Components_Helper_ChangeLog
             throw new Components_Exception($path . ' not found.');
         }
         return Horde_Yaml::loadFile($path);
+    }
+
+    /**
+     * Run a system call.
+     *
+     * @param string $call       The system call to execute.
+     * @param string $target_dir Run the command in the provided target path.
+     * @param array  $options    Additional options.
+     *
+     * @return string The command output.
+     */
+    protected function _systemInDirectory($call, $target_dir, $options)
+    {
+        $old_dir = getcwd();
+        chdir($target_dir);
+        $result = $this->_system($call, $options);
+        chdir($old_dir);
+        return $result;
+    }
+
+    /**
+     * Run a system call.
+     *
+     * @param string $call    The system call to execute.
+     * @param array  $options Additional options.
+     *
+     * @return string The command output.
+     */
+    protected function _system($call, $options)
+    {
+        if (empty($options['pretend'])) {
+            //@todo Error handling
+            return exec($call);
+        } else {
+            $this->_output->info(sprintf('Would run "%s" now.', $call));
+        }
     }
 }
