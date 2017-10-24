@@ -67,14 +67,14 @@ class Components_Helper_ChangeLog
      * @param string                 $file    Path to the package.xml.
      * @param array                  $options Additional options.
      *
-     * @return NULL
+     * @return string  Path to the updated package.xml file.
      */
     public function packageXml($log, $xml, $file, $options)
     {
         if (file_exists($file)) {
             if (empty($options['pretend'])) {
                 $xml->addNote($log);
-                file_put_contents($file, (string) $xml);
+                file_put_contents($file, (string)$xml);
                 $this->_output->ok(
                     'Added new note to version ' . $xml->getVersion() . ' of ' . $file . '.'
                 );
@@ -203,8 +203,6 @@ class Components_Helper_ChangeLog
      *
      * @param string $entry   Change log entry to add.
      * @param string $changes Path to the CHANGES file.
-     *
-     * @return NULL
      */
     public function addChange($entry, $changes)
     {

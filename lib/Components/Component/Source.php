@@ -107,9 +107,8 @@ class Components_Component_Source extends Components_Component_Base
         $base = $this->getFactory()->getGitRoot()->getRoot();
         return $helper->getChangelog(
             preg_replace(
-                '#^' . $base . '#', '', realpath($this->_directory)
-            ),
-            $this->_directory
+                '#^' . $base . '#', '', $this->_directory
+            )
         );
     }
 

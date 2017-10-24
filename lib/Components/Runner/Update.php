@@ -44,13 +44,14 @@ class Components_Runner_Update
     /**
      * Constructor.
      *
-     * @param Components_Config       $config  The configuration for the current job.
-     * @param Component_Output        $output  The output handler.
+     * @param Components_Config $config  The configuration for the current job.
+     * @param Component_Output $output   The output handler.
      */
     public function __construct(
         Components_Config $config,
         Components_Output $output
-    ) {
+    )
+    {
         $this->_config  = $config;
         $this->_output = $output;
     }
