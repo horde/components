@@ -712,7 +712,7 @@ EOF;
     {
         $out = array();
         if (! empty($req['min'])) {
-            $v = '^' . rtrim($req['min'], '.0');
+            $v = '^' . preg_replace('/(\.0)*$/', '', $req['min']);
             if ($req['dep'] == 'package' &&
                 $this->data['stability']['release'] == 'stable') {
                 $v .= '@stable';
