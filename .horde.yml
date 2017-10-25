@@ -7,3 +7,45 @@ description: >
   release for Horde. It also includes quality control checks.
 list: horde
 type: component
+authors:
+  -
+    name: Gunnar Wrobel
+    user: wrobel
+    email: p@rdus.de
+    active: true
+    role: lead
+version:
+  release: 0.99.1
+  api: 1.0
+state:
+  release: beta
+  api: beta
+license:
+  identifier: LGPL-2.1
+  uri: http://www.horde.org/licenses/lgpl21
+dependencies:
+  required:
+    php: ^5.4 || ^7
+    pear:
+      pear.horde.org/Horde_Autoloader: '*'
+      pear.horde.org/Horde_Argv: '*'
+      pear.horde.org/Horde_Cli: '*'
+      pear.horde.org/Horde_Cli_Modular: ^2.1
+      pear.horde.org/Horde_Http: '*'
+      pear.horde.org/Horde_Pear: '*'
+      pear.horde.org/Horde_Role: '*'
+      pear.horde.org/Horde_Text_Diff: '*'
+      pear.horde.org/Horde_Util: '*'
+      pear.horde.org/Horde_Injector: '*'
+      pear.horde.org/Horde_Release: '*'
+      pear.horde.org/Horde_Yaml: '*'
+  optional:
+    pear:
+      pear.horde.org/Horde_Test: '*'
+      pear.php.net/Archive_Tar: '*'
+      pear.php.net/PHP_CodeSniffer: '*'
+      pear.phpunit.de/PHPUnit: '*'
+      pear.phpunit.de/phpcpd: '*'
+      pear.phpunit.de/phpdcd: '*'
+      pear.phpunit.de/phploc: '*'
+      pear.phpmd.org/PHP_PMD: '*'
