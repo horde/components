@@ -334,6 +334,7 @@ class Components_Helper_ChangeLog
     public function getChangelog($root)
     {
         if ($changes = $this->changesFileExists()) {
+            $hordeInfo = $this->_getHordeInfo();
             $blob = trim(
                 $this->_systemInDirectory(
                     'git log --format="%H" HEAD^..HEAD',
@@ -342,7 +343,8 @@ class Components_Helper_ChangeLog
                 )
             );
             $changes = preg_replace('#^' . $this->_directory . '#', '', $changes);
-            return 'https://github.com/horde/horde/blob/' . $blob . $root . $changes;
+            return 'https://github.com/horde/' . $hordeInfo['id'] . '/blob/'
+                . $blob . $root . $changes;
         }
         return '';
     }
