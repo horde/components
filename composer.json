@@ -12,7 +12,7 @@
         }
     ],
     "version": "0.99.1",
-    "time": "2016-06-28",
+    "time": "2017-10-20",
     "repositories": [
         {
             "type": "pear",
@@ -31,10 +31,12 @@
         "pear-pear.horde.org/Horde_Text_Diff": "*",
         "pear-pear.horde.org/Horde_Util": "*",
         "pear-pear.horde.org/Horde_Injector": "*",
-        "pear-pear.horde.org/Horde_Release": "*"
+        "pear-pear.horde.org/Horde_Release": "*",
+        "pear-pear.horde.org/Horde_Yaml": "*"
     },
     "suggest": {
         "pear-pear.horde.org/Horde_Test": "*",
+        "pear-pear.php.net/Archive_Tar": "*",
         "pear-pear.php.net/PHP_CodeSniffer": "*",
         "pear-pear.phpunit.de/PHPUnit": "*",
         "pear-pear.phpunit.de/phpcpd": "*",
