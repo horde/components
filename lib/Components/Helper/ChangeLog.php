@@ -84,9 +84,7 @@ class Components_Helper_ChangeLog
             return;
         }
 
-        $changelog = $this->changelogFileExists();
-
-        if ($changelog) {
+        if ($changelog = $this->changelogFileExists()) {
             if (empty($options['pretend'])) {
                 $version = $this->addChangelog($log);
                 $this->_output->ok(
@@ -150,6 +148,86 @@ class Components_Helper_ChangeLog
             Horde_Yaml::dump($changelog, array('wordwrap' => 0))
         );
         return $version;
+    }
+
+    /**
+     * Builds a changelog.yml from an existing package.xml.
+     *
+     * @param Horde_Pear_Package_Xml $xml  The package xml handler.
+     */
+    public function migrateToChangelogYml($xml)
+    {
+        $changes = array();
+        foreach ($xml->findNodes('/p:package/p:changelog/p:release') as $release) {
+            $version = $xml->getNodeTextRelativeTo(
+                'p:version/p:release', $release
+            );
+            $license = $xml->findNodeRelativeTo('p:license', $release);
+            $changes[$version] = array(
+                'api' => $xml->getNodeTextRelativeTo(
+                    'p:version/p:api', $release
+                ),
+                'state' => array(
+                    'release' => $xml->getNodeTextRelativeTo(
+                        'p:stability/p:release', $release
+                    ),
+                    'api' => $xml->getNodeTextRelativeTo(
+                        'p:stability/p:api', $release
+                    ),
+                ),
+                'date' => $xml->getNodeTextRelativeTo('p:date', $release),
+                'license' => array(
+                    'identifier' => $license->textContent,
+                    'uri' => $license->getAttribute('uri')
+                ),
+                'notes' => preg_replace(
+                    '/^\* /m',
+                    '',
+                    trim($xml->getNodeTextRelativeTo('p:notes', $release))
+                ) . "\n"
+            );
+        }
+        $changes = array_reverse($changes);
+
+        if ($changesFile = $this->changesFileExists()) {
+            $fp = fopen($changesFile, 'r');
+            $inHeader = $version = false;
+            while ($line = fgets($fp)) {
+                if (!strcspn($line, '-')) {
+                    $inHeader = !$inHeader;
+                    continue;
+                }
+                if (!trim($line)) {
+                    continue;
+                }
+                if ($inHeader) {
+                    if ($version && !isset($changes[$version])) {
+                        $changes[$version] = array('notes' => $notes);
+                    }
+                    $notes = '';
+                    $version = preg_replace('/v(.*?)(-git)?\n/m', '$1', $line);
+                    continue;
+                }
+                if (strpos($line, '      ') === 0) {
+                    $line = ltrim($line);
+                    $notes = substr($notes, 0, -1) . ' ';
+                }
+                $notes .= $line;
+            }
+            if ($version && !isset($changes[$version])) {
+                $changes[$version] = array('notes' => $notes);
+            }
+            fclose($fp);
+        }
+
+        $changelog = is_dir($this->_directory . '/doc')
+            ? $this->_directory . self::CHANGELOG
+            : $this->_directory . self::CHANGELOG_H5;
+        file_put_contents(
+            $changelog,
+            Horde_Yaml::dump($changes, array('wordwrap' => 0))
+        );
+        $this->_output->ok(sprintf('Created %s.', $changelog));
     }
 
     /* package.xml methods */

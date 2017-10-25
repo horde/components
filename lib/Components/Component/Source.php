@@ -218,10 +218,19 @@ class Components_Component_Source extends Components_Component_Base
         $log, Components_Helper_ChangeLog $helper, $options
     )
     {
+        // Create changelog.yml
+        if (!$helper->changelogFileExists() &&
+            file_exists($this->getPackageXmlPath())) {
+            $helper->migrateToChangelogYml($this->getPackageXml());
+        }
+
+        // Update changelog.yml
         $file = $helper->changelogYml($log, $options);
         if ($file && !empty($options['commit'])) {
             $options['commit']->add($file, $this->_directory);
         }
+
+        // Update package.xml
         if (empty($options['nopackage'])) {
             if ($helper->changelogFileExists()) {
                 $file = $helper->updatePackage(
@@ -241,6 +250,8 @@ class Components_Component_Source extends Components_Component_Base
                 $options['commit2']->add($file, $this->_directory);
             }
         }
+
+        // Update CHANGES
         if (empty($options['nochanges'])) {
             if ($helper->changelogFileExists()) {
                 $file = $helper->updateChanges($options);
