@@ -29,16 +29,10 @@ class Components_Helper_ChangeLog
     const HORDE_INFO = '/.horde.yml';
 
     /** Path to the changelog.yml file. */
-    const CHANGELOG = '/doc/changelog.yml';
-
-    /** Path to the changelog.yml file up to Horde 5. */
-    const CHANGELOG_H5 = '/docs/changelog.yml';
+    const CHANGELOG = '/changelog.yml';
 
     /** Path to the CHANGES file. */
-    const CHANGES = '/doc/CHANGES';
-
-    /** Path to the CHANGES file up to Horde 5. */
-    const CHANGES_H5 = '/docs/CHANGES';
+    const CHANGES = '/CHANGES';
 
     /**
      * The output handler.
@@ -114,11 +108,9 @@ class Components_Helper_ChangeLog
      */
     public function changelogFileExists()
     {
-        foreach (array(self::CHANGELOG, self::CHANGELOG_H5) as $path) {
-            $changes = $this->_directory . $path;
-            if (file_exists($changes)) {
-                return $changes;
-            }
+        $changes = $this->_getDocDirectory() . self::CHANGELOG;
+        if (file_exists($changes)) {
+            return $changes;
         }
         return false;
     }
@@ -137,14 +129,16 @@ class Components_Helper_ChangeLog
             throw new Components_Exception('.horde.yml is missing a \'version\' entry');
         }
         $version = $hordeInfo['version']['release'];
-        $changelog = Horde_Yaml::loadFile($this->_directory . self::CHANGELOG);
+        $changelog = Horde_Yaml::loadFile(
+            $this->_getDocDirectory() . self::CHANGELOG
+        );
         $info = $changelog[$version];
         $notes = explode("\n", trim($info['notes']));
         array_unshift($notes, $entry);
         $info['notes'] = implode("\n", $notes) . "\n";
         $changelog[$version] = $info;
         file_put_contents(
-            $this->_directory . self::CHANGELOG,
+            $this->_getDocDirectory() . self::CHANGELOG,
             Horde_Yaml::dump($changelog, array('wordwrap' => 0))
         );
         return $version;
@@ -224,9 +218,7 @@ class Components_Helper_ChangeLog
         }
 
         // Create changelog.yml.
-        $changelog = is_dir($this->_directory . '/doc')
-            ? $this->_directory . self::CHANGELOG
-            : $this->_directory . self::CHANGELOG_H5;
+        $changelog = $this->_getDocDirectory(true) . self::CHANGELOG;
         file_put_contents(
             $changelog,
             Horde_Yaml::dump($changes, array('wordwrap' => 0))
@@ -359,11 +351,9 @@ class Components_Helper_ChangeLog
      */
     public function changesFileExists()
     {
-        foreach (array(self::CHANGES, self::CHANGES_H5) as $path) {
-            $changes = $this->_directory . $path;
-            if (file_exists($changes)) {
-                return $changes;
-            }
+        $changes = $this->_getDocDirectory() . self::CHANGES;
+        if (file_exists($changes)) {
+            return $changes;
         }
         return false;
     }
@@ -404,16 +394,21 @@ class Components_Helper_ChangeLog
     public function updateChanges($options)
     {
         $changelog = $this->changelogFileExists();
-        $changes = $this->changesFileExists();
-        if (!$changelog || !$changes) {
+        if (!$changelog) {
             return;
         }
 
-        $allchanges = Horde_Yaml::loadFile($changelog);
         $hordeInfo = $this->_getHordeInfo();
         if (!isset($hordeInfo['version'])) {
             throw new Components_Exception('.horde.yml is missing a \'version\' entry');
         }
+
+        $changes = $this->changesFileExists();
+        if (!$changes) {
+            $changes = $this->_getDocDirectory(true) . self::CHANGES;
+        }
+
+        $allchanges = Horde_Yaml::loadFile($changelog);
 
         if (empty($options['pretend'])) {
             $changesfp = fopen($changes, 'w');
@@ -470,6 +465,38 @@ class Components_Helper_ChangeLog
             throw new Components_Exception($path . ' not found.');
         }
         return Horde_Yaml::loadFile($path);
+    }
+
+    /**
+     * Returns the path to the documenation directory, if it exists.
+     *
+     * @param boolean $mkdir  Create the directory if it doesn't exist?
+     *
+     * @return string|boolean  The directory name or false if not found and not
+     *                         created.
+     */
+    protected function _getDocDirectory($mkdir = false)
+    {
+        if (is_dir($this->_directory . '/doc')) {
+            $dir = $this->_directory . '/doc';
+        } elseif (is_dir($this->_directory . '/docs')) {
+            $dir = $this->_directory . '/docs';
+        } elseif ($mkdir) {
+            $dir = $this->_directory . '/doc';
+        } else {
+            return false;
+        }
+        $info = $this->_getHordeInfo();
+        if ($info['type'] == 'library') {
+            $dir .= '/Horde/' . str_replace('_', '/', $info['id']);
+        }
+        if (!is_dir($dir)) {
+            if (!$mkdir) {
+                return false;
+            }
+            mkdir($dir, 0777, true);
+        }
+        return $dir;
     }
 
     /**
