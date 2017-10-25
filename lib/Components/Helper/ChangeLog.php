@@ -159,6 +159,14 @@ class Components_Helper_ChangeLog
                 'p:version/p:release', $release
             );
             $license = $xml->findNodeRelativeTo('p:license', $release);
+            $notes = trim(preg_replace(
+                '/^\* /m',
+                '',
+                $xml->getNodeTextRelativeTo('p:notes', $release)
+            ));
+            if ($notes) {
+                $notes .= "\n";
+            }
             $changes[$version] = array(
                 'api' => $xml->getNodeTextRelativeTo(
                     'p:version/p:api', $release
@@ -176,11 +184,7 @@ class Components_Helper_ChangeLog
                     'identifier' => $license->textContent,
                     'uri' => $license->getAttribute('uri')
                 ),
-                'notes' => preg_replace(
-                    '/^\* /m',
-                    '',
-                    trim($xml->getNodeTextRelativeTo('p:notes', $release))
-                ) . "\n"
+                'notes' => $notes,
             );
         }
         $changes = array_reverse($changes);
