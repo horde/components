@@ -158,6 +158,8 @@ class Components_Helper_ChangeLog
     public function migrateToChangelogYml($xml)
     {
         $changes = array();
+
+        // Import releases from package.xml.
         foreach ($xml->findNodes('/p:package/p:changelog/p:release') as $release) {
             $version = $xml->getNodeTextRelativeTo(
                 'p:version/p:release', $release
@@ -189,6 +191,7 @@ class Components_Helper_ChangeLog
         }
         $changes = array_reverse($changes);
 
+        // Import releases from CHANGES.
         if ($changesFile = $this->changesFileExists()) {
             $fp = fopen($changesFile, 'r');
             $inHeader = $version = false;
@@ -220,6 +223,7 @@ class Components_Helper_ChangeLog
             fclose($fp);
         }
 
+        // Create changelog.yml.
         $changelog = is_dir($this->_directory . '/doc')
             ? $this->_directory . self::CHANGELOG
             : $this->_directory . self::CHANGELOG_H5;
