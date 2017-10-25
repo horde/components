@@ -135,8 +135,11 @@ class Components_Helper_ChangeLog
     public function addChangelog($entry)
     {
         $hordeInfo = $this->_getHordeInfo();
-        $changelog = Horde_Yaml::loadFile($this->_directory . self::CHANGELOG);
+        if (!isset($hordeInfo['version'])) {
+            throw new Components_Exception('.horde.yml is missing a \'version\' entry');
+        }
         $version = $hordeInfo['version']['release'];
+        $changelog = Horde_Yaml::loadFile($this->_directory . self::CHANGELOG);
         $info = $changelog[$version];
         $notes = explode("\n", trim($info['notes']));
         array_unshift($notes, $entry);
@@ -324,8 +327,11 @@ class Components_Helper_ChangeLog
             return;
         }
 
-        $hordeInfo = $this->_getHordeInfo();
         $allchanges = Horde_Yaml::loadFile($changelog);
+        $hordeInfo = $this->_getHordeInfo();
+        if (!isset($hordeInfo['version'])) {
+            throw new Components_Exception('.horde.yml is missing a \'version\' entry');
+        }
 
         if (empty($options['pretend'])) {
             $changesfp = fopen($changes, 'w');

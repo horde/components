@@ -158,6 +158,10 @@ class Components_Component_Source extends Components_Component_Base
      */
     public function updatePackage($action, $options)
     {
+        if (!file_exists($this->getHordeYmlPath())) {
+            throw new Components_Exception($this->getHordeYmlPath() . ' is missing');
+        }
+
         if (!file_exists($this->getPackageXmlPath())) {
             if (!empty($options['theme'])) {
                 $this->getFactory()->createThemePackageFile($this->_directory);
@@ -710,5 +714,15 @@ class Components_Component_Source extends Components_Component_Base
     public function getPackageXmlPath()
     {
         return $this->_directory . '/package.xml';
+    }
+
+    /**
+     * Return the path to the .horde.yml file of the component.
+     *
+     * @return string The path to the .horde.yml file.
+     */
+    public function getHordeYmlPath()
+    {
+        return $this->_directory . '/.horde.yml';
     }
 }
