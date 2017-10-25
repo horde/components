@@ -49,15 +49,16 @@ class Components_Runner_Change
     /**
      * Constructor.
      *
-     * @param Components_Config           $config  The configuration for the current
-     *                                             job.
+     * @param Components_Config           $config  The configuration for the
+     *                                             current job.
      * @param Components_Helper_ChangeLog $helper  Change log helper
      */
     public function __construct(
         Components_Config $config,
         Components_Helper_ChangeLog $helper,
         Components_Output $output
-    ) {
+    )
+    {
         $this->_config = $config;
         $this->_helper = $helper;
         $this->_output = $output;
@@ -74,16 +75,20 @@ class Components_Runner_Change
             $log = null;
         }
 
-        if (!empty($options['commit'])) {
+        if ($log && !empty($options['commit'])) {
             $options['commit'] = new Components_Helper_Commit(
+                $this->_output, $options
+            );
+            $options['commit2'] = new Components_Helper_Commit(
                 $this->_output, $options
             );
         }
         $this->_config->getComponent()->changed(
             $log, $this->_helper, $options
         );
-        if (!empty($options['commit'])) {
+        if ($log && !empty($options['commit'])) {
             $options['commit']->commit($log);
+            $options['commit2']->commit($log);
         }
     }
 }

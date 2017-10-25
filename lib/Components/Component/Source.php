@@ -233,8 +233,8 @@ class Components_Component_Source extends Components_Component_Base
                     $options
                 );
             }
-            if ($file && !empty($options['commit'])) {
-                $options['commit']->add($file, $this->_directory);
+            if ($file && !empty($options['commit2'])) {
+                $options['commit2']->add($file, $this->_directory);
             }
         }
         if (empty($options['nochanges'])) {
@@ -243,8 +243,8 @@ class Components_Component_Source extends Components_Component_Base
             } else {
                 $file = $helper->changes($log, $options);
             }
-            if ($file && !empty($options['commit'])) {
-                $options['commit']->add($file, $this->_directory);
+            if ($file && !empty($options['commit2'])) {
+                $options['commit2']->add($file, $this->_directory);
             }
         }
     }
