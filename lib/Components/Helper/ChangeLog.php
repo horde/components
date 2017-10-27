@@ -192,22 +192,32 @@ class Components_Helper_ChangeLog
         // Import releases from CHANGES.
         if ($changesFile = $this->changesFileExists()) {
             $fp = fopen($changesFile, 'r');
-            $inHeader = $version = false;
+            $inHeader = $maybeHeader = $version = false;
             while ($line = fgets($fp)) {
                 if (!strcspn($line, '-')) {
-                    $inHeader = !$inHeader;
-                    continue;
-                }
-                if (!trim($line)) {
-                    continue;
-                }
-                if ($inHeader) {
-                    if ($version && !isset($changes[$version])) {
-                        $changes[$version] = array('notes' => $notes);
+                    if ($inHeader) {
+                        $inHeader = false;
+                    } else {
+                        $maybeHeader = $line;
                     }
-                    $notes = '';
-                    $version = preg_replace('/v(.*?)(-git)?\n/m', '$1', $line);
                     continue;
+                }
+                if ($maybeHeader) {
+                    if (preg_match('/v([.\d]*?)(-git)?\n/m', $line, $match)) {
+                        $inHeader = true;
+                        if ($version && !isset($changes[$version])) {
+                            $changes[$version] = array(
+                                'notes' => trim($notes) . "\n"
+                            );
+                        }
+                        $notes = '';
+                        $version = $match[1];
+                        $maybeHeader = false;
+                        continue;
+                    } else {
+                        $notes .= $maybeHeader;
+                        $maybeHeader = false;
+                    }
                 }
                 if (strpos($line, '      ') === 0) {
                     $line = ltrim($line);
@@ -216,7 +226,7 @@ class Components_Helper_ChangeLog
                 $notes .= $line;
             }
             if ($version && !isset($changes[$version])) {
-                $changes[$version] = array('notes' => $notes);
+                $changes[$version] = array('notes' => trim($notes) . "\n");
             }
             fclose($fp);
         }
@@ -281,6 +291,7 @@ class Components_Helper_ChangeLog
 
         if (empty($options['pretend'])) {
             $allchanges = Horde_Yaml::loadFile($changelog);
+            unset($allchanges['extra']);
             $xml->setNotes($allchanges);
             file_put_contents($file, (string)$xml);
             $this->_output->ok(sprintf('Updated %s.', $file));
@@ -421,6 +432,10 @@ class Components_Helper_ChangeLog
             $started = false;
 
             foreach ($allchanges as $version => $info) {
+                if ($version == 'extra') {
+                    fwrite($changesfp, $info);
+                    continue;
+                }
                 if (!$started && $version != $hordeInfo['version']['release']) {
                     continue;
                 }
@@ -434,9 +449,18 @@ class Components_Helper_ChangeLog
                 $lines = str_repeat('-', strlen($version)) . "\n";
                 fwrite($changesfp, $lines . $version . "\n" . $lines);
 
+                if (!$info['notes']) {
+                    continue;
+                }
                 $notes = explode("\n", $info['notes']);
                 foreach ($notes as $entry) {
-                    $entry = Horde_String::wrap($entry, 79, "\n      ");
+                    if (preg_match('/^\[.*?\] (.*)$/', $entry, $match, PREG_OFFSET_CAPTURE) ||
+                        preg_match('/^[A-Z]{3,}: (.*)$/', $entry, $match, PREG_OFFSET_CAPTURE)) {
+                        $indent = $match[1][1];
+                    } else {
+                        $indent = 6;
+                    }
+                    $entry = Horde_String::wrap($entry, 79, "\n" . str_repeat(' ', $indent));
                     fwrite($changesfp, "\n" . $entry);
                 }
             }
