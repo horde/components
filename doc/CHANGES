@@ -1,0 +1,40 @@
+-----------
+v0.99.1-git
+-----------
+
+[jan] Officially support PHP 7.
+[jan] Use coloring capabilities of Horde_Cli_Modular.
+[jan] Add --theme argument to 'update' command to package themes.
+[jan] Add --dump switch to release module to dump the release notes.
+[jan] Add --sentinel argument to 'update' command.
+[jan] Fix using --pretend with --new-version or --new-state.
+[jan] Allow to set component and release information via YAML files.
+[jan] Add Components_Helper_Version::parsePearVersion().
+[jan] Add Components_Component#getPreviousVersion().
+[jan] Bundle QC tools.
+[jan] Remove Freecode support.
+[jan] Update website versions after releasing a package.
+[mms] Run unit tests before releasing a package.
+[mms] Composer file is now generated/updated before releasing.
+[mms] Add PHP Composer generator.
+[mms] Added PHPDCD QC test.
+[mms] Added PHPLOC QC test.
+[jan] Fix post-release incrementing of version numbers (Bug #11659).
+[jan] Increment release state instead of version after releasing unstable
+      versions.
+[jan] Use new version name scheme, matching PEAR's.
+[gwr] Replaced use of PEAR_PackageFileManager for updating package.xml with
+      Horde_Pear.
+[gwr] Better help display for context modules.
+[gwr] Extracted the .gitignore handling for content lists to the Horde_Pear
+      packages.
+[gwr] Fix appending the snapshot date for pre-releases.
+[gwr] Allow to keep the version when generating snapshots.
+[gwr] Accept an empty initial note.
+
+
+------
+v0.0.1
+------
+
+Initial release
