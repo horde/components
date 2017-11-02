@@ -459,7 +459,7 @@ extends PHPUnit_Extensions_Story_TestCase
             $this->assertTrue(
                 file_exists(
                     $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'pear' . DIRECTORY_SEPARATOR 
+                    . 'pear' . DIRECTORY_SEPARATOR
                     . 'php' . DIRECTORY_SEPARATOR
                     . 'PEAR.php'
                 )
@@ -469,7 +469,7 @@ extends PHPUnit_Extensions_Story_TestCase
             $this->assertTrue(
                 file_exists(
                     $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'pear' . DIRECTORY_SEPARATOR 
+                    . 'pear' . DIRECTORY_SEPARATOR
                     . 'php' . DIRECTORY_SEPARATOR
                     . 'Console.php'
                 )
@@ -479,7 +479,7 @@ extends PHPUnit_Extensions_Story_TestCase
             $this->assertTrue(
                 file_exists(
                     $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'pear' . DIRECTORY_SEPARATOR 
+                    . 'pear' . DIRECTORY_SEPARATOR
                     . 'php' . DIRECTORY_SEPARATOR
                     . 'Dependency.php'
                 )
@@ -489,7 +489,7 @@ extends PHPUnit_Extensions_Story_TestCase
             $this->assertTrue(
                 file_exists(
                     $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'pear' . DIRECTORY_SEPARATOR 
+                    . 'pear' . DIRECTORY_SEPARATOR
                     . 'php' . DIRECTORY_SEPARATOR
                     . 'Components.php'
                 )
@@ -499,7 +499,7 @@ extends PHPUnit_Extensions_Story_TestCase
             $this->assertTrue(
                 file_exists(
                     $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'pear' . DIRECTORY_SEPARATOR 
+                    . 'pear' . DIRECTORY_SEPARATOR
                     . 'php' . DIRECTORY_SEPARATOR
                     . 'Install.php'
                 )
@@ -742,14 +742,18 @@ extends PHPUnit_Extensions_Story_TestCase
     private function _callComponents(array $parameters, $callback)
     {
         ob_start();
+        $stream = fopen('php://temp', 'r+');
         $parameters['parser']['class'] = 'Horde_Test_Stub_Parser';
         $parameters['dependencies'] = new Components_Dependencies_Injector();
         $parameters['dependencies']->setInstance(
             'Horde_Cli',
-            new Horde_Test_Stub_Cli()
+            new Horde_Test_Stub_Cli(array('output' => $stream))
         );
         call_user_func_array($callback, array($parameters));
-        $output = ob_get_contents();
+        rewind($stream);
+        $output = stream_get_contents($stream);
+        fclose($stream);
+        $output .= ob_get_contents();
         ob_end_clean();
         return $output;
     }
