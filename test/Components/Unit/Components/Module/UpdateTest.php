@@ -49,6 +49,10 @@ extends Components_TestCase
         mkdir($tmp_dir . '/framework');
         mkdir($tmp_dir . '/framework/test');
         file_put_contents(
+            $tmp_dir . '/framework/test/.horde.yml',
+            "---\nid: basic\ntype: library\nversion:\n  release: 0.0.1"
+        );
+        file_put_contents(
             $tmp_dir . '/framework/test/test.php',
             '<?php'
         );
