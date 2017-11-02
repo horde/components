@@ -41,7 +41,7 @@ extends Components_TestCase
     {
         return new Components_Component_Resolver(
             new Components_Helper_Root(
-                null, null, __DIR__ . '/../../../fixture'
+                null, null, __DIR__ . '/../../../fixture/framework'
             ),
             $this->getComponentFactory()
         );

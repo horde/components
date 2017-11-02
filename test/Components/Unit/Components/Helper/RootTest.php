@@ -124,39 +124,39 @@ extends Components_TestCase
 
     public function testDetermineRootViaComponent()
     {
-        $path = __DIR__ . '/../../../fixture';
+        $path = __DIR__ . '/../../../fixture/framework';
         $root = new Components_Helper_Root(
-            null, $this->getComponent($path . '/framework/Install')
+            null, $this->getComponent($path . '/Install')
         );
         $this->assertEquals(realpath($path), realpath($root->getRoot()));
     }
 
     public function testFrameworkComponent()
     {
-        $path = __DIR__ . '/../../../fixture';
+        $path = __DIR__ . '/../../../fixture/framework';
         $root = new Components_Helper_Root(array('horde_root' => $path));
         $this->assertEquals(
-            $path . '/framework/Old/package.xml',
+            $path . '/Old/package.xml',
             $root->getPackageXml('Old')
         );
     }
 
     public function testFrameworkComponentTwo()
     {
-        $path = __DIR__ . '/../../../fixture';
+        $path = __DIR__ . '/../../../fixture/framework';
         $root = new Components_Helper_Root(array('horde_root' => $path));
         $this->assertEquals(
-            $path . '/framework/Old/package.xml',
+            $path . '/Old/package.xml',
             $root->getPackageXml('Horde_Old')
         );
     }
 
     public function testBundleComponent()
     {
-        $path = __DIR__ . '/../../../fixture';
+        $path = __DIR__ . '/../../../fixture/bundles';
         $root = new Components_Helper_Root(array('horde_root' => $path));
         $this->assertEquals(
-            $path . '/bundles/Bundle/package.xml',
+            $path . '/Bundle/package.xml',
             $root->getPackageXml('Bundle')
         );
     }
