@@ -101,7 +101,7 @@ class Components_Helper_Root
     {
         $package_file = $this->getRoot() . '/' . $name . '/package.xml';
         if (!file_exists($package_file) && substr($name, 0, 6) == 'Horde_') {
-            $package_file = $this->getRoot()
+            $package_file = $this->getRoot() . '/'
                 . substr($name, 6) . '/package.xml';
         }
         if (!file_exists($package_file)) {
