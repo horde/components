@@ -131,7 +131,7 @@ extends PHPUnit_Framework_TestCase
         $files = array();
         $found = false;
         foreach (new DirectoryIterator($dir) as $file) {
-            if (preg_match($regex, $file->getBasename('.tgz'), $matches)) {
+            if (preg_match($regex, $file->getBasename('.tgz'))) {
                 $found = true;
             }
             $files[] = $file->getPath();
