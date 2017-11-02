@@ -281,13 +281,10 @@ class Components_Helper_Root
      */
     private function _isValidRoot($directory)
     {
-        if (is_dir($directory)) {
-            $objects = scandir($directory);
-            if (in_array('.git', $objects) &&
-                in_array('.horde.yml', $objects)) {
-                return $directory;
-            }
+        if (glob($directory . '/*/.horde.yml')) {
+            return true;
         }
+
         return false;
     }
 }
