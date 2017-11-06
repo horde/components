@@ -170,7 +170,7 @@ class Components_Component_Source extends Components_Component_Base
             }
         }
 
-        $package_xml = $this->getPackageXml();
+        $package_xml = $this->updatePackageFromHordeYml();
 
         /* Skip updating if this is a PECL package. */
         if (!$package_xml->findNode('/p:package/p:providesextension')) {
@@ -203,6 +203,102 @@ class Components_Component_Source extends Components_Component_Base
             }
             return true;
         }
+    }
+
+    public function updatePackageFromHordeYml()
+    {
+        $xml = $this->getPackageXml();
+        $yaml = Horde_Yaml::loadFile($this->getHordeYmlPath());
+
+        // Update texts.
+        $xml->replaceTextNode('/p:package/p:name', $yaml['id']);
+        $xml->replaceTextNode('/p:package/p:summary', $yaml['name']);
+        $xml->replaceTextNode('/p:package/p:description', $yaml['description']);
+
+        // Update versions.
+        $xml->setVersion($yaml['version']['release'], $yaml['version']['api']);
+        $xml->setState($yaml['state']['release'], $yaml['state']['api']);
+
+        // Update license.
+        $xml->replaceTextNode(
+            '/p:package/p:license',
+            $yaml['license']['identifier']
+        );
+        $node = $xml->findNode('/p:package/p:license');
+        $node->setAttribute('uri', $yaml['license']['uri']);
+
+        // Update authors.
+        while ($node = $xml->findNode('/p:package/p:lead')) {
+            $xml->removeWhitespace($node->previousSibling);
+            $node->parentNode->removeChild($node);
+        }
+        foreach ($yaml['authors'] as $author) {
+            $xml->addAuthor(
+                $author['name'],
+                $author['user'],
+                $author['email'],
+                $author['active']
+            );
+        }
+
+        // Update dependencies.
+        foreach (array('package', 'extension') as $type) {
+            while ($node = $xml->findNode('/p:package/p:dependencies/p:required/p:' . $type)) {
+                $xml->removeWhitespace($node->previousSibling);
+                $node->parentNode->removeChild($node);
+            }
+        }
+        if ($node = $xml->findNode('/p:package/p:dependencies/p:optional')) {
+            $xml->removeWhitespace($node->previousSibling);
+            $node->parentNode->removeChild($node);
+        }
+        $php = Components_Helper_Version::composerToPear(
+            $yaml['dependencies']['required']['php']
+        );
+        foreach ($php as $tag => $version) {
+            $xml->replaceTextNode(
+                '/p:package/p:dependencies/p:required/p:php/p:' . $tag,
+                $version
+            );
+        }
+        foreach ($yaml['dependencies'] as $required => $dependencyTypes) {
+            foreach ($dependencyTypes as $type => $dependencies) {
+                switch ($type) {
+                case 'php':
+                    continue 2;
+                case 'pear':
+                    $type = 'package';
+                    break;
+                case 'ext':
+                    $type = 'extension';
+                    break;
+                default:
+                    throw new Components_Exception(
+                        'Unknown depdency type: ' . $type
+                    );
+                }
+                foreach ($dependencies as $dependency => $version) {
+                    switch ($type) {
+                    case 'package':
+                        list($channel, $name) = explode('/', $dependency);
+                        $constraints = array_merge(
+                            array('name' => $name, 'channel' => $channel),
+                            Components_Helper_Version::composerToPear($version)
+                        );
+                        break;
+                    case 'extension':
+                        $constraints = array_merge(
+                            array('name' => $dependency),
+                            Components_Helper_Version::composerToPear($version)
+                        );
+                        break;
+                    }
+                    $xml->addDependency($required, $type, $constraints);
+                }
+            }
+        }
+
+        return $xml;
     }
 
     /**
