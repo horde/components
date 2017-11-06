@@ -64,14 +64,14 @@ extends Components_Module_Base
                 )
             ),
             new Horde_Argv_Option(
-                '--next_version',
+                '--next-version',
                 array(
                     'action' => 'store',
                     'help'   => 'The version number planned for the next release of the component.'
                 )
             ),
             new Horde_Argv_Option(
-                '--next_note',
+                '--next-note',
                 array(
                     'action' => 'store',
                     'default' => '',
@@ -79,14 +79,14 @@ extends Components_Module_Base
                 )
             ),
             new Horde_Argv_Option(
-                '--next_apistate',
+                '--next-apistate',
                 array(
                     'action' => 'store',
                     'help'   => 'The next API stability [default: no change].'
                 )
             ),
             new Horde_Argv_Option(
-                '--next_relstate',
+                '--next-relstate',
                 array(
                     'action' => 'store',
                     'help'   => 'The next release stability [default: no change].'
@@ -100,21 +100,21 @@ extends Components_Module_Base
                 )
             ),
             new Horde_Argv_Option(
-                '--horde_user',
+                '--horde-user',
                 array(
                     'action' => 'store',
                     'help'   => 'The username for accessing bugs.horde.org.'
                 )
             ),
             new Horde_Argv_Option(
-                '--horde_pass',
+                '--horde-pass',
                 array(
                     'action' => 'store',
                     'help'   => 'The password for accessing bugs.horde.org.'
                 )
             ),
             new Horde_Argv_Option(
-                '--web_dir',
+                '--web-dir',
                 array(
                     'action' => 'store',
                     'help'   => 'The directory of a horde-web checkout.'
@@ -210,14 +210,14 @@ The following example would generate the package and add the release tag to git 
             '--config' => '',
             '--releaseserver' => '',
             '--releasedir' => '',
-            '--next_note' => '',
-            '--next_version' => '',
-            '--next_relstate' => '',
-            '--next_apistate' => '',
+            '--next-note' => '',
+            '--next-version' => '',
+            '--next-relstate' => '',
+            '--next-apistate' => '',
             '--from' => '',
-            '--horde_user' => '',
-            '--horde_pass' => '',
-            '--web_dir' => '',
+            '--horde-user' => '',
+            '--horde-pass' => '',
+            '--web-dir' => '',
             '--dump' => '',
         );
     }

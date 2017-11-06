@@ -1,6 +1,6 @@
 ---
 0.99.1:
-  api: 1.0
+  api: 1
   state:
     release: beta
     api: beta
@@ -9,6 +9,7 @@
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
   notes: |
+    [jan] Don't use underscores in command line arguments.
     [jan] Officially support PHP 7.
     [jan] Use coloring capabilities of Horde_Cli_Modular.
     [jan] Add --theme argument to 'update' command to package themes.
