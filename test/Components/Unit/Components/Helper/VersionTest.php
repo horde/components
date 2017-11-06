@@ -59,4 +59,44 @@ extends Components_TestCase
             Components_Helper_Version::nextPearVersion('5.0.0alpha1')
         );
     }
+
+    public function testComposerToPear()
+    {
+        $this->assertEquals(
+            array(),
+            Components_Helper_Version::composerToPear('*')
+        );
+        $this->assertEquals(
+            array(
+                'min' => '2.0.0',
+                'max' => '3.0.0alpha1',
+                'exclude' => '3.0.0alpha1'
+            ),
+            Components_Helper_Version::composerToPear('^2')
+        );
+        $this->assertEquals(
+            array(
+                'min' => '2.1.0',
+                'max' => '3.0.0alpha1',
+                'exclude' => '3.0.0alpha1'
+            ),
+            Components_Helper_Version::composerToPear('^2.1')
+        );
+        $this->assertEquals(
+            array(
+                'min' => '2.1.3',
+                'max' => '3.0.0alpha1',
+                'exclude' => '3.0.0alpha1'
+            ),
+            Components_Helper_Version::composerToPear('^2.1.3')
+        );
+        $this->assertEquals(
+            array(
+                'min' => '5.3.0',
+                'max' => '8.0.0alpha1',
+                'exclude' => '8.0.0alpha1'
+            ),
+            Components_Helper_Version::composerToPear('^5.3 || ^7')
+        );
+    }
 }

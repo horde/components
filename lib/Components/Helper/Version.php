@@ -238,4 +238,58 @@ class Components_Helper_Version
         }
         return $match[1] . $match[2] . $match[3] . $match[4];
     }
+
+    /**
+     * Converts (a limited set of) Composer version constraints to PEAR version
+     * constraints.
+     *
+     * @param string $version  Version constraints like '*', '^x.y.z', or
+     *                         '^x || ^y.z'.
+     *
+     * @return array  Version constraints with possible keys 'min', 'max', and
+     *                'exclude'.
+     */
+    public static function composerToPear($version)
+    {
+        // Shortcut for any version.
+        if ($version == '*') {
+            return array();
+        }
+
+        // Massage versions by splitting at '||', checking for and removing
+        // leading '^', and sorting.
+        $versions = explode('||', $version);
+        $versions = array_map('trim', $versions);
+        array_walk(
+            $versions,
+            function($v) use ($version)
+            {
+                if ($v[0] != '^') {
+                    throw new Components_Exception(
+                        'Unsupport Composer version format: ' . $version
+                    );
+                }
+            }
+        );
+        $versions = array_map(
+            function($version)
+            {
+                return ltrim($version, '^');
+            },
+            $versions
+        );
+        usort($versions, 'version_compare');
+
+        $constraints = array(
+            'min' => preg_replace(
+                '/^(\d+\.\d+\.\d+).*/', '$1', $versions[0] . '.0.0'
+            )
+        );
+        $max = array_pop($versions);
+        $max = substr($max, 0, strpos($max, '.') ?: strlen($max)) + 1;
+        $max .= '.0.0alpha1';
+        $constraints['max'] = $constraints['exclude'] = $max;
+
+        return $constraints;
+    }
 }
