@@ -1,0 +1,30 @@
+---
+id: horde
+name: horde fixture.
+description: A dummy application used for testing the Components package.
+list:
+type: application
+authors:
+  -
+    name: Gunnar Wrobel
+    user: wrobel
+    email: p@rdus.de
+    active: true
+    role: lead
+version:
+  release: 0.0.1
+  api: 0.0.1
+state:
+  release: alpha
+  api: alpha
+license:
+  identifier: LGPL-2.1
+  uri: http://www.horde.org/licenses/lgpl21
+dependencies:
+  required:
+    php: ^5
+    pear:
+      pear.php.net/Console_Getopt: '*'
+  optional:
+    pear:
+      pecl.php.net/PECL: '*'

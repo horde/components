@@ -1,0 +1,234 @@
+<?php
+/**
+ * Copyright 2017 Horde LLC (http://www.horde.org/)
+ *
+ * See the enclosed file LICENSE for license information (LGPL). If you
+ * did not receive this file, see http://www.horde.org/licenses/lgpl21.
+ *
+ * @category   Horde
+ * @package    Components
+ * @subpackage UnitTests
+ * @author     Jan Schneider <jan@horde.org>
+ * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ */
+
+/**
+ * Test the Update module updating package.xml from .horde.yml.
+ *
+ * @category   Horde
+ * @package    Components
+ * @subpackage UnitTests
+ * @author     Jan Schneider <jan@horde.org>
+ * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ */
+class Components_Unit_Components_Module_UpdateFromHordeYmlTest
+extends Components_TestCase
+{
+    public function setUp()
+    {
+        $this->yamlFile = __DIR__ . '/../../../fixture/horde_yml/.horde.yml';
+        $this->yaml = file_get_contents($this->yamlFile);
+    }
+
+    public function tearDown()
+    {
+        file_put_contents($this->yamlFile, $this->yaml);
+    }
+
+    public function testNoChange()
+    {
+        $this->assertStringEqualsFile(
+            __DIR__ . '/../../../fixture/horde_yml/package.xml',
+            $this->_update()
+        );
+    }
+
+    public function testChange()
+    {
+        $yaml = Horde_Yaml::load($this->yaml);
+        $yaml['id'] = 'horde2';
+        $yaml['name'] = 'New Name';
+        $yaml['description'] = 'New Description.';
+        $yaml['version']['release'] = '1.0.0';
+        $yaml['version']['api'] = '1.0.0';
+        $yaml['state']['release'] = 'beta';
+        $yaml['state']['api'] = 'beta';
+        $yaml['license']['uri'] = 'http://www.horde.org/licenses/gpl';
+        $yaml['license']['identifier'] = 'GPL';
+        $yaml['authors'] = array(
+            array(
+                'name' => 'Jan Schneider',
+                'user' => 'jan',
+                'email' => 'jan@horde.org',
+                'active' => true
+            ),
+            array(
+                'name' => 'John Doe',
+                'user' => 'john',
+                'email' => 'john@horde.org',
+                'active' => false
+            ),
+        );
+        $yaml['dependencies'] = array(
+            'required' => array(
+                'php' => '^5.3 || ^7',
+                'pear' => array(
+                    'pear.horde.org/Horde_Core' => '^2.31',
+                    'pear.horde.org/Horde_Date' => '^2',
+                    'pear.horde.org/Horde_Form' => '^2.0.16',
+                ),
+            ),
+            'optional' => array(
+                'ext' => array(
+                    'iconv' => '*'
+                ),
+            ),
+        );
+
+        file_put_contents($this->yamlFile, Horde_Yaml::dump($yaml));
+        $stream = fopen('php://temp', 'r+');
+        fwrite($stream, $this->_update());
+        $xml = new Horde_Pear_Package_Xml($stream);
+        fclose($stream);
+        $this->assertEquals($yaml['id'], $xml->getName());
+        $this->assertEquals($yaml['name'], $xml->getSummary());
+        $this->assertEquals($yaml['description'], $xml->getDescription());
+        $this->assertEquals($yaml['version']['release'], $xml->getVersion());
+        $this->assertEquals(
+            $yaml['version']['api'],
+            $xml->getNodeText('/p:package/p:version/p:api')
+        );
+        $this->assertEquals(
+            $yaml['state']['release'],
+            $xml->getState('release')
+        );
+        $this->assertEquals(
+            $yaml['state']['api'],
+            $xml->getState('api')
+        );
+        $this->assertEquals($yaml['license']['identifier'], $xml->getLicense());
+        $this->assertEquals($yaml['license']['uri'], $xml->getLicenseLocation());
+        $authors = $xml->getLeads();
+        $this->assertCount(2, $authors);
+        foreach ($authors as $id => $author) {
+            foreach (array('name', 'user', 'email') as $attribute) {
+                $this->assertEquals(
+                    $yaml['authors'][$id][$attribute],
+                    $author[$attribute],
+                    $attribute . ' not matching for author ' . $id
+                );
+            }
+            $this->assertEquals(
+                $yaml['authors'][$id]['active'],
+                $author['active'] == 'yes'
+            );
+        }
+
+        $dependencies = $xml->getDependencies();
+        $this->assertEquals(
+            array(
+                array(
+                    'type' => 'php',
+                    'optional' => 'no',
+                    'rel' => 'ge',
+                    'version' => '5.3.0',
+                ),
+                array(
+                    'type' => 'php',
+                    'optional' => 'no',
+                    'rel' => 'le',
+                    'version' => '8.0.0alpha1',
+                ),
+                array(
+                    'type' => 'pkg',
+                    'name' => 'PEAR',
+                    'channel' => 'pear.php.net',
+                    'optional' => 'no',
+                    'rel' => 'ge',
+                    'version' => '1.7.0',
+                ),
+                array(
+                    'name' => 'Horde_Core',
+                    'channel' => 'pear.horde.org',
+                    'type' => 'pkg',
+                    'optional' => 'no',
+                    'rel' => 'ge',
+                    'version' => '2.31.0',
+                    'min' => '2.31.0',
+                    'max' => '3.0.0alpha1',
+                ),
+                array(
+                    'name' => 'Horde_Core',
+                    'channel' => 'pear.horde.org',
+                    'type' => 'pkg',
+                    'optional' => 'no',
+                    'rel' => 'le',
+                    'version' => '3.0.0alpha1',
+                    'min' => '2.31.0',
+                    'max' => '3.0.0alpha1',
+                ),
+                array(
+                    'name' => 'Horde_Date',
+                    'channel' => 'pear.horde.org',
+                    'type' => 'pkg',
+                    'optional' => 'no',
+                    'rel' => 'ge',
+                    'version' => '2.0.0',
+                    'min' => '2.0.0',
+                    'max' => '3.0.0alpha1',
+                ),
+                array(
+                    'name' => 'Horde_Date',
+                    'channel' => 'pear.horde.org',
+                    'type' => 'pkg',
+                    'optional' => 'no',
+                    'rel' => 'le',
+                    'version' => '3.0.0alpha1',
+                    'min' => '2.0.0',
+                    'max' => '3.0.0alpha1',
+                ),
+                array(
+                    'name' => 'Horde_Form',
+                    'channel' => 'pear.horde.org',
+                    'type' => 'pkg',
+                    'optional' => 'no',
+                    'rel' => 'ge',
+                    'version' => '2.0.16',
+                    'min' => '2.0.16',
+                    'max' => '3.0.0alpha1',
+                ),
+                array(
+                    'name' => 'Horde_Form',
+                    'channel' => 'pear.horde.org',
+                    'type' => 'pkg',
+                    'optional' => 'no',
+                    'rel' => 'le',
+                    'version' => '3.0.0alpha1',
+                    'min' => '2.0.16',
+                    'max' => '3.0.0alpha1',
+                ),
+                array(
+                    'name' => 'iconv',
+                    'type' => 'ext',
+                    'optional' => 'yes',
+                ),
+            ),
+            $dependencies
+        );
+    }
+
+    protected function _update()
+    {
+        $_SERVER['argv'] = array(
+            'horde-components',
+            '--action=print',
+            '--updatexml',
+            __DIR__ . '/../../../fixture/horde_yml'
+        );
+        return str_replace(
+            date('Y-m-d'),
+            '2010-08-22',
+            $this->_callStrictComponents()
+        );
+    }
+}

@@ -10,7 +10,7 @@
   <email>p@rdus.de</email>
   <active>yes</active>
  </lead>
- <date>2017-10-27</date>
+ <date>2017-11-06</date>
  <version>
   <release>0.99.1</release>
   <api>1.0</api>
@@ -1805,6 +1805,7 @@
      <dir name="fixture">
       <dir name="bundles">
        <dir name="Bundle">
+        <file name=".horde.yml" role="test" />
         <file name="package.xml" role="test" />
        </dir> <!-- /test/Components/fixture/bundles/Bundle -->
       </dir> <!-- /test/Components/fixture/bundles -->
@@ -1849,6 +1850,7 @@
         <dir name="lib">
          <file name="Old.php" role="test" />
         </dir> <!-- /test/Components/fixture/framework/Old/lib -->
+        <file name=".horde.yml" role="test" />
         <file name="package.xml" role="test" />
        </dir> <!-- /test/Components/fixture/framework/Old -->
        <dir name="Optional">
@@ -1878,14 +1880,21 @@
         <dir name="migration">
          <file name="test.sql" role="test" />
         </dir> <!-- /test/Components/fixture/framework/simple/migration -->
+        <file name=".gitignore" role="test" />
+        <file name=".horde.yml" role="test" />
         <file name="IGNORE.txt" role="test" />
         <file name="package.xml" role="test" />
        </dir> <!-- /test/Components/fixture/framework/simple -->
       </dir> <!-- /test/Components/fixture/framework -->
       <dir name="horde">
+       <file name=".horde.yml" role="test" />
        <file name=".keep" role="test" />
        <file name="package.xml" role="test" />
       </dir> <!-- /test/Components/fixture/horde -->
+      <dir name="horde_yml">
+       <file name=".horde.yml" role="test" />
+       <file name="package.xml" role="test" />
+      </dir> <!-- /test/Components/fixture/horde_yml -->
       <dir name="packages">
        <file name="Console_Getopt-1.9.1.tgz" role="test" />
        <file name="PEAR-1.9.1.tgz" role="test" />
@@ -1925,6 +1934,7 @@
        <dir name="migration">
         <file name="test.sql" role="test" />
        </dir> <!-- /test/Components/fixture/simple/migration -->
+       <file name=".horde.yml" role="test" />
        <file name="IGNORE.txt" role="test" />
        <file name="package.xml" role="test" />
       </dir> <!-- /test/Components/fixture/simple -->
@@ -1961,7 +1971,6 @@
        <file name="simple.template" role="test" />
        <file name="variables.template" role="test" />
       </dir> <!-- /test/Components/fixture/templates -->
-      <file name=".gitignore" role="test" />
      </dir> <!-- /test/Components/fixture -->
      <dir name="Integration">
       <dir name="Components">
@@ -2015,6 +2024,7 @@
        <dir name="Module">
         <file name="DependenciesTest.php" role="test" />
         <file name="SnapshotTest.php" role="test" />
+        <file name="UpdateFromHordeYmlTest.php" role="test" />
         <file name="UpdateTest.php" role="test" />
        </dir> <!-- /test/Components/Unit/Components/Module -->
        <dir name="Release">
@@ -2068,8 +2078,8 @@
     <name>Horde_Cli_Modular</name>
     <channel>pear.horde.org</channel>
     <min>2.1.0</min>
-    <max>3.0.0alpha1</max>
     <exclude>3.0.0alpha1</exclude>
+    <max>3.0.0alpha1</max>
    </package>
    <package>
     <name>Horde_Http</name>
@@ -2110,8 +2120,8 @@
     <channel>pear.horde.org</channel>
    </package>
    <package>
-     <name>Archive_Tar</name>
-     <channel>pear.php.net</channel>
+    <name>Archive_Tar</name>
+    <channel>pear.php.net</channel>
    </package>
    <package>
     <name>PHP_CodeSniffer</name>
@@ -3354,7 +3364,7 @@
    <install as="Components/AllTests.php" name="test/Components/AllTests.php" />
    <install as="Components/Autoload.php" name="test/Components/Autoload.php" />
    <install as="Components/bootstrap.php" name="test/Components/bootstrap.php" />
-   <install as="Components/fixture/.gitignore" name="test/Components/fixture/.gitignore" />
+   <install as="Components/fixture/bundles/Bundle/.horde.yml" name="test/Components/fixture/bundles/Bundle/.horde.yml" />
    <install as="Components/fixture/bundles/Bundle/package.xml" name="test/Components/fixture/bundles/Bundle/package.xml" />
    <install as="Components/fixture/changelog/lib/Some.php" name="test/Components/fixture/changelog/lib/Some.php" />
    <install as="Components/fixture/changelog/package.xml" name="test/Components/fixture/changelog/package.xml" />
@@ -3372,10 +3382,13 @@
    <install as="Components/fixture/framework/Dependency/package.xml" name="test/Components/fixture/framework/Dependency/package.xml" />
    <install as="Components/fixture/framework/Install/lib/Install.php" name="test/Components/fixture/framework/Install/lib/Install.php" />
    <install as="Components/fixture/framework/Install/package.xml" name="test/Components/fixture/framework/Install/package.xml" />
+   <install as="Components/fixture/framework/Old/.horde.yml" name="test/Components/fixture/framework/Old/.horde.yml" />
    <install as="Components/fixture/framework/Old/lib/Old.php" name="test/Components/fixture/framework/Old/lib/Old.php" />
    <install as="Components/fixture/framework/Old/package.xml" name="test/Components/fixture/framework/Old/package.xml" />
    <install as="Components/fixture/framework/Optional/lib/Optional.php" name="test/Components/fixture/framework/Optional/lib/Optional.php" />
    <install as="Components/fixture/framework/Optional/package.xml" name="test/Components/fixture/framework/Optional/package.xml" />
+   <install as="Components/fixture/framework/simple/.gitignore" name="test/Components/fixture/framework/simple/.gitignore" />
+   <install as="Components/fixture/framework/simple/.horde.yml" name="test/Components/fixture/framework/simple/.horde.yml" />
    <install as="Components/fixture/framework/simple/bin/other_script" name="test/Components/fixture/framework/simple/bin/other_script" />
    <install as="Components/fixture/framework/simple/bin/script.php" name="test/Components/fixture/framework/simple/bin/script.php" />
    <install as="Components/fixture/framework/simple/bin/shell_script.sh" name="test/Components/fixture/framework/simple/bin/shell_script.sh" />
@@ -3388,14 +3401,18 @@
    <install as="Components/fixture/framework/simple/lib/Stays.php" name="test/Components/fixture/framework/simple/lib/Stays.php" />
    <install as="Components/fixture/framework/simple/migration/test.sql" name="test/Components/fixture/framework/simple/migration/test.sql" />
    <install as="Components/fixture/framework/simple/package.xml" name="test/Components/fixture/framework/simple/package.xml" />
+   <install as="Components/fixture/horde/.horde.yml" name="test/Components/fixture/horde/.horde.yml" />
    <install as="Components/fixture/horde/.keep" name="test/Components/fixture/horde/.keep" />
    <install as="Components/fixture/horde/package.xml" name="test/Components/fixture/horde/package.xml" />
+   <install as="Components/fixture/horde_yml/.horde.yml" name="test/Components/fixture/horde_yml/.horde.yml" />
+   <install as="Components/fixture/horde_yml/package.xml" name="test/Components/fixture/horde_yml/package.xml" />
    <install as="Components/fixture/packages/Console_Getopt-1.9.1.tgz" name="test/Components/fixture/packages/Console_Getopt-1.9.1.tgz" />
    <install as="Components/fixture/packages/PEAR-1.9.1.tgz" name="test/Components/fixture/packages/PEAR-1.9.1.tgz" />
    <install as="Components/fixture/pear/Console_Getopt/lib/Console.php" name="test/Components/fixture/pear/Console_Getopt/lib/Console.php" />
    <install as="Components/fixture/pear/Console_Getopt/package.xml" name="test/Components/fixture/pear/Console_Getopt/package.xml" />
    <install as="Components/fixture/pear/PEAR/lib/PEAR.php" name="test/Components/fixture/pear/PEAR/lib/PEAR.php" />
    <install as="Components/fixture/pear/PEAR/package.xml" name="test/Components/fixture/pear/PEAR/package.xml" />
+   <install as="Components/fixture/simple/.horde.yml" name="test/Components/fixture/simple/.horde.yml" />
    <install as="Components/fixture/simple/bin/other_script" name="test/Components/fixture/simple/bin/other_script" />
    <install as="Components/fixture/simple/bin/script.php" name="test/Components/fixture/simple/bin/script.php" />
    <install as="Components/fixture/simple/bin/shell_script.sh" name="test/Components/fixture/simple/bin/shell_script.sh" />
@@ -3449,6 +3466,7 @@
    <install as="Components/Unit/Components/Helper/VersionTest.php" name="test/Components/Unit/Components/Helper/VersionTest.php" />
    <install as="Components/Unit/Components/Module/DependenciesTest.php" name="test/Components/Unit/Components/Module/DependenciesTest.php" />
    <install as="Components/Unit/Components/Module/SnapshotTest.php" name="test/Components/Unit/Components/Module/SnapshotTest.php" />
+   <install as="Components/Unit/Components/Module/UpdateFromHordeYmlTest.php" name="test/Components/Unit/Components/Module/UpdateFromHordeYmlTest.php" />
    <install as="Components/Unit/Components/Module/UpdateTest.php" name="test/Components/Unit/Components/Module/UpdateTest.php" />
    <install as="Components/Unit/Components/Release/Task/CurrentSentinelTest.php" name="test/Components/Unit/Components/Release/Task/CurrentSentinelTest.php" />
    <install as="Components/Unit/Components/Release/Task/NextSentinelTest.php" name="test/Components/Unit/Components/Release/Task/NextSentinelTest.php" />
@@ -3482,7 +3500,7 @@
     <release>beta</release>
     <api>beta</api>
    </stability>
-   <date>2017-10-27</date>
+   <date>2017-11-06</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
 * [jan] In the &apos;update&apos; command, update package.xml from .horde.yml.
