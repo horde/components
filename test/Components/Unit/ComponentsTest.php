@@ -30,6 +30,7 @@ extends Components_TestCase
 {
     public function testNoArgument()
     {
+        chdir(Horde_Util::createTempDir());
         $_SERVER['argv'] = array(
             'horde-components'
         );
