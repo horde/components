@@ -21,6 +21,7 @@
  </stability>
  <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
  <notes>
+* [jan] Don&apos;t use underscores in command line arguments.
 * [jan] Officially support PHP 7.
 * [jan] Use coloring capabilities of Horde_Cli_Modular.
 * [jan] Add --theme argument to &apos;update&apos; command to package themes.
@@ -3483,6 +3484,7 @@
    <date>2017-10-27</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
+* [jan] Don&apos;t use underscores in command line arguments.
 * [jan] Officially support PHP 7.
 * [jan] Use coloring capabilities of Horde_Cli_Modular.
 * [jan] Add --theme argument to &apos;update&apos; command to package themes.

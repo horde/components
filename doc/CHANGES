@@ -2,6 +2,7 @@
 v0.99.1-git
 -----------
 
+[jan] Don't use underscores in command line arguments.
 [jan] Officially support PHP 7.
 [jan] Use coloring capabilities of Horde_Cli_Modular.
 [jan] Add --theme argument to 'update' command to package themes.
