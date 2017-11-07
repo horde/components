@@ -9,6 +9,7 @@
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
   notes: |
+    [jan] In the 'update' command, update composer.json from .horde.yml.
     [jan] In the 'update' command, update package.xml from .horde.yml.
     [jan] Don't use underscores in command line arguments.
     [jan] Officially support PHP 7.

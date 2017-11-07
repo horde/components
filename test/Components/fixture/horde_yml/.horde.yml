@@ -5,6 +5,7 @@ full: horde fixture.
 description: A dummy application used for testing the Components package.
 list:
 type: application
+homepage: https://www.horde.org/apps/horde
 authors:
   -
     name: Gunnar Wrobel

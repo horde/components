@@ -155,6 +155,8 @@ class Components_Component_Source extends Components_Component_Base
      * @param string $action   The action to perform. Either "update", "diff",
      *                         or "print".
      * @param array  $options  Options for this operation.
+     *
+     * @return string|boolean  The result of the action.
      */
     public function updatePackage($action, $options)
     {
@@ -173,6 +175,7 @@ class Components_Component_Source extends Components_Component_Base
         $package_xml = $this->updatePackageFromHordeYml();
 
         /* Skip updating if this is a PECL package. */
+        $composer_json = null;
         if (!$package_xml->findNode('/p:package/p:providesextension')) {
             $package_xml->updateContents(
                 !empty($options['theme'])
@@ -180,14 +183,19 @@ class Components_Component_Source extends Components_Component_Base
                     : $this->getFactory()->createContentList($this->_directory),
                 $options
             );
+
+            $composer_json = $this->updateComposerFromHordeYml();
         }
 
         switch($action) {
         case 'print':
-            return (string)$package_xml;
+            return (string)$package_xml . $composer_json;
         case 'diff':
-            $new = (string)$package_xml;
+            $new = (string)$package_xml . $composer_json;
             $old = file_get_contents($this->getPackageXmlPath());
+            if (file_exists($this->getComposerJsonPath())) {
+                $old .= file_get_contents($this->getComposerJsonPath());
+            }
             $renderer = new Horde_Text_Diff_Renderer_Unified();
             return $renderer->render(
                 new Horde_Text_Diff(
@@ -196,15 +204,29 @@ class Components_Component_Source extends Components_Component_Base
             );
         default:
             file_put_contents($this->getPackageXmlPath(), (string)$package_xml);
+            if ($composer_json) {
+                file_put_contents($this->getComposerJsonPath(), $composer_json);
+            }
             if (!empty($options['commit'])) {
                 $options['commit']->add(
                     $this->getPackageXmlPath(), $this->_directory
                 );
+                if ($composer_json) {
+                    $options['commit']->add(
+                        $this->getComposerJsonPath(), $this->_directory
+                    );
+                }
             }
             return true;
         }
     }
 
+    /**
+     * Rebuilds the basic information in a package.xml file from the .horde.yml
+     * definition.
+     *
+     * @return Horde_Pear_Package_Xml  The updated package.xml handler.
+     */
     public function updatePackageFromHordeYml()
     {
         $xml = $this->getPackageXml();
@@ -328,6 +350,74 @@ class Components_Component_Source extends Components_Component_Base
     }
 
     /**
+     * Rebuilds the basic information in a composer.json file from the
+     * .horde.yml definition.
+     *
+     * @return string  The updated composer.json content.
+     */
+    public function updateComposerFromHordeYml()
+    {
+        $yaml = Horde_Yaml::loadFile($this->getHordeYmlPath());
+        $replaceVersion = preg_replace(
+            '/^(\d+)\..*/',
+            '$1.*',
+            $yaml['version']['release']
+        );
+        $dependencies = array('required' => array(), 'optional' => array());
+        foreach ($yaml['dependencies'] as $required => $dependencyTypes) {
+            foreach ($dependencyTypes as $type => $packages) {
+                if (!is_array($packages)) {
+                    $dependencies[$required][$type] = $packages;
+                    continue;
+                }
+                foreach ($packages as $package => $version) {
+                    $dependencies[$required][$type . '-' . $package] = $version;
+                }
+            }
+        }
+        $authors = array();
+        foreach ($yaml['authors'] as $author) {
+            $authors[] = array(
+                'name' => $author['name'],
+                'email' => $author['email'],
+                'role' => $author['role'],
+            );
+        }
+
+        $json = array(
+            'name' => 'horde/' . $yaml['id'],
+            'description' => $yaml['full'],
+            'type' => $yaml['type'],
+            'homepage' => isset($yaml['homepage']) ? $yaml['homepage'] : null,
+            'license' => $yaml['license']['identifier'],
+            'authors' => $authors,
+            'version' => $yaml['version']['release'],
+            'time' => gmdate('Y-m-d'),
+            'repositories' => array(
+                array(
+                    'type' => 'pear',
+                    'url' => 'https://pear.horde.org',
+                ),
+            ),
+            'require' => $dependencies['required'],
+            'suggest' => $dependencies['optional'],
+            'replace' => array(
+                'pear-pear.horde.org/' . $yaml['id'] => $replaceVersion,
+                'pear-horde/' . $yaml['id'] => $replaceVersion,
+            ),
+            'autoload' => array(
+                'psr-0' => array(
+                    'Horde' => 'lib/',
+                ),
+            ),
+        );
+        $json = array_filter($json);
+
+        return json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+            . "\n";
+    }
+
+    /**
      * Update the component changelog.
      *
      * @param string                      $log     The log entry.
@@ -421,27 +511,15 @@ class Components_Component_Source extends Components_Component_Base
     /**
      * Updates the composer.json file.
      *
+     * @deprecated
+     *
      * @param array $options Options for the operation.
      *
      * @return string The success message.
      */
     public function updateComposer($options)
     {
-        if (empty($options['pretend'])) {
-            $composer = new Components_Helper_Composer();
-            $composer->generateComposeJson(
-                $this->getPackageXmlPath()
-            );
-            $result = 'Updated composer.json.';
-        } else {
-            $result = 'Would update composer.json now.';
-        }
-        if (!empty($options['commit'])) {
-            $options['commit']->add(
-                $this->_directory . '/composer.json', $this->_directory
-            );
-        }
-        return $result;
+        return 'updateComposer() is deprecated.';
     }
 
     /**
@@ -857,5 +935,15 @@ class Components_Component_Source extends Components_Component_Base
     public function getHordeYmlPath()
     {
         return $this->_directory . '/.horde.yml';
+    }
+
+    /**
+     * Return the path to the composer.json file of the component.
+     *
+     * @return string The path to the composer.json file.
+     */
+    public function getComposerJsonPath()
+    {
+        return $this->_directory . '/composer.json';
     }
 }
