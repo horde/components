@@ -212,7 +212,7 @@ class Components_Component_Source extends Components_Component_Base
 
         // Update texts.
         $xml->replaceTextNode('/p:package/p:name', $yaml['id']);
-        $xml->replaceTextNode('/p:package/p:summary', $yaml['name']);
+        $xml->replaceTextNode('/p:package/p:summary', $yaml['full']);
         $xml->replaceTextNode('/p:package/p:description', $yaml['description']);
 
         // Update versions.
