@@ -47,7 +47,8 @@ extends Components_TestCase
     {
         $yaml = Horde_Yaml::load($this->yaml);
         $yaml['id'] = 'horde2';
-        $yaml['name'] = 'New Name';
+        $yaml['name'] = 'Horde2';
+        $yaml['full'] = 'New Name';
         $yaml['description'] = 'New Description.';
         $yaml['version']['release'] = '1.0.0';
         $yaml['version']['api'] = '1.0.0';
@@ -91,7 +92,7 @@ extends Components_TestCase
         $xml = new Horde_Pear_Package_Xml($stream);
         fclose($stream);
         $this->assertEquals($yaml['id'], $xml->getName());
-        $this->assertEquals($yaml['name'], $xml->getSummary());
+        $this->assertEquals($yaml['full'], $xml->getSummary());
         $this->assertEquals($yaml['description'], $xml->getDescription());
         $this->assertEquals($yaml['version']['release'], $xml->getVersion());
         $this->assertEquals(

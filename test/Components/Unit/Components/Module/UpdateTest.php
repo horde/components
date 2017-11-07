@@ -53,6 +53,7 @@ extends Components_TestCase
             "---
 id: basic
 name: Basic
+full: Basic
 description:
 type: library
 authors:

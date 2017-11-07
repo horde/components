@@ -1,6 +1,7 @@
 ---
 id: horde
-name: horde fixture.
+name: Horde
+full: horde fixture.
 description: A dummy application used for testing the Components package.
 list:
 type: application
