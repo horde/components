@@ -1,7 +1,7 @@
 {
     "name": "horde/horde",
     "description": "horde fixture.",
-    "type": "application",
+    "type": "project",
     "homepage": "https://www.horde.org/apps/horde",
     "license": "LGPL-2.1",
     "authors": [
