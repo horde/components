@@ -2,6 +2,7 @@
 v0.99.1-git
 -----------
 
+[jan] In the 'update' command, update composer.json from .horde.yml.
 [jan] In the 'update' command, update package.xml from .horde.yml.
 [jan] Don't use underscores in command line arguments.
 [jan] Officially support PHP 7.
