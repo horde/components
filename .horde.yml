@@ -9,14 +9,20 @@ list: horde
 type: component
 authors:
   -
+    name: Jan Schneider
+    user: jan
+    email: jan@horde.org
+    active: true
+    role: lead
+  -
     name: Gunnar Wrobel
     user: wrobel
     email: p@rdus.de
-    active: true
+    active: false
     role: lead
 version:
   release: 0.99.1
-  api: 1.0
+  api: 1.0.0
 state:
   release: beta
   api: beta
@@ -29,7 +35,7 @@ dependencies:
     pear:
       pear.horde.org/Horde_Autoloader: '*'
       pear.horde.org/Horde_Argv: '*'
-      pear.horde.org/Horde_Cli: '*'
+      pear.horde.org/Horde_Cli: ^2.3
       pear.horde.org/Horde_Cli_Modular: ^2.1
       pear.horde.org/Horde_Http: '*'
       pear.horde.org/Horde_Pear: '*'
