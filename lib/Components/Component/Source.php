@@ -242,6 +242,19 @@ class Components_Component_Source extends Components_Component_Base
         }
 
         // Update dependencies.
+        $this->_updateDependencies($xml, $yaml['dependencies']);
+
+        return $xml;
+    }
+
+    /**
+     * Update dependencies.
+     *
+     * @param Horde_Pear_Package_Xml $xml  A package.xml handler.
+     * @param array $dependencies          A list of dependencies.
+     */
+    protected function _updateDependencies($xml, $dependencies)
+    {
         foreach (array('package', 'extension') as $type) {
             while ($node = $xml->findNode('/p:package/p:dependencies/p:required/p:' . $type)) {
                 $xml->removeWhitespace($node->previousSibling);
@@ -253,7 +266,7 @@ class Components_Component_Source extends Components_Component_Base
             $node->parentNode->removeChild($node);
         }
         $php = Components_Helper_Version::composerToPear(
-            $yaml['dependencies']['required']['php']
+            $dependencies['required']['php']
         );
         foreach ($php as $tag => $version) {
             $xml->replaceTextNode(
@@ -261,44 +274,57 @@ class Components_Component_Source extends Components_Component_Base
                 $version
             );
         }
-        foreach ($yaml['dependencies'] as $required => $dependencyTypes) {
-            foreach ($dependencyTypes as $type => $dependencies) {
-                switch ($type) {
-                case 'php':
-                    continue 2;
-                case 'pear':
-                    $type = 'package';
-                    break;
-                case 'ext':
-                    $type = 'extension';
-                    break;
-                default:
-                    throw new Components_Exception(
-                        'Unknown depdency type: ' . $type
-                    );
-                }
-                foreach ($dependencies as $dependency => $version) {
-                    switch ($type) {
-                    case 'package':
-                        list($channel, $name) = explode('/', $dependency);
-                        $constraints = array_merge(
-                            array('name' => $name, 'channel' => $channel),
-                            Components_Helper_Version::composerToPear($version)
-                        );
-                        break;
-                    case 'extension':
-                        $constraints = array_merge(
-                            array('name' => $dependency),
-                            Components_Helper_Version::composerToPear($version)
-                        );
-                        break;
-                    }
-                    $xml->addDependency($required, $type, $constraints);
-                }
+        foreach ($dependencies as $required => $dependencyTypes) {
+            foreach ($dependencyTypes as $type => $deps) {
+                $this->_addDependency($xml, $required, $type, $deps);
             }
         }
+    }
 
-        return $xml;
+    /**
+     * Adds a number of dependencies of the same kind.
+     *
+     * @param Horde_Pear_Package_Xml $xml  A package.xml handler.
+     * @param string $required             A required dependency? Either
+     *                                     'required' or 'optional'.
+     * @param string $type                 A dependency type from .horde.yml.
+     * @param array $dependencies          A list of dependency names and
+     *                                     versions.
+     */
+    protected function _addDependency($xml, $required, $type, $dependencies)
+    {
+        switch ($type) {
+        case 'php':
+            return;
+        case 'pear':
+            $type = 'package';
+            break;
+        case 'ext':
+            $type = 'extension';
+            break;
+        default:
+            throw new Components_Exception(
+                'Unknown depdency type: ' . $type
+            );
+        }
+        foreach ($dependencies as $dependency => $version) {
+            switch ($type) {
+            case 'package':
+                list($channel, $name) = explode('/', $dependency);
+                $constraints = array_merge(
+                    array('name' => $name, 'channel' => $channel),
+                    Components_Helper_Version::composerToPear($version)
+                );
+                break;
+            case 'extension':
+                $constraints = array_merge(
+                    array('name' => $dependency),
+                    Components_Helper_Version::composerToPear($version)
+                );
+                break;
+            }
+            $xml->addDependency($required, $type, $constraints);
+        }
     }
 
     /**
