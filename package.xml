@@ -2,18 +2,24 @@
 <package packagerversion="1.9.2" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
  <name>components</name>
  <channel>pear.horde.org</channel>
- <summary>A package for dealing with Horde components</summary>
+ <summary>Developer tool for managing Horde components</summary>
  <description>The package provides utility methods required when preparing a new component release for Horde. It also includes quality control checks.</description>
+ <lead>
+  <name>Jan Schneider</name>
+  <user>jan</user>
+  <email>jan@horde.org</email>
+  <active>yes</active>
+ </lead>
  <lead>
   <name>Gunnar Wrobel</name>
   <user>wrobel</user>
   <email>p@rdus.de</email>
-  <active>yes</active>
+  <active>no</active>
  </lead>
- <date>2017-11-06</date>
+ <date>2017-11-07</date>
  <version>
   <release>0.99.1</release>
-  <api>1.0</api>
+  <api>1.0.0</api>
  </version>
  <stability>
   <release>beta</release>
@@ -2078,8 +2084,8 @@
     <name>Horde_Cli_Modular</name>
     <channel>pear.horde.org</channel>
     <min>2.1.0</min>
-    <exclude>3.0.0alpha1</exclude>
     <max>3.0.0alpha1</max>
+    <exclude>3.0.0alpha1</exclude>
    </package>
    <package>
     <name>Horde_Http</name>
@@ -3494,13 +3500,13 @@
   <release>
    <version>
     <release>0.99.1</release>
-    <api>1.0</api>
+    <api>1.0.0</api>
    </version>
    <stability>
     <release>beta</release>
     <api>beta</api>
    </stability>
-   <date>2017-11-06</date>
+   <date>2017-11-07</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
 * [jan] In the &apos;update&apos; command, update package.xml from .horde.yml.
