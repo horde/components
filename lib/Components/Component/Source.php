@@ -383,12 +383,26 @@ class Components_Component_Source extends Components_Component_Base
                 'role' => $author['role'],
             );
         }
+        if ($yaml['name'] == 'Horde_Core') {
+            $prefix = 'Horde';
+        } elseif ($yaml['name'] == 'imp') {
+            $prefix = 'IMP';
+        } elseif (strpos($yaml['name'], 'Horde') !== 0) {
+            $prefix = Horde_String::ucfirst($yaml['name']);
+        } else {
+            $prefix = $yaml['name'];
+        }
+        $autoload = array('psr-0' => array($prefix => 'lib/'));
+        $type = $yaml['type'] == 'library' ? 'library' : 'project';
+        $homepage = isset($yaml['homepage'])
+            ? $yaml['homepage']
+            : 'https://www.horde.org';
 
         $json = array(
             'name' => 'horde/' . $yaml['id'],
             'description' => $yaml['full'],
-            'type' => $yaml['type'],
-            'homepage' => isset($yaml['homepage']) ? $yaml['homepage'] : null,
+            'type' => $type,
+            'homepage' => $homepage,
             'license' => $yaml['license']['identifier'],
             'authors' => $authors,
             'version' => $yaml['version']['release'],
@@ -405,11 +419,7 @@ class Components_Component_Source extends Components_Component_Base
                 'pear-pear.horde.org/' . $yaml['id'] => $replaceVersion,
                 'pear-horde/' . $yaml['id'] => $replaceVersion,
             ),
-            'autoload' => array(
-                'psr-0' => array(
-                    'Horde' => 'lib/',
-                ),
-            ),
+            'autoload' => $autoload,
         );
         $json = array_filter($json);
 
