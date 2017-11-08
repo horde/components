@@ -399,7 +399,7 @@ class Components_Component_Source extends Components_Component_Base
             : 'https://www.horde.org';
 
         $json = array(
-            'name' => 'horde/' . $yaml['id'],
+            'name' => 'horde/' . $yaml['name'],
             'description' => $yaml['full'],
             'type' => $type,
             'homepage' => $homepage,
