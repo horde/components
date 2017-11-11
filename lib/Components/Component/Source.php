@@ -250,8 +250,10 @@ class Components_Component_Source extends Components_Component_Base
             '/p:package/p:license',
             $yaml['license']['identifier']
         );
-        $node = $xml->findNode('/p:package/p:license');
-        $node->setAttribute('uri', $yaml['license']['uri']);
+        if ($yaml['license']['uri']) {
+            $node = $xml->findNode('/p:package/p:license');
+            $node->setAttribute('uri', $yaml['license']['uri']);
+        }
 
         // Update authors.
         while ($node = $xml->findNode('/p:package/p:lead')) {
