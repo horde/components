@@ -233,7 +233,11 @@ class Components_Component_Source extends Components_Component_Base
         $yaml = Horde_Yaml::loadFile($this->getHordeYmlPath());
 
         // Update texts.
-        $xml->replaceTextNode('/p:package/p:name', $yaml['id']);
+        $name = $yaml['id'];
+        if ($yaml['type'] == 'library') {
+            $name = 'Horde_' . $name;
+        }
+        $xml->replaceTextNode('/p:package/p:name', $name);
         $xml->replaceTextNode('/p:package/p:summary', $yaml['full']);
         $xml->replaceTextNode('/p:package/p:description', $yaml['description']);
 
@@ -358,6 +362,8 @@ class Components_Component_Source extends Components_Component_Base
     public function updateComposerFromHordeYml()
     {
         $yaml = Horde_Yaml::loadFile($this->getHordeYmlPath());
+        $name = 'horde/'
+            . str_replace('_', '-', Horde_String::lower($yaml['id']));
         $replaceVersion = preg_replace(
             '/^(\d+)\..*/',
             '$1.*',
@@ -399,7 +405,7 @@ class Components_Component_Source extends Components_Component_Base
             : 'https://www.horde.org';
 
         $json = array(
-            'name' => 'horde/' . $yaml['name'],
+            'name' => $name,
             'description' => $yaml['full'],
             'type' => $type,
             'homepage' => $homepage,
