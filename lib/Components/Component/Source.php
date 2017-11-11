@@ -381,6 +381,7 @@ class Components_Component_Source extends Components_Component_Base
             '$1.*',
             $yaml['version']['release']
         );
+        $replacePrefix = $yaml['type'] == 'library' ? 'Horde_' : '';
         $dependencies = array('required' => array(), 'optional' => array());
         foreach ($yaml['dependencies'] as $required => $dependencyTypes) {
             foreach ($dependencyTypes as $type => $packages) {
@@ -437,8 +438,8 @@ class Components_Component_Source extends Components_Component_Base
             'require' => $dependencies['required'],
             'suggest' => $dependencies['optional'],
             'replace' => array(
-                'pear-pear.horde.org/' . $yaml['id'] => $replaceVersion,
-                'pear-horde/' . $yaml['id'] => $replaceVersion,
+                'pear-pear.horde.org/' . $replacePrefix . $yaml['id'] => $replaceVersion,
+                'pear-horde/' . $replacePrefix . $yaml['id'] => $replaceVersion,
             ),
             'autoload' => $autoload,
         );
