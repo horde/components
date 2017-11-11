@@ -405,12 +405,11 @@ class Components_Component_Source extends Components_Component_Base
                 'role' => $author['role'],
             );
         }
-        if ($yaml['name'] == 'Horde_Core') {
+        if ($yaml['name'] == 'Core' ||
+            strpos($yaml['name'], 'Horde Groupware') === 0) {
             $prefix = 'Horde';
-        } elseif ($yaml['name'] == 'imp') {
-            $prefix = 'IMP';
-        } elseif (strpos($yaml['name'], 'Horde') !== 0) {
-            $prefix = Horde_String::ucfirst($yaml['name']);
+        } elseif ($yaml['type'] == 'library') {
+            $prefix = 'Horde_' . $yaml['name'];
         } else {
             $prefix = $yaml['name'];
         }
