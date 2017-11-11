@@ -337,18 +337,27 @@ class Components_Component_Source extends Components_Component_Base
             );
         }
         foreach ($dependencies as $dependency => $version) {
+            if (is_array($version)) {
+                $constraints = $version;
+                unset($constraints['version']);
+                $version = $version['version'];
+            } else {
+                $constraints = array();
+            }
             switch ($type) {
             case 'package':
                 list($channel, $name) = explode('/', $dependency);
                 $constraints = array_merge(
                     array('name' => $name, 'channel' => $channel),
-                    Components_Helper_Version::composerToPear($version)
+                    Components_Helper_Version::composerToPear($version),
+                    $constraints
                 );
                 break;
             case 'extension':
                 $constraints = array_merge(
                     array('name' => $dependency),
-                    Components_Helper_Version::composerToPear($version)
+                    Components_Helper_Version::composerToPear($version),
+                    $constraints
                 );
                 break;
             }
@@ -380,6 +389,9 @@ class Components_Component_Source extends Components_Component_Base
                     continue;
                 }
                 foreach ($packages as $package => $version) {
+                    if (is_array($version)) {
+                        $version = $version['version'];
+                    }
                     $dependencies[$required][$type . '-' . $package] = $version;
                 }
             }
