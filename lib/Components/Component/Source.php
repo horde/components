@@ -256,7 +256,7 @@ class Components_Component_Source extends Components_Component_Base
         }
 
         // Update authors.
-        while ($node = $xml->findNode('/p:package/p:lead')) {
+        while ($node = $xml->findNode('/p:package/p:lead|p:developer')) {
             $xml->removeWhitespace($node->previousSibling);
             $node->parentNode->removeChild($node);
         }
@@ -265,7 +265,8 @@ class Components_Component_Source extends Components_Component_Base
                 $author['name'],
                 $author['user'],
                 $author['email'],
-                $author['active']
+                $author['active'],
+                $author['role']
             );
         }
 
