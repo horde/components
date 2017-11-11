@@ -333,7 +333,7 @@ class Components_Component_Source extends Components_Component_Base
             break;
         default:
             throw new Components_Exception(
-                'Unknown depdency type: ' . $type
+                'Unknown dependency type: ' . $type
             );
         }
         foreach ($dependencies as $dependency => $version) {
