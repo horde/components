@@ -262,31 +262,36 @@ class Components_Helper_Version
         $versions = array_map('trim', $versions);
         array_walk(
             $versions,
-            function($v) use ($version)
+            function($v) use ($version, $versions)
             {
-                if ($v[0] != '^') {
+                if ($v[0] != '^' &&
+                    (!preg_match('/^\d+\.\d+\.\d+$/', $version) ||
+                     count($versions) > 1)) {
                     throw new Components_Exception(
                         'Unsupport Composer version format: ' . $version
                     );
                 }
             }
         );
-        $versions = array_map(
-            function($version)
+        usort(
+            $versions,
+            function($a, $b)
             {
-                return ltrim($version, '^');
-            },
-            $versions
+                return version_compare(ltrim($a, '^'), ltrim($b, '^'));
+            }
         );
-        usort($versions, 'version_compare');
 
-        $constraints = array(
-            'min' => preg_replace(
-                '/^(\d+\.\d+\.\d+).*/', '$1', $versions[0] . '.0.0'
-            )
-        );
+        $constraints = array();
+        if ($versions[0][0] == '^') {
+            $constraints['min'] = preg_replace(
+                '/^\^(\d+\.\d+\.\d+).*/', '$1', $versions[0] . '.0.0'
+            );
+        } else {
+            $constraints['min'] = $constraints['max'] = $versions[0];
+            return $constraints;
+        }
         $max = array_pop($versions);
-        $max = substr($max, 0, strpos($max, '.') ?: strlen($max)) + 1;
+        $max = substr($max, 1, strpos($max, '.') ?: strlen($max)) + 1;
         $max .= '.0.0alpha1';
         $constraints['max'] = $constraints['exclude'] = $max;
 
