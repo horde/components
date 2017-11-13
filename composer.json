@@ -1,10 +1,15 @@
 {
     "name": "horde/components",
-    "description": "A package for dealing with Horde components",
-    "type": "library",
-    "homepage": "https://pear.horde.org",
+    "description": "Developer tool for managing Horde components",
+    "type": "project",
+    "homepage": "https://www.horde.org",
     "license": "LGPL-2.1",
     "authors": [
+        {
+            "name": "Jan Schneider",
+            "email": "jan@horde.org",
+            "role": "lead"
+        },
         {
             "name": "Gunnar Wrobel",
             "email": "p@rdus.de",
@@ -12,7 +17,7 @@
         }
     ],
     "version": "0.99.1",
-    "time": "2017-10-20",
+    "time": "2017-11-11",
     "repositories": [
         {
             "type": "pear",
@@ -23,7 +28,7 @@
         "php": "^5.4 || ^7",
         "pear-pear.horde.org/Horde_Autoloader": "*",
         "pear-pear.horde.org/Horde_Argv": "*",
-        "pear-pear.horde.org/Horde_Cli": "*",
+        "pear-pear.horde.org/Horde_Cli": "^2.3",
         "pear-pear.horde.org/Horde_Cli_Modular": "^2.1",
         "pear-pear.horde.org/Horde_Http": "*",
         "pear-pear.horde.org/Horde_Pear": "*",

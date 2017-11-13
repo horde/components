@@ -16,7 +16,7 @@
   <email>p@rdus.de</email>
   <active>no</active>
  </lead>
- <date>2017-11-07</date>
+ <date>2017-11-11</date>
  <version>
   <release>0.99.1</release>
   <api>1.0.0</api>
@@ -1900,6 +1900,7 @@
       </dir> <!-- /test/Components/fixture/horde -->
       <dir name="horde_yml">
        <file name=".horde.yml" role="test" />
+       <file name="composer.json" role="test" />
        <file name="package.xml" role="test" />
       </dir> <!-- /test/Components/fixture/horde_yml -->
       <dir name="packages">
@@ -3412,6 +3413,7 @@
    <install as="Components/fixture/horde/.keep" name="test/Components/fixture/horde/.keep" />
    <install as="Components/fixture/horde/package.xml" name="test/Components/fixture/horde/package.xml" />
    <install as="Components/fixture/horde_yml/.horde.yml" name="test/Components/fixture/horde_yml/.horde.yml" />
+   <install as="Components/fixture/horde_yml/composer.json" name="test/Components/fixture/horde_yml/composer.json" />
    <install as="Components/fixture/horde_yml/package.xml" name="test/Components/fixture/horde_yml/package.xml" />
    <install as="Components/fixture/packages/Console_Getopt-1.9.1.tgz" name="test/Components/fixture/packages/Console_Getopt-1.9.1.tgz" />
    <install as="Components/fixture/packages/PEAR-1.9.1.tgz" name="test/Components/fixture/packages/PEAR-1.9.1.tgz" />
@@ -3507,7 +3509,7 @@
     <release>beta</release>
     <api>beta</api>
    </stability>
-   <date>2017-11-07</date>
+   <date>2017-11-11</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
 * [jan] In the &apos;update&apos; command, update composer.json from .horde.yml.
