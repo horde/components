@@ -2,7 +2,7 @@
 <package packagerversion="1.9.2" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
  <name>components</name>
  <channel>pear.horde.org</channel>
- <summary>A package for dealing with Horde components</summary>
+ <summary>Developer tool for managing Horde components</summary>
  <description>The package provides utility methods required when preparing a new component release for Horde. It also includes quality control checks.</description>
  <lead>
   <name>Gunnar Wrobel</name>
@@ -10,10 +10,10 @@
   <email>p@rdus.de</email>
   <active>yes</active>
  </lead>
- <date>2017-10-30</date>
+ <date>2017-11-14</date>
  <version>
   <release>0.99.1</release>
-  <api>1.0</api>
+  <api>1</api>
  </version>
  <stability>
   <release>beta</release>
@@ -539,7 +539,6 @@
      <file name="AllTests.php" role="test" />
      <file name="Autoload.php" role="test" />
      <file name="bootstrap.php" role="test" />
-     <file name="phpunit.xml" role="test" />
      <file name="StoryTestCase.php" role="test" />
      <file name="TestCase.php" role="test" />
     </dir> <!-- /test/Components -->
@@ -782,7 +781,6 @@
    <install as="Components/AllTests.php" name="test/Components/AllTests.php" />
    <install as="Components/Autoload.php" name="test/Components/Autoload.php" />
    <install as="Components/bootstrap.php" name="test/Components/bootstrap.php" />
-   <install as="Components/phpunit.xml" name="test/Components/phpunit.xml" />
    <install as="Components/StoryTestCase.php" name="test/Components/StoryTestCase.php" />
    <install as="Components/TestCase.php" name="test/Components/TestCase.php" />
    <install as="Components/fixture/.gitignore" name="test/Components/fixture/.gitignore" />
@@ -907,13 +905,13 @@
   <release>
    <version>
     <release>0.99.1</release>
-    <api>1.0</api>
+    <api>1</api>
    </version>
    <stability>
     <release>beta</release>
     <api>beta</api>
    </stability>
-   <date>2017-10-30</date>
+   <date>2017-11-14</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
 * [jan] Officially support PHP 7.
