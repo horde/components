@@ -16,7 +16,7 @@
   <email>p@rdus.de</email>
   <active>no</active>
  </lead>
- <date>2017-11-11</date>
+ <date>2017-11-14</date>
  <version>
   <release>0.99.1</release>
   <api>1.0.0</api>
@@ -3509,7 +3509,7 @@
     <release>beta</release>
     <api>beta</api>
    </stability>
-   <date>2017-11-11</date>
+   <date>2017-11-14</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
 * [jan] In the &apos;update&apos; command, update composer.json from .horde.yml.
