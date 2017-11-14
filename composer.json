@@ -1,8 +1,8 @@
 {
     "name": "horde/components",
-    "description": "A package for dealing with Horde components",
-    "type": "library",
-    "homepage": "https://pear.horde.org",
+    "description": "Developer tool for managing Horde components",
+    "type": "project",
+    "homepage": "https://www.horde.org",
     "license": "LGPL-2.1",
     "authors": [
         {
@@ -12,7 +12,7 @@
         }
     ],
     "version": "0.99.1",
-    "time": "2016-01-13",
+    "time": "2017-11-14",
     "repositories": [
         {
             "type": "pear",
