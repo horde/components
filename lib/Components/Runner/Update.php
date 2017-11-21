@@ -44,15 +44,19 @@ class Components_Runner_Update
     /**
      * Constructor.
      *
-     * @param Components_Config $config  The configuration for the current job.
-     * @param Component_Output $output   The output handler.
+     * @param Components_Config $config            The configuration for the
+                                                   current job.
+     * @param Components_Helper_ChangeLog $helper  Change log helper
+     * @param Component_Output $output             The output handler.
      */
     public function __construct(
         Components_Config $config,
+        Components_Helper_ChangeLog $helper,
         Components_Output $output
     )
     {
         $this->_config  = $config;
+        $this->_helper = $helper;
         $this->_output = $output;
     }
 
@@ -78,21 +82,28 @@ class Components_Runner_Update
                     $this->_output, $options
                 );
             }
-            $result = $this->_config->getComponent()->updatePackage(
+            $component = $this->_config->getComponent();
+            $result = $component->updatePackage(
                 $action, $options
             );
             if (!empty($options['new_version']) || !empty($options['new_api'])) {
-                $this->_config->getComponent()->setVersion(
-                    $options['new_version'], $options['new_api'], $options
+                $updated = $component->setVersion(
+                    $options['new_version'],
+                    $options['new_api'],
+                    $this->_helper,
+                    $options
                 );
+                if ($action != 'print' && $action != 'diff') {
+                    $this->_output->ok($updated);
+                }
                 if (!empty($options['new_version']) &&
                     !empty($options['sentinel'])) {
                     $notes = new Components_Release_Notes($this->_output);
-                    $notes->setComponent($this->_config->getComponent());
+                    $notes->setComponent($component);
                     $application_version = Components_Helper_Version::pearToHordeWithBranch(
                         $options['new_version'] . '-git', $notes->getBranch()
                     );
-                    $sentinel_result = $this->_config->getComponent()->currentSentinel(
+                    $sentinel_result = $component->currentSentinel(
                         $options['new_version'] . '-git',
                         $application_version,
                         $options
@@ -103,7 +114,7 @@ class Components_Runner_Update
                 }
             }
             if (!empty($options['new_state']) || !empty($options['new_apistate'])) {
-                $this->_config->getComponent()->setState(
+                $component->setState(
                     $options['new_state'], $options['new_apistate'], $options
                 );
             }
@@ -113,11 +124,10 @@ class Components_Runner_Update
                 );
             }
             if ($result === true) {
-                $this->_output->ok('Successfully updated package.xml of ' . $this->_config->getComponent()->getName() . '.');
+                $this->_output->ok('Successfully updated package.xml of ' . $component->getName() . '.');
             } else {
                 print $result;
             }
         }
-
     }
 }

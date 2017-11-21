@@ -145,6 +145,42 @@ class Components_Helper_ChangeLog
     }
 
     /**
+     * Changes the current version number in changelog.yml.
+     *
+     * It's important to run this method *before* updating the version in
+     * .horde.yml, because the old, to-be-replaced version is retrieved from
+     * there.
+     *
+     * @param string $version  The new version.
+     */
+    public function setVersion($version)
+    {
+        $hordeInfo = $this->_getHordeInfo();
+        if (!isset($hordeInfo['version'])) {
+            throw new Components_Exception('.horde.yml is missing a \'version\' entry');
+        }
+        $oldVersion = $hordeInfo['version']['release'];
+        $changelog = Horde_Yaml::loadFile(
+            $this->_getDocDirectory() . self::CHANGELOG
+        );
+        $newChangelog = array();
+        array_walk(
+            $changelog,
+            function($entry, $ver) use (&$newChangelog, $oldVersion, $version)
+            {
+                if ($ver == $oldVersion) {
+                    $ver = $version;
+                }
+                $newChangelog[$ver] = $entry;
+            }
+        );
+        file_put_contents(
+            $this->_getDocDirectory() . self::CHANGELOG,
+            Horde_Yaml::dump($newChangelog, array('wordwrap' => 0))
+        );
+    }
+
+    /**
      * Builds a changelog.yml from an existing package.xml.
      *
      * @param Horde_Pear_Package_Xml $xml  The package xml handler.
@@ -514,7 +550,9 @@ class Components_Helper_ChangeLog
         } elseif ($mkdir) {
             $dir = $this->_directory . '/doc';
         } else {
-            return false;
+            throw new Components_Exception(
+                'Cannot locate documentation directory'
+            );
         }
         $info = $this->_getHordeInfo();
         if ($info['type'] == 'library') {
@@ -522,7 +560,9 @@ class Components_Helper_ChangeLog
         }
         if (!is_dir($dir)) {
             if (!$mkdir) {
-                return false;
+                throw new Components_Exception(
+                    sprintf('Documentation directory %s doesn\'t exist', $dir)
+                );
             }
             mkdir($dir, 0777, true);
         }

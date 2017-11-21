@@ -1,0 +1,41 @@
+---
+id: Deps
+name: Deps
+full: Updating Dependencies
+description: Test to update dependencies
+list: dev
+type: library
+homepage: https://www.horde.org/
+authors:
+  -
+    name: Jan Schneider
+    user: jan
+    email: jan@horde.org
+    active: true
+    role: lead
+version:
+  release: 2.32.0
+  api: 2.31.0
+state:
+  release: stable
+  api: stable
+license:
+  identifier: LGPL-2.1
+  uri: http://www.horde.org/licenses/lgpl21
+dependencies:
+  required:
+    php: ^5.3 || ^7
+    pear:
+      pear.horde.org/Horde_Alarm: ^2.2
+      pear.horde.org/Horde_Auth: ^2.2
+      pear.php.net/PEAR: '*'
+    ext:
+      session: '*'
+  optional:
+    pear:
+      pear.horde.org/Horde_ActiveSync: ^2.39
+      pear.horde.org/Horde_Backup: ^1
+      pear.php.net/Net_DNS2: ^1.3
+      pear.php.net/Text_CAPTCHA: '*'
+    ext:
+      dom: '*'

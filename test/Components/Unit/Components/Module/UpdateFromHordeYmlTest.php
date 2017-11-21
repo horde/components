@@ -220,6 +220,14 @@ extends Components_TestCase
         );
     }
 
+    public function testSettingNewVersion()
+    {
+        $this->assertStringEqualsFile(
+            __DIR__ . '/../../../fixture/deps/package-new.xml',
+            $this->_update(false, 'deps', array('--new-version', '2.32.0'))
+        );
+    }
+
     protected function _changeYaml()
     {
         $yaml = Horde_Yaml::load($this->yaml);
@@ -270,20 +278,25 @@ extends Components_TestCase
         return $yaml;
     }
 
-    protected function _update($composer = false)
+    protected function _update($composer = false, $dir = 'horde_yml', $additional = array())
     {
-        $_SERVER['argv'] = array(
-            'horde-components',
-            '--action=print',
-            '--updatexml',
-            __DIR__ . '/../../../fixture/horde_yml'
+        $_SERVER['argv'] = array_merge(
+            array(
+                'horde-components',
+                '--action=print',
+                '--updatexml',
+            ),
+            $additional,
+            array(__DIR__ . '/../../../fixture/' . $dir)
         );
         $result = str_replace(
             date('Y-m-d'),
             '2010-08-22',
             $this->_callStrictComponents()
         );
-        preg_match('/(.*<\/package>\n)(\{.*)/ms', $result, $files);
+        if (!preg_match('/(.*<\/package>\n)(\{.*)/ms', $result, $files)) {
+            $this->fail("Unexpected result:\n" . $result);
+        }
         return $composer ? $files[2] : $files[1];
     }
 }

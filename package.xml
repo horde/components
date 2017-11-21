@@ -16,7 +16,7 @@
   <email>p@rdus.de</email>
   <active>no</active>
  </lead>
- <date>2017-11-14</date>
+ <date>2017-11-21</date>
  <version>
   <release>0.99.1</release>
   <api>1.0.0</api>
@@ -1832,6 +1832,11 @@
        <file name="b.php" role="test" />
        <file name="null.php" role="test" />
       </dir> <!-- /test/Components/fixture/config -->
+      <dir name="deps">
+       <file name=".horde.yml" role="test" />
+       <file name="package-new.xml" role="test" />
+       <file name="package.xml" role="test" />
+      </dir> <!-- /test/Components/fixture/deps -->
       <dir name="docsorigin">
        <file name="empty" role="test" />
        <file name="multiple" role="test" />
@@ -3382,6 +3387,9 @@
    <install as="Components/fixture/config/a.php" name="test/Components/fixture/config/a.php" />
    <install as="Components/fixture/config/b.php" name="test/Components/fixture/config/b.php" />
    <install as="Components/fixture/config/null.php" name="test/Components/fixture/config/null.php" />
+   <install as="Components/fixture/deps/.horde.yml" name="test/Components/fixture/deps/.horde.yml" />
+   <install as="Components/fixture/deps/package-new.xml" name="test/Components/fixture/deps/package-new.xml" />
+   <install as="Components/fixture/deps/package.xml" name="test/Components/fixture/deps/package.xml" />
    <install as="Components/fixture/docsorigin/empty" name="test/Components/fixture/docsorigin/empty" />
    <install as="Components/fixture/docsorigin/multiple" name="test/Components/fixture/docsorigin/multiple" />
    <install as="Components/fixture/docsorigin/simple" name="test/Components/fixture/docsorigin/simple" />
@@ -3509,7 +3517,7 @@
     <release>beta</release>
     <api>beta</api>
    </stability>
-   <date>2017-11-14</date>
+   <date>2017-11-21</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
 * [jan] In the &apos;update&apos; command, update composer.json from .horde.yml.

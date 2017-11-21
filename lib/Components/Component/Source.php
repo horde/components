@@ -285,11 +285,13 @@ class Components_Component_Source extends Components_Component_Base
     {
         foreach (array('package', 'extension') as $type) {
             while ($node = $xml->findNode('/p:package/p:dependencies/p:required/p:' . $type)) {
+                $xml->removeWhitespace($node->previousSibling->previousSibling);
                 $xml->removeWhitespace($node->previousSibling);
                 $node->parentNode->removeChild($node);
             }
         }
         if ($node = $xml->findNode('/p:package/p:dependencies/p:optional')) {
+            $xml->removeWhitespace($node->previousSibling->previousSibling);
             $xml->removeWhitespace($node->previousSibling);
             $node->parentNode->removeChild($node);
         }
@@ -453,8 +455,6 @@ class Components_Component_Source extends Components_Component_Base
      * @param string                      $log     The log entry.
      * @param Components_Helper_ChangeLog $helper  The change log helper.
      * @param array                       $options Options for the operation.
-     *
-     * @return NULL
      */
     public function changed(
         $log, Components_Helper_ChangeLog $helper, $options
@@ -555,20 +555,54 @@ class Components_Component_Source extends Components_Component_Base
     /**
      * Set the version in the package.xml
      *
-     * @param string $rel_version The new release version number.
-     * @param string $api_version The new api version number.
-     * @param array  $options     Options for the operation.
+     * @param string $rel_version                  The new release version
+     *                                             number.
+     * @param string $api_version                  The new api version number.
+     * @param Components_Helper_ChangeLog $helper  The change log helper.
+     * @param array  $options                      Options for the operation.
      *
-     * @return NULL
+     * @return string The success message.
      */
     public function setVersion(
-        $rel_version = null, $api_version = null, $options = array()
+        $rel_version = null, $api_version = null, $helper = null,
+        $options = array()
     )
     {
+        $updated = array($this->getHordeYmlPath(), $this->getPackageXmlPath());
+        if ($helper && $changelog = $helper->changelogFileExists()) {
+            $updated[] = $changelog;
+        }
+        $updated = implode(', ', $updated);
+
         if (empty($options['pretend'])) {
-            $package = $this->getPackageXml();
-            $package->setVersion($rel_version, $api_version);
-            file_put_contents($this->getPackageXmlPath(), (string)$package);
+            if ($helper) {
+                $helper->setVersion($rel_version);
+                if (!empty($options['commit']) &&
+                    ($changelog = $helper->changelogFileExists())) {
+                    $options['commit']->add(
+                        $changelog, $this->_directory
+                    );
+                }
+            }
+            $yaml = Horde_Yaml::loadFile($this->getHordeYmlPath());
+            if ($rel_version) {
+                $yaml['version']['release'] = $rel_version;
+            }
+            if ($api_version) {
+                $yaml['version']['api'] = $api_version;
+            }
+            file_put_contents(
+                $this->getHordeYmlPath(),
+                Horde_Yaml::dump($yaml, array('wordwrap' => 78))
+            );
+            if (!empty($options['commit'])) {
+                $options['commit']->add(
+                    $this->getHordeYmlPath(), $this->_directory
+                );
+            }
+
+            $package_xml = $this->updatePackageFromHordeYml();
+            file_put_contents($this->getPackageXmlPath(), (string)$package_xml);
             if (!empty($options['commit'])) {
                 $options['commit']->add(
                     $this->getPackageXmlPath(), $this->_directory
@@ -578,14 +612,14 @@ class Components_Component_Source extends Components_Component_Base
                 'Set release version "%s" and api version "%s" in %s.',
                 $rel_version,
                 $api_version,
-                $this->getPackageXmlPath()
+                $updated
             );
         } else {
             $result = sprintf(
                 'Would set release version "%s" and api version "%s" in %s now.',
                 $rel_version,
                 $api_version,
-                $this->getPackageXmlPath()
+                $updated
             );
         }
         return $result;
@@ -596,6 +630,8 @@ class Components_Component_Source extends Components_Component_Base
      *
      * @param string $rel_state  The new release state.
      * @param string $api_state  The new api state.
+     *
+     * @return string The success message.
      */
     public function setState(
         $rel_state = null, $api_state = null, $options = array()
@@ -636,7 +672,7 @@ class Components_Component_Source extends Components_Component_Base
      * @param string $stability_release The stability for the next release.
      * @param array $options Options for the operation.
      *
-     * @return NULL
+     * @return string The success message.
      */
     public function nextVersion(
         $version,
@@ -775,8 +811,6 @@ class Components_Component_Source extends Components_Component_Base
      * @param string                   $tag     Tag name.
      * @param string                   $message Tag message.
      * @param Components_Helper_Commit $commit  The commit helper.
-     *
-     * @return NULL
      */
     public function tag($tag, $message, $commit)
     {
@@ -856,7 +890,7 @@ class Components_Component_Source extends Components_Component_Base
      *
      * @param Components_Helper_Root $helper The root helper.
      *
-     * @return NULL
+     * @return string  The repository root.
      */
     public function repositoryRoot(Components_Helper_Root $helper)
     {
@@ -877,8 +911,6 @@ class Components_Component_Source extends Components_Component_Base
      * @param array                 $options   Install options.
      * @param string                $reason    Optional reason for adding the
      *                                         package.
-     *
-     * @return NULL
      */
     public function install(
         Components_Pear_Environment $env, $options = array(), $reason = ''
