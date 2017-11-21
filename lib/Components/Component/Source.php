@@ -569,16 +569,20 @@ class Components_Component_Source extends Components_Component_Base
     )
     {
         $updated = array($this->getHordeYmlPath(), $this->getPackageXmlPath());
-        if ($helper && $changelog = $helper->changelogFileExists()) {
-            $updated[] = $changelog;
+        if ($helper) {
+            if ($changelog = $helper->changelogFileExists()) {
+                $updated[] = $changelog;
+            }
+            if ($changes = $helper->changesFileExists()) {
+                $updated[] = $changes;
+            }
         }
         $updated = implode(', ', $updated);
 
         if (empty($options['pretend'])) {
             if ($helper) {
                 $helper->setVersion($rel_version);
-                if (!empty($options['commit']) &&
-                    ($changelog = $helper->changelogFileExists())) {
+                if (!empty($options['commit']) && $changelog) {
                     $options['commit']->add(
                         $changelog, $this->_directory
                     );
@@ -599,6 +603,15 @@ class Components_Component_Source extends Components_Component_Base
                 $options['commit']->add(
                     $this->getHordeYmlPath(), $this->_directory
                 );
+            }
+
+            if ($helper && $changes) {
+                $helper->updateChanges($options);
+                if (!empty($options['commit'])) {
+                    $options['commit']->add(
+                        $changes, $this->_directory
+                    );
+                }
             }
 
             $package_xml = $this->updatePackageFromHordeYml();
