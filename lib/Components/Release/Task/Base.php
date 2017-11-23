@@ -30,35 +30,35 @@ class Components_Release_Task_Base
      *
      * @var Components_Release_Tasks
      */
-    private $_tasks;
+    protected $_tasks;
 
     /**
      * The release notes handler.
      *
      * @var Components_Release_Notes
      */
-    private $_notes;
+    protected $_notes;
 
     /**
      * The task output.
      *
      * @var Components_Output
      */
-    private $_output;
+    protected $_output;
 
     /**
      * The component that should be released
      *
      * @var Components_Component
      */
-    private $_component;
+    protected $_component;
 
     /**
      * The task name.
      *
      * @var string
      */
-    private $_name;
+    protected $_name;
 
     /**
      * Constructor.

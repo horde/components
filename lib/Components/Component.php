@@ -183,20 +183,12 @@ interface Components_Component
     /**
      * Timestamp the package.xml file with the current time.
      *
-     * @param array $options Options for the operation.
+     * @param Components_Output $output  The output handler.
+     * @param array $options             Options for the operation.
      *
      * @return string The success message.
      */
-    public function timestampAndSync($options);
-
-    /**
-     * Updates the composer.json file.
-     *
-     * @param array $options Options for the operation.
-     *
-     * @return string The success message.
-     */
-    public function updateComposer($options);
+    public function timestampAndSync(Components_Output $output, $options);
 
     /**
      * Add the next version to the package.xml.

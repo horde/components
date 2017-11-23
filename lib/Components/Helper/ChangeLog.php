@@ -1,18 +1,5 @@
 <?php
 /**
- * Components_Helper_ChangeLog:: helps with adding entries to the change log(s).
- *
- * PHP version 5
- *
- * @category Horde
- * @package  Components
- * @author   Gunnar Wrobel <wrobel@pardus.de>
- * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
- */
-
-/**
- * Components_Helper_ChangeLog:: helps with adding entries to the change log(s).
- *
  * Copyright 2010-2017 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
@@ -23,13 +10,19 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
+/**
+ * Helper for adding entries to the change log(s).
+ *
+ * @category Horde
+ * @package  Components
+ * @author   Gunnar Wrobel <wrobel@pardus.de>
+ * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ */
 class Components_Helper_ChangeLog
 {
     /** Path to the .horde.yml file. */
     const HORDE_INFO = '/.horde.yml';
-
-    /** Path to the changelog.yml file. */
-    const CHANGELOG = '/changelog.yml';
 
     /** Path to the CHANGES file. */
     const CHANGES = '/CHANGES';
@@ -108,11 +101,24 @@ class Components_Helper_ChangeLog
      */
     public function changelogFileExists()
     {
-        $changes = $this->_getDocDirectory() . self::CHANGELOG;
-        if (file_exists($changes)) {
-            return $changes;
+        $changelog = $this->getChangelogYml();
+
+        if ($changelog->exists()) {
+            return $changelog->getFile();
         }
         return false;
+    }
+
+    /**
+     * Returns a changelog.yml wrapper.
+     *
+     * @return Components_Helper_ChangeLog_Yaml  A changelog.yml wrapper.
+     */
+    public function getChangelogYml()
+    {
+        return new Components_Helper_ChangeLog_Yaml(
+            $this->_getDocDirectory()
+        );
     }
 
     /**
@@ -129,18 +135,13 @@ class Components_Helper_ChangeLog
             throw new Components_Exception('.horde.yml is missing a \'version\' entry');
         }
         $version = $hordeInfo['version']['release'];
-        $changelog = Horde_Yaml::loadFile(
-            $this->_getDocDirectory() . self::CHANGELOG
-        );
+        $changelog = $this->getChangelogYml();
         $info = $changelog[$version];
         $notes = explode("\n", trim($info['notes']));
         array_unshift($notes, $entry);
         $info['notes'] = implode("\n", $notes) . "\n";
         $changelog[$version] = $info;
-        file_put_contents(
-            $this->_getDocDirectory() . self::CHANGELOG,
-            Horde_Yaml::dump($changelog, array('wordwrap' => 0))
-        );
+        $changelog->save();
         return $version;
     }
 
@@ -160,10 +161,10 @@ class Components_Helper_ChangeLog
             throw new Components_Exception('.horde.yml is missing a \'version\' entry');
         }
         $oldVersion = $hordeInfo['version']['release'];
-        $changelog = Horde_Yaml::loadFile(
-            $this->_getDocDirectory() . self::CHANGELOG
+        $changelog = $this->getChangelogYml();
+        $newChangelog = new Components_Helper_ChangeLog_Yaml(
+            Horde_Util::createTempDir()
         );
-        $newChangelog = array();
         array_walk(
             $changelog,
             function($entry, $ver) use (&$newChangelog, $oldVersion, $version)
@@ -174,10 +175,28 @@ class Components_Helper_ChangeLog
                 $newChangelog[$ver] = $entry;
             }
         );
-        file_put_contents(
-            $this->_getDocDirectory() . self::CHANGELOG,
-            Horde_Yaml::dump($newChangelog, array('wordwrap' => 0))
-        );
+        $newChangelog->save();
+        rename($newChangelog->getFile(), $changelog->getFile());
+    }
+
+    /**
+     * Timestamps the current version in changelog.yml.
+     */
+    public function timestamp()
+    {
+        $hordeInfo = $this->_getHordeInfo();
+        if (!isset($hordeInfo['version'])) {
+            throw new Components_Exception('.horde.yml is missing a \'version\' entry');
+        }
+        $version = $hordeInfo['version']['release'];
+        $changelog = $this->getChangelogYml();
+        if (!isset($changelog[$version])) {
+            throw new Components_Exception(
+                'changelog.yml is missing the version ' . $version
+            );
+        }
+        $changelog[$version]['date'] = gmdate('Y-m-d');
+        $changelog->save();
     }
 
     /**
@@ -268,11 +287,11 @@ class Components_Helper_ChangeLog
         }
 
         // Create changelog.yml.
-        $changelog = $this->_getDocDirectory(true) . self::CHANGELOG;
-        file_put_contents(
-            $changelog,
-            Horde_Yaml::dump($changes, array('wordwrap' => 0))
+        $changelog = new Components_Helper_ChangeLog_Yaml(
+            $this->_getDocDirectory(true)
         );
+        $changelog->exchangeArray($changes);
+        $changelog->save();
         $this->_output->ok(sprintf('Created %s.', $changelog));
     }
 
@@ -320,15 +339,14 @@ class Components_Helper_ChangeLog
      */
     public function updatePackage($xml, $file, $options)
     {
-        $changelog = $this->changelogFileExists();
-        if (!$changelog || !file_exists($file)) {
+        $allchanges = $this->getChangelogYml();
+        if (!$allchanges->exists() || !file_exists($file)) {
             return;
         }
 
         if (empty($options['pretend'])) {
-            $allchanges = Horde_Yaml::loadFile($changelog);
             unset($allchanges['extra']);
-            $xml->setNotes($allchanges);
+            $xml->setNotes(iterator_to_array($allchanges));
             file_put_contents($file, (string)$xml);
             $this->_output->ok(sprintf('Updated %s.', $file));
         } else {
@@ -446,8 +464,8 @@ class Components_Helper_ChangeLog
      */
     public function updateChanges($options)
     {
-        $changelog = $this->changelogFileExists();
-        if (!$changelog) {
+        $allchanges = $this->getChangelogYml();
+        if (!$allchanges->exists()) {
             return;
         }
 
@@ -460,8 +478,6 @@ class Components_Helper_ChangeLog
         if (!$changes) {
             $changes = $this->_getDocDirectory(true) . self::CHANGES;
         }
-
-        $allchanges = Horde_Yaml::loadFile($changelog);
 
         if (empty($options['pretend'])) {
             $changesfp = fopen($changes, 'w');

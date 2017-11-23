@@ -75,7 +75,8 @@ extends Components_Release_Task_Base
      */
     public function run(&$options)
     {
-        $result = $this->getComponent()->timestampAndSync($options);
+        $result = $this->getComponent()
+            ->timestampAndSync($this->_output, $options);
         if (!$this->getTasks()->pretend()) {
             $this->getOutput()->ok($result);
         } else {

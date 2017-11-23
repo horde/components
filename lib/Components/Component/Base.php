@@ -309,28 +309,15 @@ abstract class Components_Component_Base implements Components_Component
     /**
      * Timestamp the package.xml file with the current time.
      *
-     * @param array $options Options for the operation.
+     * @param Components_Output $output  The output handler.
+     * @param array $options             Options for the operation.
      *
      * @return string The success message.
      */
-    public function timestampAndSync($options)
+    public function timestampAndSync(Components_Output $output, $options)
     {
         throw new Components_Exception(
             'Timestamping is not supported!'
-        );
-    }
-
-    /**
-     * Updates the composer.json file.
-     *
-     * @param array $options Options for the operation.
-     *
-     * @return string The success message.
-     */
-    public function updateComposer($options)
-    {
-        throw new Components_Exception(
-            'Updating composer.json is not supported!'
         );
     }
 

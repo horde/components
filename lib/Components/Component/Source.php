@@ -26,30 +26,36 @@ class Components_Component_Source extends Components_Component_Base
      *
      * @var string
      */
-    private $_directory;
+    protected $_directory;
 
     /**
      * The package file representing the component.
      *
      * @var Horde_Pear_Package_Xml
      */
-    private $_package;
+    protected $_package;
 
     /**
      * The PEAR package file representing the component.
      *
      * @var PEAR_PackageFile
      */
-    private $_package_file;
+    protected $_package_file;
+
+    /**
+     * The change log helper.
+     *
+     * @var Components_Helper_ChangeLog
+     */
+    protected $_helper;
 
     /**
      * Constructor.
      *
-     * @param string                  $directory Path to the source directory.
-     * @param boolean                 $shift     Did identification of the
-     *                                           component consume an argument?
-     * @param Components_Config       $config    The configuration for the
-     *                                           current job.
+     * @param string $directory                     Path to the source
+     *                                              directory.
+     * @param Components_Config $config             The configuration for the
+     *                                              current job.
      * @param Components_Component_Factory $factory Generator for additional
      *                                              helpers.
      */
@@ -224,9 +230,13 @@ class Components_Component_Source extends Components_Component_Base
      * Rebuilds the basic information in a package.xml file from the .horde.yml
      * definition.
      *
+     * @param Components_Helper_ChangeLog $helper  Change log helper.
+     *
      * @return Horde_Pear_Package_Xml  The updated package.xml handler.
      */
-    public function updatePackageFromHordeYml()
+    public function updatePackageFromHordeYml(
+        Components_Helper_ChangeLog $helper = null
+    )
     {
         $xml = $this->getPackageXml();
         $yaml = Horde_Yaml::loadFile($this->getHordeYmlPath());
@@ -243,6 +253,14 @@ class Components_Component_Source extends Components_Component_Base
         // Update versions.
         $xml->setVersion($yaml['version']['release'], $yaml['version']['api']);
         $xml->setState($yaml['state']['release'], $yaml['state']['api']);
+
+        // Update date.
+        if ($helper) {
+            $xml->replaceTextNode(
+                '/p:package/p:date',
+                $helper->getChangelogYml()[$yaml['version']['release']]['date']
+            );
+        }
 
         // Update license.
         $xml->replaceTextNode(
@@ -507,49 +525,45 @@ class Components_Component_Source extends Components_Component_Base
     }
 
     /**
-     * Timestamp the package.xml file with the current time.
+     * Timestamp the package files with the current time.
      *
-     * @param array $options Options for the operation.
+     * @param Components_Output $output  The output handler.
+     * @param array $options             Options for the operation.
      *
      * @return string The success message.
      */
-    public function timestampAndSync($options)
+    public function timestampAndSync(Components_Output $output, $options)
     {
         if (empty($options['pretend'])) {
-            $package = $this->getPackageXml();
-            $package->timestamp();
-            $package->syncCurrentVersion();
-            file_put_contents($this->getPackageXmlPath(), (string)$package);
+            $helper = new Component_Helper_ChangeLog($output, $this->_config);
+            $helper->timestamp();
+            if (!empty($options['commit'])) {
+                $options['commit']->add(
+                    $helper->changelogFileExists(), $this->_directory
+                );
+            }
+            $xml = $this->updatePackageFromHordeYml($helper);
+            $xml = $this->getPackageXml();
+            $xml->syncCurrentVersion();
+            file_put_contents($this->getPackageXmlPath(), (string)$xml);
+            if (!empty($options['commit'])) {
+                $options['commit']->add(
+                    $this->getPackageXmlPath(), $this->_directory
+                );
+            }
             $result = sprintf(
-                'Marked package.xml "%s" with current timestamp and synchronized the change log.',
+                'Marked %s and %s with current timestamp and synchronized the change log.',
+                $helper->changelogFileExists(),
                 $this->getPackageXmlPath()
             );
         } else {
             $result = sprintf(
-                'Would timestamp "%s" now and synchronize its change log.',
+                'Would timestamp %s and %s now and synchronize its change log.',
+                $helper->changelogFileExists(),
                 $this->getPackageXmlPath()
             );
         }
-        if (!empty($options['commit'])) {
-            $options['commit']->add(
-                $this->getPackageXmlPath(), $this->_directory
-            );
-        }
         return $result;
-    }
-
-    /**
-     * Updates the composer.json file.
-     *
-     * @deprecated
-     *
-     * @param array $options Options for the operation.
-     *
-     * @return string The success message.
-     */
-    public function updateComposer($options)
-    {
-        return 'updateComposer() is deprecated.';
     }
 
     /**
