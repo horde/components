@@ -10,7 +10,7 @@
   <email>jan@horde.org</email>
   <active>yes</active>
  </lead>
- <date>2017-11-21</date>
+ <date>2017-11-23</date>
  <version>
   <release>2.32.0</release>
   <api>2.31.0</api>
@@ -25,6 +25,15 @@
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
+   <dir name="doc">
+    <dir name="Horde">
+     <dir name="Deps">
+      <file name="changelog-new-1.yml" role="doc" />
+      <file name="changelog-new-2.yml" role="doc" />
+      <file name="changelog-new-3.yml" role="doc" />
+     </dir> <!-- /doc/Horde/Deps -->
+    </dir> <!-- /doc/Horde -->
+   </dir> <!-- /doc -->
    <file name="package-new.xml" role="php" />
   </dir> <!-- / -->
  </contents>
@@ -60,7 +69,6 @@
     <name>session</name>
    </extension>
   </required>
- 
   <optional>
    <package>
     <name>Horde_ActiveSync</name>
@@ -99,6 +107,9 @@
  </usesrole>
  <phprelease>
   <filelist>
+   <install as="Deps/changelog-new-1.yml" name="doc/Horde/Deps/changelog-new-1.yml" />
+   <install as="Deps/changelog-new-2.yml" name="doc/Horde/Deps/changelog-new-2.yml" />
+   <install as="Deps/changelog-new-3.yml" name="doc/Horde/Deps/changelog-new-3.yml" />
    <install as="" name="package-new.xml" />
   </filelist>
  </phprelease>
@@ -110,7 +121,7 @@
    <stability>
     <release>stable</release>
     <api>stable</api></stability>
-   <date>2017-11-21</date>
+   <date>2017-11-23</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
 *
