@@ -535,7 +535,7 @@ class Components_Component_Source extends Components_Component_Base
     public function timestampAndSync(Components_Output $output, $options)
     {
         if (empty($options['pretend'])) {
-            $helper = new Component_Helper_ChangeLog($output, $this->_config);
+            $helper = new Components_Helper_ChangeLog($output, $this->_config);
             $helper->timestamp();
             if (!empty($options['commit'])) {
                 $options['commit']->add(
