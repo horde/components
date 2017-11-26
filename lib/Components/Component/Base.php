@@ -30,7 +30,7 @@ abstract class Components_Component_Base implements Components_Component
      *
      * @var Components_Config
      */
-    private $_config;
+    protected $_config;
 
     /**
      * The factory for additional helpers.
