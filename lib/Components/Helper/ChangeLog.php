@@ -345,7 +345,9 @@ class Components_Helper_ChangeLog
         }
 
         if (empty($options['pretend'])) {
-            unset($allchanges['extra']);
+            if (isset($allchanges['extra'])) {
+                unset($allchanges['extra']);
+            }
             $xml->setNotes(iterator_to_array($allchanges));
             file_put_contents($file, (string)$xml);
             $this->_output->ok(sprintf('Updated %s.', $file));
