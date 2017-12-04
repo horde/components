@@ -8,6 +8,7 @@
  * @category Horde
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>
+ * @author   Jan Schneider <jan@horde.org>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
@@ -17,6 +18,7 @@
  * @category Horde
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>
+ * @author   Jan Schneider <jan@horde.org>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 class Components_Component_Source extends Components_Component_Base

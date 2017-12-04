@@ -1,18 +1,5 @@
 <?php
 /**
- * Components_Component_Factory:: generates component instances.
- *
- * PHP version 5
- *
- * @category Horde
- * @package  Components
- * @author   Gunnar Wrobel <wrobel@pardus.de>
- * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
- */
-
-/**
- * Components_Component_Factory:: generates component instances.
- *
  * Copyright 2011-2017 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
@@ -21,6 +8,17 @@
  * @category Horde
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>
+ * @author   Jan Schneider <jan@horde.org>
+ * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ */
+
+/**
+ * Generates component instances and helpers.
+ *
+ * @category Horde
+ * @package  Components
+ * @author   Gunnar Wrobel <wrobel@pardus.de>
+ * @author   Jan Schneider <jan@horde.org>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 class Components_Component_Factory
