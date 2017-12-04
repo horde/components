@@ -87,7 +87,7 @@ class Components_Helper_ChangeLog
         $changelog = $this->_component->getWrapper('ChangelogYml');
 
         if ($changelog->exists()) {
-            return $changelog->getFile();
+            return $changelog->getFullPath();
         }
         return false;
     }
@@ -274,7 +274,7 @@ class Components_Helper_ChangeLog
     {
         if ($xml->exists()) {
             $xml->addNote($log);
-            return $xml->getFile();
+            return $xml->getFullPath();
         }
     }
 
@@ -298,7 +298,7 @@ class Components_Helper_ChangeLog
         }
         $xml->setNotes($changes);
 
-        return $xml->getFile();
+        return $xml->getFullPath();
     }
 
     /* CHANGES methods */
@@ -337,7 +337,7 @@ class Components_Helper_ChangeLog
     {
         $changes = $this->_component->getWrapper('Changes');
         if ($changes->exists()) {
-            return $changes->getFile();
+            return $changes->getFullPath();
         }
         return false;
     }
@@ -365,7 +365,7 @@ class Components_Helper_ChangeLog
         $changes->clear();
 
         if (!empty($options['pretend'])) {
-            return $changes->getFile();
+            return $changes->getFullPath();
         }
 
         $started = false;
@@ -404,7 +404,7 @@ class Components_Helper_ChangeLog
             }
         }
 
-        return $changes->getFile();
+        return $changes->getFullPath();
     }
 
     /**

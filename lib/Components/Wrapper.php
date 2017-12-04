@@ -21,12 +21,29 @@
  */
 interface Components_Wrapper
 {
+
     /**
      * Returns the full path to the file.
      *
      * @return string  Path to the file.
      */
-    public function getFile();
+    public function getFullPath();
+
+    /**
+     * Returns the local path to the file inside the package.
+     *
+     * @param string $dir  The package directory.
+     *
+     * @return string  Path to the file.
+     */
+    public function getLocalPath($dir);
+
+    /**
+     * Returns the file name.
+     *
+     * @return string  The file name.
+     */
+    public function getFileName();
 
     /**
      * Returns whether the file exists.

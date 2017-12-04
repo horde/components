@@ -40,7 +40,7 @@ implements IteratorAggregate, Components_Wrapper
     {
         $this->_file = $docDir . '/CHANGES';
         if ($this->exists()) {
-            $this->_changes = file($this->getFile());
+            $this->_changes = file($this->getFullPath());
         }
     }
 

@@ -188,11 +188,7 @@ class Components_Component_Source extends Components_Component_Base
         case 'diff':
             $diff = '';
             foreach ($this->_wrappers as $wrapper) {
-                $path = preg_replace(
-                    '|^' . preg_quote($this->_directory) . '/|',
-                    '',
-                    $wrapper->getFile()
-                );
+                $path = $wrapper->getLocalPath($this->_directory);
                 $diff .= '--- a/' . $path . "\n"
                     . '--- b/' . $path . "\n"
                     . $wrapper->diff();
@@ -203,11 +199,7 @@ class Components_Component_Source extends Components_Component_Base
                 $wrapper->save();
                 if (!empty($options['commit'])) {
                     $options['commit']->add(
-                        preg_replace(
-                            '|^' . preg_quote($this->_directory) . '/|',
-                            '',
-                            $wrapper->getFile()
-                        ),
+                        $wrapper->getLocalPath($this->_directory),
                         $this->_directory
                     );
                 }
@@ -511,9 +503,9 @@ class Components_Component_Source extends Components_Component_Base
                 $file = $helper->updatePackage($xml);
                 if (empty($options['pretend'])) {
                     $xml->save();
-                    $output[] = sprintf('Updated %s.', $xml->getFile());
+                    $output[] = sprintf('Updated %s.', $xml->getFileName());
                 } else {
-                    $output[] = sprintf('Would update %s now.', $xml->getFile());
+                    $output[] = sprintf('Would update %s now.', $xml->getFileName());
                 }
             } else {
                 $file = $helper->packageXml($log, $xml);
@@ -522,12 +514,12 @@ class Components_Component_Source extends Components_Component_Base
                     $output[] = sprintf(
                         'Added new note to version %s of %s.',
                         $xml->getVersion(),
-                        $xml->getFile()
+                        $xml->getFileName()
                     );
                 } else {
                     $output[] = sprintf(
                         'Would add change log entry to %s now.',
-                        $xml->getFile()
+                        $xml->getFileName()
                     );
                 }
             }
@@ -581,7 +573,7 @@ class Components_Component_Source extends Components_Component_Base
             $xml->save();
             if (!empty($options['commit'])) {
                 $options['commit']->add(
-                    basename($xml->getFile()), $this->_directory
+                    $xml->getLocalPath($this->_directory), $this->_directory
                 );
             }
             $result = sprintf(
@@ -614,7 +606,10 @@ class Components_Component_Source extends Components_Component_Base
     {
         $helper = $this->getFactory()->createChangelog($this);
         $yaml = $this->getWrapper('HordeYml');
-        $updated = array($yaml->getFile(), $this->getPackageXmlPath());
+        $updated = array(
+            $yaml->getLocalPath($this->_directory),
+            $this->getPackageXmlPath()
+        );
         if ($changelog = $helper->changelogFileExists()) {
             $updated[] = $changelog;
         }
@@ -641,7 +636,7 @@ class Components_Component_Source extends Components_Component_Base
                     $changelog, $this->_directory
                 );
                 $options['commit']->add(
-                    basename($yaml->getFile()), $this->_directory
+                    $yaml->getLocalPath($this->_directory), $this->_directory
                 );
                 if ($changes) {
                     $options['commit']->add(
@@ -649,7 +644,8 @@ class Components_Component_Source extends Components_Component_Base
                     );
                 }
                 $options['commit']->add(
-                    basname($package_xml->getFile()), $this->_directory
+                    $package_xml->getLocalPath($this->_directory),
+                    $this->_directory
                 );
             }
             $result = sprintf(
@@ -687,7 +683,7 @@ class Components_Component_Source extends Components_Component_Base
         if (empty($options['pretend'])) {
             if (!empty($options['commit'])) {
                 $options['commit']->add(
-                    basename($package->getFile()), $this->_directory
+                    $package->getLocalPath($this->_directory), $this->_directory
                 );
             }
             $result = sprintf(
@@ -755,7 +751,7 @@ class Components_Component_Source extends Components_Component_Base
 
         if (empty($options['pretend']) && !empty($options['commit'])) {
             $options['commit']->add(
-                basename($package->getFile()), $this->_directory
+                $package->getLocalPath($this->_directory), $this->_directory
             );
         }
 
@@ -1014,7 +1010,7 @@ class Components_Component_Source extends Components_Component_Base
      */
     public function getPackageXmlPath()
     {
-        return $this->getPackageXml()->getFile();
+        return $this->getPackageXml()->getFullPath();
     }
 
     /**
@@ -1055,7 +1051,7 @@ class Components_Component_Source extends Components_Component_Base
                 );
                 if (!$this->_wrappers[$file]->exists()) {
                     throw new Components_Exception(
-                        $this->_wrappers[$file]->getFile() . ' is missing.'
+                        $this->_wrappers[$file]->getFileName() . ' is missing.'
                     );
                 }
                 break;

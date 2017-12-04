@@ -50,21 +50,57 @@ extends Components_TestCase
         $this->assertTrue($changelog->exists());
     }
 
-    public function testGetFile()
+    public function testGetFullPath()
     {
         $changelog = new Components_Wrapper_ChangelogYml(
             __DIR__ . '/../../../fixture/deps'
         );
         $this->assertEquals(
             __DIR__ . '/../../../fixture/deps/changelog.yml',
-            $changelog->getFile()
+            $changelog->getFullPath()
         );
         $changelog = new Components_Wrapper_ChangelogYml(
             __DIR__ . '/../../../fixture/deps/doc/Horde/Deps'
         );
         $this->assertEquals(
             __DIR__ . '/../../../fixture/deps/doc/Horde/Deps/changelog.yml',
-            $changelog->getFile()
+            $changelog->getFullPath()
+        );
+    }
+
+    public function testGetLocalPath()
+    {
+        $changelog = new Components_Wrapper_ChangelogYml(
+            __DIR__ . '/../../../fixture/deps'
+        );
+        $this->assertEquals(
+            'changelog.yml',
+            $changelog->getLocalPath(__DIR__ . '/../../../fixture/deps')
+        );
+        $changelog = new Components_Wrapper_ChangelogYml(
+            __DIR__ . '/../../../fixture/deps/doc/Horde/Deps'
+        );
+        $this->assertEquals(
+            'doc/Horde/Deps/changelog.yml',
+            $changelog->getLocalPath(__DIR__ . '/../../../fixture/deps')
+        );
+    }
+
+    public function testGetFileName()
+    {
+        $changelog = new Components_Wrapper_ChangelogYml(
+            __DIR__ . '/../../../fixture/deps'
+        );
+        $this->assertEquals(
+            'changelog.yml',
+            $changelog->getFileName()
+        );
+        $changelog = new Components_Wrapper_ChangelogYml(
+            __DIR__ . '/../../../fixture/deps/doc/Horde/Deps'
+        );
+        $this->assertEquals(
+            'changelog.yml',
+            $changelog->getFileName()
         );
     }
 
@@ -80,7 +116,7 @@ extends Components_TestCase
         $changelog->save();
         $this->assertFileEquals(
             __DIR__ . '/../../../fixture/deps/doc/Horde/Deps/changelog-new-1.yml',
-            $changelog->getFile()
+            $changelog->getFullPath()
         );
     }
 
@@ -97,7 +133,7 @@ extends Components_TestCase
         $changelog->save();
         $this->assertFileEquals(
             __DIR__ . '/../../../fixture/deps/doc/Horde/Deps/changelog-new-2.yml',
-            $changelog->getFile()
+            $changelog->getFullPath()
         );
     }
 
@@ -115,7 +151,7 @@ extends Components_TestCase
         $changelog->save();
         $this->assertFileEquals(
             __DIR__ . '/../../../fixture/deps/doc/Horde/Deps/changelog-new-3.yml',
-            $changelog->getFile()
+            $changelog->getFullPath()
         );
     }
 }

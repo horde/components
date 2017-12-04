@@ -33,9 +33,35 @@ trait Components_Wrapper_Trait
      *
      * @return string  Path to the file.
      */
-    public function getFile()
+    public function getFullPath()
     {
         return $this->_file;
+    }
+
+    /**
+     * Returns the local path to the file inside the package.
+     *
+     * @param string $dir  The package directory.
+     *
+     * @return string  Path to the file.
+     */
+    public function getLocalPath($dir)
+    {
+        return preg_replace(
+            '|^' . preg_quote(rtrim($dir, '/'), '|') . '/|',
+            '',
+            $this->_file
+        );
+    }
+
+    /**
+     * Returns the file name.
+     *
+     * @return string  The file name.
+     */
+    public function getFileName()
+    {
+        return basename($this->_file);
     }
 
     /**
@@ -56,7 +82,7 @@ trait Components_Wrapper_Trait
     public function diff()
     {
         $renderer = new Horde_Text_Diff_Renderer_Unified();
-        $old = $this->exists() ? file($this->getFile()) : array();
+        $old = $this->exists() ? file($this->getFullPath()) : array();
         return $renderer->render(
             new Horde_Text_Diff(
                 'auto', array($old, explode("\n", rtrim($this, "\n")))
