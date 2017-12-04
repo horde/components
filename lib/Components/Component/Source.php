@@ -1068,14 +1068,6 @@ class Components_Component_Source extends Components_Component_Base
                 $this->_wrappers[$file] = new Components_Wrapper_PackageXml(
                     $this->_directory
                 );
-                if (!$this->_wrappers[$file]->exists()) {
-                    throw new Components_Exception(
-                        sprintf(
-                            'The package.xml of the component at "%s" is missing.',
-                            $this->_wrappers[$file]->getFile()
-                        )
-                    );
-                }
                 break;
             case 'ChangelogYml':
                 $this->_wrappers[$file] = new Components_Wrapper_ChangelogYml(
