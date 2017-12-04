@@ -49,7 +49,7 @@ class Components_Release_Task_Base
     /**
      * The component that should be released
      *
-     * @var Components_Component
+     * @var Components_Component_Source
      */
     protected $_component;
 
@@ -84,7 +84,7 @@ class Components_Release_Task_Base
      *
      * @return NULL
      */
-    public function setComponent(Components_Component $component)
+    public function setComponent(Components_Component_Source $component)
     {
         $this->_component = $component;
         $this->_notes->setComponent($component);
