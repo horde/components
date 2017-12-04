@@ -69,6 +69,9 @@ class Components_Helper_Commit
      */
     public function add($path, $directory)
     {
+        if ($path instanceof Components_Wrapper) {
+            $directory = $path->getLocalPath($directory);
+        }
         $this->_added[$path] = $directory;
     }
 

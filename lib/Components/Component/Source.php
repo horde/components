@@ -198,10 +198,7 @@ class Components_Component_Source extends Components_Component_Base
             foreach ($this->_wrappers as $wrapper) {
                 $wrapper->save();
                 if (!empty($options['commit'])) {
-                    $options['commit']->add(
-                        $wrapper->getLocalPath($this->_directory),
-                        $this->_directory
-                    );
+                    $options['commit']->add($wrapper, $this->_directory);
                 }
             }
             return true;
@@ -572,9 +569,7 @@ class Components_Component_Source extends Components_Component_Base
             $xml->syncCurrentVersion();
             $xml->save();
             if (!empty($options['commit'])) {
-                $options['commit']->add(
-                    $xml->getLocalPath($this->_directory), $this->_directory
-                );
+                $options['commit']->add($xml, $this->_directory);
             }
             $result = sprintf(
                 'Marked %s and %s with current timestamp and synchronized the change log.',
@@ -632,21 +627,12 @@ class Components_Component_Source extends Components_Component_Base
 
         if (empty($options['pretend'])) {
             if (!empty($options['commit']) && $changelog) {
-                $options['commit']->add(
-                    $changelog, $this->_directory
-                );
-                $options['commit']->add(
-                    $yaml->getLocalPath($this->_directory), $this->_directory
-                );
+                $options['commit']->add($changelog, $this->_directory);
+                $options['commit']->add($yaml, $this->_directory);
                 if ($changes) {
-                    $options['commit']->add(
-                        $changes, $this->_directory
-                    );
+                    $options['commit']->add($changes, $this->_directory);
                 }
-                $options['commit']->add(
-                    $package_xml->getLocalPath($this->_directory),
-                    $this->_directory
-                );
+                $options['commit']->add($package_xml, $this->_directory);
             }
             $result = sprintf(
                 'Set release version "%s" and api version "%s" in %s.',
@@ -682,9 +668,7 @@ class Components_Component_Source extends Components_Component_Base
         $package->setState($rel_state, $api_state);
         if (empty($options['pretend'])) {
             if (!empty($options['commit'])) {
-                $options['commit']->add(
-                    $package->getLocalPath($this->_directory), $this->_directory
-                );
+                $options['commit']->add($package, $this->_directory);
             }
             $result = sprintf(
                 'Set release state "%s" and api state "%s" in %s.',
@@ -750,9 +734,7 @@ class Components_Component_Source extends Components_Component_Base
         }
 
         if (empty($options['pretend']) && !empty($options['commit'])) {
-            $options['commit']->add(
-                $package->getLocalPath($this->_directory), $this->_directory
-            );
+            $options['commit']->add($package, $this->_directory);
         }
 
         return $result;
