@@ -103,14 +103,12 @@ class Components_Component_Source extends Components_Component_Base
     /**
      * Returns the link to the change log.
      *
-     * @param Components_Helper_ChangeLog $helper  The change log helper.
-     *
-     * @return string|null The link to the change log.
+     * @return string The link to the change log.
      */
-    public function getChangelog($helper)
+    public function getChangelogLink()
     {
         $base = $this->getFactory()->getGitRoot()->getRoot();
-        return $helper->getChangelog(
+        return $this->getFactory()->createChangelog($this)->getChangelogLink(
             preg_replace(
                 '#^' . $base . '#', '', $this->_directory
             )

@@ -80,12 +80,7 @@ extends Components_Release_Task_Base
         $mailer->append("\n\n" .
             'The full list of changes can be viewed here:' .
             "\n\n" .
-            $this->getComponent()->getChangelog(
-                new Components_Helper_ChangeLog(
-                    $this->getOutput(),
-                    $this->getComponent()->getConfig()
-                )
-            ) .
+            $this->getComponent()->getChangelogLink() .
             "\n\n" .
             'Have fun!' .
             "\n\n" .

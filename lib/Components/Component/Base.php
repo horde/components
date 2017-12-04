@@ -223,11 +223,9 @@ abstract class Components_Component_Base implements Components_Component
     /**
      * Returns the link to the change log.
      *
-     * @param Components_Helper_ChangeLog $helper  The change log helper.
-     *
-     * @return string|null The link to the change log.
+     * @return string The link to the change log.
      */
-    public function getChangelog($helper)
+    public function getChangelogLink()
     {
         throw new Components_Exception('Not supported!');
     }

@@ -398,7 +398,7 @@ class Components_Helper_ChangeLog
      *
      * @return string  The link to the change log.
      */
-    public function getChangelog($root)
+    public function getChangelogLink($root)
     {
         if ($changes = $this->changesFileExists()) {
             $hordeInfo = $this->_getHordeInfo();
