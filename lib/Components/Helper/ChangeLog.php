@@ -405,8 +405,7 @@ class Components_Helper_ChangeLog
             $blob = trim(
                 $this->_systemInDirectory(
                     'git log --format="%H" HEAD^..HEAD',
-                    $this->_directory,
-                    array()
+                    $this->_directory
                 )
             );
             $changes = preg_replace('#^' . $this->_directory . '#', '', $changes);
@@ -592,34 +591,15 @@ class Components_Helper_ChangeLog
      *
      * @param string $call       The system call to execute.
      * @param string $target_dir Run the command in the provided target path.
-     * @param array  $options    Additional options.
      *
      * @return string The command output.
      */
-    protected function _systemInDirectory($call, $target_dir, $options)
+    protected function _systemInDirectory($call, $target_dir)
     {
         $old_dir = getcwd();
         chdir($target_dir);
-        $result = $this->_system($call, $options);
+        $result = exec($call);
         chdir($old_dir);
         return $result;
-    }
-
-    /**
-     * Run a system call.
-     *
-     * @param string $call    The system call to execute.
-     * @param array  $options Additional options.
-     *
-     * @return string The command output.
-     */
-    protected function _system($call, $options)
-    {
-        if (empty($options['pretend'])) {
-            //@todo Error handling
-            return exec($call);
-        } else {
-            $this->_output->info(sprintf('Would run "%s" now.', $call));
-        }
     }
 }
