@@ -164,6 +164,7 @@ class Components_Component_Source extends Components_Component_Base
             } else {
                 $this->getFactory()->createPackageFile($this->_directory);
             }
+            unset($this->_wrappers['PackageXml']);
         }
 
         $package_xml = $this->updatePackageFromHordeYml();
