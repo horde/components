@@ -87,8 +87,6 @@ class Components_Runner_Update
                 );
                 if ($action != 'print' && $action != 'diff') {
                     $this->_output->ok($result);
-                } else {
-                    $this->_output->info($result);
                 }
                 if (!empty($options['new_version']) &&
                     !empty($options['sentinel'])) {
