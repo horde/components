@@ -85,7 +85,7 @@ extends Components_TestCase
 
     private function _getValidPackage()
     {
-        $package = $this->getMock('Components_Component', array(), array(), '', false, false);
+        $package = $this->getMock('Components_Component_Source', array(), array(), '', false, false);
         $package->expects($this->any())
             ->method('hasLocalPackageXml')
             ->will($this->returnValue(true));

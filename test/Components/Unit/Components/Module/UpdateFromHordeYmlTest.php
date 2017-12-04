@@ -39,7 +39,7 @@ extends Components_TestCase
     {
         $this->assertStringEqualsFile(
             __DIR__ . '/../../../fixture/horde_yml/package.xml',
-            $this->_update()
+            $this->_update()[0]
         );
     }
 
@@ -47,7 +47,7 @@ extends Components_TestCase
     {
         $this->assertStringEqualsFile(
             __DIR__ . '/../../../fixture/horde_yml/composer.json',
-            $this->_update(true)
+            $this->_update()[3]
         );
     }
 
@@ -55,7 +55,7 @@ extends Components_TestCase
     {
         $yaml = $this->_changeYaml();
         $stream = fopen('php://temp', 'r+');
-        fwrite($stream, $this->_update());
+        fwrite($stream, $this->_update()[0]);
         $xml = new Horde_Pear_Package_Xml($stream);
         fclose($stream);
         $this->assertEquals($yaml['id'], $xml->getName());
@@ -188,7 +188,7 @@ extends Components_TestCase
     public function testChangesInComposerJson()
     {
         $yaml = $this->_changeYaml();
-        $json = json_decode($this->_update(true), true);
+        $json = json_decode($this->_update()[3], true);
         $this->assertEquals('horde/' . $yaml['id'], $json['name']);
         $this->assertEquals($yaml['full'], $json['description']);
         $this->assertEquals($yaml['version']['release'], $json['version']);
@@ -222,9 +222,30 @@ extends Components_TestCase
 
     public function testSettingNewVersion()
     {
+        $fixtures = __DIR__ . '/../../../fixture/deps/';;
+        $dir = Horde_Util::createTempDir();
+        mkdir($dir . '/doc/Horde/Deps', 0777, true);
+        copy($fixtures . '.horde.yml', $dir . '/.horde.yml');
+        copy($fixtures . 'package.xml', $dir . '/package.xml');
+        copy(
+            $fixtures . 'doc/Horde/Deps/changelog.yml',
+            $dir . '/doc/Horde/Deps/changelog.yml'
+        );
+        $files = $this->_update(
+            $dir,
+            array('--new-version', '2.32.0', '--new-api', '2.32.0')
+        );
         $this->assertStringEqualsFile(
-            __DIR__ . '/../../../fixture/deps/package-new.xml',
-            $this->_update(false, 'deps', array('--new-version', '2.32.0'))
+            $fixtures . 'package-new.xml',
+            $files[1]
+        );
+        $this->assertStringEqualsFile(
+            $fixtures . '.horde-new.yml',
+            $files[0]
+        );
+        $this->assertStringEqualsFile(
+            $fixtures . 'doc/Horde/Deps/changelog-new-3.yml',
+            $files[2]
         );
     }
 
@@ -278,8 +299,11 @@ extends Components_TestCase
         return $yaml;
     }
 
-    protected function _update($composer = false, $dir = 'horde_yml', $additional = array())
+    protected function _update($dir = 'horde_yml', $additional = array())
     {
+        if ($dir[0] != '/') {
+            $dir = __DIR__ . '/../../../fixture/' . $dir;
+        }
         $_SERVER['argv'] = array_merge(
             array(
                 'horde-components',
@@ -287,16 +311,17 @@ extends Components_TestCase
                 '--updatexml',
             ),
             $additional,
-            array(__DIR__ . '/../../../fixture/' . $dir)
+            array($dir)
         );
         $result = str_replace(
             date('Y-m-d'),
             '2010-08-22',
             $this->_callStrictComponents()
         );
-        if (!preg_match('/(.*<\/package>\n)(\{.*)/ms', $result, $files)) {
+        $files = explode("===\n", $result);
+        if (count($files) < 2) {
             $this->fail("Unexpected result:\n" . $result);
         }
-        return $composer ? $files[2] : $files[1];
+        return $files;
     }
 }
