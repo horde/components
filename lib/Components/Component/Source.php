@@ -753,11 +753,12 @@ class Components_Component_Source extends Components_Component_Base
             $result .= ' API stability: "' . $stability_api . '".';
         }
 
-        if (!empty($options['commit'])) {
+        if (empty($options['pretend']) && !empty($options['commit'])) {
             $options['commit']->add(
                 basename($package->getFile()), $this->_directory
             );
         }
+
         return $result;
     }
 
