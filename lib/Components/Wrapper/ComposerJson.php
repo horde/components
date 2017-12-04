@@ -51,6 +51,6 @@ class Components_Wrapper_ComposerJson extends ArrayObject
         return json_encode(
             iterator_to_array($this),
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
-        ) . "\n";
+        );
     }
 }
