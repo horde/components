@@ -289,15 +289,12 @@ abstract class Components_Component_Base implements Components_Component
     /**
      * Update the component changelog.
      *
-     * @param string                      $log     The log entry.
-     * @param Components_Helper_ChangeLog $helper  The change log helper.
-     * @param array                       $options Options for the operation.
+     * @param string $log     The log entry.
+     * @param array $options  Options for the operation.
      *
-     * @return NULL
+     * @return string[]  Output messages.
      */
-    public function changed(
-        $log, Components_Helper_ChangeLog $helper, $options
-    )
+    public function changed($log, $options)
     {
         throw new Components_Exception(
             'Updating the change log is not supported!'
@@ -307,12 +304,11 @@ abstract class Components_Component_Base implements Components_Component
     /**
      * Timestamp the package.xml file with the current time.
      *
-     * @param Components_Output $output  The output handler.
-     * @param array $options             Options for the operation.
+     * @param array $options  Options for the operation.
      *
      * @return string The success message.
      */
-    public function timestampAndSync(Components_Output $output, $options)
+    public function timestampAndSync($options)
     {
         throw new Components_Exception(
             'Timestamping is not supported!'

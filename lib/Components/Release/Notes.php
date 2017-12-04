@@ -81,12 +81,7 @@ class Components_Release_Notes
             if (strpos($description, 'release') === false) {
                 $description .= ' release';
             }
-            $infofile = dirname(dirname($file)) . '/.horde.yml';
-            try {
-                $info = Horde_Yaml::loadFile($infofile);
-            } catch (Horde_Yaml_Exception $e) {
-                throw new Components_Exception($e);
-            }
+            $info = $this->_component->getWrapper('HordeYml');
             $this->_notes['name'] = $info['name'];
             if (isset($info['list'])) {
                 $this->_notes['list'] = $info['list'];

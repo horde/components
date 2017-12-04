@@ -33,13 +33,6 @@ class Components_Runner_Change
     private $_config;
 
     /**
-     * Change log helper.
-     *
-     * @var Components_Helper_ChangeLog
-     */
-    private $_helper;
-
-    /**
      * The output handler.
      *
      * @param Component_Output
@@ -49,18 +42,15 @@ class Components_Runner_Change
     /**
      * Constructor.
      *
-     * @param Components_Config           $config  The configuration for the
-     *                                             current job.
-     * @param Components_Helper_ChangeLog $helper  Change log helper
+     * @param Components_Config $config  The configuration for the current job.
+     * @param Components_Output $output  The output handler.
      */
     public function __construct(
         Components_Config $config,
-        Components_Helper_ChangeLog $helper,
         Components_Output $output
     )
     {
         $this->_config = $config;
-        $this->_helper = $helper;
         $this->_output = $output;
     }
 
@@ -83,12 +73,13 @@ class Components_Runner_Change
                 $this->_output, $options
             );
         }
-        $this->_config->getComponent()->changed(
-            $log, $this->_helper, $options
-        );
+        $output = $this->_config->getComponent()->changed($log, $options);
         if ($log && !empty($options['commit'])) {
             $options['commit']->commit($log);
             $options['commit2']->commit($log);
+        }
+        foreach ($output as $message) {
+            $this->_output->plain($message);
         }
     }
 }

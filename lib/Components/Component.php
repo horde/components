@@ -168,15 +168,12 @@ interface Components_Component
     /**
      * Update the component changelog.
      *
-     * @param string                      $log     The log entry.
-     * @param Components_Helper_ChangeLog $helper  The change log helper.
-     * @param array                       $options Options for the operation.
+     * @param string $log     The log entry.
+     * @param array $options  Options for the operation.
      *
-     * @return NULL
+     * @return string[]  Output messages.
      */
-    public function changed(
-        $log, Components_Helper_ChangeLog $helper, $options
-    );
+    public function changed($log, $options);
 
     /**
      * Timestamp the package.xml file with the current time.
@@ -186,7 +183,7 @@ interface Components_Component
      *
      * @return string The success message.
      */
-    public function timestampAndSync(Components_Output $output, $options);
+    public function timestampAndSync($options);
 
     /**
      * Add the next version to the package.xml.

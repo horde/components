@@ -47,6 +47,13 @@ class Components_Component_Factory
     protected $_client;
 
     /**
+     * The output handler.
+     *
+     * @var Component_Output
+     */
+    protected $_output;
+
+    /**
      * The first source component generated
      *
      * @var Components_Component
@@ -70,20 +77,25 @@ class Components_Component_Factory
     /**
      * Constructor.
      *
-     * @param Components_Config       $config  The configuration for the current job.
-     * @param Components_Pear_Factory $factory Generator for all
-     *                                         required PEAR components.
-     * @param Horde_Http_Client       $client  The HTTP client for remote access.
+     * @param Components_Config       $config  The configuration for the
+     *                                         current job.
+     * @param Components_Pear_Factory $factory Generator for all required PEAR
+     *                                         components.
+     * @param Horde_Http_Client       $client  The HTTP client for remote
+     *                                         access.
+     * @param Component_Output        $output  The output handler.
      */
     public function __construct(
         Components_Config $config,
         Components_Pear_Factory $factory,
-        Horde_Http_Client $client
+        Horde_Http_Client $client,
+        Components_Output $output
     )
     {
         $this->_config  = $config;
         $this->_factory = $factory;
         $this->_client  = $client;
+        $this->_output  = $output;
     }
 
     /**
@@ -146,6 +158,18 @@ class Components_Component_Factory
             $this->_config,
             $this
         );
+    }
+
+    /**
+     * Creates a changelog helper.
+     *
+     * @param Components_Component_Source $component The component.
+     *
+     * @return Components_Helper_ChangeLog  Changelog helper.
+     */
+    public function createChangelog(Components_Component_Source $component)
+    {
+        return new Components_Helper_ChangeLog($this->_config, $component);
     }
 
     /**

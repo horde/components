@@ -17,23 +17,11 @@
  * @category Horde
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>
+ * @author   Jan Schneider <jan@horde.org>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 class Components_Helper_ChangeLog
 {
-    /** Path to the .horde.yml file. */
-    const HORDE_INFO = '/.horde.yml';
-
-    /** Path to the CHANGES file. */
-    const CHANGES = '/CHANGES';
-
-    /**
-     * The output handler.
-     *
-     * @var Component_Output
-     */
-    protected $_output;
-
     /**
      * The path to the component directory.
      *
@@ -42,17 +30,25 @@ class Components_Helper_ChangeLog
     protected $_directory;
 
     /**
+     * The component object.
+     *
+     * @var Component_Component
+     */
+    protected $_component;
+
+    /**
      * Constructor.
      *
-     * @param Component_Output $output   The output handler.
-     * @param Components_Config $config  The configuration.
+     * @param Components_Config $config        The configuration.
+     * @param Components_Component $component  A component object.
      */
     public function __construct(
-        Components_Output $output, Components_Config $config
+        Components_Config $config,
+        Components_Component $component
     )
     {
-        $this->_output = $output;
         $this->_directory = $config->getPath();
+        $this->_component = $component;
     }
 
     /* changelog.yml methods */
@@ -60,8 +56,8 @@ class Components_Helper_ChangeLog
     /**
      * Update changelog.yml file.
      *
-     * @param string $log         The log entry.
-     * @param array  $options     Additional options.
+     * @param string $log      The log entry.
+     * @param array  $options  Additional options.
      *
      * @return string  Path to the updated changelog.yml file.
      */
@@ -73,21 +69,7 @@ class Components_Helper_ChangeLog
 
         if ($changelog = $this->changelogFileExists()) {
             if (empty($options['pretend'])) {
-                $version = $this->addChangelog($log);
-                $this->_output->ok(
-                    sprintf(
-                        'Added new note to version %s of %s.',
-                        $version,
-                        $changelog
-                    )
-                );
-            } else {
-                $this->_output->info(
-                    sprintf(
-                        'Would add change log entry to %s now.',
-                        $changelog
-                    )
-                );
+                $this->addChangelog($log);
             }
             return $changelog;
         }
@@ -101,7 +83,7 @@ class Components_Helper_ChangeLog
      */
     public function changelogFileExists()
     {
-        $changelog = $this->getChangelogYml();
+        $changelog = $this->_component->getWrapper('ChangelogYml');
 
         if ($changelog->exists()) {
             return $changelog->getFile();
@@ -110,39 +92,23 @@ class Components_Helper_ChangeLog
     }
 
     /**
-     * Returns a changelog.yml wrapper.
-     *
-     * @return Components_Helper_ChangeLog_Yaml  A changelog.yml wrapper.
-     */
-    public function getChangelogYml()
-    {
-        return new Components_Helper_ChangeLog_Yaml(
-            $this->_getDocDirectory()
-        );
-    }
-
-    /**
      * Add a change log entry to changelog.yml
      *
      * @param string $entry  Change log entry to add.
-     *
-     * @returns string  The updated version.
      */
     public function addChangelog($entry)
     {
-        $hordeInfo = $this->_getHordeInfo();
+        $hordeInfo = $this->_component->getWrapper('HordeYml');
         if (!isset($hordeInfo['version'])) {
             throw new Components_Exception('.horde.yml is missing a \'version\' entry');
         }
         $version = $hordeInfo['version']['release'];
-        $changelog = $this->getChangelogYml();
+        $changelog = $this->_component->getWrapper('ChangelogYml');
         $info = $changelog[$version];
         $notes = explode("\n", trim($info['notes']));
         array_unshift($notes, $entry);
         $info['notes'] = implode("\n", $notes) . "\n";
         $changelog[$version] = $info;
-        $changelog->save();
-        return $version;
     }
 
     /**
@@ -152,31 +118,33 @@ class Components_Helper_ChangeLog
      * .horde.yml, because the old, to-be-replaced version is retrieved from
      * there.
      *
-     * @param string $version  The new version.
+     * @param string $version  The new release version.
+     * @param string $api      The new api version.
      */
-    public function setVersion($version)
+    public function setVersion($version, $api)
     {
-        $hordeInfo = $this->_getHordeInfo();
+        $hordeInfo = $this->_component->getWrapper('HordeYml');
         if (!isset($hordeInfo['version'])) {
             throw new Components_Exception('.horde.yml is missing a \'version\' entry');
         }
         $oldVersion = $hordeInfo['version']['release'];
-        $changelog = $this->getChangelogYml();
-        $newChangelog = new Components_Helper_ChangeLog_Yaml(
-            Horde_Util::createTempDir()
-        );
+        $changelog = $this->_component->getWrapper('ChangelogYml');
+        $newChangelog = array();
         array_walk(
             $changelog,
-            function($entry, $ver) use (&$newChangelog, $oldVersion, $version)
+            function($entry, $ver)
+                use (&$newChangelog, $oldVersion, $version, $api)
             {
                 if ($ver == $oldVersion) {
                     $ver = $version;
+                    if ($api) {
+                        $entry['api'] = $api;
+                    }
                 }
                 $newChangelog[$ver] = $entry;
             }
         );
-        $newChangelog->save();
-        rename($newChangelog->getFile(), $changelog->getFile());
+        $changelog->exchangeArray($newChangelog);
     }
 
     /**
@@ -184,19 +152,20 @@ class Components_Helper_ChangeLog
      */
     public function timestamp()
     {
-        $hordeInfo = $this->_getHordeInfo();
+        $hordeInfo = $this->_component->getWrapper('HordeYml');
         if (!isset($hordeInfo['version'])) {
-            throw new Components_Exception('.horde.yml is missing a \'version\' entry');
+            throw new Components_Exception(
+                '.horde.yml is missing a \'version\' entry'
+            );
         }
         $version = $hordeInfo['version']['release'];
-        $changelog = $this->getChangelogYml();
+        $changelog = $this->_component->getWrapper('ChangelogYml');
         if (!isset($changelog[$version])) {
             throw new Components_Exception(
                 'changelog.yml is missing the version ' . $version
             );
         }
         $changelog[$version]['date'] = gmdate('Y-m-d');
-        $changelog->save();
     }
 
     /**
@@ -245,10 +214,10 @@ class Components_Helper_ChangeLog
         $changes = array_reverse($changes);
 
         // Import releases from CHANGES.
-        if ($changesFile = $this->changesFileExists()) {
-            $fp = fopen($changesFile, 'r');
+        $changesFile = $this->_component->getWrapper('Changes');
+        if ($changesFile->exists()) {
             $inHeader = $maybeHeader = $version = false;
-            while ($line = fgets($fp)) {
+            foreach ($changesFile as $line) {
                 if (!strcspn($line, '-')) {
                     if ($inHeader) {
                         $inHeader = false;
@@ -283,16 +252,11 @@ class Components_Helper_ChangeLog
             if ($version && !isset($changes[$version])) {
                 $changes[$version] = array('notes' => trim($notes) . "\n");
             }
-            fclose($fp);
         }
 
         // Create changelog.yml.
-        $changelog = new Components_Helper_ChangeLog_Yaml(
-            $this->_getDocDirectory(true)
-        );
+        $changelog = $this->_component->getWrapper('ChangelogYml');
         $changelog->exchangeArray($changes);
-        $changelog->save();
-        $this->_output->ok(sprintf('Created %s.', $changelog));
     }
 
     /* package.xml methods */
@@ -300,96 +264,43 @@ class Components_Helper_ChangeLog
     /**
      * Update package.xml file.
      *
-     * @param string                 $log     The log entry.
-     * @param Horde_Pear_Package_Xml $xml     The package xml handler.
-     * @param string                 $file    Path to the package.xml.
-     * @param array                  $options Additional options.
+     * @param string                 $log  The log entry.
+     * @param Horde_Pear_Package_Xml $xml  The package xml handler.
      *
      * @return string  Path to the updated package.xml file.
      */
-    public function packageXml($log, $xml, $file, $options)
+    public function packageXml($log, $xml)
     {
-        if (file_exists($file)) {
-            if (empty($options['pretend'])) {
-                $xml->addNote($log);
-                file_put_contents($file, (string)$xml);
-                $this->_output->ok(
-                    'Added new note to version ' . $xml->getVersion() . ' of ' . $file . '.'
-                );
-            } else {
-                $this->_output->info(
-                    sprintf(
-                        'Would add change log entry to %s now.',
-                        $file
-                    )
-                );
-            }
-            return $file;
+        if ($xml->exists()) {
+            $xml->addNote($log);
+            return $xml->getFile();
         }
     }
 
     /**
      * Updates package.xml from changelog.yml.
      *
-     * @param Horde_Pear_Package_Xml $xml     The package xml handler.
-     * @param string                 $file    Path to the package.xml.
-     * @param array                  $options Additional options.
+     * @param Horde_Pear_Package_Xml $xml  The package xml handler.
      *
      * @return string  Path to the updated package.xml file.
      */
-    public function updatePackage($xml, $file, $options)
+    public function updatePackage($xml)
     {
-        $allchanges = $this->getChangelogYml();
-        if (!$allchanges->exists() || !file_exists($file)) {
+        $allchanges = $this->_component->getWrapper('ChangelogYml');
+        if (!$allchanges->exists() || !$xml->exists()) {
             return;
         }
 
-        if (empty($options['pretend'])) {
-            if (isset($allchanges['extra'])) {
-                unset($allchanges['extra']);
-            }
-            $xml->setNotes(iterator_to_array($allchanges));
-            file_put_contents($file, (string)$xml);
-            $this->_output->ok(sprintf('Updated %s.', $file));
-        } else {
-            $this->_output->info(sprintf('Would update %s now.', $file));
+        $changes = iterator_to_array($allchanges);
+        if (isset($changes['extra'])) {
+            unset($changes['extra']);
         }
+        $xml->setNotes($changes);
 
-        return $file;
+        return $xml->getFile();
     }
 
     /* CHANGES methods */
-
-    /**
-     * Update CHANGES file.
-     *
-     * @param string $log         The log entry.
-     * @param array  $options     Additional options.
-     *
-     * @return string  Path to the updated CHANGES file.
-     */
-    public function changes($log, $options)
-    {
-        if ($changes = $this->changesFileExists()) {
-            if (empty($options['pretend'])) {
-                $this->addChange($log, $changes);
-                $this->_output->ok(
-                    sprintf(
-                        'Added new note to %s.',
-                        $changes
-                    )
-                );
-            } else {
-                $this->_output->info(
-                    sprintf(
-                        'Would add change log entry to %s now.',
-                        $changes
-                    )
-                );
-            }
-            return $changes;
-        }
-    }
 
     /**
      * Returns the link to the CHANGES file on GitHub.
@@ -400,8 +311,8 @@ class Components_Helper_ChangeLog
      */
     public function getChangelogLink($root)
     {
-        if ($changes = $this->changesFileExists()) {
-            $hordeInfo = $this->_getHordeInfo();
+        if ($this->changesFileExists()) {
+            $hordeInfo = $this->_component->getWrapper('HordeYml');
             $blob = trim(
                 $this->_systemInDirectory(
                     'git log --format="%H" HEAD^..HEAD',
@@ -423,37 +334,11 @@ class Components_Helper_ChangeLog
      */
     public function changesFileExists()
     {
-        $changes = $this->_getDocDirectory() . self::CHANGES;
-        if (file_exists($changes)) {
-            return $changes;
+        $changes = $this->_component->getWrapper('Changes');
+        if ($changes->exists()) {
+            return $changes->getFile();
         }
         return false;
-    }
-
-    /**
-     * Add a change log entry to CHANGES
-     *
-     * @param string $entry   Change log entry to add.
-     * @param string $changes Path to the CHANGES file.
-     */
-    public function addChange($entry, $changes)
-    {
-        $tmp = Horde_Util::getTempFile();
-        $entry = Horde_String::wrap($entry, 79, "\n      ");
-
-        $oldfp = fopen($changes, 'r');
-        $newfp = fopen($tmp, 'w');
-        $counter = 0;
-        while ($line = fgets($oldfp)) {
-            if ($counter == 4) {
-                fwrite($newfp, $entry . "\n");
-            }
-            $counter++;
-            fwrite($newfp, $line);
-        }
-        fclose($oldfp);
-        fclose($newfp);
-        system("mv -f $tmp $changes");
     }
 
     /**
@@ -465,125 +350,60 @@ class Components_Helper_ChangeLog
      */
     public function updateChanges($options)
     {
-        $allchanges = $this->getChangelogYml();
+        $allchanges = $this->_component->getWrapper('ChangelogYml');
         if (!$allchanges->exists()) {
             return;
         }
 
-        $hordeInfo = $this->_getHordeInfo();
+        $hordeInfo = $this->_component->getWrapper('HordeYml');
         if (!isset($hordeInfo['version'])) {
             throw new Components_Exception('.horde.yml is missing a \'version\' entry');
         }
 
-        $changes = $this->changesFileExists();
-        if (!$changes) {
-            $changes = $this->_getDocDirectory(true) . self::CHANGES;
+        $changes = $this->_component->getWrapper('Changes');
+        $changes->clear();
+
+        if (!empty($options['pretend'])) {
+            return $changes->getFile();
         }
 
-        if (empty($options['pretend'])) {
-            $changesfp = fopen($changes, 'w');
-            $started = false;
+        $started = false;
 
-            foreach ($allchanges as $version => $info) {
-                if ($version == 'extra') {
-                    fwrite($changesfp, $info);
-                    continue;
-                }
-                if (!$started && $version != $hordeInfo['version']['release']) {
-                    continue;
-                }
-                if (!$started) {
-                    $version .= '-git';
+        foreach ($allchanges as $version => $info) {
+            if ($version == 'extra') {
+                $changes->add($info);
+                continue;
+            }
+            if (!$started && $version != $hordeInfo['version']['release']) {
+                continue;
+            }
+            if (!$started) {
+                $version .= '-git';
+            } else {
+                $changes->add("\n\n");
+            }
+            $started = true;
+            $version = 'v' . $version;
+            $lines = str_repeat('-', strlen($version)) . "\n";
+            $changes->add($lines . $version . "\n" . $lines);
+
+            if (!$info['notes']) {
+                continue;
+            }
+            $notes = explode("\n", $info['notes']);
+            foreach ($notes as $entry) {
+                if (preg_match('/^\[.*?\] (.*)$/', $entry, $match, PREG_OFFSET_CAPTURE) ||
+                    preg_match('/^[A-Z]{3,}: (.*)$/', $entry, $match, PREG_OFFSET_CAPTURE)) {
+                    $indent = $match[1][1];
                 } else {
-                    fwrite($changesfp, "\n\n");
+                    $indent = 6;
                 }
-                $started = true;
-                $version = 'v' . $version;
-                $lines = str_repeat('-', strlen($version)) . "\n";
-                fwrite($changesfp, $lines . $version . "\n" . $lines);
-
-                if (!$info['notes']) {
-                    continue;
-                }
-                $notes = explode("\n", $info['notes']);
-                foreach ($notes as $entry) {
-                    if (preg_match('/^\[.*?\] (.*)$/', $entry, $match, PREG_OFFSET_CAPTURE) ||
-                        preg_match('/^[A-Z]{3,}: (.*)$/', $entry, $match, PREG_OFFSET_CAPTURE)) {
-                        $indent = $match[1][1];
-                    } else {
-                        $indent = 6;
-                    }
-                    $entry = Horde_String::wrap($entry, 79, "\n" . str_repeat(' ', $indent));
-                    fwrite($changesfp, "\n" . $entry);
-                }
+                $entry = Horde_String::wrap($entry, 79, "\n" . str_repeat(' ', $indent));
+                $changes->add("\n" . $entry);
             }
-            fclose($changesfp);
-            $this->_output->ok(
-                sprintf(
-                    'Updated %s.',
-                    $changes
-                )
-            );
-        } else {
-            $this->_output->info(
-                sprintf(
-                    'Would update %s now.',
-                    $changes
-                )
-            );
         }
 
-        return $changes;
-    }
-
-    /**
-     * Returns the parsed information from the .horde.yml file.
-     *
-     * @return array  A Horde component information hash.
-     */
-    protected function _getHordeInfo()
-    {
-        $path = $this->_directory . self::HORDE_INFO;
-        if (!file_exists($path)) {
-            throw new Components_Exception($path . ' not found.');
-        }
-        return Horde_Yaml::loadFile($path);
-    }
-
-    /**
-     * Returns the path to the documenation directory, if it exists.
-     *
-     * @param boolean $mkdir  Create the directory if it doesn't exist?
-     *
-     * @return string|boolean  The directory name or false if not found and not
-     *                         created.
-     */
-    protected function _getDocDirectory($mkdir = false)
-    {
-        if (is_dir($this->_directory . '/doc')) {
-            $dir = $this->_directory . '/doc';
-        } elseif (is_dir($this->_directory . '/docs')) {
-            $dir = $this->_directory . '/docs';
-        } elseif ($mkdir) {
-            $dir = $this->_directory . '/doc';
-        } else {
-            throw new Components_Exception(
-                'Cannot locate documentation directory'
-            );
-        }
-        $info = $this->_getHordeInfo();
-        if ($info['type'] == 'library') {
-            $dir .= '/Horde/' . str_replace('_', '/', $info['id']);
-        }
-        if (!is_dir($dir)) {
-            if (!$mkdir) {
-                throw new Components_Exception(
-                    sprintf('Documentation directory %s doesn\'t exist', $dir)
-                );
-            }
-            mkdir($dir, 0777, true);
-        }
-        return $dir;
+        return $changes->getFile();
     }
 
     /**

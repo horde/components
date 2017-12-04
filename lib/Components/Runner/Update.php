@@ -44,19 +44,15 @@ class Components_Runner_Update
     /**
      * Constructor.
      *
-     * @param Components_Config $config            The configuration for the
-                                                   current job.
-     * @param Components_Helper_ChangeLog $helper  Change log helper
-     * @param Component_Output $output             The output handler.
+     * @param Components_Config $config  The configuration for the current job.
+     * @param Component_Output $output   The output handler.
      */
     public function __construct(
         Components_Config $config,
-        Components_Helper_ChangeLog $helper,
         Components_Output $output
     )
     {
         $this->_config  = $config;
-        $this->_helper = $helper;
         $this->_output = $output;
     }
 
@@ -73,36 +69,40 @@ class Components_Runner_Update
 
         if (!empty($options['updatexml']) ||
             (isset($arguments[0]) && $arguments[0] == 'update')) {
-            $action = !empty($options['action']) ? $options['action'] : 'update';
+            $action = !empty($options['action'])
+                ? $options['action']
+                : 'update';
             if (!empty($options['pretend']) && $action == 'update') {
                 $action = 'diff';
             }
+            $options['action'] = $action;
             if (!empty($options['commit'])) {
                 $options['commit'] = new Components_Helper_Commit(
                     $this->_output, $options
                 );
             }
             $component = $this->_config->getComponent();
-            $result = $component->updatePackage(
-                $action, $options
-            );
-            if (!empty($options['new_version']) || !empty($options['new_api'])) {
-                $updated = $component->setVersion(
+            if (!empty($options['new_version']) ||
+                !empty($options['new_api'])) {
+                $result = $component->setVersion(
                     $options['new_version'],
                     $options['new_api'],
-                    $this->_helper,
                     $options
                 );
                 if ($action != 'print' && $action != 'diff') {
-                    $this->_output->ok($updated);
+                    $this->_output->ok($result);
+                } else {
+                    $this->_output->info($result);
                 }
                 if (!empty($options['new_version']) &&
                     !empty($options['sentinel'])) {
                     $notes = new Components_Release_Notes($this->_output);
                     $notes->setComponent($component);
-                    $application_version = Components_Helper_Version::pearToHordeWithBranch(
-                        $options['new_version'] . '-git', $notes->getBranch()
-                    );
+                    $application_version =
+                        Components_Helper_Version::pearToHordeWithBranch(
+                            $options['new_version'] . '-git',
+                            $notes->getBranch()
+                        );
                     $sentinel_result = $component->currentSentinel(
                         $options['new_version'] . '-git',
                         $application_version,
@@ -113,20 +113,30 @@ class Components_Runner_Update
                     }
                 }
             }
-            if (!empty($options['new_state']) || !empty($options['new_apistate'])) {
-                $component->setState(
+            if (!empty($options['new_state']) ||
+                !empty($options['new_apistate'])) {
+                $result = $component->setState(
                     $options['new_state'], $options['new_apistate'], $options
                 );
+                if ($action != 'print' && $action != 'diff') {
+                    $this->_output->ok($result);
+                } else {
+                    $this->_output->info($result);
+                }
             }
+            $result = $component->updatePackage($action, $options);
             if (!empty($options['commit'])) {
                 $options['commit']->commit(
-                    'Components updated the package.xml.'
+                    'Components updated the package files.'
                 );
             }
             if ($result === true) {
-                $this->_output->ok('Successfully updated package.xml of ' . $component->getName() . '.');
+                $this->_output->ok(
+                    'Successfully updated package files of '
+                    . $component->getName() . '.'
+                );
             } else {
-                print $result;
+                $this->_output->plain($result);
             }
         }
     }
