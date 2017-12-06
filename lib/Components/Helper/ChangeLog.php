@@ -345,11 +345,9 @@ class Components_Helper_ChangeLog
     /**
      * Updates CHANGES from changelog.yml.
      *
-     * @param array $options  Additional options.
-     *
      * @return string  Path to the updated CHANGES file.
      */
-    public function updateChanges($options)
+    public function updateChanges()
     {
         $allchanges = $this->_component->getWrapper('ChangelogYml');
         if (!$allchanges->exists()) {
@@ -364,12 +362,7 @@ class Components_Helper_ChangeLog
         $changes = $this->_component->getWrapper('Changes');
         $changes->clear();
 
-        if (!empty($options['pretend'])) {
-            return $changes->getFullPath();
-        }
-
         $started = false;
-
         foreach ($allchanges as $version => $info) {
             if ($version == 'extra') {
                 $changes->add($info);

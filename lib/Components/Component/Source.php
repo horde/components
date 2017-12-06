@@ -531,7 +531,7 @@ class Components_Component_Source extends Components_Component_Base
 
         // Update CHANGES
         if (empty($options['nochanges'])) {
-            $file = $helper->updateChanges($options);
+            $file = $helper->updateChanges();
             if ($file) {
                 if (empty($options['pretend'])) {
                     $this->getWrapper('Changes')->save();
