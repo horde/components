@@ -603,57 +603,78 @@ class Components_Component_Source extends Components_Component_Base
         $rel_version = null, $api_version = null, $options = array()
     )
     {
-        $helper = $this->getFactory()->createChangelog($this);
-        $yaml = $this->getWrapper('HordeYml');
-        $updated = array(
-            $yaml->getLocalPath($this->_directory),
-            $this->getPackageXmlPath()
-        );
-        if ($changelog = $helper->changelogFileExists()) {
+        $changelog = $this->getWrapper('ChangelogYml');
+        $updated = array();
+        if ($changelog->exists()) {
+            $this->getFactory()
+                ->createChangelog($this)
+                ->setVersion($rel_version, $api_version);
             $updated[] = $changelog;
         }
-        if ($changes = $helper->changesFileExists()) {
-            $updated[] = $changes;
-        }
-        $updated = implode(', ', $updated);
+        $updated = array_merge(
+            $updated,
+            $this->_setVersion($rel_version, $api_version)
+        );
 
-        $helper->setVersion($rel_version, $api_version);
-        if ($rel_version) {
-            $yaml['version']['release'] = $rel_version;
-        }
-        if ($api_version) {
-            $yaml['version']['api'] = $api_version;
-        }
-        if ($changes) {
-            $helper->updateChanges($options);
-        }
-        $package_xml = $this->updatePackageFromHordeYml();
-
+        $list = $this->_getWrapperNames($updated);
         if (empty($options['pretend'])) {
-            if (!empty($options['commit']) && $changelog) {
-                $options['commit']->add($changelog, $this->_directory);
-                $options['commit']->add($yaml, $this->_directory);
-                if ($changes) {
-                    $options['commit']->add($changes, $this->_directory);
+            if (!empty($options['commit'])) {
+                foreach ($updated as $wrapper) {
+                    $options['commit']->add($wrapper, $this->_directory);
                 }
-                $options['commit']->add($package_xml, $this->_directory);
             }
             $result = sprintf(
                 'Set release version "%s" and api version "%s" in %s.',
                 $rel_version,
                 $api_version,
-                $updated
+                $list
             );
         } else {
             $result = sprintf(
                 'Would set release version "%s" and api version "%s" in %s now.',
                 $rel_version,
                 $api_version,
-                $updated
+                $list
             );
         }
 
         return $result;
+    }
+
+    /**
+     * Sets the version in .horde.yml, package.xml and CHANGES.
+     *
+     * @param string $rel_version  The new release version number.
+     * @param string $api_version  The new api version number.
+     *
+     * @return Components_Wrapper[]  Wrappers of updated files.
+     */
+    public function _setVersion($rel_version = null, $api_version = null)
+    {
+        // Update .horde.yml.
+        $yaml = $this->getWrapper('HordeYml');
+        if ($rel_version) {
+            $yaml['version']['release'] = $rel_version;
+        }
+        if ($api_version) {
+            $yaml['version']['api'] = $api_version;
+        }
+        $updated = array($yaml);
+
+        // Update package.xml
+        $package_xml = $this->updatePackageFromHordeYml();
+        $updated[] = $package_xml;
+
+        // Update CHANGES.
+        $changes = $this->getWrapper('Changes');
+        if ($changes->exists()) {
+            $this->getFactory()
+                ->createChangelog($this)
+                ->updateChanges();
+            $updated[] = $changes;
+        }
+
+        return $updated;
     }
 
     /**
@@ -692,13 +713,13 @@ class Components_Component_Source extends Components_Component_Base
     }
 
     /**
-     * Add the next version to the package.xml.
+     * Add the next version to the component files.
      *
      * @param string $version           The new version number.
      * @param string $initial_note      The text for the initial note.
      * @param string $stability_api     The API stability for the next release.
      * @param string $stability_release The stability for the next release.
-     * @param array $options Options for the operation.
+     * @param array $options            Options for the operation.
      *
      * @return string The success message.
      */
@@ -710,24 +731,49 @@ class Components_Component_Source extends Components_Component_Base
         $options = array()
     )
     {
-        if (empty($options['pretend'])) {
-            $package = $this->getPackageXml();
-            $package->addNextVersion(
-                $version, $initial_note, $stability_api, $stability_release
+        $changelog = $this->getWrapper('ChangelogYml');
+        $currentVersion = $this->getWrapper('HordeYml')['version']['release'];
+        if (!isset($changelog[$currentVersion])) {
+            throw new Components_Exception(
+                sprintf(
+                    'Current version %s not found in %s',
+                    $currentVersion,
+                    $changelog->getFileName()
+                )
             );
-            $package->save();
+        }
+        $nextVersion = $changelog[$currentVersion];
+        $nextVersion['notes'] = "\n" . $initial_note;
+        $nextVersion['state']['release'] = $stability_release;
+        $nextVersion['state']['api'] = $stability_api;
+        $changelog[$version] = $nextVersion;
+        $changelog->uksort(function($a, $b) { return version_compare($b, $a); });
+
+        $updated = $this->_setVersion($version);
+        $updated[] = $changelog;
+        if (!empty($options['commit'])) {
+            foreach ($updated as $wrapper) {
+                $options['commit']->add($wrapper, $this->_directory);
+            }
+        }
+
+        $list = $this->_getWrapperNames($updated);
+        if (empty($options['pretend'])) {
+            foreach ($updated as $wrapper) {
+                $wrapper->save();
+            }
             $result = sprintf(
                 'Added next version "%s" with the initial note "%s" to %s.',
                 $version,
                 $initial_note,
-                $this->getPackageXmlPath()
+                $list
             );
         } else {
             $result = sprintf(
                 'Would add next version "%s" with the initial note "%s" to %s now.',
                 $version,
                 $initial_note,
-                $this->getPackageXmlPath()
+                $list
             );
         }
         if ($stability_release !== null) {
@@ -735,10 +781,6 @@ class Components_Component_Source extends Components_Component_Base
         }
         if ($stability_api !== null) {
             $result .= ' API stability: "' . $stability_api . '".';
-        }
-
-        if (empty($options['pretend']) && !empty($options['commit'])) {
-            $options['commit']->add($package, $this->_directory);
         }
 
         return $result;
@@ -800,33 +842,35 @@ class Components_Component_Source extends Components_Component_Base
     {
         $sentinel = $this->getFactory()->createSentinel($this->_directory);
         if (empty($options['pretend'])) {
-            $sentinel->updateChanges($changes);
             $sentinel->updateApplication($app);
             $action = 'Did';
         } else {
             $action = 'Would';
         }
         $files = array(
-            'changes' => $sentinel->changesFileExists(),
-            'app'     => $sentinel->applicationFileExists(),
-            'bundle'  => $sentinel->bundleFileExists()
+            $sentinel->applicationFileExists(),
+            $sentinel->bundleFileExists()
         );
         $result = array();
-        foreach ($files as $key => $file) {
+        foreach ($files as $file) {
             if (empty($file)) {
                 continue;
             }
             if (!empty($options['commit'])) {
-                $options['commit']->add($file, $this->_directory);
+                $options['commit']->add(
+                    preg_replace(
+                        '|^' . preg_quote($this->_directory, '|') . '/|',
+                        '',
+                        $file
+                    ),
+                    $this->_directory
+                );
             }
-            $version = ($key == 'changes') ? $changes : $app;
-            $task = ($key == 'changes') ? 'extend' : 'replace';
             $result[] = sprintf(
-                '%s %s sentinel in %s with "%s" now.',
+                '%s replace sentinel in %s with "%s" now.',
                 $action,
-                $task,
                 $file,
-                $version
+                $app
             );
         }
         return $result;
@@ -1068,5 +1112,26 @@ class Components_Component_Source extends Components_Component_Base
             }
         }
         return $this->_wrappers[$file];
+    }
+
+    /**
+     * Converts a list of wrappers to a file list.
+     *
+     * @param Components_Wrapper[] $wrappers  A list of wrappers.
+     *
+     * @return string  A comma-separated file list.
+     */
+    protected function _getWrapperNames($wrappers)
+    {
+        return implode(
+            ', ',
+            array_map(
+                function($wrapper)
+                {
+                    return $wrapper->getLocalPath($this->_directory);
+                },
+                $wrappers
+            )
+        );
     }
 }

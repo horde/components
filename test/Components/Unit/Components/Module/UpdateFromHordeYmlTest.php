@@ -237,7 +237,7 @@ extends Components_TestCase
         );
         $this->assertStringEqualsFile(
             $fixtures . 'package-new.xml',
-            $files[1]
+            $files[2]
         );
         $this->assertStringEqualsFile(
             $fixtures . '.horde-new.yml',
@@ -245,7 +245,7 @@ extends Components_TestCase
         );
         $this->assertStringEqualsFile(
             $fixtures . 'doc/Horde/Deps/changelog-new-3.yml',
-            $files[2]
+            $files[1]
         );
     }
 
