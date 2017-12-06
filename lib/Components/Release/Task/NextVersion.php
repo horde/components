@@ -39,7 +39,7 @@ extends Components_Release_Task_Base
     public function validate($options)
     {
         $errors = array();
-        if ($options['next_note'] === null) {
+        if (!isset($options['next_note']) || $options['next_note'] === null) {
             $errors[] = 'The "next_note" option has no value! What should the initial change log note be?';
         }
         return $errors;
