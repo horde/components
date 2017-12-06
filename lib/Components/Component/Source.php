@@ -253,18 +253,22 @@ class Components_Component_Source extends Components_Component_Base
             $xml->removeWhitespace($node->previousSibling);
             $node->parentNode->removeChild($node);
         }
-        foreach ($yaml['authors'] as $author) {
-            $xml->addAuthor(
-                $author['name'],
-                $author['user'],
-                $author['email'],
-                $author['active'],
-                $author['role']
-            );
+        if (!empty($yaml['authors'])) {
+            foreach ($yaml['authors'] as $author) {
+                $xml->addAuthor(
+                    $author['name'],
+                    $author['user'],
+                    $author['email'],
+                    $author['active'],
+                    $author['role']
+                );
+            }
         }
 
         // Update dependencies.
-        $this->_updateDependencies($xml, $yaml['dependencies']);
+        if (!empty($yaml['dependencies'])) {
+            $this->_updateDependencies($xml, $yaml['dependencies']);
+        }
 
         return $xml;
     }
