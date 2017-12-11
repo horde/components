@@ -95,10 +95,14 @@ trait Components_Wrapper_Trait
      */
     public function save()
     {
+        $contents = (string)$this;
+        if (!strlen($contents) && !$this->exists()) {
+            return;
+        }
         if (!is_dir(dirname($this->_file))) {
             mkdir(dirname($this->_file), 0777, true);
         }
-        file_put_contents($this->_file, (string)$this);
+        file_put_contents($this->_file, $contents);
     }
 
     /**
