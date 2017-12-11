@@ -629,13 +629,13 @@ class Components_Component_Source extends Components_Component_Base
             $this->_setVersion($rel_version, $api_version)
         );
 
+        if (!empty($options['commit'])) {
+            foreach ($updated as $wrapper) {
+                $options['commit']->add($wrapper, $this->_directory);
+            }
+        }
         $list = $this->_getWrapperNames($updated);
         if (empty($options['pretend'])) {
-            if (!empty($options['commit'])) {
-                foreach ($updated as $wrapper) {
-                    $options['commit']->add($wrapper, $this->_directory);
-                }
-            }
             $result = sprintf(
                 'Set release version "%s" and api version "%s" in %s.',
                 $rel_version,
