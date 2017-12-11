@@ -16,8 +16,8 @@
             "role": "lead"
         }
     ],
-    "version": "0.99.1",
-    "time": "2017-11-21",
+    "version": "1.0.0-git",
+    "time": "2017-12-11",
     "repositories": [
         {
             "type": "pear",
@@ -50,8 +50,8 @@
         "pear-pear.phpmd.org/PHP_PMD": "*"
     },
     "replace": {
-        "pear-pear.horde.org/components": "0.*",
-        "pear-horde/components": "0.*"
+        "pear-pear.horde.org/components": "1.*",
+        "pear-horde/components": "1.*"
     },
     "autoload": {
         "psr-0": {

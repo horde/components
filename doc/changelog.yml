@@ -1,5 +1,5 @@
 ---
-0.99.1:
+1.0.0-git:
   api: 1.0.0
   state:
     release: beta

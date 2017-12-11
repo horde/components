@@ -1,6 +1,6 @@
--------
-v0.99.1
--------
+----------
+v1.0.0-git
+----------
 
 [jan] Remove next-sentinel release task.
 [jan] In the 'update' command, update composer.json from .horde.yml.
