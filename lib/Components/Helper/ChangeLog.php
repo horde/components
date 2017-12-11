@@ -292,11 +292,15 @@ class Components_Helper_ChangeLog
             return;
         }
 
-        $changes = iterator_to_array($allchanges);
-        if (isset($changes['extra'])) {
-            unset($changes['extra']);
+        $changes = array();
+        foreach ($allchanges as $version => $info) {
+            if ($version == 'extra') {
+                continue;
+            }
+            $version = Components_Helper_Version::validatePear($version);
+            $changes[$version] = $info;
         }
-        $xml->setNotes($changes);
+        $xml->setNotes(array_reverse($changes));
 
         return $xml->getFullPath();
     }
@@ -371,9 +375,7 @@ class Components_Helper_ChangeLog
             if (!$started && $version != $hordeInfo['version']['release']) {
                 continue;
             }
-            if (!$started) {
-                $version .= '-git';
-            } else {
+            if ($started) {
                 $changes->add("\n\n");
             }
             $started = true;

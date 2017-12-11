@@ -236,7 +236,10 @@ class Components_Component_Source extends Components_Component_Base
         $xml->replaceTextNode('/p:package/p:description', $yaml['description']);
 
         // Update versions.
-        $xml->setVersion($yaml['version']['release'], $yaml['version']['api']);
+        $xml->setVersion(
+            Components_Helper_Version::validatePear($yaml['version']['release']),
+            Components_Helper_Version::validatePear($yaml['version']['api'])
+        );
         $xml->setState($yaml['state']['release'], $yaml['state']['api']);
 
         // Update date.

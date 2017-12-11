@@ -65,7 +65,7 @@ extends Components_Release_Task_Base
             $next_version = $options['next_version'];
         }
         $result = $this->getComponent()->nextVersion(
-            Components_Helper_Version::validatePear($next_version),
+            $next_version,
             $options['next_note'],
             $api_state,
             $rel_state,
