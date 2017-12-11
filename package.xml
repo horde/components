@@ -1764,9 +1764,7 @@
        <file name="Bugs.php" role="php" />
        <file name="CommitPostRelease.php" role="php" />
        <file name="CommitPreRelease.php" role="php" />
-       <file name="Composer.php" role="php" />
        <file name="CurrentSentinel.php" role="php" />
-       <file name="NextSentinel.php" role="php" />
        <file name="NextVersion.php" role="php" />
        <file name="Package.php" role="php" />
        <file name="Sentinel.php" role="php" />
@@ -1792,6 +1790,15 @@
       <file name="Update.php" role="php" />
       <file name="Webdocs.php" role="php" />
      </dir> <!-- /lib/Components/Runner -->
+     <dir name="Wrapper">
+      <file name="ApplicationPhp.php" role="php" />
+      <file name="ChangelogYml.php" role="php" />
+      <file name="Changes.php" role="php" />
+      <file name="ComposerJson.php" role="php" />
+      <file name="HordeYml.php" role="php" />
+      <file name="PackageXml.php" role="php" />
+      <file name="Trait.php" role="php" />
+     </dir> <!-- /lib/Components/Wrapper -->
      <file name="Component.php" role="php" />
      <file name="Config.php" role="php" />
      <file name="Configs.php" role="php" />
@@ -1800,6 +1807,7 @@
      <file name="Exception.php" role="php" />
      <file name="Module.php" role="php" />
      <file name="Output.php" role="php" />
+     <file name="Wrapper.php" role="php" />
     </dir> <!-- /lib/Components -->
     <dir name="Conductor">
      <file name="Package2XmlToComposer.php" role="php" />
@@ -1834,6 +1842,16 @@
        <file name="null.php" role="test" />
       </dir> <!-- /test/Components/fixture/config -->
       <dir name="deps">
+       <dir name="doc">
+        <dir name="Horde">
+         <dir name="Deps">
+          <file name="changelog-new-1.yml" role="test" />
+          <file name="changelog-new-2.yml" role="test" />
+          <file name="changelog-new-3.yml" role="test" />
+         </dir> <!-- /test/Components/fixture/deps/doc/Horde/Deps -->
+        </dir> <!-- /test/Components/fixture/deps/doc/Horde -->
+       </dir> <!-- /test/Components/fixture/deps/doc -->
+       <file name=".horde-new.yml" role="test" />
        <file name=".horde.yml" role="test" />
        <file name="package-new.xml" role="test" />
        <file name="package.xml" role="test" />
@@ -2044,11 +2062,14 @@
        <dir name="Release">
         <dir name="Task">
          <file name="CurrentSentinelTest.php" role="test" />
-         <file name="NextSentinelTest.php" role="test" />
+         <file name="NextVersionTest.php" role="test" />
          <file name="PackageTest.php" role="test" />
          <file name="TimestampTest.php" role="test" />
         </dir> <!-- /test/Components/Unit/Components/Release/Task -->
        </dir> <!-- /test/Components/Unit/Components/Release -->
+       <dir name="Wrapper">
+        <file name="ChangelogYmlTest.php" role="test" />
+       </dir> <!-- /test/Components/Unit/Components/Wrapper -->
        <file name="ConfigsTest.php" role="test" />
       </dir> <!-- /test/Components/Unit/Components -->
       <file name="ComponentsTest.php" role="test" />
@@ -3349,9 +3370,7 @@
    <install as="Components/Release/Task/Bugs.php" name="lib/Components/Release/Task/Bugs.php" />
    <install as="Components/Release/Task/CommitPostRelease.php" name="lib/Components/Release/Task/CommitPostRelease.php" />
    <install as="Components/Release/Task/CommitPreRelease.php" name="lib/Components/Release/Task/CommitPreRelease.php" />
-   <install as="Components/Release/Task/Composer.php" name="lib/Components/Release/Task/Composer.php" />
    <install as="Components/Release/Task/CurrentSentinel.php" name="lib/Components/Release/Task/CurrentSentinel.php" />
-   <install as="Components/Release/Task/NextSentinel.php" name="lib/Components/Release/Task/NextSentinel.php" />
    <install as="Components/Release/Task/NextVersion.php" name="lib/Components/Release/Task/NextVersion.php" />
    <install as="Components/Release/Task/Package.php" name="lib/Components/Release/Task/Package.php" />
    <install as="Components/Release/Task/Sentinel.php" name="lib/Components/Release/Task/Sentinel.php" />
@@ -3372,6 +3391,14 @@
    <install as="Components/Runner/Snapshot.php" name="lib/Components/Runner/Snapshot.php" />
    <install as="Components/Runner/Update.php" name="lib/Components/Runner/Update.php" />
    <install as="Components/Runner/Webdocs.php" name="lib/Components/Runner/Webdocs.php" />
+   <install as="Components/Wrapper.php" name="lib/Components/Wrapper.php" />
+   <install as="Components/Wrapper/ApplicationPhp.php" name="lib/Components/Wrapper/ApplicationPhp.php" />
+   <install as="Components/Wrapper/ChangelogYml.php" name="lib/Components/Wrapper/ChangelogYml.php" />
+   <install as="Components/Wrapper/Changes.php" name="lib/Components/Wrapper/Changes.php" />
+   <install as="Components/Wrapper/ComposerJson.php" name="lib/Components/Wrapper/ComposerJson.php" />
+   <install as="Components/Wrapper/HordeYml.php" name="lib/Components/Wrapper/HordeYml.php" />
+   <install as="Components/Wrapper/PackageXml.php" name="lib/Components/Wrapper/PackageXml.php" />
+   <install as="Components/Wrapper/Trait.php" name="lib/Components/Wrapper/Trait.php" />
    <install as="Conductor/Package2XmlToComposer.php" name="lib/Conductor/Package2XmlToComposer.php" />
    <install as="Conductor/PEARPackageFilev2.php" name="lib/Conductor/PEARPackageFilev2.php" />
    <install as="LICENSE" name="LICENSE" />
@@ -3388,7 +3415,11 @@
    <install as="Components/fixture/config/a.php" name="test/Components/fixture/config/a.php" />
    <install as="Components/fixture/config/b.php" name="test/Components/fixture/config/b.php" />
    <install as="Components/fixture/config/null.php" name="test/Components/fixture/config/null.php" />
+   <install as="Components/fixture/deps/.horde-new.yml" name="test/Components/fixture/deps/.horde-new.yml" />
    <install as="Components/fixture/deps/.horde.yml" name="test/Components/fixture/deps/.horde.yml" />
+   <install as="Components/fixture/deps/doc/Horde/Deps/changelog-new-1.yml" name="test/Components/fixture/deps/doc/Horde/Deps/changelog-new-1.yml" />
+   <install as="Components/fixture/deps/doc/Horde/Deps/changelog-new-2.yml" name="test/Components/fixture/deps/doc/Horde/Deps/changelog-new-2.yml" />
+   <install as="Components/fixture/deps/doc/Horde/Deps/changelog-new-3.yml" name="test/Components/fixture/deps/doc/Horde/Deps/changelog-new-3.yml" />
    <install as="Components/fixture/deps/package-new.xml" name="test/Components/fixture/deps/package-new.xml" />
    <install as="Components/fixture/deps/package.xml" name="test/Components/fixture/deps/package.xml" />
    <install as="Components/fixture/docsorigin/empty" name="test/Components/fixture/docsorigin/empty" />
@@ -3487,9 +3518,10 @@
    <install as="Components/Unit/Components/Module/UpdateFromHordeYmlTest.php" name="test/Components/Unit/Components/Module/UpdateFromHordeYmlTest.php" />
    <install as="Components/Unit/Components/Module/UpdateTest.php" name="test/Components/Unit/Components/Module/UpdateTest.php" />
    <install as="Components/Unit/Components/Release/Task/CurrentSentinelTest.php" name="test/Components/Unit/Components/Release/Task/CurrentSentinelTest.php" />
-   <install as="Components/Unit/Components/Release/Task/NextSentinelTest.php" name="test/Components/Unit/Components/Release/Task/NextSentinelTest.php" />
+   <install as="Components/Unit/Components/Release/Task/NextVersionTest.php" name="test/Components/Unit/Components/Release/Task/NextVersionTest.php" />
    <install as="Components/Unit/Components/Release/Task/PackageTest.php" name="test/Components/Unit/Components/Release/Task/PackageTest.php" />
    <install as="Components/Unit/Components/Release/Task/TimestampTest.php" name="test/Components/Unit/Components/Release/Task/TimestampTest.php" />
+   <install as="Components/Unit/Components/Wrapper/ChangelogYmlTest.php" name="test/Components/Unit/Components/Wrapper/ChangelogYmlTest.php" />
    <install as="Components/Unit/ComponentsTest.php" name="test/Components/Unit/ComponentsTest.php" />
   </filelist>
  </phprelease>
