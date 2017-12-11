@@ -356,22 +356,6 @@ abstract class Components_Component_Base implements Components_Component
     }
 
     /**
-     * Set the next sentinel.
-     *
-     * @param string $changes New version for the CHANGES file.
-     * @param string $app     New version for the Application.php file.
-     * @param array  $options Options for the operation.
-     *
-     * @return string The success message.
-     */
-    public function nextSentinel($changes, $app, $options)
-    {
-        throw new Components_Exception(
-            'Modifying the sentinel is not supported!'
-        );
-    }
-
-    /**
      * Tag the component.
      *
      * @param string                   $tag     Tag name.

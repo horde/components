@@ -37,21 +37,16 @@ extends Components_Release_Task_Sentinel
      */
     public function run(&$options)
     {
-        $changes_version = $this->getComponent()->getVersion();
-        $application_version = Components_Helper_Version::pearToHordeWithBranch(
-            $this->getComponent()->getVersion(), $this->getNotes()->getBranch()
-        );
-        $result = $this->getComponent()->currentSentinel(
-            $changes_version, $application_version, $options
+        $component = $this->getComponent();
+        $changes_version = $component->getVersion();
+        $result = $component->setVersion(
+            $changes_version, null, $options
         );
         if (!$this->getTasks()->pretend()) {
-            foreach ($result as $message) {
-                $this->getOutput()->ok($message);
-            }
+            $component->saveWrappers();
+            $this->getOutput()->ok($result);
         } else {
-            foreach ($result as $message) {
-                $this->getOutput()->info($message);
-            }
+            $this->getOutput()->info($result);
         }
     }
 }

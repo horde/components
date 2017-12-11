@@ -31,6 +31,13 @@ class Components_Component_Source extends Components_Component_Base
     protected $_directory;
 
     /**
+     * The release notes handler.
+     *
+     * @var Components_Release_Notes
+     */
+    protected $_notes;
+
+    /**
      * The PEAR package file representing the component.
      *
      * @var PEAR_PackageFile
@@ -51,16 +58,19 @@ class Components_Component_Source extends Components_Component_Base
      *                                              directory.
      * @param Components_Config $config             The configuration for the
      *                                              current job.
+     * @param Components_Release_Notes $notes       The release notes.
      * @param Components_Component_Factory $factory Generator for additional
      *                                              helpers.
      */
     public function __construct(
         $directory,
         Components_Config $config,
+        Components_Release_Notes $notes,
         Components_Component_Factory $factory
     )
     {
         $this->_directory = realpath($directory);
+        $this->_notes = $notes;
         parent::__construct($config, $factory);
     }
 
@@ -674,6 +684,18 @@ class Components_Component_Source extends Components_Component_Base
             $updated[] = $changes;
         }
 
+        // Update Application.php/Bundle.php.
+        $application = $this->getWrapper('ApplicationPhp');
+        if ($application->exists()) {
+            $application->setVersion(
+                Components_Helper_Version::pearToHordeWithBranch(
+                    $rel_version,
+                    $this->_notes->getBranch()
+                )
+            );
+            $updated[] = $application;
+        }
+
         return $updated;
     }
 
@@ -751,6 +773,10 @@ class Components_Component_Source extends Components_Component_Base
 
         $updated = $this->_setVersion($version);
         $updated[] = $changelog;
+
+        $helper = $this->getFactory()->createChangelog($this);
+        $helper->updatePackage($this->getWrapper('PackageXml'));
+
         if (!empty($options['commit'])) {
             foreach ($updated as $wrapper) {
                 $options['commit']->add($wrapper, $this->_directory);
@@ -824,53 +850,6 @@ class Components_Component_Source extends Components_Component_Base
                 $action,
                 $file,
                 $version
-            );
-        }
-        return $result;
-    }
-
-    /**
-     * Set the next sentinel.
-     *
-     * @param string $changes New version for the CHANGES file.
-     * @param string $app     New version for the Application.php file.
-     * @param array  $options Options for the operation.
-     *
-     * @return string The success message.
-     */
-    public function nextSentinel($changes, $app, $options)
-    {
-        $sentinel = $this->getFactory()->createSentinel($this->_directory);
-        if (empty($options['pretend'])) {
-            $sentinel->updateApplication($app);
-            $action = 'Did';
-        } else {
-            $action = 'Would';
-        }
-        $files = array(
-            $sentinel->applicationFileExists(),
-            $sentinel->bundleFileExists()
-        );
-        $result = array();
-        foreach ($files as $file) {
-            if (empty($file)) {
-                continue;
-            }
-            if (!empty($options['commit'])) {
-                $options['commit']->add(
-                    preg_replace(
-                        '|^' . preg_quote($this->_directory, '|') . '/|',
-                        '',
-                        $file
-                    ),
-                    $this->_directory
-                );
-            }
-            $result[] = sprintf(
-                '%s replace sentinel in %s with "%s" now.',
-                $action,
-                $file,
-                $app
             );
         }
         return $result;
@@ -1105,6 +1084,11 @@ class Components_Component_Source extends Components_Component_Base
                     $this->getDocDirectory()
                 );
                 break;
+            case 'ApplicationPhp':
+                $this->_wrappers[$file] = new Components_Wrapper_ApplicationPhp(
+                    $this->_directory
+                );
+                break;
             default:
                 throw new InvalidArgumentException(
                     $file . ' is not a supported file wrapper'
@@ -1112,6 +1096,16 @@ class Components_Component_Source extends Components_Component_Base
             }
         }
         return $this->_wrappers[$file];
+    }
+
+    /**
+     * Saves all loaded file wrappers.
+     */
+    public function saveWrappers()
+    {
+        foreach ($this->_wrappers as $wrapper) {
+            $wrapper->save();
+        }
     }
 
     /**

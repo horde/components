@@ -145,13 +145,9 @@ class Components_Runner_Release
 
         if ($this->_doTask('next')) {
             $sequence[] = 'NextVersion';
-        }
-        if ($this->_doTask('nextsentinel')) {
-            $sequence[] = 'NextSentinel';
-        }
-        if (($this->_doTask('next') || $this->_doTask('nextsentinel')) &&
-            $this->_doTask('commit')) {
-            $sequence[] = 'CommitPostRelease';
+            if ($this->_doTask('commit')) {
+                $sequence[] = 'CommitPostRelease';
+            }
         }
 
         if (in_array('CommitPreRelease', $sequence) ||

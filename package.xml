@@ -27,6 +27,7 @@
  </stability>
  <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
  <notes>
+* [jan] Remove next-sentinel release task.
 * [jan] In the &apos;update&apos; command, update composer.json from .horde.yml.
 * [jan] In the &apos;update&apos; command, update package.xml from .horde.yml.
 * [jan] Don&apos;t use underscores in command line arguments.
@@ -3517,9 +3518,10 @@
     <release>beta</release>
     <api>beta</api>
    </stability>
-   <date>2017-11-21</date>
+   <date>2017-10-20</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
+* [jan] Remove next-sentinel release task.
 * [jan] In the &apos;update&apos; command, update composer.json from .horde.yml.
 * [jan] In the &apos;update&apos; command, update package.xml from .horde.yml.
 * [jan] Don&apos;t use underscores in command line arguments.

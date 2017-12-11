@@ -38,7 +38,9 @@ extends Components_TestCase
             '---------
 v4.0.1RC1
 ---------
-TEST',
+
+TEST
+',
             file_get_contents($tmp_dir . '/doc/CHANGES')
         );
         $this->assertEquals(
@@ -60,7 +62,9 @@ public $version = \'4.0.1RC1\';
             '---------
 v4.0.1RC1
 ---------
-TEST',
+
+TEST
+',
             file_get_contents($tmp_dir . '/doc/CHANGES')
         );
         $this->assertEquals(
@@ -90,10 +94,12 @@ const VERSION = \'4.0.1RC1\';
         );
         $this->assertEquals(
             array(
-                sprintf('Would replace sentinel in %s/doc/CHANGES with "4.0.1RC1" now.', $tmp_dir),
-                sprintf('Would replace sentinel in %s/lib/Application.php with "4.0.1RC1" now.', $tmp_dir),
-                sprintf('Would run "git add %s/doc/CHANGES" now.', $tmp_dir),
-                sprintf('Would run "git add %s/lib/Application.php" now.', $tmp_dir),
+                'Would set release version "4.0.1RC1" and api version "" in doc/changelog.yml, .horde.yml, package.xml, doc/CHANGES, lib/Application.php now.',
+                'Would run "git add doc/changelog.yml" now.',
+                'Would run "git add .horde.yml" now.',
+                'Would run "git add package.xml" now.',
+                'Would run "git add doc/CHANGES" now.',
+                'Would run "git add lib/Application.php" now.',
                 'Would run "git commit -m "Released Horde-4.0.1RC1"" now.'
             ),
             $this->output->getOutput()
@@ -118,10 +124,12 @@ const VERSION = \'4.0.1RC1\';
         );
         $this->assertEquals(
             array(
-                sprintf('Would replace sentinel in %s/doc/CHANGES with "4.0.1RC1" now.', $tmp_dir),
-                sprintf('Would replace sentinel in %s/lib/Bundle.php with "4.0.1RC1" now.', $tmp_dir),
-                sprintf('Would run "git add %s/doc/CHANGES" now.', $tmp_dir),
-                sprintf('Would run "git add %s/lib/Bundle.php" now.', $tmp_dir),
+                'Would set release version "4.0.1RC1" and api version "" in doc/changelog.yml, .horde.yml, package.xml, doc/CHANGES, lib/Bundle.php now.',
+                'Would run "git add doc/changelog.yml" now.',
+                'Would run "git add .horde.yml" now.',
+                'Would run "git add package.xml" now.',
+                'Would run "git add doc/CHANGES" now.',
+                'Would run "git add lib/Bundle.php" now.',
                 'Would run "git commit -m "Released Horde-4.0.1RC1"" now.'
             ),
             $this->output->getOutput()
@@ -132,12 +140,46 @@ const VERSION = \'4.0.1RC1\';
     {
         $tmp_dir = $this->getTemporaryDirectory();
         mkdir($tmp_dir . '/doc');
-        file_put_contents($tmp_dir . '/doc/CHANGES', "---\nOLD\n---\nTEST");
+        file_put_contents(
+            $tmp_dir . '/doc/changelog.yml',
+            '---
+4.0.0:
+  api: 4.0.0
+  date: 2017-12-31
+  notes: |
+    TEST
+  state:
+    release: stable
+    api: stable
+  license:
+    identifier: ~
+    uri: ~
+'
+        );
+        file_put_contents(
+            $tmp_dir . '/doc/CHANGES',
+            '---
+OLD
+---
+TEST'
+        );
         mkdir($tmp_dir . '/lib');
         if ($bundle) {
-            file_put_contents($tmp_dir . '/lib/Bundle.php', "class Horde_Bundle {\nconst VERSION = '0.0.0';\n}\n");
+            file_put_contents(
+                $tmp_dir . '/lib/Bundle.php',
+                'class Horde_Bundle {
+const VERSION = \'0.0.0\';
+}
+'
+            );
         } else {
-            file_put_contents($tmp_dir . '/lib/Application.php', "class Application {\npublic \$version = '0.0.0';\n}\n");
+            file_put_contents(
+                $tmp_dir . '/lib/Application.php',
+                'class Application {
+public $version = \'0.0.0\';
+}
+'
+            );
         }
         file_put_contents(
             $tmp_dir . '/package.xml',
@@ -148,7 +190,43 @@ const VERSION = \'4.0.1RC1\';
   <release>4.0.1RC1</release>
   <api>4.0.0</api>
  </version>
+ <stability>
+  <release>stable</release>
+  <api>stable</api>
+ </stability>
+ <changelog>
+  <release>
+   <version>
+    <release>4.0.1RC1</release>
+    <api>4.0.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+  </release>
+ </changelog>
 </package>'
+        );
+        file_put_contents(
+            $tmp_dir . '/.horde.yml',
+            'id: Horde
+name: Horde
+type: application
+full: Horde
+description: Horde
+type: application
+version:
+  release: 4.0.0
+  api: 4.0.0
+state:
+  release: stable
+  api: stable
+license:
+  identifier: ~
+  uri: ~
+dependencies:
+'
         );
         return $tmp_dir;
     }

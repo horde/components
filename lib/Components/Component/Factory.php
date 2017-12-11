@@ -73,6 +73,13 @@ class Components_Component_Factory
     protected $_resolver;
 
     /**
+     * The release notes handler.
+     *
+     * @var Components_Release_Notes
+     */
+    protected $_notes;
+
+    /**
      * Constructor.
      *
      * @param Components_Config       $config  The configuration for the
@@ -82,18 +89,21 @@ class Components_Component_Factory
      * @param Horde_Http_Client       $client  The HTTP client for remote
      *                                         access.
      * @param Component_Output        $output  The output handler.
+     * @param Components_Release_Notes $notes  The release notes.
      */
     public function __construct(
         Components_Config $config,
         Components_Pear_Factory $factory,
         Horde_Http_Client $client,
-        Components_Output $output
+        Components_Output $output,
+        Components_Release_Notes $notes
     )
     {
         $this->_config  = $config;
         $this->_factory = $factory;
         $this->_client  = $client;
         $this->_output  = $output;
+        $this->_notes = $notes;
     }
 
     /**
@@ -108,6 +118,7 @@ class Components_Component_Factory
         $component = new Components_Component_Source(
             $directory,
             $this->_config,
+            $this->_notes,
             $this
         );
         if ($this->_first_source === null) {
@@ -243,18 +254,6 @@ class Components_Component_Factory
     public function createRemoteChannel($channel)
     {
         return new Horde_Pear_Remote($channel);
-    }
-
-    /**
-     * Create the sentinel helper.
-     *
-     * @param string $directory The directory the sentinel should act in.
-     *
-     * @return Horde_Release_Sentinel The sentinel helper.
-     */
-    public function createSentinel($directory)
-    {
-        return new Horde_Release_Sentinel($directory);
     }
 
     /**

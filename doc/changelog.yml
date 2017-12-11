@@ -1,6 +1,6 @@
 ---
 0.99.1:
-  api: 1
+  api: 1.0.0
   state:
     release: beta
     api: beta
@@ -9,6 +9,7 @@
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
   notes: |
+    [jan] Remove next-sentinel release task.
     [jan] In the 'update' command, update composer.json from .horde.yml.
     [jan] In the 'update' command, update package.xml from .horde.yml.
     [jan] Don't use underscores in command line arguments.

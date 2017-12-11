@@ -47,7 +47,7 @@ extends PHPUnit_Framework_TestCase
         $dependencies->initConfig($config);
         $factory = $dependencies->getComponentFactory();
         return new Components_Component_Source(
-            $directory, $config, $factory
+            $directory, $config, $dependencies->getInstance('Components_Release_Notes'), $factory
         );
     }
 
