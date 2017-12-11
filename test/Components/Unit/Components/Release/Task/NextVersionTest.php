@@ -1,19 +1,5 @@
 <?php
 /**
- * Test the next sentinel release task.
- *
- * PHP version 5
- *
- * @category   Horde
- * @package    Components
- * @subpackage UnitTests
- * @author     Gunnar Wrobel <wrobel@pardus.de>
- * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
- */
-
-/**
- * Test the next sentinel release task.
- *
  * Copyright 2011-2017 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
@@ -23,6 +9,18 @@
  * @package    Components
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
+ * @author     Jan Schneider <jan@horde.org>
+ * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ */
+
+/**
+ * Tests the next-version release task.
+ *
+ * @category   Horde
+ * @package    Components
+ * @subpackage UnitTests
+ * @author     Gunnar Wrobel <wrobel@pardus.de>
+ * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 class Components_Unit_Components_Release_Task_NextVersionTest

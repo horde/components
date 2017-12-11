@@ -769,10 +769,19 @@ class Components_Component_Source extends Components_Component_Base
         }
         $nextVersion = $changelog[$currentVersion];
         $nextVersion['notes'] = "\n" . $initial_note;
-        $nextVersion['state']['release'] = $stability_release;
-        $nextVersion['state']['api'] = $stability_api;
+        if ($stability_release) {
+            $nextVersion['state']['release'] = $stability_release;
+        }
+        if ($stability_api) {
+            $nextVersion['state']['api'] = $stability_api;
+        }
         $changelog[$version] = $nextVersion;
-        $changelog->uksort(function($a, $b) { return version_compare($b, $a); });
+        $changelog->uksort(
+            function($a, $b)
+            {
+                return version_compare($b, $a);
+            }
+        );
 
         $updated = $this->_setVersion($version);
         $updated[] = $changelog;
