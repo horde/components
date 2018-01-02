@@ -198,10 +198,13 @@ class Components_Component_Source extends Components_Component_Base
         case 'diff':
             $diff = '';
             foreach ($this->_wrappers as $wrapper) {
-                $path = $wrapper->getLocalPath($this->_directory);
-                $diff .= '--- a/' . $path . "\n"
-                    . '--- b/' . $path . "\n"
-                    . $wrapper->diff();
+                $diff_tmp = $wrapper->diff();
+                if (!empty($diff_tmp)) {
+                    $path = $wrapper->getLocalPath($this->_directory);
+                    $diff .= '--- a/' . $path . "\n"
+                        . '--- b/' . $path . "\n"
+                        . $wrapper->diff();
+                }
             }
             return $diff;
         default:
