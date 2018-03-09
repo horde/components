@@ -169,7 +169,7 @@ dependencies:
                 'next_note' => '',
                 'pretend' => true,
                 'commit' => new Components_Helper_Commit(
-                    $this->output,
+                    $this->_output,
                     array('pretend' => true)
                 )
             )
@@ -184,7 +184,7 @@ dependencies:
                 'Would run "git add doc/changelog.yml" now.',
                 'Would run "git commit -m "Development mode for Horde-5.0.0"" now.'
             ),
-            $this->output->getOutput()
+            $this->_output->getOutput()
         );
     }
 
@@ -200,7 +200,7 @@ dependencies:
                 'next_note' => '',
                 'pretend' => true,
                 'commit' => new Components_Helper_Commit(
-                    $this->output,
+                    $this->_output,
                     array('pretend' => true)
                 )
             )
@@ -215,7 +215,7 @@ dependencies:
                 'Would run "git add doc/changelog.yml" now.',
                 'Would run "git commit -m "Development mode for Horde-5.0.1"" now.'
             ),
-            $this->output->getOutput()
+            $this->_output->getOutput()
         );
     }
 
@@ -231,7 +231,7 @@ dependencies:
                 'next_note' => '',
                 'pretend' => true,
                 'commit' => new Components_Helper_Commit(
-                    $this->output,
+                    $this->_output,
                     array('pretend' => true)
                 )
             )
@@ -246,7 +246,7 @@ dependencies:
                 'Would run "git add doc/changelog.yml" now.',
                 'Would run "git commit -m "Development mode for Horde-5.0.0alpha2"" now.'
             ),
-            $this->output->getOutput()
+            $this->_output->getOutput()
         );
     }
 

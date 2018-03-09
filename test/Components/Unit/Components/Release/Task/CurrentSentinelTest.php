@@ -87,7 +87,7 @@ const VERSION = \'4.0.1RC1\';
             array(
                 'pretend' => true,
                 'commit' => new Components_Helper_Commit(
-                    $this->output,
+                    $this->_output,
                     array('pretend' => true)
                 )
             )
@@ -102,7 +102,7 @@ const VERSION = \'4.0.1RC1\';
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git commit -m "Released Horde-4.0.1RC1"" now.'
             ),
-            $this->output->getOutput()
+            $this->_output->getOutput()
         );
     }
 
@@ -117,7 +117,7 @@ const VERSION = \'4.0.1RC1\';
             array(
                 'pretend' => true,
                 'commit' => new Components_Helper_Commit(
-                    $this->output,
+                    $this->_output,
                     array('pretend' => true)
                 )
             )
@@ -132,7 +132,7 @@ const VERSION = \'4.0.1RC1\';
                 'Would run "git add lib/Bundle.php" now.',
                 'Would run "git commit -m "Released Horde-4.0.1RC1"" now.'
             ),
-            $this->output->getOutput()
+            $this->_output->getOutput()
         );
     }
 

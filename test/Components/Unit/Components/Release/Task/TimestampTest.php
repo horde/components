@@ -68,7 +68,7 @@ extends Components_TestCase
             array(
                 'pretend' => true,
                 'commit' => new Components_Helper_Commit(
-                    $this->output,
+                    $this->_output,
                     array('pretend' => true)
                 )
             )
@@ -79,7 +79,7 @@ extends Components_TestCase
                 sprintf('Would run "git add %s" now.', realpath($this->_fixture . '/package.xml')),
                 'Would run "git commit -m "Released Fixture-0.0.1"" now.'
             ),
-            $this->output->getOutput()
+            $this->_output->getOutput()
         );
     }
 
