@@ -540,19 +540,4 @@ class Components_Pear_Environment
             )
         );
     }
-
-    /**
-     * Validate that the required instance parameters are set.
-     *
-     * @return NULL
-     *
-     * @throws Components_Exception In case some settings are missing.
-     */
-    private function _checkSetup()
-    {
-        if ($this->_factory === null) {
-            throw new Components_Exception('You need to set the factory first!');
-        }
-    }
-
 }

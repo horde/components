@@ -196,8 +196,7 @@ class Components_Component_Source extends Components_Component_Base
                     : $this->getFactory()->createContentList($this->_directory),
                 $options
             );
-
-            $composer_json = $this->updateComposerFromHordeYml();
+            $this->updateComposerFromHordeYml();
         }
 
         switch($action) {
