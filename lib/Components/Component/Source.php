@@ -189,6 +189,7 @@ class Components_Component_Source extends Components_Component_Base
         /* Skip updating if this is a PECL package. */
         $composer_json = null;
         if (!$package_xml->findNode('/p:package/p:providesextension')) {
+            // TODO: FIXME
             $package_xml->updateContents(
                 !empty($options['theme'])
                     ? $this->getFactory()->createThemeContentList($this->_directory)
