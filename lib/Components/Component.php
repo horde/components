@@ -143,7 +143,7 @@ interface Components_Component
      * Return a data array with the most relevant information about this
      * component.
      *
-     * @return array Information about this component.
+     * @return stdClass Information about this component.
      */
     public function getData();
 
@@ -178,8 +178,7 @@ interface Components_Component
     /**
      * Timestamp the package.xml file with the current time.
      *
-     * @param Components_Output $output  The output handler.
-     * @param array $options             Options for the operation.
+     * @param array $options Options for the operation.
      *
      * @return string The success message.
      */

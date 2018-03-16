@@ -62,10 +62,10 @@ class Components_Qc_Tasks
     /**
      * Return the named task.
      *
-     * @param string                  $name      The name of the task.
-     * @param Components_Component    $component The component to be checked.
+     * @param string $name                    The name of the task.
+     * @param Components_Component $component The component to be checked.
      *
-     * @return Components_Release_Task The task.
+     * @return Components_Release_Task_Base The task.
      */
     public function getTask($name, Components_Component $component)
     {

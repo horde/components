@@ -47,7 +47,7 @@ class Components_Component_Source extends Components_Component_Base
     /**
      * Cached file wrappers.
      *
-     * @var Components_Wrapper[]
+     * @var Components_Wrapper_ApplicationPhp|Components_Wrapper_ChangelogYml|Components_Wrapper_Changes|Components_Wrapper_ComposerJson|Components_Wrapper_HordeYml|Components_Wrapper_PackageXml[]
      */
     protected $_wrappers = array();
 
@@ -78,11 +78,13 @@ class Components_Component_Source extends Components_Component_Base
      * Return a data array with the most relevant information about this
      * component.
      *
-     * @return array Information about this component.
+     * @return stdClass Information about this component.
+     * @throws Components_Exception
      */
     public function getData()
     {
         $data = new stdClass;
+        /** @var Components_Wrapper_PackageXml $package */
         $package = $this->getPackageXml();
         $data->name = $package->getName();
         $data->summary = $package->getSummary();
@@ -99,6 +101,7 @@ class Components_Component_Source extends Components_Component_Base
      * Indicate if the component has a local package.xml.
      *
      * @return boolean True if a package.xml exists.
+     * @throws Components_Exception
      */
     public function hasLocalPackageXml()
     {
@@ -109,6 +112,7 @@ class Components_Component_Source extends Components_Component_Base
      * Returns the link to the change log.
      *
      * @return string The link to the change log.
+     * @throws Components_Exception
      */
     public function getChangelogLink()
     {
@@ -141,7 +145,7 @@ class Components_Component_Source extends Components_Component_Base
     /**
      * Return the path to a DOCS_ORIGIN file within the component.
      *
-     * @return array|NULL An array containing the path name and the component
+     * @return array|null An array containing the path name and the component
      *                    base directory or NULL if there is no DOCS_ORIGIN
      *                    file.
      */
@@ -155,6 +159,7 @@ class Components_Component_Source extends Components_Component_Base
                 }
             }
         }
+        return null;
     }
 
     /**
@@ -162,9 +167,11 @@ class Components_Component_Source extends Components_Component_Base
      *
      * @param string $action   The action to perform. Either "update", "diff",
      *                         or "print".
-     * @param array  $options  Options for this operation.
+     * @param array $options   Options for this operation.
      *
      * @return string|boolean  The result of the action.
+     * @throws Components_Exception
+     * @throws Horde_Pear_Exception
      */
     public function updatePackage($action, $options)
     {
@@ -222,7 +229,9 @@ class Components_Component_Source extends Components_Component_Base
      * Rebuilds the basic information in a package.xml file from the .horde.yml
      * definition.
      *
-     * @return Horde_Pear_Package_Xml  The updated package.xml handler.
+     * @return Components_Wrapper_PackageXml  The updated package.xml handler.
+     * @throws Components_Exception
+     * @throws Horde_Pear_Exception
      */
     public function updatePackageFromHordeYml()
     {
@@ -260,6 +269,7 @@ class Components_Component_Source extends Components_Component_Base
             $yaml['license']['identifier']
         );
         if ($yaml['license']['uri']) {
+            /** @var DOMElement $node */
             $node = $xml->findNode('/p:package/p:license');
             $node->setAttribute('uri', $yaml['license']['uri']);
         }
@@ -292,8 +302,10 @@ class Components_Component_Source extends Components_Component_Base
     /**
      * Update dependencies.
      *
-     * @param Horde_Pear_Package_Xml $xml  A package.xml handler.
-     * @param array $dependencies          A list of dependencies.
+     * @param Horde_Pear_Package_Xml $xml A package.xml handler.
+     * @param array $dependencies         A list of dependencies.
+     *
+     * @throws Components_Exception
      */
     protected function _updateDependencies($xml, $dependencies)
     {
@@ -334,6 +346,8 @@ class Components_Component_Source extends Components_Component_Base
      * @param string $type                 A dependency type from .horde.yml.
      * @param array $dependencies          A list of dependency names and
      *                                     versions.
+     *
+     * @throws Components_Exception
      */
     protected function _addDependency($xml, $required, $type, $dependencies)
     {
@@ -385,6 +399,7 @@ class Components_Component_Source extends Components_Component_Base
      * .horde.yml definition.
      *
      * @return string  The updated composer.json content.
+     * @throws Components_Exception
      */
     public function updateComposerFromHordeYml()
     {
@@ -434,6 +449,7 @@ class Components_Component_Source extends Components_Component_Base
             ? $yaml['homepage']
             : 'https://www.horde.org';
 
+        /** @var Components_Wrapper_ComposerJson $json */
         $json = $this->getWrapper('ComposerJson');
         $json->exchangeArray(array_filter(array(
             'name' => $name,
@@ -465,10 +481,11 @@ class Components_Component_Source extends Components_Component_Base
     /**
      * Update the component changelog.
      *
-     * @param string $log     The log entry.
-     * @param array $options  Options for the operation.
+     * @param string $log    The log entry.
+     * @param array $options Options for the operation.
      *
      * @return string[]  Output messages.
+     * @throws Components_Exception
      */
     public function changed($log, $options)
     {
@@ -567,9 +584,10 @@ class Components_Component_Source extends Components_Component_Base
     /**
      * Timestamp the package files with the current time.
      *
-     * @param array $options  Options for the operation.
+     * @param array $options Options for the operation.
      *
      * @return string The success message.
+     * @throws Components_Exception
      */
     public function timestampAndSync($options)
     {
@@ -609,11 +627,13 @@ class Components_Component_Source extends Components_Component_Base
     /**
      * Sets the version in the component.
      *
-     * @param string $rel_version  The new release version number.
-     * @param string $api_version  The new api version number.
-     * @param array  $options      Options for the operation.
+     * @param string $rel_version The new release version number.
+     * @param string $api_version The new api version number.
+     * @param array $options      Options for the operation.
      *
      * @return string  Result message.
+     * @throws Components_Exception
+     * @throws Horde_Pear_Exception
      */
     public function setVersion(
         $rel_version = null, $api_version = null, $options = array()
@@ -660,10 +680,12 @@ class Components_Component_Source extends Components_Component_Base
     /**
      * Sets the version in .horde.yml, package.xml and CHANGES.
      *
-     * @param string $rel_version  The new release version number.
-     * @param string $api_version  The new api version number.
+     * @param string $rel_version The new release version number.
+     * @param string $api_version The new api version number.
      *
      * @return Components_Wrapper[]  Wrappers of updated files.
+     * @throws Components_Exception
+     * @throws Horde_Pear_Exception
      */
     public function _setVersion($rel_version = null, $api_version = null)
     {
@@ -691,6 +713,7 @@ class Components_Component_Source extends Components_Component_Base
         }
 
         // Update Application.php/Bundle.php.
+        /** @var Components_Wrapper_ApplicationPhp $application */
         $application = $this->getWrapper('ApplicationPhp');
         if ($application->exists()) {
             $application->setVersion(
@@ -708,10 +731,13 @@ class Components_Component_Source extends Components_Component_Base
     /**
      * Sets the state in the package.xml
      *
-     * @param string $rel_state  The new release state.
-     * @param string $api_state  The new api state.
+     * @param string $rel_state The new release state.
+     * @param string $api_state The new api state.
+     * @param array $options
      *
      * @return string The success message.
+     * @throws Components_Exception
+     * @throws Horde_Pear_Exception
      */
     public function setState(
         $rel_state = null, $api_state = null, $options = array()
@@ -750,6 +776,8 @@ class Components_Component_Source extends Components_Component_Base
      * @param array $options            Options for the operation.
      *
      * @return string The success message.
+     * @throws Components_Exception
+     * @throws Horde_Pear_Exception
      */
     public function nextVersion(
         $version,
@@ -759,6 +787,7 @@ class Components_Component_Source extends Components_Component_Base
         $options = array()
     )
     {
+        /** @var Components_Wrapper_ChangelogYml $changelog */
         $changelog = $this->getWrapper('ChangelogYml');
         $currentVersion = $this->getWrapper('HordeYml')['version']['release'];
         if (!isset($changelog[$currentVersion])) {
@@ -790,7 +819,9 @@ class Components_Component_Source extends Components_Component_Base
         $updated[] = $changelog;
 
         $helper = $this->getFactory()->createChangelog($this);
-        $helper->updatePackage($this->getWrapper('PackageXml'));
+        /** @var Components_Wrapper_PackageXml $packageXml */
+        $packageXml = $this->getWrapper('PackageXml');
+        $helper->updatePackage($packageXml);
 
         if (!empty($options['commit'])) {
             foreach ($updated as $wrapper) {
@@ -832,12 +863,13 @@ class Components_Component_Source extends Components_Component_Base
      *
      * @param string $changes New version for the CHANGES file.
      * @param string $app     New version for the Application.php file.
-     * @param array  $options Options for the operation.
+     * @param array $options  Options for the operation.
      *
-     * @return string The success message.
+     * @return array The success message.
      */
     public function currentSentinel($changes, $app, $options)
     {
+        /** @var Horde_Release_Sentinel $sentinel */
         $sentinel = $this->getFactory()->createSentinel($this->_directory);
         if (empty($options['pretend'])) {
             $sentinel->replaceChanges($changes);
@@ -886,11 +918,12 @@ class Components_Component_Source extends Components_Component_Base
      * Place the component source archive at the specified location.
      *
      * @param string $destination The path to write the archive to.
-     * @param array  $options     Options for the operation.
+     * @param array $options      Options for the operation.
      *
      * @return array An array with at least [0] the path to the resulting
      *               archive, optionally [1] an array of error strings, and [2]
      *               PEAR output.
+     * @throws Components_Exception
      */
     public function placeArchive($destination, $options = array())
     {
@@ -973,9 +1006,12 @@ class Components_Component_Source extends Components_Component_Base
      *
      * @param Components_Pear_Environment $env The environment to install
      *                                         into.
-     * @param array                 $options   Install options.
-     * @param string                $reason    Optional reason for adding the
+     * @param array $options                   Install options.
+     * @param string $reason                   Optional reason for adding the
      *                                         package.
+     *
+     * @throws Components_Exception
+     * @throws Components_Exception_Pear
      */
     public function install(
         Components_Pear_Environment $env, $options = array(), $reason = ''
@@ -1000,17 +1036,21 @@ class Components_Component_Source extends Components_Component_Base
     /**
      * Return a PEAR package representation for the component.
      *
-     * @return Horde_Pear_Package_Xml The package representation.
+     * @return Components_Wrapper_PackageXml The package representation.
+     * @throws Components_Exception
      */
     protected function getPackageXml()
     {
-        return $this->getWrapper('PackageXml');
+        /** @var Components_Wrapper_PackageXml $packageXml */
+        $packageXml = $this->getWrapper('PackageXml');
+        return $packageXml;
     }
 
     /**
      * Return a PEAR PackageFile representation for the component.
      *
      * @return Components_Pear_Package The package representation.
+     * @throws Components_Exception
      */
     private function _getPackageFile()
     {
@@ -1031,6 +1071,7 @@ class Components_Component_Source extends Components_Component_Base
      * Return the path to the package.xml file of the component.
      *
      * @return string The path to the package.xml file.
+     * @throws Components_Exception
      */
     public function getPackageXmlPath()
     {
@@ -1041,6 +1082,7 @@ class Components_Component_Source extends Components_Component_Base
      * Returns the path to the documenation directory.
      *
      * @return string  The directory name.
+     * @throws Components_Exception
      */
     public function getDocDirectory()
     {
@@ -1061,9 +1103,10 @@ class Components_Component_Source extends Components_Component_Base
     /**
      * Returns a file wrapper.
      *
-     * @param string $file  File wrapper to return.
+     * @param string $file File wrapper to return.
      *
-     * @return Components_Wrapper  The requested file wrapper.
+     * @return Components_Wrapper_ApplicationPhp|Components_Wrapper_ChangelogYml|Components_Wrapper_Changes|Components_Wrapper_ComposerJson|Components_Wrapper_HordeYml|Components_Wrapper_PackageXml  The requested file wrapper.
+     * @throws Components_Exception
      */
     public function getWrapper($file)
     {
@@ -1135,7 +1178,7 @@ class Components_Component_Source extends Components_Component_Base
         return implode(
             ', ',
             array_map(
-                function($wrapper)
+                function(Components_Wrapper $wrapper)
                 {
                     return $wrapper->getLocalPath($this->_directory);
                 },

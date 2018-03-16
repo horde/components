@@ -60,6 +60,7 @@ abstract class Components_Component_Base implements Components_Component
      * Return the name of the component.
      *
      * @return string The component name.
+     * @throws Components_Exception
      */
     public function getName()
     {
@@ -70,6 +71,7 @@ abstract class Components_Component_Base implements Components_Component
      * Return the component summary.
      *
      * @return string The summary of the component.
+     * @throws Components_Exception
      */
     public function getSummary()
     {
@@ -80,6 +82,7 @@ abstract class Components_Component_Base implements Components_Component
      * Return the component description.
      *
      * @return string The description of the component.
+     * @throws Components_Exception
      */
     public function getDescription()
     {
@@ -90,6 +93,7 @@ abstract class Components_Component_Base implements Components_Component
      * Return the version of the component.
      *
      * @return string The component version.
+     * @throws Components_Exception
      */
     public function getVersion()
     {
@@ -100,6 +104,7 @@ abstract class Components_Component_Base implements Components_Component
      * Returns the previous version of the component.
      *
      * @return string The previous component version.
+     * @throws Components_Exception
      */
     public function getPreviousVersion()
     {
@@ -132,6 +137,7 @@ abstract class Components_Component_Base implements Components_Component
      * Return the last release date of the component.
      *
      * @return string The date.
+     * @throws Components_Exception
      */
     public function getDate()
     {
@@ -142,6 +148,7 @@ abstract class Components_Component_Base implements Components_Component
      * Return the channel of the component.
      *
      * @return string The component channel.
+     * @throws Components_Exception
      */
     public function getChannel()
     {
@@ -152,6 +159,7 @@ abstract class Components_Component_Base implements Components_Component
      * Return the dependencies for the component.
      *
      * @return array The component dependencies.
+     * @throws Components_Exception
      */
     public function getDependencies()
     {
@@ -164,6 +172,7 @@ abstract class Components_Component_Base implements Components_Component
      * @param string $key "release" or "api"
      *
      * @return string The stability.
+     * @throws Components_Exception
      */
     public function getState($key = 'release')
     {
@@ -174,6 +183,7 @@ abstract class Components_Component_Base implements Components_Component
      * Return the package lead developers.
      *
      * @return string The package lead developers.
+     * @throws Components_Exception
      */
     public function getLeads()
     {
@@ -184,6 +194,7 @@ abstract class Components_Component_Base implements Components_Component
      * Return the component license.
      *
      * @return string The component license.
+     * @throws Components_Exception
      */
     public function getLicense()
     {
@@ -194,6 +205,7 @@ abstract class Components_Component_Base implements Components_Component
      * Return the component license URI.
      *
      * @return string The component license URI.
+     * @throws Components_Exception
      */
     public function getLicenseLocation()
     {
@@ -204,6 +216,7 @@ abstract class Components_Component_Base implements Components_Component
      * Return the package notes.
      *
      * @return string The notes for the current release.
+     * @throws Components_Exception
      */
     public function getNotes()
     {
@@ -224,6 +237,7 @@ abstract class Components_Component_Base implements Components_Component
      * Returns the link to the change log.
      *
      * @return string The link to the change log.
+     * @throws Components_Exception
      */
     public function getChangelogLink()
     {
@@ -234,7 +248,8 @@ abstract class Components_Component_Base implements Components_Component
      * Return a data array with the most relevant information about this
      * component.
      *
-     * @return array Information about this component.
+     * @return stdClass Information about this component.
+     * @throws Components_Exception
      */
     public function getData()
     {
@@ -268,6 +283,7 @@ abstract class Components_Component_Base implements Components_Component
      */
     public function getDocumentOrigin()
     {
+        return null;
     }
 
     /**
@@ -275,9 +291,9 @@ abstract class Components_Component_Base implements Components_Component
      *
      * @param string $action  The action to perform. Either "update", "diff",
      *                        or "print".
-     * @param array  $options Options for this operation.
+     * @param array $options  Options for this operation.
      *
-     * @return NULL
+     * @throws Components_Exception
      */
     public function updatePackage($action, $options)
     {
@@ -289,10 +305,11 @@ abstract class Components_Component_Base implements Components_Component
     /**
      * Update the component changelog.
      *
-     * @param string $log     The log entry.
-     * @param array $options  Options for the operation.
+     * @param string $log    The log entry.
+     * @param array $options Options for the operation.
      *
-     * @return string[]  Output messages.
+     * @return string[] Output messages.
+     * @throws Components_Exception
      */
     public function changed($log, $options)
     {
@@ -304,9 +321,10 @@ abstract class Components_Component_Base implements Components_Component
     /**
      * Timestamp the package.xml file with the current time.
      *
-     * @param array $options  Options for the operation.
+     * @param array $options Options for the operation.
      *
      * @return string The success message.
+     * @throws Components_Exception
      */
     public function timestampAndSync($options)
     {
@@ -322,9 +340,9 @@ abstract class Components_Component_Base implements Components_Component
      * @param string $initial_note      The text for the initial note.
      * @param string $stability_api     The API stability for the next release.
      * @param string $stability_release The stability for the next release.
-     * @param array $options Options for the operation.
+     * @param array $options            Options for the operation.
      *
-     * @return NULL
+     * @throws Components_Exception
      */
     public function nextVersion(
         $version,
@@ -344,9 +362,10 @@ abstract class Components_Component_Base implements Components_Component
      *
      * @param string $changes New version for the CHANGES file.
      * @param string $app     New version for the Application.php file.
-     * @param array  $options Options for the operation.
+     * @param array $options  Options for the operation.
      *
      * @return string The success message.
+     * @throws Components_Exception
      */
     public function currentSentinel($changes, $app, $options)
     {
@@ -358,11 +377,11 @@ abstract class Components_Component_Base implements Components_Component
     /**
      * Tag the component.
      *
-     * @param string                   $tag     Tag name.
-     * @param string                   $message Tag message.
-     * @param Components_Helper_Commit $commit  The commit helper.
+     * @param string $tag                      Tag name.
+     * @param string $message                  Tag message.
+     * @param Components_Helper_Commit $commit The commit helper.
      *
-     * @return NULL
+     * @throws Components_Exception
      */
     public function tag($tag, $message, $commit)
     {
@@ -376,7 +395,7 @@ abstract class Components_Component_Base implements Components_Component
      *
      * @param Components_Helper_Root $helper The root helper.
      *
-     * @return NULL
+     * @throws Components_Exception
      */
     public function repositoryRoot(Components_Helper_Root $helper)
     {
@@ -388,11 +407,12 @@ abstract class Components_Component_Base implements Components_Component
     /**
      * Install the channel of this component in the environment.
      *
-     * @param Components_Pear_Environment $env     The environment to install
-     *                                             into.
-     * @param array                       $options Install options.
+     * @param Components_Pear_Environment $env  The environment to install
+     *                                          into.
+     * @param array $options                    Install options.
      *
-     * @return NULL
+     * @throws Components_Exception
+     * @throws Components_Exception_Pear
      */
     public function installChannel(
         Components_Pear_Environment $env, $options = array()
@@ -432,8 +452,6 @@ abstract class Components_Component_Base implements Components_Component
      * Create the specified directory.
      *
      * @param string $destination The destination path.
-     *
-     * @return NULL
      */
     protected function createDestination($destination)
     {
@@ -446,6 +464,7 @@ abstract class Components_Component_Base implements Components_Component
      * Return a PEAR package representation for the component.
      *
      * @return Horde_Pear_Package_Xml The package representation.
+     * @throws Components_Exception
      */
     protected function getPackageXml()
     {
@@ -457,7 +476,7 @@ abstract class Components_Component_Base implements Components_Component
      *
      * @param array $options The current options.
      *
-     * @return array The installatin options.
+     * @return array The installation options.
      */
     protected function getBaseInstallationOptions($options)
     {
@@ -471,6 +490,7 @@ abstract class Components_Component_Base implements Components_Component
      * Check if the library has a CI job.
      *
      * @return boolean True if a CI job is defined.
+     * @throws Components_Exception
      */
     protected function _hasCi()
     {

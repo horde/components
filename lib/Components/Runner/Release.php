@@ -35,32 +35,32 @@ class Components_Runner_Release
     /**
      * The output handler.
      *
-     * @param Component_Output
+     * @param Components_Output
      */
     private $_output;
 
     /**
      * The QC tasks handler.
      *
-     * @param Component_Release_Qc
+     * @param Components_Qc_Tasks
      */
     private $_qc;
 
     /**
      * The release tasks handler.
      *
-     * @param Component_Release_Tasks
+     * @param Components_Release_Tasks
      */
     private $_release;
 
     /**
      * Constructor.
      *
-     * @param Components_Config       $config  The configuration for the current
-     *                                         job.
-     * @param Component_Output        $output  The output handler.
-     * @param Component_Release_Tasks $release The tasks handler.
-     * @param Component_Qc_Tasks      $qc      QC tasks handler.
+     * @param Components_Config $config         The configuration for the
+     *                                          current job.
+     * @param Components_Output $output         The output handler.
+     * @param Components_Release_Tasks $release The tasks handler.
+     * @param Components_Qc_Tasks $qc           QC tasks handler.
      */
     public function __construct(
         Components_Config $config,
@@ -74,6 +74,9 @@ class Components_Runner_Release
         $this->_qc = $qc;
     }
 
+    /**
+     * @throws Components_Exception
+     */
     public function run()
     {
         $component = $this->_config->getComponent();

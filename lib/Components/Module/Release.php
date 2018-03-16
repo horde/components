@@ -228,6 +228,7 @@ The following example would generate the package and add the release tag to git 
      * @param Components_Config $config The configuration.
      *
      * @return boolean True if the module performed some action.
+     * @throws Components_Exception
      */
     public function handle(Components_Config $config)
     {

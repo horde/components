@@ -35,7 +35,7 @@ class Components_Runner_Change
     /**
      * The output handler.
      *
-     * @param Component_Output
+     * @param Components_Output
      */
     private $_output;
 
