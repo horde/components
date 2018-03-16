@@ -468,7 +468,7 @@ abstract class Components_Component_Base implements Components_Component
      */
     protected function getPackageXml()
     {
-        throw new Component_Exception('Not supported!');
+        throw new Components_Exception('Not supported!');
     }
 
     /**
