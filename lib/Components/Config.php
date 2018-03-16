@@ -38,6 +38,15 @@ interface Components_Config
     public function setOption($key, $value);
 
     /**
+     * Return the specified option.
+     *
+     * @param string $option The name of the option.
+     *
+     * @return mixed The option value or NULL if it is not defined.
+     */
+    public function getOption($option);
+
+    /**
      * Return the options provided by the configuration handlers.
      *
      * @return array An array of options.
