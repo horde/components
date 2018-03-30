@@ -27,6 +27,7 @@
  </stability>
  <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
  <notes>
+* [rla] Add an init command to start new apps or libraries.
 * [jan] Remove next-sentinel release task.
 * [jan] In the &apos;update&apos; command, update composer.json from .horde.yml.
 * [jan] In the &apos;update&apos; command, update package.xml from .horde.yml.
@@ -3550,9 +3551,10 @@
     <release>beta</release>
     <api>beta</api>
    </stability>
-   <date>2017-12-11</date>
+   <date>2017-10-20</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
+* [rla] Add an init command to start new apps or libraries.
 * [jan] Remove next-sentinel release task.
 * [jan] In the &apos;update&apos; command, update composer.json from .horde.yml.
 * [jan] In the &apos;update&apos; command, update package.xml from .horde.yml.
