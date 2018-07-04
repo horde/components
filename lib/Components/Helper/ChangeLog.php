@@ -316,7 +316,7 @@ class Components_Helper_ChangeLog
      */
     public function getChangelogLink($root)
     {
-        if ($this->changesFileExists()) {
+        if ($changes = $this->changesFileExists()) {
             $hordeInfo = $this->_component->getWrapper('HordeYml');
             $blob = trim(
                 $this->_systemInDirectory(
