@@ -324,9 +324,17 @@ class Components_Helper_ChangeLog
                     $this->_directory
                 )
             );
+
+            // special case of the horde base application
+            // @todo better solution for this. Can't change the 'id' attribute
+            // since that's also used elsewhere, like in the package.xml
+            // generation.
+            $id = $hordeInfo['id'] == 'horde' ? 'base' : $hordeInfo['id'];
+
             $changes = preg_replace('#^' . $this->_directory . '#', '', $changes);
-            return 'https://github.com/horde/' . $hordeInfo['id'] . '/blob/'
-                . $blob . $root . $changes;
+
+            return 'https://github.com/horde/' . $id . '/blob/'
+                . $blob . $changes;
         }
         return '';
     }
