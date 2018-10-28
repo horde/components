@@ -28,6 +28,15 @@
 interface Components_Dependencies
 {
     /**
+     * Returns an instance.
+     *
+     * @param string $interface The interface matching the requested instance.
+     *
+     * @return mixed the instance.
+     */
+    public function getInstance($interface);
+
+    /**
      * Initial configuration setup.
      *
      * @param Components_Config $config The configuration.
