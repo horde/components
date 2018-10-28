@@ -1,19 +1,5 @@
 <?php
 /**
- * Test the timestamp release task.
- *
- * PHP version 5
- *
- * @category   Horde
- * @package    Components
- * @subpackage UnitTests
- * @author     Gunnar Wrobel <wrobel@pardus.de>
- * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
- */
-
-/**
- * Test the timestamp release task.
- *
  * Copyright 2011-2017 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
@@ -23,9 +9,21 @@
  * @package    Components
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
+ * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class Components_Unit_Components_Release_Task_TimestampTest
+
+/**
+ * Test the changelog release task.
+ *
+ * @category   Horde
+ * @package    Components
+ * @subpackage UnitTests
+ * @author     Gunnar Wrobel <wrobel@pardus.de>
+ * @author     Jan Schneider <jan@horde.org>
+ * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ */
+class Components_Unit_Components_Release_Task_ChangelogTest
 extends Components_TestCase
 {
     protected $_fixture;
@@ -38,15 +36,22 @@ extends Components_TestCase
     public function testPreValidateSucceeds()
     {
         $package = $this->getComponent($this->_fixture);
-        $task = $this->getReleaseTask('timestamp', $package);
+        $task = $this->getReleaseTask('changelog', $package);
         $this->assertEquals(array(), $task->preValidate(array()));
     }
 
     public function testPreValidateFails()
     {
         $package = $this->getComponent($this->_fixture . '/NO_SUCH_PACKAGE');
-        $task = $this->getReleaseTask('timestamp', $package);
+        $task = $this->getReleaseTask('changelog', $package);
         $this->assertFalse($task->preValidate(array()) === array());
+    }
+
+    public function testPostValidateFails()
+    {
+        $package = $this->getComponent($this->_fixture);
+        $task = $this->getReleaseTask('changelog', $package);
+        $this->assertFalse($task->postValidate(array()) === array());
     }
 
     public function testRunTaskWithoutCommit()
@@ -54,8 +59,8 @@ extends Components_TestCase
         $tasks = $this->getReleaseTasks();
         $package = $this->_getValidPackage();
         $package->expects($this->once())
-            ->method('timestamp');
-        $tasks->run(array('timestamp'), $package);
+            ->method('sync');
+        $tasks->run(array('changelog'), $package);
     }
 
     public function testPretend()
@@ -86,14 +91,10 @@ extends Components_TestCase
 
     private function _getValidPackage()
     {
-        $wrapper = $this->getMock('Components_Wrapper_ChangelogYml', array(), array(), '', false, false);
-        $wrapper->expects($this->any())
-            ->method('exists')
-            ->will($this->returnValue(true));
         $package = $this->getMock('Components_Component_Source', array(), array(), '', false, false);
         $package->expects($this->any())
-            ->method('getWrapper')
-            ->will(($this->returnValue($wrapper)));
+            ->method('hasLocalPackageXml')
+            ->will($this->returnValue(true));
         return $package;
     }
 }

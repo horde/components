@@ -182,7 +182,7 @@ interface Components_Component
      *
      * @return string The success message.
      */
-    public function timestampAndSync($options);
+    public function timestamp($options);
 
     /**
      * Add the next version to the package.xml.

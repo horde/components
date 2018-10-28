@@ -1,0 +1,22 @@
+---
+id: Dependency
+name: Dependency
+full: Test fixture.
+description: A dummy package.xml used for testing the Components package.
+type: library
+authors:
+  -
+    name: Gunnar Wrobel
+    user: wrobel
+    email: p@rdus.de
+    active: true
+    role: lead
+version:
+  release: 0.0.1
+  api: 0.0.1
+state:
+  release: alpha
+  api: alpha
+license:
+  identifier: LGPL-2.1
+  uri: http://www.horde.org/licenses/lgpl21

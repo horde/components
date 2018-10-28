@@ -731,14 +731,14 @@ class Components_Component_Source extends Components_Component_Base
     }
 
     /**
-     * Timestamp the package files with the current time.
+     * Timestamps changelog.yml with the current time.
      *
      * @param array $options Options for the operation.
      *
      * @return string The success message.
      * @throws Components_Exception
      */
-    public function timestampAndSync($options)
+    public function timestamp($options)
     {
         $helper = $this->getFactory()->createChangelog($this);
         if (empty($options['pretend'])) {
@@ -751,7 +751,33 @@ class Components_Component_Source extends Components_Component_Base
                     $helper->changelogFileExists(), $this->_directory
                 );
             }
-            $xml = $this->updatePackageFromHordeYml();
+            $result = sprintf(
+                'Marked %s with current timestamp.',
+                $helper->changelogFileExists()
+            );
+        } else {
+            $result = sprintf(
+                'Would timestamp %s now.',
+                $helper->changelogFileExists()
+            );
+        }
+        return $result;
+    }
+
+    /**
+     * Synchronizes CHANGES and package.xml with changelog.yml.
+     *
+     * @param array $options Options for the operation.
+     *
+     * @return string The success message.
+     * @throws Components_Exception
+     * @throws Horde_Pear_Exception
+     */
+    public function sync($options)
+    {
+        $helper = $this->getFactory()->createChangelog($this);
+        if (empty($options['pretend'])) {
+            $this->updatePackageFromHordeYml();
             $xml = $this->getPackageXml();
             $xml->syncCurrentVersion();
             $xml->save();
@@ -759,15 +785,15 @@ class Components_Component_Source extends Components_Component_Base
                 $options['commit']->add($xml, $this->_directory);
             }
             $result = sprintf(
-                'Marked %s and %s with current timestamp and synchronized the change log.',
-                $helper->changelogFileExists(),
-                $this->getPackageXmlPath()
+                'Synchronized %s with %s.',
+                $this->getPackageXmlPath(),
+                $helper->changelogFileExists()
             );
         } else {
             $result = sprintf(
-                'Would timestamp %s and %s now and synchronize its change log.',
-                $helper->changelogFileExists(),
-                $this->getPackageXmlPath()
+                'Would synchronize %s with %s now.',
+                $this->getPackageXmlPath(),
+                $helper->changelogFileExists()
             );
         }
         return $result;

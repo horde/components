@@ -104,6 +104,11 @@ class Components_Runner_Release
             $pre_commit = true;
         }
 
+        if ($this->_doTask('changelog')) {
+            $sequence[] = 'Changelog';
+            $pre_commit = true;
+        }
+
         if ($this->_doTask('timestamp')) {
             $sequence[] = 'Timestamp';
             $pre_commit = true;

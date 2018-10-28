@@ -326,7 +326,7 @@ abstract class Components_Component_Base implements Components_Component
      * @return string The success message.
      * @throws Components_Exception
      */
-    public function timestampAndSync($options)
+    public function timestamp($options)
     {
         throw new Components_Exception(
             'Timestamping is not supported!'
