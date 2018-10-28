@@ -80,9 +80,7 @@ class Components_Release_Task_Base
     /**
      * Set the component this task should act upon.
      *
-     * @param Components_Component $component The component to be released.
-     *
-     * @return NULL
+     * @param Components_Component_Source $component The component to be released.
      */
     public function setComponent(Components_Component_Source $component)
     {
@@ -93,7 +91,7 @@ class Components_Release_Task_Base
     /**
      * Get the component this task should act upon.
      *
-     * @return Components_Component The component to be released.
+     * @return Components_Component_Source The component to be released.
      */
     protected function getComponent()
     {
@@ -104,8 +102,6 @@ class Components_Release_Task_Base
      * Set the name of this task.
      *
      * @param string $name The task name.
-     *
-     * @return NULL
      */
     public function setName($name)
     {
@@ -195,8 +191,6 @@ class Components_Release_Task_Base
      * Run the task.
      *
      * @param array &$options Additional options.
-     *
-     * @return NULL
      */
     public function run(&$options)
     {

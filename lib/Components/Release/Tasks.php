@@ -65,7 +65,7 @@ class Components_Release_Tasks
      * @param string                  $name      The name of the task.
      * @param Components_Component    $component The component to be released.
      *
-     * @return Components_Release_Task The task.
+     * @return Components_Release_Task_Base The task.
      */
     public function getTask($name, Components_Component $component)
     {
@@ -80,11 +80,12 @@ class Components_Release_Tasks
     /**
      * Run a sequence of release tasks.
      *
-     * @param array                $sequence The task sequence.
+     * @param array $sequence                 The task sequence.
      * @param Components_Component $component The component to be released.
-     * @param array                $options  Additional options.
+     * @param array $options                  Additional options.
      *
      * @return NULL
+     * @throws Components_Exception
      */
     public function run(
         array $sequence,

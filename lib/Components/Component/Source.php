@@ -1242,7 +1242,7 @@ class Components_Component_Source extends Components_Component_Base
     }
 
     /**
-     * Returns the path to the documenation directory.
+     * Returns the path to the documentation directory.
      *
      * @return string  The directory name.
      * @throws Components_Exception
