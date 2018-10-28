@@ -143,7 +143,7 @@ const VERSION = \'4.0.1RC1\';
         file_put_contents(
             $tmp_dir . '/doc/changelog.yml',
             '---
-4.0.0:
+4.0.1RC1:
   api: 4.0.0
   date: 2017-12-31
   notes: |
@@ -217,7 +217,7 @@ full: Horde
 description: Horde
 type: application
 version:
-  release: 4.0.0
+  release: 4.0.1RC1
   api: 4.0.0
 state:
   release: stable
