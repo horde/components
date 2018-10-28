@@ -86,10 +86,14 @@ extends Components_TestCase
 
     private function _getValidPackage()
     {
+        $wrapper = $this->getMock('Components_Wrapper_ChangelogYml', array(), array(), '', false, false);
+        $wrapper->expects($this->any())
+            ->method('exists')
+            ->will($this->returnValue(true));
         $package = $this->getMock('Components_Component_Source', array(), array(), '', false, false);
         $package->expects($this->any())
-            ->method('hasLocalPackageXml')
-            ->will($this->returnValue(true));
+            ->method('getWrapper')
+            ->will(($this->returnValue($wrapper)));
         return $package;
     }
 }
