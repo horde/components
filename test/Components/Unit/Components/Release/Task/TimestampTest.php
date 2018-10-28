@@ -28,6 +28,8 @@
 class Components_Unit_Components_Release_Task_TimestampTest
 extends Components_TestCase
 {
+    protected $_fixture;
+
     public function setUp()
     {
         $this->_fixture = __DIR__ . '/../../../../fixture/simple';
