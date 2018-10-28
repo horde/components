@@ -236,7 +236,7 @@ class Components_Component_Source extends Components_Component_Base
     public function updatePackageFromHordeYml()
     {
         $xml = $this->getPackageXml();
-        $yaml = $this->getWrapper('HordeYml');
+        $yaml = $this->getHordeYml();
 
         // Update texts.
         $name = $yaml['id'];
@@ -403,7 +403,7 @@ class Components_Component_Source extends Components_Component_Base
      */
     public function updateComposerFromHordeYml()
     {
-        $yaml = $this->getWrapper('HordeYml');
+        $yaml = $this->getHordeYml();
         $name = 'horde/'
             . str_replace('_', '-', Horde_String::lower($yaml['id']));
         $replaceVersion = preg_replace(
@@ -516,7 +516,7 @@ class Components_Component_Source extends Components_Component_Base
                 $this->getWrapper('ChangelogYml')->save();
                 $output[] = sprintf(
                     'Added new note to version %s of %s.',
-                    $this->getWrapper('HordeYml')['version']['release'],
+                    $this->getHordeYml()['version']['release'],
                     $file
                 );
             } else {
@@ -690,7 +690,7 @@ class Components_Component_Source extends Components_Component_Base
     public function _setVersion($rel_version = null, $api_version = null)
     {
         // Update .horde.yml.
-        $yaml = $this->getWrapper('HordeYml');
+        $yaml = $this->getHordeYml();
         if ($rel_version) {
             $yaml['version']['release'] = $rel_version;
         }
@@ -789,7 +789,7 @@ class Components_Component_Source extends Components_Component_Base
     {
         /** @var Components_Wrapper_ChangelogYml $changelog */
         $changelog = $this->getWrapper('ChangelogYml');
-        $currentVersion = $this->getWrapper('HordeYml')['version']['release'];
+        $currentVersion = $this->getHordeYml()['version']['release'];
         if (!isset($changelog[$currentVersion])) {
             throw new Components_Exception(
                 sprintf(
@@ -1035,10 +1035,23 @@ class Components_Component_Source extends Components_Component_Base
     }
 
     /**
+     * Returns a .horde.yml definition for the component.
+     *
+     * @return Components_Wrapper_HordeYml
+     * @throws Components_Exception
+     * @throws Horde_Exception_NotFound
+     */
+    public function getHordeYml()
+    {
+        return $this->getWrapper('HordeYml');
+    }
+
+    /**
      * Return a PEAR package representation for the component.
      *
      * @return Components_Wrapper_PackageXml The package representation.
      * @throws Components_Exception
+     * @throws Horde_Exception_NotFound
      */
     protected function getPackageXml()
     {
@@ -1094,9 +1107,12 @@ class Components_Component_Source extends Components_Component_Base
         } else {
             $dir = $this->_directory . '/doc';
         }
-        $info = $this->getWrapper('HordeYml');
-        if ($info['type'] == 'library') {
-            $dir .= '/Horde/' . str_replace('_', '/', $info['id']);
+        try {
+            $info = $this->getHordeYml();
+            if ($info['type'] == 'library') {
+                $dir .= '/Horde/' . str_replace('_', '/', $info['id']);
+            }
+        } catch (Horde_Exception_NotFound $exception) {
         }
         return $dir;
     }
@@ -1106,8 +1122,13 @@ class Components_Component_Source extends Components_Component_Base
      *
      * @param string $file File wrapper to return.
      *
-     * @return Components_Wrapper_ApplicationPhp|Components_Wrapper_ChangelogYml|Components_Wrapper_Changes|Components_Wrapper_ComposerJson|Components_Wrapper_HordeYml|Components_Wrapper_PackageXml  The requested file wrapper.
+     * @return Components_Wrapper_ApplicationPhp|Components_Wrapper_ChangelogYml|
+     *         Components_Wrapper_Changes|Components_Wrapper_ComposerJson|
+     *         Components_Wrapper_HordeYml|Components_Wrapper_PackageXml
+     *         The requested file
+     *                                                                                                                                                                                                 wrapper.
      * @throws Components_Exception
+     * @throws Horde_Exception_NotFound
      */
     public function getWrapper($file)
     {
@@ -1118,7 +1139,7 @@ class Components_Component_Source extends Components_Component_Base
                     $this->_directory
                 );
                 if (!$this->_wrappers[$file]->exists()) {
-                    throw new Components_Exception(
+                    throw new Horde_Exception_NotFound(
                         $this->_wrappers[$file]->getFileName() . ' is missing.'
                     );
                 }
