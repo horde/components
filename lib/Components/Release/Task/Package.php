@@ -46,7 +46,7 @@ extends Components_Release_Task_Base
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
      */
-    public function validate($options)
+    public function preValidate($options)
     {
         $errors = array();
         $testpkg = Horde_Util::getTempFile();

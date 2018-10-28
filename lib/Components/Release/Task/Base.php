@@ -172,7 +172,21 @@ class Components_Release_Task_Base
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
      */
-    public function validate($options)
+    public function preValidate($options)
+    {
+        return array();
+    }
+
+    /**
+     * Validate the postconditions required for this release task to have
+     * succeeded.
+     *
+     * @param array $options Additional options.
+     *
+     * @return array An empty array if all postconditions are met and a list of
+     *               error messages otherwise.
+     */
+    public function postValidate($options)
     {
         return array();
     }

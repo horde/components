@@ -88,7 +88,7 @@ class Components_Runner_Release
 
         if ($this->_doTask('unittest')) {
             $unit = $this->_qc->getTask('unit', $component);
-            if (!$unit->validate($options)) {
+            if (!$unit->preValidate($options)) {
                 $this->_output->info(
                     'Running ' . $unit->getName() . ' on ' . $component->getName()
                 );

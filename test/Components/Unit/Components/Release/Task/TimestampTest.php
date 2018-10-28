@@ -33,19 +33,18 @@ extends Components_TestCase
         $this->_fixture = __DIR__ . '/../../../../fixture/simple';
     }
 
-    public function testValidateSucceeds()
+    public function testPreValidateSucceeds()
     {
-        $this->markTestSkipped('Release no longer possible with outdated package.xml');
         $package = $this->getComponent($this->_fixture);
         $task = $this->getReleaseTask('timestamp', $package);
-        $this->assertEquals(array(), $task->validate(array()));
+        $this->assertEquals(array(), $task->preValidate(array()));
     }
 
-    public function testValidateFails()
+    public function testPreValidateFails()
     {
         $package = $this->getComponent($this->_fixture . '/NO_SUCH_PACKAGE');
         $task = $this->getReleaseTask('timestamp', $package);
-        $this->assertFalse($task->validate(array()) === array());
+        $this->assertFalse($task->preValidate(array()) === array());
     }
 
     public function testRunTaskWithoutCommit()

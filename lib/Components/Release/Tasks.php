@@ -98,10 +98,9 @@ class Components_Release_Tasks
         foreach ($sequence as $name) {
             $task_sequence[] = $this->getTask($name, $component);
         }
-        $errors = array();
         $selected_tasks = array();
         foreach ($task_sequence as $task) {
-            $task_errors = $task->validate($options);
+            $task_errors = $task->preValidate($options);
             if (!empty($task_errors)) {
                 if ($task->skip($options)) {
                     $this->_dependencies->getOutput()->warn(
@@ -112,7 +111,13 @@ class Components_Release_Tasks
                         )
                     );
                 } else {
-                    $errors = array_merge($errors, $task_errors);
+                    $this->_dependencies->getOutput()->fail(
+                        sprintf(
+                            "Precondition for task \"%s\" failed:\n\n%s",
+                            $task->getName(),
+                            join("\n", $task_errors)
+                        )
+                    );
                 }
             } else {
                 $selected_tasks[] = $task;
@@ -125,6 +130,18 @@ class Components_Release_Tasks
         }
         foreach ($selected_tasks as $task) {
             $task->run($options);
+        }
+        foreach ($selected_tasks as $task) {
+            $task_errors = $task->postValidate($options);
+            if (!empty($task_errors)) {
+                $this->_dependencies->getOutput()->fail(
+                    sprintf(
+                        "Task \"%s\" failed:\n\n%s",
+                        $task->getName(),
+                        join("\n", $task_errors)
+                    )
+                );
+            }
         }
     }
 
