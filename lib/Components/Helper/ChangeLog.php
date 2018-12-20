@@ -106,7 +106,8 @@ class Components_Helper_ChangeLog
         $version = $hordeInfo['version']['release'];
         $changelog = $this->_component->getWrapper('ChangelogYml');
         $info = $changelog[$version];
-        $notes = explode("\n", trim($info['notes']));
+        $notes = trim($info['notes']);
+        $notes = $notes ? explode("\n", $notes) : array();
         array_unshift($notes, $entry);
         $info['notes'] = implode("\n", $notes) . "\n";
         $changelog[$version] = $info;
