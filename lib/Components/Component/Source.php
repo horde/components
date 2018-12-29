@@ -679,54 +679,6 @@ class Components_Component_Source extends Components_Component_Base
             }
         }
 
-        // Update package.xml
-        if (empty($options['nopackage'])) {
-            $xml = $this->getPackageXml();
-            if ($helper->changelogFileExists()) {
-                $file = $helper->updatePackage($xml);
-                if (empty($options['pretend'])) {
-                    $xml->save();
-                    $output[] = sprintf('Updated %s.', $xml->getFileName());
-                } else {
-                    $output[] = sprintf('Would update %s now.', $xml->getFileName());
-                }
-            } else {
-                $file = $helper->packageXml($log, $xml);
-                if (empty($options['pretend'])) {
-                    $xml->save();
-                    $output[] = sprintf(
-                        'Added new note to version %s of %s.',
-                        $xml->getVersion(),
-                        $xml->getFileName()
-                    );
-                } else {
-                    $output[] = sprintf(
-                        'Would add change log entry to %s now.',
-                        $xml->getFileName()
-                    );
-                }
-            }
-            if ($file && !empty($options['commit2'])) {
-                $options['commit2']->add($file, $this->_directory);
-            }
-        }
-
-        // Update CHANGES
-        if (empty($options['nochanges'])) {
-            $file = $helper->updateChanges();
-            if ($file) {
-                if (empty($options['pretend'])) {
-                    $this->getWrapper('Changes')->save();
-                    $output[] = sprintf('Updated %s.', $file);
-                } else {
-                    $output[] = sprintf('Would update %s now.', $file);
-                }
-                if (!empty($options['commit2'])) {
-                    $options['commit2']->add($file, $this->_directory);
-                }
-            }
-        }
-
         return $output;
     }
 

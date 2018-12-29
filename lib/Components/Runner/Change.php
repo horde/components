@@ -69,14 +69,10 @@ class Components_Runner_Change
             $options['commit'] = new Components_Helper_Commit(
                 $this->_output, $options
             );
-            $options['commit2'] = new Components_Helper_Commit(
-                $this->_output, $options
-            );
         }
         $output = $this->_config->getComponent()->changed($log, $options);
         if ($log && !empty($options['commit'])) {
             $options['commit']->commit($log);
-            $options['commit2']->commit($log);
         }
         foreach ($output as $message) {
             $this->_output->plain($message);

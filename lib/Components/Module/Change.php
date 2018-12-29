@@ -38,24 +38,7 @@ extends Components_Module_Base
 
     public function getOptionGroupOptions()
     {
-        return array(
-            new Horde_Argv_Option(
-                '',
-                '--nochanges',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Don\'t add entry to CHANGES.'
-                )
-            ),
-            new Horde_Argv_Option(
-                '',
-                '--nopackage',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Don\'t add entry to package.xml.'
-                )
-            ),
-        );
+        return array();
     }
 
     /**
@@ -129,8 +112,6 @@ to just update package.xml and doc/CHANGES:
     {
         return array(
             '--commit' => 'Commit the change log entries to git (using the change log entry as commit message).',
-            '--nochanges' => '',
-            '--nopackage' => '',
             '--pretend' => ''
         );
     }
