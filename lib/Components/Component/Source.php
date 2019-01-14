@@ -314,13 +314,14 @@ class Components_Component_Source extends Components_Component_Base
     /**
      * Updates the information files for this component.
      *
-     * @param string $action   The action to perform. Either "update", "diff",
-     *                         or "print".
-     * @param array $options   Options for this operation.
+     * @param string $action The action to perform. Either "update", "diff",
+     *                       or "print".
+     * @param array $options Options for this operation.
      *
      * @return string|boolean  The result of the action.
      * @throws Components_Exception
      * @throws Horde_Pear_Exception
+     * @throws Horde_Exception_NotFound
      */
     public function updatePackage($action, $options)
     {
@@ -381,6 +382,7 @@ class Components_Component_Source extends Components_Component_Base
      * @return Components_Wrapper_PackageXml  The updated package.xml handler.
      * @throws Components_Exception
      * @throws Horde_Pear_Exception
+     * @throws Horde_Exception_NotFound
      */
     public function updatePackageFromHordeYml()
     {
