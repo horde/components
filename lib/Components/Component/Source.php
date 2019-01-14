@@ -408,9 +408,17 @@ class Components_Component_Source extends Components_Component_Base
         // Update date.
         $changelog = $this->getFactory()->createChangelog($this);
         if ($changelog->changelogFileExists()) {
+            $changelogYml = $this->getWrapper('ChangelogYml');
+            if (!isset($changelogYml[$yaml['version']['release']])) {
+                throw new Components_Exception(sprintf(
+                    'Version %s not found in %s',
+                    $yaml['version']['release'],
+                    $changelogYml->getLocalPath($this->_directory)
+                ));
+            }
             $xml->replaceTextNode(
                 '/p:package/p:date',
-                $this->getWrapper('ChangelogYml')[$yaml['version']['release']]['date']
+                $changelogYml[$yaml['version']['release']]['date']
             );
         }
 
