@@ -490,8 +490,10 @@ class Components_Component_Source extends Components_Component_Base
             );
         }
         foreach ($dependencies as $required => $dependencyTypes) {
-            foreach ($dependencyTypes as $type => $deps) {
-                $this->_addDependency($xml, $required, $type, $deps);
+            foreach (array('pear', 'ext') as $type) {
+                if (isset($dependencyTypes[$type])) {
+                    $this->_addDependency($xml, $required, $type, $dependencyTypes[$type]);
+                }
             }
         }
     }
