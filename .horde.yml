@@ -2,7 +2,7 @@
 id: components
 name: Components
 full: Developer tool for managing Horde components
-description: >
+description: >-
   The package provides utility methods required when preparing a new component
   release for Horde. It also includes quality control checks.
 list: horde
