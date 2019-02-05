@@ -136,7 +136,7 @@ class Components_Component_Identify
                         return array($result, '');
                     }
                 }
-                
+
                 throw new Components_Exception(
                     sprintf(Components::ERROR_NO_ACTION_OR_COMPONENT, $arguments[0])
                 );
