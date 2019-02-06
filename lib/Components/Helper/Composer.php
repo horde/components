@@ -125,7 +125,7 @@ class Components_Helper_Composer
                         }
                         $composerDefinition->require["$vendor/$basename"] = $version;
                         // Developer mode - don't add horde vcs repos in releases, use packagist
-                        $this->_repositories["$vendor/$basename"] = ['uri' => "https://github.com/$vendor/$repo", 'type' => 'vcs'];
+                        $this->_repositories["$vendor/$basename"] = ['url' => "https://github.com/$vendor/$repo", 'type' => 'vcs'];
                         continue;
                     }
                     // Else, require from pear and add pear as a source.

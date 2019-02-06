@@ -20,51 +20,51 @@
     "time": "2019-02-06",
     "repositories": [
         {
-            "uri": "https://github.com/horde/Autoloader",
+            "url": "https://github.com/horde/Autoloader",
             "type": "vcs"
         },
         {
-            "uri": "https://github.com/horde/Argv",
+            "url": "https://github.com/horde/Argv",
             "type": "vcs"
         },
         {
-            "uri": "https://github.com/horde/Cli",
+            "url": "https://github.com/horde/Cli",
             "type": "vcs"
         },
         {
-            "uri": "https://github.com/horde/Cli_Modular",
+            "url": "https://github.com/horde/Cli_Modular",
             "type": "vcs"
         },
         {
-            "uri": "https://github.com/horde/Http",
+            "url": "https://github.com/horde/Http",
             "type": "vcs"
         },
         {
-            "uri": "https://github.com/horde/Pear",
+            "url": "https://github.com/horde/Pear",
             "type": "vcs"
         },
         {
-            "uri": "https://github.com/horde/Role",
+            "url": "https://github.com/horde/Role",
             "type": "vcs"
         },
         {
-            "uri": "https://github.com/horde/Text_Diff",
+            "url": "https://github.com/horde/Text_Diff",
             "type": "vcs"
         },
         {
-            "uri": "https://github.com/horde/Util",
+            "url": "https://github.com/horde/Util",
             "type": "vcs"
         },
         {
-            "uri": "https://github.com/horde/Injector",
+            "url": "https://github.com/horde/Injector",
             "type": "vcs"
         },
         {
-            "uri": "https://github.com/horde/Release",
+            "url": "https://github.com/horde/Release",
             "type": "vcs"
         },
         {
-            "uri": "https://github.com/horde/Yaml",
+            "url": "https://github.com/horde/Yaml",
             "type": "vcs"
         },
         {
