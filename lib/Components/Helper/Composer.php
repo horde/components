@@ -105,6 +105,9 @@ class Components_Helper_Composer
      */
     protected function _setRequire(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
     {
+        if (empty($package['dependencies']['required'])) {
+            return;
+        }
         $composerDefinition->require = array();
         foreach ($package['dependencies']['required'] as $element => $required) {
             if ($element == 'pear') {
@@ -158,6 +161,9 @@ class Components_Helper_Composer
     protected function _setSuggest(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
     {
         $composerDefinition->suggest = array();
+        if (empty($package['dependencies']['optional'])) {
+            return;
+        }
         foreach ($package['dependencies']['optional'] as $element => $suggested) {
             if ($element == 'pear') {
                 foreach ($suggested as $pear => $version) {
