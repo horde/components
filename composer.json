@@ -1,7 +1,7 @@
 {
     "name": "horde/components",
     "description": "Developer tool for managing Horde components",
-    "type": "project",
+    "type": "horde-application",
     "homepage": "https://www.horde.org",
     "license": "LGPL-2.1",
     "authors": [
@@ -17,30 +17,90 @@
         }
     ],
     "version": "1.0.0-git",
-    "time": "2017-12-11",
+    "time": "2019-02-06",
     "repositories": [
         {
-            "type": "pear",
-            "url": "https://pear.horde.org"
+            "uri": "https://github.com/horde/Autoloader",
+            "type": "vcs"
+        },
+        {
+            "uri": "https://github.com/horde/Argv",
+            "type": "vcs"
+        },
+        {
+            "uri": "https://github.com/horde/Cli",
+            "type": "vcs"
+        },
+        {
+            "uri": "https://github.com/horde/Cli_Modular",
+            "type": "vcs"
+        },
+        {
+            "uri": "https://github.com/horde/Http",
+            "type": "vcs"
+        },
+        {
+            "uri": "https://github.com/horde/Pear",
+            "type": "vcs"
+        },
+        {
+            "uri": "https://github.com/horde/Role",
+            "type": "vcs"
+        },
+        {
+            "uri": "https://github.com/horde/Text_Diff",
+            "type": "vcs"
+        },
+        {
+            "uri": "https://github.com/horde/Util",
+            "type": "vcs"
+        },
+        {
+            "uri": "https://github.com/horde/Injector",
+            "type": "vcs"
+        },
+        {
+            "uri": "https://github.com/horde/Release",
+            "type": "vcs"
+        },
+        {
+            "uri": "https://github.com/horde/Yaml",
+            "type": "vcs"
+        },
+        {
+            "uri": "https://github.com/horde/Test",
+            "type": "vcs"
+        },
+        {
+            "uri": "https://pear.php.net",
+            "type": "pear"
+        },
+        {
+            "uri": "https://pear.phpunit.de",
+            "type": "pear"
+        },
+        {
+            "uri": "https://pear.phpmd.org",
+            "type": "pear"
         }
     ],
     "require": {
         "php": "^5.4 || ^7",
-        "pear-pear.horde.org/Horde_Autoloader": "*",
-        "pear-pear.horde.org/Horde_Argv": "*",
-        "pear-pear.horde.org/Horde_Cli": "^2.3",
-        "pear-pear.horde.org/Horde_Cli_Modular": "^2.1",
-        "pear-pear.horde.org/Horde_Http": "*",
-        "pear-pear.horde.org/Horde_Pear": "*",
-        "pear-pear.horde.org/Horde_Role": "*",
-        "pear-pear.horde.org/Horde_Text_Diff": "*",
-        "pear-pear.horde.org/Horde_Util": "*",
-        "pear-pear.horde.org/Horde_Injector": "*",
-        "pear-pear.horde.org/Horde_Release": "*",
-        "pear-pear.horde.org/Horde_Yaml": "*"
+        "horde/Autoloader": "*",
+        "horde/Argv": "*",
+        "horde/Cli": "^2.3",
+        "horde/Cli_Modular": "^2.1",
+        "horde/Http": "*",
+        "horde/Pear": "*",
+        "horde/Role": "*",
+        "horde/Text_Diff": "*",
+        "horde/Util": "*",
+        "horde/Injector": "*",
+        "horde/Release": "*",
+        "horde/Yaml": "*"
     },
     "suggest": {
-        "pear-pear.horde.org/Horde_Test": "*",
+        "horde/Test": "*",
         "pear-pear.php.net/Archive_Tar": "*",
         "pear-pear.php.net/PHP_CodeSniffer": "*",
         "pear-pear.phpunit.de/PHPUnit": "*",
@@ -48,10 +108,6 @@
         "pear-pear.phpunit.de/phpdcd": "*",
         "pear-pear.phpunit.de/phploc": "*",
         "pear-pear.phpmd.org/PHP_PMD": "*"
-    },
-    "replace": {
-        "pear-pear.horde.org/components": "1.*",
-        "pear-horde/components": "1.*"
     },
     "autoload": {
         "psr-0": {

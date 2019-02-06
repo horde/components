@@ -58,7 +58,7 @@ class Components_Runner_Composer
         $options['logger'] = $this->_output;
 
         $composer->generateComposeJson(
-            $this->_config->getComponent()->getPackageXmlPath(),
+            $this->_config->getComponent()->getHordeYml(),
             $options
         );
     }
