@@ -141,6 +141,9 @@ class Components_Helper_Composer
             }
             if ($element == 'ext') {
                foreach ($required as $ext => $version) {
+                   if (is_array($version)) {
+                       $version = empty($version['version']) ? '*' : $version['version'];
+                   }
                    $composerDefinition->require['ext-' . $ext] = $version;
                }
             }
@@ -196,6 +199,9 @@ class Components_Helper_Composer
             }
             if ($element == 'ext') {
                foreach ($suggested as $ext => $version) {
+                   if (is_array($version)) {
+                       $version = empty($version['version']) ? '*' : $version['version'];
+                   }
                    $composerDefinition->suggest['ext-' . $ext] = $version;
                }
             }

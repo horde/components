@@ -17,7 +17,7 @@
         }
     ],
     "version": "1.0.0-git",
-    "time": "2019-02-06",
+    "time": "2019-02-07",
     "repositories": [
         {
             "url": "https://github.com/horde/Autoloader",
