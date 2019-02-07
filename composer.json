@@ -68,7 +68,7 @@
             "type": "vcs"
         },
         {
-            "uri": "https://github.com/horde/Test",
+            "url": "https://github.com/horde/Test",
             "type": "vcs"
         },
         {

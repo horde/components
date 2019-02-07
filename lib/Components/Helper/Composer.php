@@ -126,21 +126,15 @@ class Components_Helper_Composer
                             // regular app
                             $repo = $basename;
                         }
-                        $composerDefinition->require["$vendor/$basename"] = $version;
-                        // Developer mode - don't add horde vcs repos in releases, use packagist
-                        $this->_repositories["$vendor/$basename"] = ['url' => "https://github.com/$vendor/$repo", 'type' => 'vcs'];
+                        $this->_handleVersion($version, $composerDefinition->require, 'horde', $repo, $basename, $vendor);
                         continue;
                     }
                     if ($repo == 'pecl.php.net') {
-                        if (is_array($version)) {
-                            $version = empty($version['version']) ? '*' : $version['version'];
-                        }
-                        $composerDefinition->suggest['ext-' . $basename] = $version;
+                        $this->_handleVersion($version, $composerDefinition->require, 'ext', $repo, $basename);
                         continue;
                     }
                     // Else, require from pear and add pear as a source.
-                    $composerDefinition->require['pear-' . $pear] = $version;
-                    $this->_addPearRepo($pear);
+                    $this->_handleVersion($version, $composerDefinition->require, 'pear', $repo, $basename);
                 }
             }
             if ($element == 'php') {
@@ -148,12 +142,33 @@ class Components_Helper_Composer
             }
             if ($element == 'ext') {
                foreach ($required as $ext => $version) {
-                    if (is_array($version)) {
-                        $version = empty($version['version']) ? '*' : $version['version'];
-                    }
-                    $composerDefinition->require['ext-' . $ext] = $version;
+                    $this->_handleVersion($version, $composerDefinition->require, 'ext', $repo, $basename);
                }
             }
+        }
+    }
+
+    // Deal with packages appropriately
+    protected function _handleVersion($version, &$stack, $type, $repo, $basename, $vendor = '')
+    {
+        $ext = '';
+        if (is_array($version)) {
+            $ext = empty($version['providesextension']) ? '' : $version['providesextension'];
+            $version = empty($version['version']) ? '*' : $version['version'];
+        }
+        if ($type == 'ext') {
+            $ext = $basename;
+        }
+        if ($ext) {
+            $stack['ext-' . $ext] = $version;
+        } elseif ($type == 'pear') {
+            $stack['pear-' . "$repo/$basename"] = $version;
+            $this->_repositories['pear-' . $repo] = ['uri' => 'https://' . $repo, 'type' => 'pear'];
+        } else {
+            // Most likely, this is always composer
+            $stack["$vendor/$basename"] = $version;
+            // Developer mode - don't add horde vcs repos in releases, use packagist
+            $this->_repositories["$vendor/$basename"] = ['url' => "https://github.com/$vendor/$repo", 'type' => 'vcs'];
         }
     }
 
@@ -191,21 +206,15 @@ class Components_Helper_Composer
                             // regular app
                             $repo = $basename;
                         }
-                        $composerDefinition->suggest["$vendor/$basename"] = $version;
-                        // Developer mode - don't add horde vcs repos in releases, use packagist
-                        $this->_repositories["$vendor/$basename"] = ['uri' => "https://github.com/$vendor/$repo", 'type' => 'vcs'];
+                        $this->_handleVersion($version, $composerDefinition->suggest, 'horde', $repo, $basename, $vendor);
                         continue;
                     }
                     if ($repo == 'pecl.php.net') {
-                        if (is_array($version)) {
-                            $version = empty($version['version']) ? '*' : $version['version'];
-                        }
-                        $composerDefinition->suggest['ext-' . $basename] = $version;
+                        $this->_handleVersion($version, $composerDefinition->suggest, 'ext', $repo, $basename);
                         continue;
                     }
                     // Else, take from pear and add pear as a source.
-                    $composerDefinition->suggest['pear-' . $pear] = $version;
-                    $this->_addPearRepo($pear);
+                    $this->_handleVersion($version, $composerDefinition->suggest, 'pear', $repo, $basename);
                 }
             }
             if ($element == 'php') {
@@ -213,10 +222,7 @@ class Components_Helper_Composer
             }
             if ($element == 'ext') {
                foreach ($suggested as $ext => $version) {
-                    if (is_array($version)) {
-                        $version = empty($version['version']) ? '*' : $version['version'];
-                    }
-                    $composerDefinition->suggest['ext-' . $ext] = $version;
+                    $this->_handleVersion($version, $composerDefinition->suggest, 'ext', $repo, $basename);
                }
             }
         }
