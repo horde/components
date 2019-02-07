@@ -131,6 +131,13 @@ class Components_Helper_Composer
                         $this->_repositories["$vendor/$basename"] = ['url' => "https://github.com/$vendor/$repo", 'type' => 'vcs'];
                         continue;
                     }
+                    if ($repo == 'pecl.php.net') {
+                        if (is_array($version)) {
+                            $version = empty($version['version']) ? '*' : $version['version'];
+                        }
+                        $composerDefinition->suggest['ext-' . $basename] = $version;
+                        continue;
+                    }
                     // Else, require from pear and add pear as a source.
                     $composerDefinition->require['pear-' . $pear] = $version;
                     $this->_addPearRepo($pear);
@@ -141,10 +148,10 @@ class Components_Helper_Composer
             }
             if ($element == 'ext') {
                foreach ($required as $ext => $version) {
-                   if (is_array($version)) {
-                       $version = empty($version['version']) ? '*' : $version['version'];
-                   }
-                   $composerDefinition->require['ext-' . $ext] = $version;
+                    if (is_array($version)) {
+                        $version = empty($version['version']) ? '*' : $version['version'];
+                    }
+                    $composerDefinition->require['ext-' . $ext] = $version;
                }
             }
         }
@@ -189,6 +196,13 @@ class Components_Helper_Composer
                         $this->_repositories["$vendor/$basename"] = ['uri' => "https://github.com/$vendor/$repo", 'type' => 'vcs'];
                         continue;
                     }
+                    if ($repo == 'pecl.php.net') {
+                        if (is_array($version)) {
+                            $version = empty($version['version']) ? '*' : $version['version'];
+                        }
+                        $composerDefinition->suggest['ext-' . $basename] = $version;
+                        continue;
+                    }
                     // Else, take from pear and add pear as a source.
                     $composerDefinition->suggest['pear-' . $pear] = $version;
                     $this->_addPearRepo($pear);
@@ -199,10 +213,10 @@ class Components_Helper_Composer
             }
             if ($element == 'ext') {
                foreach ($suggested as $ext => $version) {
-                   if (is_array($version)) {
-                       $version = empty($version['version']) ? '*' : $version['version'];
-                   }
-                   $composerDefinition->suggest['ext-' . $ext] = $version;
+                    if (is_array($version)) {
+                        $version = empty($version['version']) ? '*' : $version['version'];
+                    }
+                    $composerDefinition->suggest['ext-' . $ext] = $version;
                }
             }
         }
