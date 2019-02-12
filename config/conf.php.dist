@@ -28,3 +28,10 @@ $conf['from'] = 'Full name <user@horde.org>';
 
 /* Path to a checkout of the horde-web repository. */
 $conf['web_dir'] = '/var/www/horde-web';
+
+/* Well known composer native substitutes for pear dependencies */
+$conf['composer']['pear-substitutes']['pear.php.net/Archive_Tar'] = array('source' => 'Packagist', 'name' => 'pear/archive_tar');
+$conf['composer']['pear-substitutes']['pear.php.net/PHP_CodeSniffer'] = array('source' => 'Packagist', 'name' => 'squizlabs/php_codesniffer');
+$conf['composer']['pear-substitutes']['pear.phpunit.de/phpcpd'] = array('source' => 'Packagist', 'name' => 'sebastian/phpcpd');
+$conf['composer']['pear-substitutes']['pear.phpunit.de/phpdcd'] = array('source' => 'Packagist', 'name' => 'sebastian/phpdcd');
+$conf['composer']['pear-substitutes']['pear.phpunit.de/phploc'] = array('source' => 'Packagist', 'name' => 'phploc/phploc');

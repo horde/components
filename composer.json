@@ -17,7 +17,7 @@
         }
     ],
     "version": "1.0.0-git",
-    "time": "2019-02-07",
+    "time": "2019-02-12",
     "repositories": [
         {
             "url": "https://github.com/horde/Autoloader",
@@ -72,10 +72,6 @@
             "type": "vcs"
         },
         {
-            "uri": "https://pear.php.net",
-            "type": "pear"
-        },
-        {
             "uri": "https://pear.phpunit.de",
             "type": "pear"
         },
@@ -101,12 +97,12 @@
     },
     "suggest": {
         "horde/Test": "*",
-        "pear-pear.php.net/Archive_Tar": "*",
-        "pear-pear.php.net/PHP_CodeSniffer": "*",
+        "pear/archive_tar": "*",
+        "squizlabs/php_codesniffer": "*",
         "pear-pear.phpunit.de/PHPUnit": "*",
-        "pear-pear.phpunit.de/phpcpd": "*",
-        "pear-pear.phpunit.de/phpdcd": "*",
-        "pear-pear.phpunit.de/phploc": "*",
+        "sebastian/phpcpd": "*",
+        "sebastian/phpdcd": "*",
+        "phploc/phploc": "*",
         "pear-pear.phpmd.org/PHP_PMD": "*"
     },
     "autoload": {

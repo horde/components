@@ -1,20 +1,21 @@
 <?php
 /**
- * Copyright 2013-2017 Horde LLC (http://www.horde.org/)
+ * Copyright 2013-2019 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
  *
  * @category  Horde
- * @copyright 2013-2017 Horde LLC
+ * @copyright 2013-2019 Horde LLC
  * @license   http://www.horde.org/licenses/lgpl21 LGPL 2.1
  * @package   Components
  */
 
 /**
  * @author    Michael Slusarz <slusarz@horde.org>
+ * @author    Ralf Lang <lang@horde.org>
  * @category  Horde
- * @copyright 2013-2017 Horde LLC
+ * @copyright 2013-2019 Horde LLC
  * @license   http://www.horde.org/licenses/lgpl21 LGPL 2.1
  * @package   Components
  */
@@ -24,6 +25,10 @@ class Components_Helper_Composer
     protected $_repositories = array();
 
     /**
+     * @var array A list of pear packages to replace by known alternatives
+     */
+    protected $_substitutes = array();
+    /**
      * Updates the composer.json file.
      *
      * @param Components_Wrapper_HordeYml $package  The package definition
@@ -31,6 +36,10 @@ class Components_Helper_Composer
      */
     public function generateComposeJson(Components_Wrapper_HordeYml $package, array $options = array())
     {
+        if (!empty($options['composer']['pear-substitutes']))
+        {
+            $this->_substitutes = $options['composer']['pear-substitutes'];
+        }
         $filename = dirname($package->getFullPath()) . '/composer.json';
         $composerDefinition = new stdClass();
         $this->_setName($package, $composerDefinition);
@@ -113,7 +122,10 @@ class Components_Helper_Composer
             if ($element == 'pear') {
                 foreach ($required as $pear => $version) {
                     list($repo, $basename) = explode('/', $pear);
-                    // If it's on our packagist whitelist, convert to composer-native
+                    // If it's on our substitute whitelist, convert to composer-native
+                    if ($this->_substitute($pear, $version, $composerDefinition->require)) {
+                        continue;
+                    }
                     // If it's a horde pear component, rather use composer-native and add github vcs as repository
                     if ($repo == 'pear.horde.org') {
                         $vendor = 'horde';
@@ -193,7 +205,10 @@ class Components_Helper_Composer
             if ($element == 'pear') {
                 foreach ($suggested as $pear => $version) {
                     list($repo, $basename) = explode('/', $pear);
-                    // If it's on our packagist whitelist, convert to composer-native
+                    // If it's on our substitute whitelist, convert to composer-native
+                    if ($this->_substitute($pear, $version, $composerDefinition->suggest)) {
+                        continue;
+                    }
                     // If it's a horde pear component, rather use composer-native and add github vcs as repository
                     if ($repo == 'pear.horde.org') {
                         $vendor = 'horde';
@@ -227,6 +242,20 @@ class Components_Helper_Composer
             }
         }
 
+    }
+
+    // Handle the substitution list
+    protected function _substitute($pear, $version, &$stack)
+    {
+        if (!empty($this->_substitutes[$pear])) {
+            $stack[$this->_substitutes[$pear]['name']] = $version;
+            if ($this->_substitutes[$pear]['source'] != 'Packagist')
+            {
+                throw new Components_Exception("Non-Packagist substitutes not yet implemented:" . $this->_substitutes[$pear]['source']);
+            }
+            return true;
+        }
+        return false;
     }
 
     protected function _setRepositories(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
