@@ -117,7 +117,7 @@ class Components_Helper_Composer
         if (empty($package['dependencies']['required'])) {
             return;
         }
-        $composerDefinition->require = array();
+        $composerDefinition->require = array('horde/horde-installer-plugin' => '*');
         foreach ($package['dependencies']['required'] as $element => $required) {
             if ($element == 'pear') {
                 foreach ($required as $pear => $version) {
@@ -178,7 +178,7 @@ class Components_Helper_Composer
             $this->_repositories['pear-' . $repo] = ['uri' => 'https://' . $repo, 'type' => 'pear'];
         } else {
             // Most likely, this is always composer
-            $stack["$vendor/$basename"] = $version;
+            $stack[Horde_String::lower("$vendor/$basename")] = $version;
             // Developer mode - don't add horde vcs repos in releases, use packagist
             $this->_repositories["$vendor/$basename"] = ['url' => "https://github.com/$vendor/$repo", 'type' => 'vcs'];
         }
