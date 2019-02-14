@@ -16,8 +16,8 @@
             "role": "lead"
         }
     ],
-    "version": "1.0.0-git",
-    "time": "2019-02-13",
+    "version": "1.0.0",
+    "time": "2019-02-14",
     "repositories": [
         {
             "url": "https://github.com/horde/Autoloader",
@@ -72,11 +72,11 @@
             "type": "vcs"
         },
         {
-            "uri": "https://pear.phpunit.de",
+            "url": "https://pear.phpunit.de",
             "type": "pear"
         },
         {
-            "uri": "https://pear.phpmd.org",
+            "url": "https://pear.phpmd.org",
             "type": "pear"
         }
     ],

@@ -49,7 +49,9 @@ class Components_Helper_Composer
         $composerDefinition->homepage = 'https://www.horde.org';
         $composerDefinition->license = $package['license']['identifier'];
         $this->_setAuthors($package, $composerDefinition);
-        $composerDefinition->version = $package['version']['release'];
+        // cut off any -git or similar
+        list($version) = explode('-', $package['version']['release']);
+        $composerDefinition->version = $version;
         $composerDefinition->time = (new Horde_Date(mktime()))->format('Y-m-d');
         $composerDefinition->repositories = [];
         $this->_setRequire($package, $composerDefinition);
@@ -103,8 +105,21 @@ class Components_Helper_Composer
 
     protected function _setAutoload(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
     {
+        $composerDefinition->autoload = [];
+
         $name = $package['type'] == 'library' ? 'Horde_' . $package['name'] : $package['name'];
-        $composerDefinition->autoload = ['psr-0' => [$name  => 'lib/']];
+        if (!empty($package['autoload'])) {
+            foreach ($package['autoload'] as $type => $definition) {
+                if ($type == 'classmap') {
+                    $composerDefinition->autoload['classmap']  =  $definition;
+                }
+                if ($type == 'psr-0') {
+                    $composerDefinition->autoload['psr-0']  =  $definition;
+                }
+            }
+        } else {
+            $composerDefinition->autoload['psr-0']  = [$name  => 'lib/'];
+        }
     }
 
     /**
@@ -175,7 +190,7 @@ class Components_Helper_Composer
             $stack['ext-' . $ext] = $version;
         } elseif ($type == 'pear') {
             $stack['pear-' . "$repo/$basename"] = $version;
-            $this->_repositories['pear-' . $repo] = ['uri' => 'https://' . $repo, 'type' => 'pear'];
+            $this->_repositories['pear-' . $repo] = ['url' => 'https://' . $repo, 'type' => 'pear'];
         } else {
             // Most likely, this is always composer
             $stack[Horde_String::lower("$vendor/$basename")] = $version;
@@ -187,7 +202,7 @@ class Components_Helper_Composer
     protected function _addPearRepo($pear)
     {
         $repo = substr($pear, 0, strrpos($pear, '/'));
-        $this->_repositories['pear-' . $repo] = ['uri' => 'https://' . $repo, 'type' => 'pear'];
+        $this->_repositories['pear-' . $repo] = ['url' => 'https://' . $repo, 'type' => 'pear'];
     }
 
     /**
