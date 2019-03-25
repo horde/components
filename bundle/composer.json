@@ -3,6 +3,13 @@
         "phploc/phploc": "*",
         "phpmd/phpmd" : "@stable",
         "sebastian/phpcpd": "*",
-        "sebastian/phpdcd": "*"
+        "sebastian/phpdcd": "*",
+        "squizlabs/php_codesniffer": "^3.3"
+    },
+    "autoload": {
+        "psr-4": {
+             "PHP_CodeSniffer\\": "vendor/squizlabs/php_codesniffer/src/"
+        },
+        "classmap": [ "vendor/squizlabs/php_codesniffer/autoload.php" ]
     }
 }

@@ -10,6 +10,12 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+use PHP_CodeSniffer\Autoload;
+use PHP_CodeSniffer\Config;
+use PHP_CodeSniffer\Files\FileList;
+use PHP_CodeSniffer\Reporter;
+use PHP_CodeSniffer\Ruleset;
+
 /**
  * Components_Qc_Task_Cs:: runs a code style check on the component.
  *
@@ -46,7 +52,7 @@ extends Components_Qc_Task_Base
      */
     public function validate($options)
     {
-        if (!class_exists('PHP_CodeSniffer')) {
+        if (!class_exists('PHP_CodeSniffer\\Autoload')) {
             return array('PHP CodeSniffer is not available!');
         }
     }
@@ -60,22 +66,30 @@ extends Components_Qc_Task_Base
      */
     public function run(&$options)
     {
-        $old_dir = getcwd();
-        $lib = realpath($this->_config->getPath() . '/lib');
-        $argv = $_SERVER['argv'];
-        $argc = $_SERVER['argv'];
-        $_SERVER['argv'] = array();
-        $_SERVER['argc'] = 0;
-        define('PHPCS_DEFAULT_WARN_SEV', 0);
-        $phpcs = new PHP_CodeSniffer();
-        $phpcs->process(
-            $lib,
-            Components_Constants::getDataDirectory() . '/qc_standards/phpcs.xml'
-        );
-        $_SERVER['argv'] = $argv;
-        $_SERVER['argc'] = $argc;
+        $lib_dir = realpath($this->_config->getPath() . '/lib');
 
-        chdir($old_dir);
-        return $phpcs->reporting->printReport('emacs', false, array('colors' => true), null)['errors'];
+        $cli_args = [
+            '--basepath=' . $lib_dir,
+            '--report=emacs',
+            '--standard=' . Components_Constants::getDataDirectory() . '/qc_standards/phpcs.xml',
+            $lib_dir
+        ];
+
+        define('PHP_CODESNIFFER_CBF', false);
+        define('PHP_CODESNIFFER_VERBOSITY', false);
+
+        $config = new Config($cli_args);
+        $reporter = new Reporter($config);
+        $ruleset = new Ruleset($config);
+
+        $file_list = new FileList($config, $ruleset);
+
+        foreach ($file_list as $path => $file) {
+            $file->process();
+            $reporter->cacheFileReport($file, $config);
+        }
+
+        echo $reporter->printReport('emacs');
+        return $reporter->totalErrors;
     }
 }
