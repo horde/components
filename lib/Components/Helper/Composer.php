@@ -179,10 +179,12 @@ class Components_Helper_Composer
      */
     protected function _setRequire(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
     {
+        $version = ($this->_composerVersion) ?: '*';
+        $composerDefinition->require = array('horde/horde-installer-plugin' => $version);
+
         if (empty($package['dependencies']['required'])) {
             return;
         }
-        $composerDefinition->require = array('horde/horde-installer-plugin' => '*');
         foreach ($package['dependencies']['required'] as $element => $required) {
             if ($element == 'pear') {
                 foreach ($required as $pear => $version) {
