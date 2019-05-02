@@ -89,7 +89,7 @@ class Components_Helper_Composer
         // Is this intentional? "description" seems always longer than full
         $composerDefinition->description = $package['full'];
         $this->_setType($package, $composerDefinition);
-        $composerDefinition->homepage = 'https://www.horde.org';
+        $composerDefinition->homepage = $package['homepage'] ?? 'https://www.horde.org';
         $composerDefinition->license = $package['license']['identifier'];
         $this->_setAuthors($package, $composerDefinition);
         // cut off any -git or similar
