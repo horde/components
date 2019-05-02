@@ -17,59 +17,15 @@
         }
     ],
     "version": "1.0.0",
-    "time": "2019-02-14",
+    "time": "2019-05-02",
     "repositories": [
         {
-            "url": "https://github.com/horde/Autoloader",
-            "type": "vcs"
+            "type": "composer",
+            "url": "https://horde-satis.maintaina.com"
         },
         {
-            "url": "https://github.com/horde/Argv",
-            "type": "vcs"
-        },
-        {
-            "url": "https://github.com/horde/Cli",
-            "type": "vcs"
-        },
-        {
-            "url": "https://github.com/horde/Cli_Modular",
-            "type": "vcs"
-        },
-        {
-            "url": "https://github.com/horde/Http",
-            "type": "vcs"
-        },
-        {
-            "url": "https://github.com/horde/Pear",
-            "type": "vcs"
-        },
-        {
-            "url": "https://github.com/horde/Role",
-            "type": "vcs"
-        },
-        {
-            "url": "https://github.com/horde/Text_Diff",
-            "type": "vcs"
-        },
-        {
-            "url": "https://github.com/horde/Util",
-            "type": "vcs"
-        },
-        {
-            "url": "https://github.com/horde/Injector",
-            "type": "vcs"
-        },
-        {
-            "url": "https://github.com/horde/Release",
-            "type": "vcs"
-        },
-        {
-            "url": "https://github.com/horde/Yaml",
-            "type": "vcs"
-        },
-        {
-            "url": "https://github.com/horde/Test",
-            "type": "vcs"
+            "url": "https://pear.php.net",
+            "type": "pear"
         },
         {
             "url": "https://pear.phpunit.de",
@@ -81,29 +37,29 @@
         }
     ],
     "require": {
-        "horde/horde-installer-plugin": "*",
+        "horde/horde-installer-plugin": "dev-master",
         "php": "^5.4 || ^7",
-        "horde/autoloader": "*",
-        "horde/argv": "*",
-        "horde/cli": "^2.3",
-        "horde/cli_modular": "^2.1",
-        "horde/http": "*",
-        "horde/pear": "*",
-        "horde/role": "*",
-        "horde/text_diff": "*",
-        "horde/util": "*",
-        "horde/injector": "*",
-        "horde/release": "*",
-        "horde/yaml": "*"
+        "horde/autoloader": "dev-master",
+        "horde/argv": "dev-master",
+        "horde/cli": "dev-master",
+        "horde/cli_modular": "dev-master",
+        "horde/http": "dev-master",
+        "horde/pear": "dev-master",
+        "horde/role": "dev-master",
+        "horde/text_diff": "dev-master",
+        "horde/util": "dev-master",
+        "horde/injector": "dev-master",
+        "horde/release": "dev-master",
+        "horde/yaml": "dev-master"
     },
     "suggest": {
         "horde/test": "*",
-        "pear/archive_tar": "*",
-        "squizlabs/php_codesniffer": "*",
+        "pear-pear.php.net/Archive_Tar": "*",
+        "pear-pear.php.net/PHP_CodeSniffer": "*",
         "pear-pear.phpunit.de/PHPUnit": "*",
-        "sebastian/phpcpd": "*",
-        "sebastian/phpdcd": "*",
-        "phploc/phploc": "*",
+        "pear-pear.phpunit.de/phpcpd": "*",
+        "pear-pear.phpunit.de/phpdcd": "*",
+        "pear-pear.phpunit.de/phploc": "*",
         "pear-pear.phpmd.org/PHP_PMD": "*"
     },
     "autoload": {
