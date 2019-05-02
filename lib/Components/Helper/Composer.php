@@ -22,12 +22,31 @@
 class Components_Helper_Composer
 {
 
+    /**
+     * @var array A list of repositories to add as sources for dependencies
+     */
     protected $_repositories = array();
-
     /**
      * @var array A list of pear packages to replace by known alternatives
      */
     protected $_substitutes = array();
+    /**
+     * @var string A github organisation used for vcs type sources
+     */
+    protected $_organisation = 'horde';
+    /**
+     * @var string Govern which repos to add to the composer file
+     * use 'vcs' for an individual git repo per horde dependency
+     * use 'satis:https://url' for a single composer repo source
+     * leave empty for no custom repos
+     */
+    protected $_composerRepo = '';
+
+    /**
+     * @var string Overwrite horde dependency versions
+     */
+    protected $_composerVersion = '';
+
     /**
      * Updates the composer.json file.
      *
@@ -40,6 +59,30 @@ class Components_Helper_Composer
         {
             $this->_substitutes = $options['composer']['pear-substitutes'];
         }
+        // Handle cases where organisation is not horde.
+        if (empty($options['org'])) {
+            $this->_organisation = 'horde';
+        } else {
+            $this->_organisation = $options['org'];
+        }
+        // Decide on repo type hints
+        if (!empty($options['composer_repo'])) {
+            if ($options['composer_repo'] == 'vcs') {
+                $this->_composerRepo = 'vcs';
+            }
+            if (substr($options['composer_repo'], 0, 6) == 'satis:') {
+                $this->_composerRepo = 'composer';
+                $this->_repositories['composer'] = [
+                    'type' => 'composer',
+                    'url' => substr($options['composer_repo'], 6)
+                ];
+            }
+        }
+        // Override horde dependency versions
+        if (!empty($options['composer_version'])) {
+            $this->_composerVersion = $options['composer_version'];
+        }
+
         $filename = dirname($package->getFullPath()) . '/composer.json';
         $composerDefinition = new stdClass();
         $this->_setName($package, $composerDefinition);
@@ -61,13 +104,20 @@ class Components_Helper_Composer
         // Development dependencies?
         // Replaces ? Only needed for special cases. Default cases are handled implicitly
         // provides? apps can depend on provided APIs rather than other apps
-        file_put_contents($filename, json_encode($composerDefinition, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
+
+        // Enforce suggest to be a json object rather than array
+        if (empty($composerDefinition->suggest)) {
+            $composerDefinition->suggest = new \stdClass();
+        }
+        $jsonDefinition = json_encode($composerDefinition, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
+        file_put_contents($filename, $jsonDefinition);
 
         if (isset($options['logger'])) {
             $options['logger']->ok(
                 'Created composer.json file.'
             );
         }
+        return $jsonDefinition;
     }
 
     protected function _setName(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
@@ -144,6 +194,9 @@ class Components_Helper_Composer
                     // If it's a horde pear component, rather use composer-native and add github vcs as repository
                     if ($repo == 'pear.horde.org') {
                         $vendor = 'horde';
+                        if (!empty($this->_composerVersion)) {
+                            $version = 'dev-master';
+                        }
                         if ($basename == 'horde') {
                             // the "horde" app lives in the "base" repo.
                             $repo = 'base';
@@ -194,8 +247,9 @@ class Components_Helper_Composer
         } else {
             // Most likely, this is always composer
             $stack[Horde_String::lower("$vendor/$basename")] = $version;
-            // Developer mode - don't add horde vcs repos in releases, use packagist
-            $this->_repositories["$vendor/$basename"] = ['url' => "https://github.com/$vendor/$repo", 'type' => 'vcs'];
+            if ($this->_composerRepo == 'vcs') {
+                $this->_repositories["$vendor/$basename"] = ['url' => "https://github.com/$vendor/$repo", 'type' => 'vcs'];
+            }
         }
     }
 
