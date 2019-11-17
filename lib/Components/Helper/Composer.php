@@ -55,9 +55,9 @@ class Components_Helper_Composer
      */
     public function generateComposeJson(Components_Wrapper_HordeYml $package, array $options = array())
     {
-        if (!empty($options['composer']['pear-substitutes']))
+        if (!empty($options['composer_opts']['pear-substitutes']))
         {
-            $this->_substitutes = $options['composer']['pear-substitutes'];
+            $this->_substitutes = $options['composer_opts']['pear-substitutes'];
         }
         // Handle cases where organisation is not horde.
         if (empty($options['org'])) {
