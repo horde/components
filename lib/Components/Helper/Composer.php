@@ -175,7 +175,11 @@ class Components_Helper_Composer
     /**
      * Convert .horde.yml requirements to composer format
      *
-     * References to the horde pear channel will be changed to composer vcs/github
+     * References to the horde pear channel will be changed to composer
+     * Depending on options, assume horde packages live on either
+     * - packagist/default repo
+     * - a satis repo
+     * - individual git repos
      */
     protected function _setRequire(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
     {
@@ -186,6 +190,14 @@ class Components_Helper_Composer
             return;
         }
         foreach ($package['dependencies']['required'] as $element => $required) {
+            if ($element == 'composer') {
+                // composer dependencies which have no pear equivalent, i.e. unbundling
+                foreach ($required as $dep => $version) {
+                    // Do we need to override versions or the likes here?
+			$composerDefinition->require[$dep] = $version;
+                    continue;
+                }
+            }
             if ($element == 'pear') {
                 foreach ($required as $pear => $version) {
                     list($repo, $basename) = explode('/', $pear);
@@ -273,6 +285,14 @@ class Components_Helper_Composer
             return;
         }
         foreach ($package['dependencies']['optional'] as $element => $suggested) {
+            if ($element == 'composer') {
+                // composer dependencies which have no pear equivalent, i.e. unbundling
+                foreach ($suggested as $dep => $version) {
+                    // Do we need to override versions or the likes here?
+                    $composerDefinition->suggest[$dep] = $version;
+                    continue;
+                }
+            }
             if ($element == 'pear') {
                 foreach ($suggested as $pear => $version) {
                     list($repo, $basename) = explode('/', $pear);
