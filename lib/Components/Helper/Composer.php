@@ -59,6 +59,7 @@ class Components_Helper_Composer
         {
             $this->_substitutes = $options['composer_opts']['pear-substitutes'];
         }
+
         // Handle cases where organisation is not horde.
         if (empty($options['org'])) {
             $this->_organisation = 'horde';
@@ -101,6 +102,7 @@ class Components_Helper_Composer
         $this->_setSuggest($package, $composerDefinition);
         $this->_setRepositories($package, $composerDefinition);
         $this->_setAutoload($package, $composerDefinition);
+        $this->_setVendorBin($package, $composerDefinition);
         // Development dependencies?
         // Replaces ? Only needed for special cases. Default cases are handled implicitly
         // provides? apps can depend on provided APIs rather than other apps
@@ -118,6 +120,48 @@ class Components_Helper_Composer
             );
         }
         return $jsonDefinition;
+    }
+
+    /**
+     * Build a list of commands which should be exposed to vendor/bin.
+     *
+     * Default to all direct executable files of bindir
+     * Otherwise use provided whitelist "commands"
+     * and blacklist "nocommands" (blacklist wins)
+     */
+    protected function _setVendorBin(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
+    {
+        $commands = [];
+        $noCommands = [];
+        if (!empty($package['nocommands'])) {
+            $noCommands = $package['nocommands'];
+        }
+        /**
+         * If the package sports an explicit list of commands, use only these
+         */
+        if (!empty($package['commands'])) {
+            $commands = $package['commands'];
+        } else {
+            // No explicit list - search bindir
+            $binDir = dirname($package->getFullPath()) . '/bin/';
+            if (is_dir($binDir)) {
+                foreach (new DirectoryIterator($binDir) as $file) {
+                    if ($file->isExecutable() and $file->isFile()) {
+                        $commands[] = 'bin/' . $file->getFilename();
+                    }
+                }
+            }
+        }
+        /**
+         * If the package provides a blacklist, filter.
+         *
+         */
+        if ($noCommands) {
+            $commands = array_diff($commands, $noCommands);
+        }
+        if ($commands) {
+            $composerDefinition->bin = array_values($commands);
+        }
     }
 
     protected function _setName(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
@@ -194,7 +238,7 @@ class Components_Helper_Composer
                 // composer dependencies which have no pear equivalent, i.e. unbundling
                 foreach ($required as $dep => $version) {
                     // Do we need to override versions or the likes here?
-			$composerDefinition->require[$dep] = $version;
+                    $composerDefinition->require[$dep] = $version;
                     continue;
                 }
             }
