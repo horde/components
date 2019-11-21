@@ -58,3 +58,5 @@ dependencies:
 autoload:
   psr-0:
     Components: 'lib/'
+nocommands:
+  - 'bin/horde-bootstrap'
