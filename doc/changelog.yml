@@ -9,6 +9,7 @@
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
   notes: |
+    [rla] Expand composer file generation to support composer-based production setups.
     [jan] Remove next-sentinel release task.
     [jan] In the 'update' command, update composer.json from .horde.yml.
     [jan] In the 'update' command, update package.xml from .horde.yml.
