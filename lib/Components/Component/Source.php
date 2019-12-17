@@ -739,10 +739,12 @@ class Components_Component_Source extends Components_Component_Base
     public function sync($options)
     {
         $helper = $this->getFactory()->createChangelog($this);
+        $changes = $this->getWrapper('Changes');
         if (empty($options['pretend'])) {
             $this->updatePackageFromHordeYml();
             $xml = $this->getPackageXml();
             $xml->syncCurrentVersion();
+            $helper->updatePackage($xml);
             $xml->save();
             if (!empty($options['commit'])) {
                 $options['commit']->add($xml, $this->_directory);
@@ -752,12 +754,30 @@ class Components_Component_Source extends Components_Component_Base
                 $this->getPackageXmlPath(),
                 $helper->changelogFileExists()
             );
+            if ($path = $helper->updateChanges()) {
+                $changes->save();
+                if (!empty($options['commit'])) {
+                    $options['commit']->add($changes, $this->_directory);
+                }
+                $result .= "\n" . sprintf(
+                    'Synchronized %s with %s.',
+                    $path,
+                    $helper->changelogFileExists()
+                );
+            }
         } else {
             $result = sprintf(
                 'Would synchronize %s with %s now.',
                 $this->getPackageXmlPath(),
                 $helper->changelogFileExists()
             );
+            if ($changes->exists()) {
+                $result .= "\n" . sprintf(
+                    'Would synchronize %s with %s now.',
+                    $this->getPackageXmlPath(),
+                    $changes->getFullPath()
+                );
+            }
         }
         return $result;
     }

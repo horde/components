@@ -358,7 +358,7 @@ class Components_Helper_ChangeLog
     /**
      * Updates CHANGES from changelog.yml.
      *
-     * @return string  Path to the updated CHANGES file.
+     * @return string|null  Path to the updated CHANGES file.
      */
     public function updateChanges()
     {
