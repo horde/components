@@ -55,7 +55,7 @@ extends Components_Release_Task_Base
     {
         $diff_options = $options;
         $diff_options['no_timestamp'] = true;
-        $diff_options['from_memory'] = $options['pretend'];
+        $diff_options['from_memory'] = !empty($options['pretend']);
         $diff = $this->getComponent()->updatePackage('diff', $diff_options);
         if (!empty($diff)) {
             return array(
