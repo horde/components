@@ -119,6 +119,8 @@ class Components_Runner_Release
             $pre_commit = true;
         }
 
+        $sequence[] = 'Diff';
+
         if ($this->_doTask('package')) {
             $sequence[] = 'Package';
             if ($this->_doTask('upload')) {
@@ -127,7 +129,7 @@ class Components_Runner_Release
                 $this->_output->warn('Are you certain you don\'t want to upload the package? Add the "upload" option in case you want to correct your selection. Waiting 5 seconds ...');
                 sleep(5);
             }
-        } else if ($this->_doTask('upload')) {
+        } elseif ($this->_doTask('upload')) {
             throw new Components_Exception('Selecting "upload" without "package" is not possible! Please add the "package" task if you want to upload the package!');
         }
 
@@ -157,6 +159,8 @@ class Components_Runner_Release
                 $sequence[] = 'CommitPostRelease';
             }
         }
+
+        $sequence[] = 'Diff';
 
         if (in_array('CommitPreRelease', $sequence) ||
             in_array('CommitPostRelease', $sequence)) {

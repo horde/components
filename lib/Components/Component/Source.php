@@ -334,10 +334,10 @@ class Components_Component_Source extends Components_Component_Base
             unset($this->_wrappers['PackageXml']);
         }
 
+        $oldWrappers = $this->cloneWrappers();
         $package_xml = $this->updatePackageFromHordeYml();
 
         /* Skip updating if this is a PECL package. */
-        $composer_json = null;
         if (!$package_xml->findNode('/p:package/p:providesextension')) {
             $package_xml->updateContents(
                 !empty($options['theme'])
@@ -352,17 +352,7 @@ class Components_Component_Source extends Components_Component_Base
         case 'print':
             return implode("===\n", $this->_wrappers);
         case 'diff':
-            $diff = '';
-            foreach ($this->_wrappers as $wrapper) {
-                $diff_tmp = $wrapper->diff();
-                if (!empty($diff_tmp)) {
-                    $path = $wrapper->getLocalPath($this->_directory);
-                    $diff .= '--- a/' . $path . "\n"
-                        . '--- b/' . $path . "\n"
-                        . $wrapper->diff();
-                }
-            }
-            return $diff;
+            return $this->getWrappersDiff($oldWrappers);
         default:
             foreach ($this->_wrappers as $wrapper) {
                 $wrapper->save();
@@ -558,7 +548,7 @@ class Components_Component_Source extends Components_Component_Base
      * Rebuilds the basic information in a composer.json file from the
      * .horde.yml definition.
      *
-     * @return string  The updated composer.json content.
+     * @return Components_Wrapper_ComposerJson  The updated composer.json content.
      * @throws Components_Exception
      */
     public function updateComposerFromHordeYml()
@@ -704,11 +694,9 @@ class Components_Component_Source extends Components_Component_Base
     public function timestamp($options)
     {
         $helper = $this->getFactory()->createChangelog($this);
+        $helper->timestamp();
         if (empty($options['pretend'])) {
-            $helper->timestamp();
-            if (empty($options['pretend'])) {
-                $this->getWrapper('ChangelogYml')->save();
-            }
+            $this->getWrapper('ChangelogYml')->save();
             if (!empty($options['commit'])) {
                 $options['commit']->add(
                     $helper->changelogFileExists(), $this->_directory
@@ -740,11 +728,11 @@ class Components_Component_Source extends Components_Component_Base
     {
         $helper = $this->getFactory()->createChangelog($this);
         $changes = $this->getWrapper('Changes');
+        $this->updatePackageFromHordeYml();
+        $xml = $this->getPackageXml();
+        $xml->syncCurrentVersion();
+        $helper->updatePackage($xml);
         if (empty($options['pretend'])) {
-            $this->updatePackageFromHordeYml();
-            $xml = $this->getPackageXml();
-            $xml->syncCurrentVersion();
-            $helper->updatePackage($xml);
             $xml->save();
             if (!empty($options['commit'])) {
                 $options['commit']->add($xml, $this->_directory);
@@ -836,7 +824,7 @@ class Components_Component_Source extends Components_Component_Base
     }
 
     /**
-     * Sets the version in .horde.yml, package.xml and CHANGES.
+     * Sets the version in all files.
      *
      * @param string $rel_version The new release version number.
      * @param string $api_version The new api version number.
@@ -860,6 +848,9 @@ class Components_Component_Source extends Components_Component_Base
         // Update package.xml
         $package_xml = $this->updatePackageFromHordeYml();
         $updated[] = $package_xml;
+
+        // Update composer.json
+        $updated[] = $this->updateComposerFromHordeYml();
 
         // Update CHANGES.
         $changes = $this->getWrapper('Changes');
@@ -1337,6 +1328,35 @@ class Components_Component_Source extends Components_Component_Base
     }
 
     /**
+     * Returns a concatenated diff of all file wrappers.
+     *
+     * @param Components_Wrapper[]|null $oldWrappers
+     *
+     * @return string
+     */
+    public function getWrappersDiff($oldWrappers = null)
+    {
+        if (!$oldWrappers) {
+            $oldWrappers = array();
+        }
+        $diff = '';
+        foreach ($this->_wrappers as $wrapper) {
+            $current = null;
+            foreach ($oldWrappers as $oldWrapper) {
+                if (get_class($oldWrapper) == get_class($wrapper)) {
+                    $current = $oldWrapper;
+                    break;
+                }
+            }
+            if (($wrapper->exists() || strlen($wrapper)) &&
+                strlen($wrapperDiff = $this->_createDiff($wrapper, $current))) {
+                $diff .= "\n" . $wrapperDiff;
+            }
+        }
+        return substr($diff, 1);
+    }
+
+    /**
      * Saves all loaded file wrappers.
      */
     public function saveWrappers()
@@ -1344,6 +1364,18 @@ class Components_Component_Source extends Components_Component_Base
         foreach ($this->_wrappers as $wrapper) {
             $wrapper->save();
         }
+    }
+
+    /**
+     * @return array
+     */
+    public function cloneWrappers()
+    {
+        $oldWrappers = array();
+        foreach ($this->_wrappers as $name => $wrapper) {
+            $oldWrappers[$name] = clone $wrapper;
+        }
+        return $oldWrappers;
     }
 
     /**
@@ -1365,5 +1397,23 @@ class Components_Component_Source extends Components_Component_Base
                 $wrappers
             )
         );
+    }
+
+    /**
+     * @param Components_Wrapper      $wrapper
+     * @param Components_Wrapper|null $oldWrapper
+     *
+     * @return string
+     */
+    protected function _createDiff(Components_Wrapper $wrapper, Components_Wrapper $oldWrapper = null)
+    {
+        $diff = $wrapper->diff($oldWrapper);
+        if (!empty($diff)) {
+            $path = $wrapper->getLocalPath($this->_directory);
+            return '--- a/' . $path . "\n"
+                . '--- b/' . $path . "\n"
+                . $diff;
+        }
+        return '';
     }
 }

@@ -64,6 +64,9 @@ extends Components_Release_Task_Base
         } else {
             $next_version = $options['next_version'];
         }
+        if ($options['pretend']) {
+            $options['old_wrappers'] = $this->getComponent()->cloneWrappers();
+        }
         $result = $this->getComponent()->nextVersion(
             $next_version,
             $options['next_note'],

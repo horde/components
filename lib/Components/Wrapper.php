@@ -55,9 +55,11 @@ interface Components_Wrapper
     /**
      * Returns a diff between the saved and the current version of the file.
      *
+     * @param Components_Wrapper $wrapper  Use this instead of the saved version.
+     *
      * @return string  File diff.
      */
-    public function diff();
+    public function diff(self $wrapper = null);
 
     /**
      * Saves this object to the file.

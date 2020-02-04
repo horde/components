@@ -22,6 +22,8 @@
 class Components_Release_Task_Changelog
 extends Components_Release_Task_Base
 {
+    private $_wasUpdated = false;
+
     /**
      * Validate the preconditions required for this release task.
      *
@@ -53,6 +55,7 @@ extends Components_Release_Task_Base
     {
         $diff_options = $options;
         $diff_options['no_timestamp'] = true;
+        $diff_options['from_memory'] = $options['pretend'];
         $diff = $this->getComponent()->updatePackage('diff', $diff_options);
         if (!empty($diff)) {
             return array(
@@ -78,5 +81,6 @@ extends Components_Release_Task_Base
         } else {
             $this->getOutput()->info($result);
         }
+        $this->_wasUpdated = true;
     }
 }
