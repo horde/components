@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  * @since 0.9.6
  */
@@ -50,7 +50,7 @@ use PDepend\Source\Builder\BuilderContext;
  * This is a special reference container that is used whenever the keyword
  * <b>self</b> is used to reference a class or interface.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  * @since 0.9.6
  */
@@ -82,7 +82,7 @@ class ASTSelfReference extends ASTClassOrInterfaceReference
      * Constructs a new type holder instance.
      *
      * @param \PDepend\Source\Builder\BuilderContext          $context
-     * @param \PDepend\Source\AST\AbstractASTClassOrInterface
+     * @param \PDepend\Source\AST\AbstractASTClassOrInterface $target
      */
     public function __construct(BuilderContext $context, AbstractASTClassOrInterface $target)
     {

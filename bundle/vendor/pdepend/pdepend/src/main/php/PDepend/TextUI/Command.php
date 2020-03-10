@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 
@@ -50,7 +50,7 @@ use PDepend\Util\Workarounds;
 /**
  * Handles the command line stuff and starts the text ui runner.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 class Command
@@ -68,16 +68,16 @@ class Command
     /**
      * The recieved cli options
      *
-     * @var array(string=>mixed)
+     * @var array<string, mixed>
      */
     private $options = array();
 
     /**
      * The directories/files to be analyzed
      *
-     * @var string
+     * @var array<integer, string>
      */
-    private $source;
+    private $source = array();
 
     /**
      * The used text ui runner.
@@ -246,7 +246,7 @@ class Command
                 $errors = $this->runner->getParseErrors();
 
                 printf(
-                    '%sThe following error%s occured:%s',
+                    '%sThe following error%s occurred:%s',
                     PHP_EOL,
                     count($errors) > 1 ? 's' : '',
                     PHP_EOL
@@ -628,7 +628,7 @@ class Command
     }
 
     /**
-     * @param $startTime
+     * @param integer $startTime
      */
     private function printStatistics($startTime)
     {

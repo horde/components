@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 
@@ -63,7 +63,7 @@ use PDepend\Util\Type;
 /**
  * Default code tree builder implementation.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 class PHPBuilder implements Builder
@@ -87,7 +87,7 @@ class PHPBuilder implements Builder
     /**
      * This property holds all packages found during the parsing phase.
      *
-     * @param \PDepend\Source\AST\ASTNamespace[]
+     * @var   \PDepend\Source\AST\ASTNamespace[]
      * @since 0.9.12
      */
     private $preparedNamespaces = null;
@@ -219,6 +219,24 @@ class PHPBuilder implements Builder
     }
 
     /**
+     * Builds a new code type reference instance, either Class or ClassOrInterface.
+     *
+     * @param string $qualifiedName  The qualified name of the referenced type.
+     * @param bool   $classReference true if class reference only.
+     *
+     * @return ASTClassOrInterfaceReference
+     * @since  0.9.5
+     */
+    public function buildAstNeededReference($qualifiedName, $classReference)
+    {
+        if ($classReference === true) {
+            return $this->buildAstClassReference($qualifiedName);
+        }
+
+        return $this->buildAstClassOrInterfaceReference($qualifiedName);
+    }
+
+    /**
      * This method will try to find an already existing instance for the given
      * qualified name. It will create a new {@link \PDepend\Source\AST\ASTClass}
      * instance when no matching type exists.
@@ -329,7 +347,7 @@ class PHPBuilder implements Builder
     public function buildClass($name)
     {
         $this->checkBuilderState();
-
+        
         $class = new ASTClass($this->extractTypeName($name));
         $class->setCache($this->cache)
             ->setContext($this->context)
@@ -364,7 +382,9 @@ class PHPBuilder implements Builder
      */
     public function buildAnonymousClass()
     {
-        return $this->buildAstNodeInstance('ASTAnonymousClass');
+        return $this->buildAstNodeInstance('ASTAnonymousClass')
+            ->setCache($this->cache)
+            ->setContext($this->context);
     }
 
     /**
@@ -423,7 +443,7 @@ class PHPBuilder implements Builder
     public function buildInterface($name)
     {
         $this->checkBuilderState();
-
+        
         $interface = new ASTInterface($this->extractTypeName($name));
         $interface->setCache($this->cache)
             ->setContext($this->context)
@@ -507,7 +527,7 @@ class PHPBuilder implements Builder
         $function->setCache($this->cache)
             ->setContext($this->context)
             ->setCompilationUnit($this->defaultCompilationUnit);
-
+ 
         return $function;
     }
 
@@ -1453,7 +1473,18 @@ class PHPBuilder implements Builder
     {
         return $this->buildAstNodeInstance('ASTTypeCallable');
     }
-
+    
+    /**
+     * Builds a new node for the iterable type.
+     *
+     * @return \PDepend\Source\AST\ASTTypeIterable
+     * @since  2.5.1
+     */
+    public function buildAstTypeIterable()
+    {
+        return $this->buildAstNodeInstance('ASTTypeIterable');
+    }
+    
     /**
      * Builds a new primitive type node.
      *
@@ -1839,8 +1870,8 @@ class PHPBuilder implements Builder
         $namespaces = $this->namespaces;
 
         // Remove default package if empty
-        if ($this->defaultPackage->getTypes()->count() === 0
-            && $this->defaultPackage->getFunctions()->count() === 0
+        if (count($this->defaultPackage->getTypes()) === 0
+            && count($this->defaultPackage->getFunctions()) === 0
         ) {
             unset($namespaces[self::DEFAULT_NAMESPACE]);
         }
@@ -1895,7 +1926,7 @@ class PHPBuilder implements Builder
      * matching instance or <b>null</b> if no match exists.
      *
      * @param  string $qualifiedName
-     * @return \PDepend\Source\AST\ASTTrait
+     * @return \PDepend\Source\AST\ASTTrait|null
      * @since  0.9.5
      */
     protected function findTrait($qualifiedName)
@@ -1967,7 +1998,7 @@ class PHPBuilder implements Builder
      * matching instance or <b>null</b> if no match exists.
      *
      * @param  string $qualifiedName
-     * @return \PDepend\Source\AST\ASTInterface
+     * @return \PDepend\Source\AST\ASTInterface|null
      * @since  0.9.5
      */
     protected function findInterface($qualifiedName)
@@ -2036,7 +2067,7 @@ class PHPBuilder implements Builder
      * matching instance or <b>null</b> if no match exists.
      *
      * @param  string $qualifiedName
-     * @return \PDepend\Source\AST\ASTClass
+     * @return \PDepend\Source\AST\ASTClass|null
      * @since  0.9.5
      */
     protected function findClass($qualifiedName)
@@ -2061,7 +2092,7 @@ class PHPBuilder implements Builder
      *
      * @param  array  $instances
      * @param  string $qualifiedName
-     * @return \PDepend\Source\AST\AbstractASTType
+     * @return \PDepend\Source\AST\AbstractASTType|null
      * @since  0.9.5
      */
     protected function findType(array $instances, $qualifiedName)

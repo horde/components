@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 
@@ -47,7 +47,7 @@ use PDepend\Source\ASTVisitor\AbstractASTVisitor;
 /**
  * This abstract class provides a base implementation of an analyzer.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 abstract class AbstractAnalyzer extends AbstractASTVisitor implements Analyzer
@@ -55,7 +55,7 @@ abstract class AbstractAnalyzer extends AbstractASTVisitor implements Analyzer
     /**
      * Global options array.
      *
-     * @var array(string=>mixed)
+     * @var array<string, mixed>
      */
     protected $options = array();
 
@@ -69,7 +69,7 @@ abstract class AbstractAnalyzer extends AbstractASTVisitor implements Analyzer
     /**
      * Constructs a new analyzer instance.
      *
-     * @param array(string=>mixed) $options Global option array, every analyzer
+     * @param array<string, mixed> $options Global option array, every analyzer
      *                                      can extract the required options.
      */
     public function __construct(array $options = array())
@@ -80,7 +80,7 @@ abstract class AbstractAnalyzer extends AbstractASTVisitor implements Analyzer
     /**
      * Set global options
      *
-     * @param array(string=>mixed) $options Global option array, every analyzer
+     * @param array<string, mixed> $options Global option array, every analyzer
      *                                      can extract the required options.
      */
     public function setOptions(array $options = array())

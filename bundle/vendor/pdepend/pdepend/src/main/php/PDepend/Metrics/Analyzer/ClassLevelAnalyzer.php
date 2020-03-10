@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 
@@ -61,7 +61,7 @@ use PDepend\Source\AST\ASTTrait;
  *
  * http://www.aivosto.com/project/help/pm-oo-misc.html
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 class ClassLevelAnalyzer extends AbstractAnalyzer implements AggregateAnalyzer, AnalyzerFilterAware, AnalyzerNodeAware
@@ -98,7 +98,7 @@ class ClassLevelAnalyzer extends AbstractAnalyzer implements AggregateAnalyzer, 
      * )
      * </code>
      *
-     * @var array(string=>array)
+     * @var array<string, array>
      */
     private $nodeMetrics = null;
 
@@ -143,7 +143,7 @@ class ClassLevelAnalyzer extends AbstractAnalyzer implements AggregateAnalyzer, 
      * This method must return an <b>array</b> of class names for required
      * analyzers.
      *
-     * @return array(string)
+     * @return array<string>
      */
     public function getRequiredAnalyzers()
     {
@@ -171,7 +171,7 @@ class ClassLevelAnalyzer extends AbstractAnalyzer implements AggregateAnalyzer, 
      * node, this method will return an empty <b>array</b>.
      *
      * @param  \PDepend\Source\AST\ASTArtifact $artifact
-     * @return array(string=>mixed)
+     * @return array<string, mixed>
      */
     public function getNodeMetrics(ASTArtifact $artifact)
     {
@@ -192,7 +192,7 @@ class ClassLevelAnalyzer extends AbstractAnalyzer implements AggregateAnalyzer, 
     {
         $this->fireStartClass($class);
 
-        $impl  = $class->getInterfaces()->count();
+        $impl  = count($class->getInterfaces());
         $varsi = $this->calculateVarsi($class);
         $wmci  = $this->calculateWmciForClass($class);
 

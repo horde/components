@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 
@@ -60,7 +60,7 @@ use PDepend\Source\AST\ASTClass;
  * <b>AHH - Average Hierarchy Height</b>: The computed average of all inheritance
  * trees within the analyzed system, external classes or interfaces are ignored.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 class InheritanceAnalyzer extends AbstractAnalyzer implements
@@ -84,9 +84,16 @@ class InheritanceAnalyzer extends AbstractAnalyzer implements
      * analyzed system. The array size is equal to the number of analyzed root
      * classes.
      *
-     * @var array(integer)
+     * @var array<integer>
      */
-    private $rootClasses = null;
+    private $rootClasses = array();
+
+    /**
+     * @var array<integer>
+     *
+     * @deprecated 3.0.0 This property will no longer be accessible on the public access level in next major version.
+     */
+    public $derivedClasses = array();
 
     /**
      * The maximum depth of inheritance tree value within the analyzed source code.
@@ -126,7 +133,7 @@ class InheritanceAnalyzer extends AbstractAnalyzer implements
     /**
      * Metrics calculated for a single source node.
      *
-     * @var array(string=>array)
+     * @var array<string, array>
      */
     private $nodeMetrics = null;
 
@@ -136,7 +143,7 @@ class InheritanceAnalyzer extends AbstractAnalyzer implements
      * node, this method will return an empty <b>array</b>.
      *
      * @param  \PDepend\Source\AST\ASTArtifact $artifact
-     * @return array(string=>mixed)
+     * @return array<string, mixed>
      */
     public function getNodeMetrics(ASTArtifact $artifact)
     {
@@ -156,7 +163,7 @@ class InheritanceAnalyzer extends AbstractAnalyzer implements
      * )
      * </code>
      *
-     * @return array(string=>mixed)
+     * @return array<string, mixed>
      */
     public function getProjectMetrics()
     {
@@ -221,7 +228,7 @@ class InheritanceAnalyzer extends AbstractAnalyzer implements
         $this->fireStartClass($class);
 
         $this->initNodeMetricsForClass($class);
-
+        
         $this->calculateNumberOfDerivedClasses($class);
         $this->calculateNumberOfAddedAndOverwrittenMethods($class);
         $this->calculateDepthOfInheritanceTree($class);
@@ -272,7 +279,7 @@ class InheritanceAnalyzer extends AbstractAnalyzer implements
             ++$dit;
             $root = $parent->getId();
         }
-
+        
         // Collect max dit value
         $this->maxDIT = max($this->maxDIT, $dit);
 
@@ -309,7 +316,7 @@ class InheritanceAnalyzer extends AbstractAnalyzer implements
             if ($method->getParent() !== $class) {
                 continue;
             }
-
+            
             if (isset($parentMethodNames[$method->getName()])) {
                 if (!$parentMethodNames[$method->getName()]) {
                     ++$numberOfOverwrittenMethods;
