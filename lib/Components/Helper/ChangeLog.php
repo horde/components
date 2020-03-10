@@ -298,8 +298,12 @@ class Components_Helper_ChangeLog
             if ($version == 'extra') {
                 continue;
             }
-            $version = Components_Helper_Version::validatePear($version);
-            $changes[$version] = $info;
+            try {
+                $version = Components_Helper_Version::validatePear($version);
+                $changes[$version] = $info;
+            } catch (Components_Exception $e) {
+                break;
+            }
         }
         $xml->setNotes(array_reverse($changes));
 
