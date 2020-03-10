@@ -53,6 +53,6 @@ implements Components_Wrapper
         return json_encode(
             iterator_to_array($this),
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
-        ) . "\n";
+        );
     }
 }
