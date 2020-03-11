@@ -16,8 +16,8 @@
             "role": "lead"
         }
     ],
-    "version": "1.0.0-git",
-    "time": "2017-12-11",
+    "version": "1.0.0",
+    "time": "2020-03-11",
     "repositories": [
         {
             "type": "pear",
