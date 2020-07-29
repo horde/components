@@ -32,6 +32,42 @@ class Components_Helper_Version
      */
     public static function validatePear($version)
     {
+        // Guard: Some older changelogs may contain only two-part versions like
+        // Horde 3.3 or Horde 3.3RC1 - These should be re-interpreted as three
+        // part versions .0 before going on. Also lowercase ALPHA, BETA and
+        // remove hyphens in all the wrong places.
+        if (preg_match('/^(\d+\.\d+)(-git|alpha\d*|beta\d*|ALPHA\d*|BETA\d*|-ALPHA\d*|-BETA\d*|-RC\d+|RC\d+)?$/', $version, $match)) {
+            if (empty($match[2])) {
+                $match[2] = '';
+            } else {
+                $match[2] = str_replace(
+                    [
+                        'ALPHA', '-ALPHA', '-alpha', 
+                        'BETA', '-BETA', '-beta',
+                        '-RC'
+                    ],
+                    [
+                        'alpha', 'alpha','alpha',
+                        'beta', 'beta', 'beta',
+                        'RC'
+                    ],
+                     $match[2]
+                );
+            }
+            print($match[2]);
+            // make bare alpha/beta/rc version 1 each
+            if (in_array($match[2], ['alpha', 'beta', 'RC'])) {
+                $match[2] = '1';
+            }
+            $version = $match[1] . '.0' . $match[2];
+        }
+        // We also had horde version 2.2.6-RC1 - make this 2.2.6RC1
+        if (preg_match('/^(\d+\.\d+\.\d+)(-RC\d+)?$/', $version, $match) &&
+            !empty($match[2])) {
+            $match[2] = substr($match[2], 1);
+            $version = $match[1] . $match[2];
+        }
+        // Now version must be proper or croak
         if (!preg_match('/^(\d+\.\d+\.\d+)(-git|alpha\d*|beta\d*|RC\d+)?$/', $version, $match)) {
             throw new Components_Exception('Invalid version number ' . $version);
         }
