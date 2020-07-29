@@ -55,3 +55,8 @@ dependencies:
       pear.phpunit.de/phpdcd: '*'
       pear.phpunit.de/phploc: '*'
       pear.phpmd.org/PHP_PMD: '*'
+autoload:
+  psr-0:
+    Components: 'lib/'
+nocommands:
+  - 'bin/horde-bootstrap'
