@@ -196,41 +196,6 @@ class Components_Release_Task_Base
     {
     }
 
-    /**
-     * Run a system call.
-     *
-     * @param string $call The system call to execute.
-     *
-     * @return string The command output.
-     */
-    protected function system($call)
-    {
-        if (!$this->getTasks()->pretend()) {
-            //@todo Error handling
-            return system($call);
-        } else {
-            $this->getOutput()->info(sprintf('Would run "%s" now.', $call));
-        }
-    }
-
-    /**
-     * Run a system call.
-     *
-     * @param string $call       The system call to execute.
-     * @param string $target_dir Run the command in the provided target path.
-     *
-     * @return string The command output.
-     */
-    protected function systemInDirectory($call, $target_dir)
-    {
-        if (!$this->getTasks()->pretend()) {
-            $old_dir = getcwd();
-            chdir($target_dir);
-        }
-        $result = $this->system($call);
-        if (!$this->getTasks()->pretend()) {
-            chdir($old_dir);
-        }
-        return $result;
-    }
+    use \Components\Component\Task\SystemCall;
+    use \Components\Component\Task\Dependencies;
 }
