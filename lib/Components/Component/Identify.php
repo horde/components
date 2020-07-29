@@ -136,7 +136,7 @@ class Components_Component_Identify
                         return array($result, '');
                     }
                 }
-                
+
                 throw new Components_Exception(
                     sprintf(Components::ERROR_NO_ACTION_OR_COMPONENT, $arguments[0])
                 );
@@ -144,15 +144,18 @@ class Components_Component_Identify
         }
 
         $cwd = getcwd();
-        if ($this->_isDirectory($cwd) && $this->_containsPackageXml($cwd)) {
-            return array(
-                $this->_dependencies
-                ->getComponentFactory()
-                ->createSource($cwd),
-                $cwd
-            );
-        }
-
+        // Usability: check if we are in a subdir of a component
+        do {
+            if ($this->_isDirectory($cwd) && $this->_containsPackageXml($cwd)) {
+                return array(
+                    $this->_dependencies
+                    ->getComponentFactory()
+                    ->createSource($cwd),
+                    $cwd
+                );
+            }
+            $cwd = dirname($cwd, 1);
+        } while ($cwd != '/');
         throw new Components_Exception(Components::ERROR_NO_COMPONENT);
     }
 
