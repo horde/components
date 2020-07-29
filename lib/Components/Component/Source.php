@@ -125,7 +125,12 @@ class Components_Component_Source extends Components_Component_Base
             if ($found) {
                 // If this is a stable version we want the previous stable version,
                 // otherwise use any previous version.
+
+                // Some older changelog entries may not have the state
+                // attribute, this may give index errors
                 if ($currentState == 'stable' &&
+                    !empty($info['state']) &&
+                    !empty($info['state']['release']) &&
                     $info['state']['release'] != 'stable') {
                     continue;
                 }
@@ -554,77 +559,9 @@ class Components_Component_Source extends Components_Component_Base
     public function updateComposerFromHordeYml()
     {
         $yaml = $this->getHordeYml();
-        $name = 'horde/'
-            . str_replace('_', '-', Horde_String::lower($yaml['id']));
-        $replaceVersion = preg_replace(
-            '/^(\d+)\..*/',
-            '$1.*',
-            $yaml['version']['release']
-        );
-        $replacePrefix = $yaml['type'] == 'library' ? 'Horde_' : '';
-        $dependencies = array('required' => array(), 'optional' => array());
-        foreach ($yaml['dependencies'] as $required => $dependencyTypes) {
-            foreach ($dependencyTypes as $type => $packages) {
-                if (!is_array($packages)) {
-                    $dependencies[$required][$type] = $packages;
-                    continue;
-                }
-                foreach ($packages as $package => $version) {
-                    if (is_array($version)) {
-                        $version = $version['version'];
-                    }
-                    $dependencies[$required][$type . '-' . $package] = $version;
-                }
-            }
-        }
-        $authors = array();
-        foreach ($yaml['authors'] as $author) {
-            $authors[] = array(
-                'name' => $author['name'],
-                'email' => $author['email'],
-                'role' => $author['role'],
-            );
-        }
-        if ($yaml['name'] == 'Core' ||
-            strpos($yaml['name'], 'Horde Groupware') === 0) {
-            $prefix = 'Horde';
-        } elseif ($yaml['type'] == 'library') {
-            $prefix = 'Horde_' . $yaml['name'];
-        } else {
-            $prefix = $yaml['name'];
-        }
-        $autoload = array('psr-0' => array($prefix => 'lib/'));
-        $type = $yaml['type'] == 'library' ? 'library' : 'project';
-        $homepage = isset($yaml['homepage'])
-            ? $yaml['homepage']
-            : 'https://www.horde.org';
-
-        /** @var Components_Wrapper_ComposerJson $json */
-        $json = $this->getWrapper('ComposerJson');
-        $json->exchangeArray(array_filter(array(
-            'name' => $name,
-            'description' => $yaml['full'],
-            'type' => $type,
-            'homepage' => $homepage,
-            'license' => $yaml['license']['identifier'],
-            'authors' => $authors,
-            'version' => $yaml['version']['release'],
-            'time' => gmdate('Y-m-d'),
-            'repositories' => array(
-                array(
-                    'type' => 'pear',
-                    'url' => 'https://pear.horde.org',
-                ),
-            ),
-            'require' => $dependencies['required'],
-            'suggest' => $dependencies['optional'],
-            'replace' => array(
-                'pear-pear.horde.org/' . $replacePrefix . $yaml['id'] => $replaceVersion,
-                'pear-horde/' . $replacePrefix . $yaml['id'] => $replaceVersion,
-            ),
-            'autoload' => $autoload,
-        )));
-
+        $options = $this->_config->getOptions();
+        $composer = new Components_Helper_Composer();
+        $json = $composer->generateComposerJson($yaml, $options);
         return $json;
     }
 
@@ -1264,6 +1201,18 @@ class Components_Component_Source extends Components_Component_Base
         } catch (Horde_Exception_NotFound $exception) {
         }
         return $dir;
+    }
+
+    /**
+     * Returns the path to the package's top directory.
+     *
+     * This is useful to determine the package dir from inside tasks
+     *
+     * @return string  The directory name.
+     */
+    public function getComponentDirectory()
+    {
+        return $this->_directory;
     }
 
     /**
