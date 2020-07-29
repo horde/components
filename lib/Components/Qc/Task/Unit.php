@@ -47,7 +47,10 @@ extends Components_Qc_Task_Base
     public function validate($options)
     {
         if (!class_exists('Horde_Test_AllTests')) {
-            return array('PHPUnit is not available!');
+            return array('Horde_Test is not installed!');
+        }
+        if (!class_exists('PHPUnit_Runner_BaseTestRunner') && !class_exists('PHPUnit\Runner\BaseTestRunner')) {
+            return array('PHPUnit is not installed!');
         }
     }
 
