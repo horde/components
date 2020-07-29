@@ -86,21 +86,29 @@ class Components_Runner_Release
 
         $pre_commit = false;
 
-        if ($this->_doTask('unittest')) {
-            $unit = $this->_qc->getTask('unit', $component);
-            if (!$unit->validate($options)) {
-                $this->_output->info(
-                    'Running ' . $unit->getName() . ' on ' . $component->getName()
-                );
-                $this->_output->plain('');
-
-                if ($unit->run($options)) {
-                    $this->_output->warn('Aborting due to unit test errors.');
-                    return;
-                }
-
-                $this->_output->ok('No problems found in unit test.');
+        /**
+         * Catch predefined release pipelines
+         * Otherwise, revert to traditional behaviour
+         */
+        $arguments = $this->_config->getArguments();
+        if ((count($arguments) == 3) &&
+            $arguments[0] == 'release' &&
+            $arguments[1] == 'for') {
+            $pipeline = $arguments[2];
+            if (empty($options['pipeline']['release'][$pipeline])) {
+                $this->_output->warn("Pipeline $pipeline not defined in config");
+                return;
             }
+            $this->_release->run(
+                ['pipeline:', $pipeline],
+                $component,
+                $options
+            );
+            return;
+        }
+
+        if ($this->_doTask('unittest')) {
+            $sequence[] = 'Unit';
             $pre_commit = true;
         }
 
