@@ -59,7 +59,7 @@ extends Components_Release_Task_Base
         $diff = $this->getComponent()->updatePackage('diff', $diff_options);
         if (!empty($diff)) {
             return array(
-                "The package.xml file is not up-to-date:\n$diff"
+                "At least one metadata file file is not up-to-date:\n$diff"
             );
         }
         return array();

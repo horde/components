@@ -45,7 +45,6 @@ extends Components_Release_Task_Base
      *
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
-     * @throws Components_Exception
      */
     public function preValidate($options)
     {
@@ -111,7 +110,7 @@ extends Components_Release_Task_Base
      *
      * @param array &$options Additional options.
      *
-     * @throws Components_Exception
+     * @return NULL
      */
     public function run(&$options)
     {
@@ -141,7 +140,7 @@ extends Components_Release_Task_Base
 
         if (!empty($options['upload'])) {
             $this->system('scp ' . $path . ' ' . $options['releaseserver'] . ':~/');
-            $this->system('ssh '. $options['releaseserver'] . ' "umask 0002 && pirum add ' . $options['releasedir'] . ' ~/' . basename($path) . ' && rm ' . basename($path) . '"');
+            $this->system('ssh '. $options['releaseserver'] . ' "umask 0002 && pirum add ' . $options['releasedir'] . ' ~/' . basename($path) . ' && rm ' . basename($path) . '"') . "\n";
             if (!$this->getTasks()->pretend()) {
                 unlink($path);
             }

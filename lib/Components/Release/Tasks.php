@@ -62,8 +62,8 @@ class Components_Release_Tasks
     /**
      * Return the named task.
      *
-     * @param string                  $name      The name of the task.
-     * @param Components_Component    $component The component to be released.
+     * @param string               $name      The name of the task.
+     * @param Components_Component $component The component to be released.
      *
      * @return Components_Release_Task_Base The task.
      */
@@ -74,15 +74,24 @@ class Components_Release_Tasks
         );
         $task->setComponent($component);
         $task->setName($name);
+        $deps = [];
+        foreach ($task->askDependencies() as $key => $dependency) {
+            try {
+                $deps[$key] = $this->_dependencies->getInstance($dependency);
+            } catch (Horde_Exception $e) {
+                // what to do here?
+            }
+        }
+        $task->setDependencies($deps);
         return $task;
     }
 
     /**
      * Run a sequence of release tasks.
      *
-     * @param array $sequence                 The task sequence.
+     * @param array                $sequence  The task sequence.
      * @param Components_Component $component The component to be released.
-     * @param array $options                  Additional options.
+     * @param array                $options   Additional options.
      *
      * @return NULL
      * @throws Components_Exception
@@ -94,21 +103,42 @@ class Components_Release_Tasks
     ) {
         $this->_options = $options;
         $this->_sequence = $sequence;
-
-        $task_sequence = array();
-        foreach ($sequence as $name) {
-            $task_sequence[] = $this->getTask($name, $component);
+        $taskSequence = array();
+        // check for predefined pipelines
+        if ((count($sequence) == 2) &&
+            $sequence[0] == 'pipeline:'
+        ) {
+            $pipeline = $sequence[1];
+            $this->_dependencies->getOutput()->info("Running Pipeline $pipeline");
+            foreach ($options['pipeline']['release'][$pipeline] as $task)
+            {
+                $taskSequence[] = $this->getTask($task['name'], $component);
+                if (in_array($task['name'], ['CommitPreRelease', 'CommitPostRelease'])) {
+                    $options['commit'] = new Components_Helper_Commit(
+                        $this->_dependencies->getOutput(), $options
+                    );
+                }
+                $extraOptions[] = empty($task['options']) ? [] : $task['options'];
+            }
+        } else {
+            // default or commandline sequences
+            foreach ($sequence as $name) {
+                $taskSequence[] = $this->getTask($name, $component);
+                // ensure old and new format work the same
+                $extraOptions[] = [];
+            }
         }
-        $selected_tasks = array();
-        foreach ($task_sequence as $task) {
-            $task_errors = $task->preValidate($options);
-            if (!empty($task_errors)) {
-                if ($task->skip($options)) {
+        $selectedTasks = array();
+        foreach ($taskSequence as $index => $task) {
+            $taskOptions = array_merge($options, $extraOptions[$index]);
+            $taskErrors = $task->preValidate($taskOptions);
+            if (!empty($taskErrors)) {
+                if ($task->skip($taskOptions)) {
                     $this->_dependencies->getOutput()->warn(
                         sprintf(
                             "Deactivated task \"%s\":\n\n%s",
                             $task->getName(),
-                            join("\n", $task_errors)
+                            join("\n", $taskErrors)
                         )
                     );
                 } else {
@@ -116,12 +146,13 @@ class Components_Release_Tasks
                         sprintf(
                             "Precondition for task \"%s\" failed:\n\n%s",
                             $task->getName(),
-                            join("\n", $task_errors)
+                            join("\n", $taskErrors)
                         )
                     );
                 }
             } else {
-                $selected_tasks[] = $task;
+                $selectedTasks[] = $task;
+                $selectedOptions[] = $taskOptions;
             }
         }
         if (!empty($errors)) {
@@ -129,17 +160,17 @@ class Components_Release_Tasks
                 "Unable to release:\n\n" . join("\n", $errors)
             );
         }
-        foreach ($selected_tasks as $task) {
-            $task->run($options);
-        }
-        foreach ($selected_tasks as $task) {
-            $task_errors = $task->postValidate($options);
-            if (!empty($task_errors)) {
+        foreach ($selectedTasks as $index => $task) {
+            $taskOptions = $selectedOptions[$index];
+            $task->run($taskOptions);
+            $taskErrors = $task->postValidate($taskOptions);
+            if (!empty($taskErrors)) {
                 $this->_dependencies->getOutput()->fail(
                     sprintf(
-                        "Task \"%s\" failed:\n\n%s",
+                        "Task %d \"%s\" failed:\n\n%s",
+                        $index,
                         $task->getName(),
-                        join("\n", $task_errors)
+                        join("\n", $taskErrors)
                     )
                 );
             }
