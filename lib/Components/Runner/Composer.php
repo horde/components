@@ -25,27 +25,27 @@ class Components_Runner_Composer
     /**
      * The configuration for the current job.
      *
-     * @var Components_Config
+     * @var \Components_Config
      */
     private $_config;
 
     /**
      * The composer helper.
      *
-     * @var Components_Helper_Composer
+     * @var \Components_Helper_Composer
      */
     private $_output;
 
     /**
      * Constructor.
      *
-     * @param Components_Config $config  The configuration for the current
+     * @param \Components_Config $config  The configuration for the current
      *                                   job.
-     * @param Components_Output $output  The output handler.
+     * @param \Components_Output $output  The output handler.
      */
     public function __construct(
-        Components_Config $config,
-        Components_Output $output
+        \Components_Config $config,
+        \Components_Output $output
     ) {
         $this->_config = $config;
         $this->_output = $output;
@@ -53,7 +53,7 @@ class Components_Runner_Composer
 
     public function run()
     {
-        $composer = new Components_Helper_Composer();
+        $composer = new \Components_Helper_Composer();
         $options = $this->_config->getOptions();
         $options['logger'] = $this->_output;
 

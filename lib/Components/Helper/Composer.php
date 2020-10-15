@@ -51,10 +51,10 @@ class Components_Helper_Composer
     /**
      * Updates the composer.json file.
      *
-     * @param Components_Wrapper_HordeYml $package  The package definition
+     * @param \Components_Wrapper_HordeYml $package  The package definition
      * @param array  $options  The set of options for the operation.
      */
-    public function generateComposeJson(Components_Wrapper_HordeYml $package, array $options = array())
+    public function generateComposeJson(\Components_Wrapper_HordeYml $package, array $options = array())
     {
         if (!empty($options['composer_opts']['pear-substitutes']))
         {
@@ -85,7 +85,7 @@ class Components_Helper_Composer
         }
 
         $filename = dirname($package->getFullPath()) . '/composer.json';
-        $composerDefinition = new stdClass();
+        $composerDefinition = new \stdClass();
         $this->_setName($package, $composerDefinition);
         // Is this intentional? "description" seems always longer than full
         $composerDefinition->description = $package['full'];
@@ -96,7 +96,7 @@ class Components_Helper_Composer
         // cut off any -git or similar
         list($version) = explode('-', $package['version']['release']);
         $composerDefinition->version = $version;
-        $composerDefinition->time = (new Horde_Date(mktime()))->format('Y-m-d');
+        $composerDefinition->time = (new \Horde_Date(mktime()))->format('Y-m-d');
         $composerDefinition->repositories = [];
         $this->_setRequire($package, $composerDefinition);
         $this->_setSuggest($package, $composerDefinition);
@@ -129,7 +129,7 @@ class Components_Helper_Composer
      * Otherwise use provided whitelist "commands"
      * and blacklist "nocommands" (blacklist wins)
      */
-    protected function _setVendorBin(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
+    protected function _setVendorBin(\Components_Wrapper_HordeYml $package, \stdClass $composerDefinition)
     {
         $commands = [];
         $noCommands = [];
@@ -145,7 +145,7 @@ class Components_Helper_Composer
             // No explicit list - search bindir
             $binDir = dirname($package->getFullPath()) . '/bin/';
             if (is_dir($binDir)) {
-                foreach (new DirectoryIterator($binDir) as $file) {
+                foreach (new \DirectoryIterator($binDir) as $file) {
                     if ($file->isExecutable() and $file->isFile()) {
                         $commands[] = 'bin/' . $file->getFilename();
                     }
@@ -164,14 +164,14 @@ class Components_Helper_Composer
         }
     }
 
-    protected function _setName(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
+    protected function _setName(\Components_Wrapper_HordeYml $package, \stdClass $composerDefinition)
     {
         $vendor = $this->_vendor;
-        $name = Horde_String::lower($package['name']);
+        $name = \Horde_String::lower($package['name']);
         $composerDefinition->name = "$vendor/$name";
     }
 
-    protected function _setType(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
+    protected function _setType(\Components_Wrapper_HordeYml $package, \stdClass $composerDefinition)
     {
         if ($package['type'] == 'library') {
             $composerDefinition->type = 'horde-library';
@@ -185,7 +185,7 @@ class Components_Helper_Composer
         // No type is perfectly valid for composer. Types for themes, bundles?
     }
 
-    protected function _setAuthors(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
+    protected function _setAuthors(\Components_Wrapper_HordeYml $package, \stdClass $composerDefinition)
     {
         $composerDefinition->authors = array();
         foreach ($package['authors'] as $author) {
@@ -197,7 +197,7 @@ class Components_Helper_Composer
         }
     }
 
-    protected function _setAutoload(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
+    protected function _setAutoload(\Components_Wrapper_HordeYml $package, \stdClass $composerDefinition)
     {
         $composerDefinition->autoload = [];
 
@@ -209,6 +209,9 @@ class Components_Helper_Composer
                 }
                 if ($type == 'psr-0') {
                     $composerDefinition->autoload['psr-0']  =  $definition;
+                }
+                if ($type == 'psr-4') {
+                    $composerDefinition->autoload['psr-4']  =  $definition;
                 }
             }
         } else {
@@ -225,7 +228,7 @@ class Components_Helper_Composer
      * - a satis repo
      * - individual git repos
      */
-    protected function _setRequire(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
+    protected function _setRequire(\Components_Wrapper_HordeYml $package, \stdClass $composerDefinition)
     {
         $version = ($this->_composerVersion) ?: '*';
         $composerDefinition->require = array('horde/horde-installer-plugin' => $version);
@@ -304,7 +307,7 @@ class Components_Helper_Composer
             $this->_repositories['pear-' . $repo] = ['url' => 'https://' . $repo, 'type' => 'pear'];
         } else {
             // Most likely, this is always composer
-            $stack[Horde_String::lower("$vendor/$basename")] = $version;
+            $stack[\Horde_String::lower("$vendor/$basename")] = $version;
             if ($this->_composerRepo == 'vcs') {
                 $this->_repositories["$vendor/$basename"] = ['url' => "https://github.com/$vendor/$repo", 'type' => 'vcs'];
             }
@@ -322,7 +325,7 @@ class Components_Helper_Composer
      *
      * References to the horde pear channel will be changed to composer vcs/github
      */
-    protected function _setSuggest(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
+    protected function _setSuggest(\Components_Wrapper_HordeYml $package, \stdClass $composerDefinition)
     {
         $composerDefinition->suggest = array();
         if (empty($package['dependencies']['optional'])) {
@@ -386,14 +389,14 @@ class Components_Helper_Composer
             $stack[$this->_substitutes[$pear]['name']] = $version;
             if ($this->_substitutes[$pear]['source'] != 'Packagist')
             {
-                throw new Components_Exception("Non-Packagist substitutes not yet implemented:" . $this->_substitutes[$pear]['source']);
+                throw new \Components_Exception("Non-Packagist substitutes not yet implemented:" . $this->_substitutes[$pear]['source']);
             }
             return true;
         }
         return false;
     }
 
-    protected function _setRepositories(Components_Wrapper_HordeYml $package, stdClass $composerDefinition)
+    protected function _setRepositories(\Components_Wrapper_HordeYml $package, \stdClass $composerDefinition)
     {
         $composerDefinition->repositories = array_values($this->_repositories);
     }
