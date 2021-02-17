@@ -2,6 +2,7 @@
 v1.0.0-git
 ----------
 
+[rla] Add an init command to start new apps or libraries.
 [jan] Remove next-sentinel release task.
 [jan] In the 'update' command, update composer.json from .horde.yml.
 [jan] In the 'update' command, update package.xml from .horde.yml.

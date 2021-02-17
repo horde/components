@@ -56,3 +56,4 @@ Make sure you have `~/.composer/vendor/bin/` in your path.
     0.86% duplicated lines out of 147877 total lines of code.
 
     Time: 24.67 seconds, Memory: 159.00Mb
+

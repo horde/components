@@ -62,3 +62,4 @@ if (!$loaded) {
 
 $application = new SebastianBergmann\PHPDCD\CLI\Application;
 $application->run();
+

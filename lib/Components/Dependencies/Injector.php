@@ -188,6 +188,16 @@ implements Components_Dependencies
     }
 
     /**
+     * Returns the init handler for a package.
+     *
+     * @return Components_Runner_Init The init handler.
+     */
+    public function getRunnerInit()
+    {
+        return $this->getInstance('Components_Runner_Init');
+    }
+
+    /**
      * Returns the change log handler for a package.
      *
      * @return Components_Runner_Change The change log handler.

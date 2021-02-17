@@ -6,6 +6,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'PHP_CodeSniffer\\Autoload' => $vendorDir . '/squizlabs/php_codesniffer/autoload.php',
     'PHP_Token' => $vendorDir . '/phpunit/php-token-stream/src/Token.php',
     'PHP_TokenWithScope' => $vendorDir . '/phpunit/php-token-stream/src/Token.php',
     'PHP_TokenWithScopeAndVisibility' => $vendorDir . '/phpunit/php-token-stream/src/Token.php',
