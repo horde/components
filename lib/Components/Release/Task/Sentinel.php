@@ -36,7 +36,7 @@ extends Components_Release_Task_Base
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
      */
-    public function validate($options)
+    public function preValidate($options)
     {
         if (!class_exists('Horde_Release_Sentinel')) {
             return array('The Horde_Release package is missing (specifically the class Horde_Release_Sentinel)!');

@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 
@@ -74,7 +74,7 @@ use PDepend\Source\Tokenizer\Tokens;
  *
  * The same rule applies to class methods. mapi, <b>PLEASE, FIX THIS ISSUE.</b>
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 class NodeLocAnalyzer extends AbstractCachingAnalyzer implements
@@ -94,7 +94,7 @@ class NodeLocAnalyzer extends AbstractCachingAnalyzer implements
     /**
      * Collected project metrics.
      *
-     * @var array(string=>integer)
+     * @var array<string, integer>
      */
     private $projectMetrics = array(
         self::M_LINES_OF_CODE              =>  0,
@@ -208,7 +208,8 @@ class NodeLocAnalyzer extends AbstractCachingAnalyzer implements
         }
 
         if ($this->restoreFromCache($class)) {
-            return $this->fireEndClass($class);
+            $this->fireEndClass($class);
+            return;
         }
 
         list($cloc) = $this->linesOfCode($class->getTokens(), true);
@@ -249,7 +250,8 @@ class NodeLocAnalyzer extends AbstractCachingAnalyzer implements
 
         if ($this->restoreFromCache($compilationUnit)) {
             $this->updateProjectMetrics($id);
-            return $this->fireEndFile($compilationUnit);
+            $this->fireEndFile($compilationUnit);
+            return;
         }
 
         list($cloc, $eloc, $lloc) = $this->linesOfCode($compilationUnit->getTokens());
@@ -283,7 +285,8 @@ class NodeLocAnalyzer extends AbstractCachingAnalyzer implements
         $function->getCompilationUnit()->accept($this);
 
         if ($this->restoreFromCache($function)) {
-            return $this->fireEndFunction($function);
+            $this->fireEndFunction($function);
+            return;
         }
 
         list($cloc, $eloc, $lloc) = $this->linesOfCode(
@@ -322,7 +325,8 @@ class NodeLocAnalyzer extends AbstractCachingAnalyzer implements
         }
 
         if ($this->restoreFromCache($interface)) {
-            return $this->fireEndInterface($interface);
+            $this->fireEndInterface($interface);
+            return;
         }
 
         list($cloc) = $this->linesOfCode($interface->getTokens(), true);
@@ -352,9 +356,10 @@ class NodeLocAnalyzer extends AbstractCachingAnalyzer implements
         $this->fireStartMethod($method);
 
         if ($this->restoreFromCache($method)) {
-            return $this->fireEndMethod($method);
+            $this->fireEndMethod($method);
+            return;
         }
-
+        
         if ($method->isAbstract()) {
             $cloc = 0;
             $eloc = 0;

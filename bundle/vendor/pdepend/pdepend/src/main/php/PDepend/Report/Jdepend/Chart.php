@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 
@@ -56,7 +56,7 @@ use PDepend\Util\ImageConvert;
 /**
  * Generates a chart with the aggregated metrics.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 class Chart extends AbstractASTVisitor implements CodeAwareGenerator, FileAwareGenerator
@@ -98,7 +98,7 @@ class Chart extends AbstractASTVisitor implements CodeAwareGenerator, FileAwareG
      * Returns an <b>array</b> with accepted analyzer types. These types can be
      * concrete analyzer classes or one of the descriptive analyzer interfaces.
      *
-     * @return array(string)
+     * @return array<string>
      */
     public function getAcceptedAnalyzers()
     {
@@ -149,7 +149,7 @@ class Chart extends AbstractASTVisitor implements CodeAwareGenerator, FileAwareG
         $bias = 0.1;
 
         $svg = new \DOMDocument('1.0', 'UTF-8');
-        $svg->load(dirname(__FILE__) . '/chart.svg');
+        $svg->loadXML(file_get_contents(dirname(__FILE__) . '/chart.svg'));
 
         $layer = $svg->getElementById('jdepend.layer');
 
@@ -198,7 +198,9 @@ class Chart extends AbstractASTVisitor implements CodeAwareGenerator, FileAwareG
         // Sort items by size
         usort(
             $items,
-            create_function('$a, $b', 'return ($a["size"] - $b["size"]);')
+            function ($a, $b) {
+                return ($a['size'] - $b['size']);
+            }
         );
 
         foreach ($items as $item) {
@@ -233,7 +235,6 @@ class Chart extends AbstractASTVisitor implements CodeAwareGenerator, FileAwareG
                 $legend->nodeValue = $found[1];
                 $legendTemplate->parentNode->appendChild($legend);
             }
-
         }
 
         $bad->parentNode->removeChild($bad);

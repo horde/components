@@ -19,7 +19,9 @@
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class Components_Wrapper_ComposerJson extends ArrayObject
+class Components_Wrapper_ComposerJson
+extends ArrayObject
+implements Components_Wrapper
 {
     use Components_Wrapper_Trait;
 

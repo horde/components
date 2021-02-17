@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  * @since 1.0.0
  */
@@ -49,7 +49,7 @@ use PDepend\Util\Cache\CacheDriver;
 /**
  * Represents any valid complex php type.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  * @since 1.0.0
  */
@@ -79,7 +79,7 @@ abstract class AbstractASTType extends AbstractASTArtifact
     /**
      * An <b>array</b> with all constants defined in this class or interface.
      *
-     * @var array(string=>mixed)
+     * @var array<string, mixed>
      */
     protected $constants = null;
 
@@ -172,7 +172,13 @@ abstract class AbstractASTType extends AbstractASTArtifact
         if (isset($this->nodes[$index])) {
             return $this->nodes[$index];
         }
-        throw new \OutOfBoundsException("No child at index {$index} exists.");
+        throw new \OutOfBoundsException(
+            sprintf(
+                'No node found at index %d in node of type: %s',
+                $index,
+                get_class($this)
+            )
+        );
     }
 
     /**
@@ -192,7 +198,7 @@ abstract class AbstractASTType extends AbstractASTArtifact
      *
      * @param string $targetType Searched class or interface type.
      *
-     * @return \PDepend\Source\AST\ASTNode
+     * @return \PDepend\Source\AST\ASTNode|null
      * @access private
      * @todo   Refactor $_methods property to getAllMethods() when it exists.
      */
@@ -220,7 +226,7 @@ abstract class AbstractASTType extends AbstractASTArtifact
      * Will find all children for the given type.
      *
      * @param string $targetType The target class or interface type.
-     * @param array  &$results   The found children.
+     * @param array  $results    The found children.
      *
      * @return \PDepend\Source\AST\ASTNode[]
      * @access private
@@ -362,7 +368,7 @@ abstract class AbstractASTType extends AbstractASTArtifact
     /**
      * Sets the tokens for this type.
      *
-     * @param  \PDepend\Source\Tokenizer\Token[] $tokens The generated tokens.
+     * @param \PDepend\Source\Tokenizer\Token[] $tokens
      * @return void
      */
     public function setTokens(array $tokens)
@@ -373,6 +379,17 @@ abstract class AbstractASTType extends AbstractASTArtifact
         $this->cache
             ->type('tokens')
             ->store($this->id, $tokens);
+    }
+
+    /**
+     * @return string
+     */
+    public function getNamespacedName()
+    {
+        if (null === $this->namespace || $this->namespace->isPackageAnnotation()) {
+            return $this->name;
+        }
+        return sprintf('%s\\%s', $this->namespaceName, $this->name);
     }
 
     /**

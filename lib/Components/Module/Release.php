@@ -178,7 +178,8 @@ This should perform all required actions. Sometimes it might be necessary to avo
 The available tasks are:
 
  - unittest    : Perform unittests on the package.
- - timestamp   : Timestamp the package.xml and sync the change log.
+ - timestamp   : Timestamp the release.
+ - changelog   : Update the change logs.
  - sentinel    : Update the sentinels in doc/CHANGES and lib/Application.php.
  - commit      : Commit any changes with an automated message.
  - package     : Prepare a *.tgz package.
@@ -228,6 +229,7 @@ The following example would generate the package and add the release tag to git 
      * @param Components_Config $config The configuration.
      *
      * @return boolean True if the module performed some action.
+     * @throws Components_Exception
      */
     public function handle(Components_Config $config)
     {

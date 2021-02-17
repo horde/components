@@ -35,32 +35,32 @@ class Components_Runner_Release
     /**
      * The output handler.
      *
-     * @param Component_Output
+     * @param Components_Output
      */
     private $_output;
 
     /**
      * The QC tasks handler.
      *
-     * @param Component_Release_Qc
+     * @param Components_Qc_Tasks
      */
     private $_qc;
 
     /**
      * The release tasks handler.
      *
-     * @param Component_Release_Tasks
+     * @param Components_Release_Tasks
      */
     private $_release;
 
     /**
      * Constructor.
      *
-     * @param Components_Config       $config  The configuration for the current
-     *                                         job.
-     * @param Component_Output        $output  The output handler.
-     * @param Component_Release_Tasks $release The tasks handler.
-     * @param Component_Qc_Tasks      $qc      QC tasks handler.
+     * @param Components_Config $config         The configuration for the
+     *                                          current job.
+     * @param Components_Output $output         The output handler.
+     * @param Components_Release_Tasks $release The tasks handler.
+     * @param Components_Qc_Tasks $qc           QC tasks handler.
      */
     public function __construct(
         Components_Config $config,
@@ -74,6 +74,9 @@ class Components_Runner_Release
         $this->_qc = $qc;
     }
 
+    /**
+     * @throws Components_Exception
+     */
     public function run()
     {
         $component = $this->_config->getComponent();
@@ -101,6 +104,11 @@ class Components_Runner_Release
             $pre_commit = true;
         }
 
+        if ($this->_doTask('changelog')) {
+            $sequence[] = 'Changelog';
+            $pre_commit = true;
+        }
+
         if ($this->_doTask('timestamp')) {
             $sequence[] = 'Timestamp';
             $pre_commit = true;
@@ -111,6 +119,8 @@ class Components_Runner_Release
             $pre_commit = true;
         }
 
+        $sequence[] = 'Diff';
+
         if ($this->_doTask('package')) {
             $sequence[] = 'Package';
             if ($this->_doTask('upload')) {
@@ -119,7 +129,7 @@ class Components_Runner_Release
                 $this->_output->warn('Are you certain you don\'t want to upload the package? Add the "upload" option in case you want to correct your selection. Waiting 5 seconds ...');
                 sleep(5);
             }
-        } else if ($this->_doTask('upload')) {
+        } elseif ($this->_doTask('upload')) {
             throw new Components_Exception('Selecting "upload" without "package" is not possible! Please add the "package" task if you want to upload the package!');
         }
 
@@ -149,6 +159,8 @@ class Components_Runner_Release
                 $sequence[] = 'CommitPostRelease';
             }
         }
+
+        $sequence[] = 'Diff';
 
         if (in_array('CommitPreRelease', $sequence) ||
             in_array('CommitPostRelease', $sequence)) {

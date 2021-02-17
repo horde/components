@@ -28,13 +28,13 @@
 class Components_Unit_Components_Release_Task_PackageTest
 extends Components_TestCase
 {
-    public function testValidateSucceeds()
+    public function testPreValidateSucceeds()
     {
         $package = $this->_getPackage();
         $task = $this->getReleaseTask('Package', $package);
         $this->assertEquals(
             array(),
-            $task->validate(array('releaseserver' => 'pear.horde.org', 'releasedir' => 'B'))
+            $task->preValidate(array('releaseserver' => 'pear.horde.org', 'releasedir' => 'B'))
         );
     }
 
@@ -44,7 +44,7 @@ extends Components_TestCase
         $task = $this->getReleaseTask('Package', $package);
         $this->assertEquals(
             array('The "releaseserver" option has no value. Where should the release be uploaded?'),
-            $task->validate(array('releasedir' => 'B'))
+            $task->preValidate(array('releasedir' => 'B'))
         );
     }
 
@@ -54,7 +54,7 @@ extends Components_TestCase
         $task = $this->getReleaseTask('Package', $package);
         $this->assertEquals(
             array('The "releasedir" option has no value. Where is the remote pirum install located?'),
-            $task->validate(array('releaseserver' => 'A'))
+            $task->preValidate(array('releaseserver' => 'A'))
         );
     }
 
@@ -92,7 +92,7 @@ extends Components_TestCase
                 'Would run "scp [PATH TO RESULTING]/[PACKAGE.TGZ - PRETEND MODE] pear.horde.org:~/" now.',
                 'Would run "ssh pear.horde.org "umask 0002 && pirum add B ~/[PACKAGE.TGZ - PRETEND MODE] && rm [PACKAGE.TGZ - PRETEND MODE]"" now.'
             ),
-            $this->output->getOutput()
+            $this->_output->getOutput()
         );
     }
 

@@ -33,7 +33,7 @@ class Components_Runner_Update
     /**
      * The output handler.
      *
-     * @param Component_Output
+     * @param Components_Output
      */
     private $_output;
 
@@ -41,27 +41,34 @@ class Components_Runner_Update
      * Constructor.
      *
      * @param Components_Config $config  The configuration for the current job.
-     * @param Component_Output $output   The output handler.
+     * @param Components_Output $output  The output handler.
      */
     public function __construct(
         Components_Config $config,
         Components_Output $output
     )
     {
-        $this->_config  = $config;
+        $this->_config = $config;
         $this->_output = $output;
     }
 
+    /**
+     * @throws Components_Exception
+     * @throws Horde_Pear_Exception
+     */
     public function run()
     {
         $arguments = $this->_config->getArguments();
-        $options = array_merge(array(
-            'new_version' => false,
-            'new_api' => false,
-            'new_state' => false,
-            'new_apistate' => false,
-            'theme' => false,
-        ), $this->_config->getOptions());
+        $options = array_merge(
+            array(
+                'new_version' => false,
+                'new_api' => false,
+                'new_state' => false,
+                'new_apistate' => false,
+                'theme' => false,
+            ),
+            $this->_config->getOptions()
+        );
 
         if (!empty($options['updatexml']) ||
             (isset($arguments[0]) && $arguments[0] == 'update')) {
@@ -77,6 +84,7 @@ class Components_Runner_Update
                     $this->_output, $options
                 );
             }
+            /** @var Components_Component_Source $component */
             $component = $this->_config->getComponent();
             if (!empty($options['new_version']) ||
                 !empty($options['new_api'])) {

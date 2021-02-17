@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 
@@ -51,7 +51,7 @@ use PDepend\Source\AST\ASTArtifactList;
 /**
  * Calculates the code rank metric for classes and namespaces.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 class CodeRankAnalyzer extends AbstractAnalyzer implements AnalyzerNodeAware
@@ -80,7 +80,7 @@ class CodeRankAnalyzer extends AbstractAnalyzer implements AnalyzerNodeAware
     /**
      * All found nodes.
      *
-     * @var array(string=>array)
+     * @var array<string, array>
      */
     private $nodes = array();
 
@@ -109,7 +109,7 @@ class CodeRankAnalyzer extends AbstractAnalyzer implements AnalyzerNodeAware
      * )
      * </code>
      *
-     * @var array(string=>array)
+     * @var array<string, array>
      */
     private $nodeMetrics = null;
 
@@ -169,7 +169,7 @@ class CodeRankAnalyzer extends AbstractAnalyzer implements AnalyzerNodeAware
      * node, this method will return an empty <b>array</b>.
      *
      * @param  \PDepend\Source\AST\ASTArtifact $artifact
-     * @return array(string=>mixed)
+     * @return array<string, mixed>
      */
     public function getNodeMetrics(ASTArtifact $artifact)
     {
@@ -206,7 +206,7 @@ class CodeRankAnalyzer extends AbstractAnalyzer implements AnalyzerNodeAware
      * @param string $id1 Identifier for the incoming edges.
      * @param string $id2 Identifier for the outgoing edges.
      *
-     * @return array(string=>float)
+     * @return array<string, float>
      */
     protected function computeCodeRank($id1, $id2)
     {

@@ -1,42 +1,18 @@
 <?php
 /**
- * This file is part of PHPMD.
+ * This file is part of PHP Mess Detector.
  *
- * Copyright (c) 2008-2012, Manuel Pichler <mapi@phpmd.org>.
+ * Copyright (c) Manuel Pichler <mapi@phpmd.org>.
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Licensed under BSD License
+ * For full copyright and license information, please see the LICENSE file.
+ * Redistributions of files must retain the above copyright notice.
  *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *
- *   * Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in
- *     the documentation and/or other materials provided with the
- *     distribution.
- *
- *   * Neither the name of Manuel Pichler nor the names of his
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- * @author    Manuel Pichler <mapi@phpmd.org>
- * @copyright 2008-2014 Manuel Pichler. All rights reserved.
- * @license   http://www.opensource.org/licenses/bsd-license.php BSD License
+ * @author Manuel Pichler <mapi@phpmd.org>
+ * @copyright Manuel Pichler. All rights reserved.
+ * @license https://opensource.org/licenses/bsd-license.php BSD License
+ * @link http://phpmd.org/
  */
 
 namespace PHPMD;
@@ -46,15 +22,10 @@ use PHPMD\Node\ASTNode;
 /**
  * This is an abstract base class for PHPMD code nodes, it is just a wrapper
  * around PDepend's object model.
- *
- * @author    Manuel Pichler <mapi@phpmd.org>
- * @copyright 2008-2014 Manuel Pichler. All rights reserved.
- * @license   http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 abstract class AbstractNode
 {
     /**
-     *
      * @var \PDepend\Source\AST\ASTArtifact|\PDepend\Source\AST\ASTNode $node
      */
     private $node = null;
@@ -62,7 +33,7 @@ abstract class AbstractNode
     /**
      * The collected metrics for this node.
      *
-     * @var array(string=>mixed) $_metrics
+     * @var array<string, mixed>
      */
     private $metrics = null;
 
@@ -78,7 +49,7 @@ abstract class AbstractNode
 
     /**
      * The magic call method is used to pipe requests from rules direct
-     * to the underlying PDepend ast node.
+     * to the underlying PDepend AST node.
      *
      * @param string $name
      * @param array $args
@@ -88,19 +59,20 @@ abstract class AbstractNode
      */
     public function __call($name, array $args)
     {
-        if (method_exists($this->getNode(), $name)) {
-            return call_user_func_array(array($this->getNode(), $name), $args);
+        $node = $this->getNode();
+        if (!method_exists($node, $name)) {
+            throw new \BadMethodCallException(
+                sprintf('Invalid method %s() called.', $name)
+            );
         }
-        throw new \BadMethodCallException(
-            sprintf('Invalid method %s() called.', $name)
-        );
+        return call_user_func_array(array($node, $name), $args);
     }
 
     /**
      * Returns the parent of this node or <b>null</b> when no parent node
      * exists.
      *
-     * @return \PHPMD\AbstractNode
+     * @return ASTNode
      */
     public function getParent()
     {
@@ -114,7 +86,6 @@ abstract class AbstractNode
      * Returns a child node at the given index.
      *
      * @param integer $index The child offset.
-     *
      * @return \PHPMD\Node\ASTNode
      */
     public function getChild($index)
@@ -248,7 +219,6 @@ abstract class AbstractNode
      * <b>null</b> when no such metric exists.
      *
      * @param string $name The metric name or abbreviation.
-     *
      * @return mixed
      */
     public function getMetric($name)
@@ -262,7 +232,7 @@ abstract class AbstractNode
     /**
      * This method will set the metrics for this node.
      *
-     * @param array(string=>mixed) $metrics The collected node metrics.
+     * @param array<string, mixed> $metrics The collected node metrics.
      * @return void
      */
     public function setMetrics(array $metrics)

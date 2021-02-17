@@ -33,7 +33,7 @@ class Components_Component_Factory
     /**
      * The factory for PEAR handlers.
      *
-     * @var Components_Factory
+     * @var Components_Pear_Factory
      */
     protected $_factory;
 
@@ -47,7 +47,7 @@ class Components_Component_Factory
     /**
      * The output handler.
      *
-     * @var Component_Output
+     * @var Components_Output
      */
     protected $_output;
 
@@ -88,7 +88,7 @@ class Components_Component_Factory
      *                                         components.
      * @param Horde_Http_Client       $client  The HTTP client for remote
      *                                         access.
-     * @param Component_Output        $output  The output handler.
+     * @param Components_Output        $output  The output handler.
      * @param Components_Release_Notes $notes  The release notes.
      */
     public function __construct(
@@ -206,8 +206,7 @@ class Components_Component_Factory
     /**
      * Create a component dependency representation.
      *
-     * @param array                $dependencies The dependency information.
-     * @param Components_Component $parent       The parent component.
+     * @param array $dependencies The dependency information.
      *
      * @return Components_Component_Dependency The dependency.
      */
@@ -254,6 +253,18 @@ class Components_Component_Factory
     public function createRemoteChannel($channel)
     {
         return new Horde_Pear_Remote($channel);
+    }
+
+    /**
+     * Create the sentinel helper.
+     *
+     * @param string $directory The directory the sentinel should act in.
+     *
+     * @return Horde_Release_Sentinel The sentinel helper.
+     */
+    public function createSentinel($directory)
+    {
+        return new Horde_Release_Sentinel($directory);
     }
 
     /**
@@ -305,6 +316,8 @@ class Components_Component_Factory
      *
      * @param string $package_xml_dir Path to the parent directory of the
      *                                new package.xml file.
+     *
+     * @throws Horde_Pear_Exception
      */
     public function createPackageFile($package_xml_dir)
     {
@@ -317,6 +330,8 @@ class Components_Component_Factory
      *
      * @param string $package_xml_dir Path to the parent directory of the
      *                                new package.xml file.
+     *
+     * @throws Horde_Pear_Exception
      */
     public function createThemePackageFile($package_xml_dir)
     {
@@ -331,6 +346,7 @@ class Components_Component_Factory
      *                                new package.xml file.
      *
      * @return Horde_Pear_Package_Contents_List
+     * @throws Components_Exception
      */
     public function createContentList($package_xml_dir)
     {
@@ -348,6 +364,7 @@ class Components_Component_Factory
      *                                new package.xml file.
      *
      * @return Horde_Pear_Package_Contents_List
+     * @throws Components_Exception
      */
     public function createThemeContentList($package_xml_dir)
     {

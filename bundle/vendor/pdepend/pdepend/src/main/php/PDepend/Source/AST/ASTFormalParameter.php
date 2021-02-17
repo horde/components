@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,13 +36,14 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  * @since 0.9.6
  */
 
 namespace PDepend\Source\AST;
 
+use OutOfBoundsException;
 use PDepend\Source\ASTVisitor\ASTVisitor;
 
 /**
@@ -52,7 +53,7 @@ use PDepend\Source\ASTVisitor\ASTVisitor;
  * Formal parameters can include a type hint, a by reference identifier and a
  * default value. The only mandatory part is the parameter identifier.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  * @since 0.9.6
  */
@@ -78,7 +79,8 @@ class ASTFormalParameter extends AbstractASTNode
         if ($this->hasType()) {
             return $this->getChild(0);
         }
-        throw new \OutOfBoundsException('The parameter does not has a type specification.');
+
+        throw new OutOfBoundsException('The parameter does not has a type specification.');
     }
 
     /**
@@ -101,7 +103,7 @@ class ASTFormalParameter extends AbstractASTNode
      */
     public function setVariableArgList()
     {
-        return $this->setMetadataBoolean(6, true);
+        $this->setMetadataBoolean(6, true);
     }
 
     /**
@@ -122,7 +124,7 @@ class ASTFormalParameter extends AbstractASTNode
      */
     public function setPassedByReference()
     {
-        return $this->setMetadataBoolean(5, true);
+        $this->setMetadataBoolean(5, true);
     }
 
     /**

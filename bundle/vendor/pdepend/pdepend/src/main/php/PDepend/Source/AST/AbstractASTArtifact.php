@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 
@@ -45,7 +45,7 @@ namespace PDepend\Source\AST;
 /**
  * Abstract base class for code item.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 abstract class AbstractASTArtifact implements ASTArtifact
@@ -81,7 +81,7 @@ abstract class AbstractASTArtifact implements ASTArtifact
     /**
      * The source file for this item.
      *
-     * @var \PDepend\Source\AST\ASTCompilationUnit
+     * @var \PDepend\Source\AST\ASTCompilationUnit|null
      */
     protected $compilationUnit = null;
 
@@ -100,6 +100,16 @@ abstract class AbstractASTArtifact implements ASTArtifact
     public function __construct($name)
     {
         $this->name = $name;
+    }
+
+    /**
+     * Returns the source image of this ast node.
+     *
+     * @return string
+     */
+    public function getImage()
+    {
+        return $this->name;
     }
 
     /**
@@ -125,6 +135,8 @@ abstract class AbstractASTArtifact implements ASTArtifact
         $this->name = $name;
     }
 
+
+
     /**
      * Returns a id for this code node.
      *
@@ -133,7 +145,7 @@ abstract class AbstractASTArtifact implements ASTArtifact
     public function getId()
     {
         if ($this->id === null) {
-            $this->id = md5(microtime());
+            $this->id = md5(uniqid('', true));
         }
         return $this->id;
     }
@@ -153,7 +165,7 @@ abstract class AbstractASTArtifact implements ASTArtifact
     /**
      * Returns the source file for this item.
      *
-     * @return \PDepend\Source\AST\ASTCompilationUnit
+     * @return \PDepend\Source\AST\ASTCompilationUnit|null
      */
     public function getCompilationUnit()
     {

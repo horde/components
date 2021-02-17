@@ -80,9 +80,7 @@ class Components_Release_Task_Base
     /**
      * Set the component this task should act upon.
      *
-     * @param Components_Component $component The component to be released.
-     *
-     * @return NULL
+     * @param Components_Component_Source $component The component to be released.
      */
     public function setComponent(Components_Component_Source $component)
     {
@@ -93,7 +91,7 @@ class Components_Release_Task_Base
     /**
      * Get the component this task should act upon.
      *
-     * @return Components_Component The component to be released.
+     * @return Components_Component_Source The component to be released.
      */
     protected function getComponent()
     {
@@ -104,8 +102,6 @@ class Components_Release_Task_Base
      * Set the name of this task.
      *
      * @param string $name The task name.
-     *
-     * @return NULL
      */
     public function setName($name)
     {
@@ -172,7 +168,21 @@ class Components_Release_Task_Base
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
      */
-    public function validate($options)
+    public function preValidate($options)
+    {
+        return array();
+    }
+
+    /**
+     * Validate the postconditions required for this release task to have
+     * succeeded.
+     *
+     * @param array $options Additional options.
+     *
+     * @return array An empty array if all postconditions are met and a list of
+     *               error messages otherwise.
+     */
+    public function postValidate($options)
     {
         return array();
     }
@@ -181,8 +191,6 @@ class Components_Release_Task_Base
      * Run the task.
      *
      * @param array &$options Additional options.
-     *
-     * @return NULL
      */
     public function run(&$options)
     {

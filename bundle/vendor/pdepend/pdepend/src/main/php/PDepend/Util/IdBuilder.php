@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  * @since 0.9.12
  */
@@ -53,12 +53,19 @@ use PDepend\Source\AST\ASTMethod;
  * This class provides methods to generate unique, but reproducable identifiers
  * for nodes generated during the parsing process.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  * @since 0.9.12
  */
 class IdBuilder
 {
+    /**
+     * @var array<array>
+     *
+     * @deprecated 3.0.0 This property will no longer be accessible on the public access level in next major version.
+     */
+    public $offsetInFile = array();
+
     /**
      * Generates an identifier for the given file instance.
      *
@@ -89,7 +96,6 @@ class IdBuilder
      */
     public function forClassOrInterface(AbstractASTType $type)
     {
-
         return $this->forOffsetItem(
             $type,
             ltrim(strrchr(strtolower(get_class($type)), '_'), '_')
