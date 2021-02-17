@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  * @since 0.10.0
  */
@@ -47,7 +47,7 @@ namespace PDepend\Source\AST;
  * This type of exception will be thrown when the source file of a code object
  * is accessed, but this property is not available.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  * @since 0.10.0
  */
@@ -60,6 +60,12 @@ class ASTCompilationUnitNotFoundException extends \RuntimeException
      */
     public function __construct(AbstractASTArtifact $owner)
     {
-        parent::__construct('The mandatory parent was not defined.');
+        parent::__construct(
+            sprintf(
+                'The mandatory parent was not defined for the %s named %s.',
+                get_class($owner),
+                $owner->getName()
+            )
+        );
     }
 }

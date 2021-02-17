@@ -23,9 +23,7 @@ class EnumNodeDefinition extends ScalarNodeDefinition
     private $values;
 
     /**
-     * @param array $values
-     *
-     * @return EnumNodeDefinition|$this
+     * @return $this
      */
     public function values(array $values)
     {
@@ -53,6 +51,6 @@ class EnumNodeDefinition extends ScalarNodeDefinition
             throw new \RuntimeException('You must call ->values() on enum nodes.');
         }
 
-        return new EnumNode($this->name, $this->parent, $this->values);
+        return new EnumNode($this->name, $this->parent, $this->values, $this->pathSeparator);
     }
 }

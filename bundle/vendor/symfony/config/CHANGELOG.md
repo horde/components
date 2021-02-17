@@ -1,6 +1,60 @@
 CHANGELOG
 =========
 
+5.0.0
+-----
+
+ * Dropped support for constructing a `TreeBuilder` without passing root node information.
+ * Removed the `root()` method in `TreeBuilder`, pass the root node information to the constructor instead
+ * Added method `getChildNodeDefinitions()` to ParentNodeDefinitionInterface
+ * Removed `FileLoaderLoadException`, use `LoaderLoadException` instead
+
+4.4.0
+-----
+
+ * added a way to exclude patterns of resources from being imported by the `import()` method
+
+4.3.0
+-----
+
+ * deprecated using environment variables with `cannotBeEmpty()` if the value is validated with `validate()`
+ * made `Resource\*` classes final and not implement `Serializable` anymore
+ * deprecated the `root()` method in `TreeBuilder`, pass the root node information to the constructor instead
+
+4.2.0
+-----
+
+ * deprecated constructing a `TreeBuilder` without passing root node information
+ * renamed `FileLoaderLoadException` to `LoaderLoadException`
+
+4.1.0
+-----
+
+ * added `setPathSeparator` method to `NodeBuilder` class
+ * added third `$pathSeparator` constructor argument to `BaseNode`
+ * the `Processor` class has been made final
+
+4.0.0
+-----
+
+ * removed `ConfigCachePass`
+
+3.4.0
+-----
+
+ * added `setDeprecated()` method to indicate a deprecated node
+ * added `XmlUtils::parse()` method to parse an XML string
+ * deprecated `ConfigCachePass`
+
+3.3.0
+-----
+
+ * added `ReflectionClassResource` class
+ * added second `$exists` constructor argument to `ClassExistenceResource`
+ * made `ClassExistenceResource` work with interfaces and traits
+ * added `ConfigCachePass` (originally in FrameworkBundle)
+ * added `castToArray()` helper to turn any config value into an array
+
 3.0.0
 -----
 
@@ -18,7 +72,7 @@ The edge case of defining just one value for nodes of type Enum is now allowed:
 $rootNode
     ->children()
         ->enumNode('variable')
-            ->values(array('value'))
+            ->values(['value'])
         ->end()
     ->end()
 ;

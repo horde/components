@@ -29,6 +29,26 @@ class Components_Release_Task_Timestamp
 extends Components_Release_Task_Base
 {
     /**
+     * Validate the preconditions required for this release task.
+     *
+     * @param array $options Additional options.
+     *
+     * @return array An empty array if all preconditions are met and a list of
+     *               error messages otherwise.
+     * @throws Components_Exception
+     * @throws Horde_Exception_NotFound
+     */
+    public function preValidate($options)
+    {
+        if (!$this->getComponent()->getWrapper('ChangelogYml')->exists()) {
+            return array(
+                'The component lacks a changelog.yml!',
+            );
+        }
+        return array();
+    }
+
+    /**
      * Can the task be skipped?
      *
      * @param array $options Additional options.
@@ -41,32 +61,6 @@ extends Components_Release_Task_Base
     }
 
     /**
-     * Validate the preconditions required for this release task.
-     *
-     * @param array $options Additional options.
-     *
-     * @return array An empty array if all preconditions are met and a list of
-     *               error messages otherwise.
-     */
-    public function validate($options)
-    {
-        if (!$this->getComponent()->hasLocalPackageXml()) {
-            return array(
-                'The component lacks a local package.xml!',
-            );
-        }
-        $diff_options = $options;
-        $diff_options['no_timestamp'] = true;
-        $diff = $this->getComponent()->updatePackage('diff', $diff_options);
-        if (!empty($diff)) {
-            return array(
-                "The package.xml file is not up-to-date:\n$diff"
-            );
-        }
-        return array();
-    }
-
-    /**
      * Run the task.
      *
      * @param array &$options Additional options.
@@ -76,7 +70,7 @@ extends Components_Release_Task_Base
     public function run(&$options)
     {
         $result = $this->getComponent()
-            ->timestampAndSync($options);
+            ->timestamp($options);
         if (!$this->getTasks()->pretend()) {
             $this->getOutput()->ok($result);
         } else {

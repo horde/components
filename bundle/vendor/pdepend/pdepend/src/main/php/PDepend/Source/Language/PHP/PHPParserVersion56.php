@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,13 +36,14 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  * @since 2.3
  */
 
 namespace PDepend\Source\Language\PHP;
 
+use PDepend\Source\AST\ASTArguments;
 use PDepend\Source\AST\ASTValue;
 use PDepend\Source\Parser\UnexpectedTokenException;
 use PDepend\Source\Tokenizer\Tokenizer;
@@ -51,7 +52,7 @@ use PDepend\Source\Tokenizer\Tokens;
 /**
  * Concrete parser implementation that supports features up to PHP version 5.6.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  * @since 2.3
  */
@@ -61,7 +62,7 @@ abstract class PHPParserVersion56 extends PHPParserVersion55
      * Parses additional static values that are valid in the supported php version.
      *
      * @param  \PDepend\Source\AST\ASTValue $value
-     * @return \PDepend\Source\AST\ASTValue
+     * @return \PDepend\Source\AST\ASTValue|null
      * @throws \PDepend\Source\Parser\UnexpectedTokenException
      */
     protected function parseStaticValueVersionSpecific(ASTValue $value)
@@ -69,8 +70,6 @@ abstract class PHPParserVersion56 extends PHPParserVersion55
         $expressions = array();
 
         while (($tokenType = $this->tokenizer->peek()) != Tokenizer::T_EOF) {
-            $expr = null;
-
             switch ($tokenType) {
                 case Tokens::T_COMMA:
                 case Tokens::T_CLOSE_TAG:
@@ -134,12 +133,15 @@ abstract class PHPParserVersion56 extends PHPParserVersion55
                 case Tokens::T_SR:
                     $expressions[] = $this->parseShiftRightExpression();
                     break;
+                case Tokens::T_ELLIPSIS:
+                    $this->checkEllipsisInExpressionSupport();
                 case Tokens::T_STRING_VARNAME: // TODO: Implement this
                 case Tokens::T_PLUS: // TODO: Make this a arithmetic expression
                 case Tokens::T_MINUS:
                 case Tokens::T_MUL:
                 case Tokens::T_DIV:
                 case Tokens::T_MOD:
+                case Tokens::T_POW:
                 case Tokens::T_IS_EQUAL: // TODO: Implement compare expressions
                 case Tokens::T_IS_NOT_EQUAL:
                 case Tokens::T_IS_IDENTICAL:
@@ -178,6 +180,7 @@ abstract class PHPParserVersion56 extends PHPParserVersion55
                 case Tokens::T_PLUS_EQUAL:
                 case Tokens::T_MINUS_EQUAL:
                 case Tokens::T_CONCAT_EQUAL:
+                case Tokens::T_COALESCE_EQUAL:
                     $expressions[] = $this->parseAssignmentExpression(
                         array_pop($expressions)
                     );
@@ -224,7 +227,6 @@ abstract class PHPParserVersion56 extends PHPParserVersion55
         if ($count == 0) {
             return null;
         } elseif ($count == 1) {
-
             // @todo ASTValue must be a valid node.
             $value->setValue($expressions[0]);
 
@@ -244,6 +246,119 @@ abstract class PHPParserVersion56 extends PHPParserVersion55
 
         // @todo ASTValue must be a valid node.
         $value->setValue($expr);
+
+        return $value;
+    }
+
+    /**
+     * Parses use declarations that are valid in the supported php version.
+     *
+     * @return void
+     */
+    protected function parseUseDeclarations()
+    {
+        // Consume use keyword
+        $this->consumeToken(Tokens::T_USE);
+        $this->consumeComments();
+
+        // Consume const and function tokens
+        $nextToken = $this->tokenizer->peek();
+        switch ($nextToken) {
+            case Tokens::T_CONST:
+            case Tokens::T_FUNCTION:
+                $this->consumeToken($nextToken);
+        }
+
+        // Parse all use declarations
+        $this->parseUseDeclaration();
+        $this->consumeComments();
+
+        // Consume closing semicolon
+        $this->consumeToken(Tokens::T_SEMICOLON);
+
+        // Reset any previous state
+        $this->reset();
+    }
+
+    /**
+     * This method will be called when the base parser cannot handle an expression
+     * in the base version. In this method you can implement version specific
+     * expressions.
+     *
+     * @return \PDepend\Source\AST\ASTNode
+     * @throws \PDepend\Source\Parser\UnexpectedTokenException
+     * @since 2.2
+     */
+    protected function parseOptionalExpressionForVersion()
+    {
+        if ($expression = $this->parseExpressionVersion56()) {
+            return $expression;
+        }
+        return parent::parseOptionalExpressionForVersion();
+    }
+
+    /**
+     * In this method we implement parsing of PHP 5.6 specific expressions.
+     *
+     * @return \PDepend\Source\AST\ASTNode
+     * @since 2.3
+     */
+    protected function parseExpressionVersion56()
+    {
+        $this->consumeComments();
+        $nextTokenType = $this->tokenizer->peek();
+
+        switch ($nextTokenType) {
+            case Tokens::T_POW:
+                $token = $this->consumeToken($nextTokenType);
+
+                $expr = $this->builder->buildAstExpression($token->image);
+                $expr->configureLinesAndColumns(
+                    $token->startLine,
+                    $token->endLine,
+                    $token->startColumn,
+                    $token->endColumn
+                );
+
+                return $expr;
+        }
+    }
+
+    /**
+     * @param \PDepend\Source\AST\ASTArguments $arguments
+     * @return \PDepend\Source\AST\ASTArguments
+     */
+    protected function parseArgumentList(ASTArguments $arguments)
+    {
+        while (true) {
+            $this->consumeComments();
+            if (Tokens::T_ELLIPSIS === $this->tokenizer->peek()) {
+                $this->consumeToken(Tokens::T_ELLIPSIS);
+            }
+
+            $this->consumeComments();
+            if (null === ($expr = $this->parseOptionalExpression())) {
+                break;
+            }
+
+            $arguments->addChild($expr);
+
+            $this->consumeComments();
+            if (Tokens::T_COMMA === $this->tokenizer->peek()) {
+                $this->consumeToken(Tokens::T_COMMA);
+                $this->consumeComments();
+
+                continue;
+            }
+        }
+
+        return $arguments;
+    }
+
+    protected function parseConstantDeclaratorValue()
+    {
+        $value = new ASTValue();
+        $value->setValue($this->parseOptionalExpression());
 
         return $value;
     }

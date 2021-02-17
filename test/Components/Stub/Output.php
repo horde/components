@@ -32,5 +32,10 @@ class Components_Stub_Output_Cli
     {
         $this->messages[] = $message;
     }
+
+    public function fatal($text)
+    {
+        throw new Components_Exception($text);
+    }
 }
 

@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 
@@ -64,7 +64,7 @@ use PDepend\Util\Utf8Util;
  * This logger generates a summary xml document with aggregated project, class,
  * method and file metrics.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 class Xml extends AbstractASTVisitor implements CodeAwareGenerator, FileAwareGenerator
@@ -109,7 +109,7 @@ class Xml extends AbstractASTVisitor implements CodeAwareGenerator, FileAwareGen
     /**
      * The internal used xml stack.
      *
-     * @var DOMElement[]
+     * @var \DOMElement[]
      */
     private $xmlStack = array();
 
@@ -129,7 +129,7 @@ class Xml extends AbstractASTVisitor implements CodeAwareGenerator, FileAwareGen
      * Returns an <b>array</b> with accepted analyzer types. These types can be
      * concrete analyzer classes or one of the descriptive analyzer interfaces.
      *
-     * @return array(string)
+     * @return array<string>
      */
     public function getAcceptedAnalyzers()
     {
@@ -229,13 +229,14 @@ class Xml extends AbstractASTVisitor implements CodeAwareGenerator, FileAwareGen
 
         $dom->appendChild($metrics);
 
-        $dom->save($this->logFile);
+        $buffer = $dom->saveXML();
+        file_put_contents($this->logFile, $buffer);
     }
 
     /**
      * Returns an array with all collected project metrics.
      *
-     * @return array(string=>mixed)
+     * @return array<string, mixed>
      * @since  0.9.10
      */
     private function getProjectMetrics()
@@ -292,6 +293,7 @@ class Xml extends AbstractASTVisitor implements CodeAwareGenerator, FileAwareGen
 
         $typeXml = $doc->createElement($typeIdentifier);
         $typeXml->setAttribute('name', Utf8Util::ensureEncoding($type->getName()));
+        $typeXml->setAttribute('fqname', Utf8Util::ensureEncoding($type->getNamespacedName()));
         $typeXml->setAttribute('start', Utf8Util::ensureEncoding($type->getStartLine()));
         $typeXml->setAttribute('end', Utf8Util::ensureEncoding($type->getEndLine()));
 

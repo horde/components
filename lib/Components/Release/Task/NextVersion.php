@@ -36,7 +36,7 @@ extends Components_Release_Task_Base
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
      */
-    public function validate($options)
+    public function preValidate($options)
     {
         $errors = array();
         if (!isset($options['next_note']) || $options['next_note'] === null) {
@@ -63,6 +63,9 @@ extends Components_Release_Task_Base
             $next_version = Components_Helper_Version::nextPearVersion($options['old_version']);
         } else {
             $next_version = $options['next_version'];
+        }
+        if ($this->getTasks()->pretend()) {
+            $options['old_wrappers'] = $this->getComponent()->cloneWrappers();
         }
         $result = $this->getComponent()->nextVersion(
             $next_version,

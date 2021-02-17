@@ -61,8 +61,6 @@ implements Components_Config
      *
      * @param string $key   The option to set.
      * @param string $value The value of the option.
-     *
-     * @return NULL
      */
     public function setOption($key, $value)
     {
@@ -72,7 +70,7 @@ implements Components_Config
     /**
      * Return all options.
      *
-     * @return Horde_Argv_Values The option values.
+     * @return array
      */
     public function getOptions()
     {
@@ -92,6 +90,7 @@ implements Components_Config
         if (isset($options[$option])) {
             return $options[$option];
         }
+        return null;
     }
 
     /**
@@ -108,8 +107,6 @@ implements Components_Config
      * Unshift an element to the argument list.
      *
      * @param string $element The element to unshift.
-     *
-     * @return NULL
      */
     public function unshiftArgument($element)
     {
@@ -130,7 +127,6 @@ implements Components_Config
      * Set the path to the component directory.
      *
      * @param Components_Component $component The path to the component directory.
-     * @return NULL
      */
     public function setComponent(Components_Component $component)
     {
@@ -141,6 +137,7 @@ implements Components_Config
      * Return the selected component.
      *
      * @return Components_Component The selected component.
+     * @throws Components_Exception
      */
     public function getComponent()
     {
@@ -156,8 +153,6 @@ implements Components_Config
      * Set the path to the directory of the selected source component.
      *
      * @param string $path The path to the component directory.
-     *
-     * @return NULL
      */
     public function setPath($path)
     {

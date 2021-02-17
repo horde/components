@@ -87,22 +87,23 @@ const VERSION = \'4.0.1RC1\';
             array(
                 'pretend' => true,
                 'commit' => new Components_Helper_Commit(
-                    $this->output,
+                    $this->_output,
                     array('pretend' => true)
                 )
             )
         );
         $this->assertEquals(
             array(
-                'Would set release version "4.0.1RC1" and api version "" in doc/changelog.yml, .horde.yml, package.xml, doc/CHANGES, lib/Application.php now.',
+                'Would set release version "4.0.1RC1" and api version "" in doc/changelog.yml, .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Application.php now.',
                 'Would run "git add doc/changelog.yml" now.',
                 'Would run "git add .horde.yml" now.',
                 'Would run "git add package.xml" now.',
+                'Would run "git add composer.json" now.',
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git commit -m "Released Horde-4.0.1RC1"" now.'
             ),
-            $this->output->getOutput()
+            $this->_output->getOutput()
         );
     }
 
@@ -117,22 +118,23 @@ const VERSION = \'4.0.1RC1\';
             array(
                 'pretend' => true,
                 'commit' => new Components_Helper_Commit(
-                    $this->output,
+                    $this->_output,
                     array('pretend' => true)
                 )
             )
         );
         $this->assertEquals(
             array(
-                'Would set release version "4.0.1RC1" and api version "" in doc/changelog.yml, .horde.yml, package.xml, doc/CHANGES, lib/Bundle.php now.',
+                'Would set release version "4.0.1RC1" and api version "" in doc/changelog.yml, .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Bundle.php now.',
                 'Would run "git add doc/changelog.yml" now.',
                 'Would run "git add .horde.yml" now.',
                 'Would run "git add package.xml" now.',
+                'Would run "git add composer.json" now.',
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Bundle.php" now.',
                 'Would run "git commit -m "Released Horde-4.0.1RC1"" now.'
             ),
-            $this->output->getOutput()
+            $this->_output->getOutput()
         );
     }
 
@@ -143,7 +145,7 @@ const VERSION = \'4.0.1RC1\';
         file_put_contents(
             $tmp_dir . '/doc/changelog.yml',
             '---
-4.0.0:
+4.0.1RC1:
   api: 4.0.0
   date: 2017-12-31
   notes: |
@@ -216,8 +218,9 @@ type: application
 full: Horde
 description: Horde
 type: application
+authors: []
 version:
-  release: 4.0.0
+  release: 4.0.1RC1
   api: 4.0.0
 state:
   release: stable
@@ -225,7 +228,7 @@ state:
 license:
   identifier: ~
   uri: ~
-dependencies:
+dependencies: []
 '
         );
         return $tmp_dir;

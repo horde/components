@@ -106,7 +106,8 @@ class Components_Helper_ChangeLog
         $version = $hordeInfo['version']['release'];
         $changelog = $this->_component->getWrapper('ChangelogYml');
         $info = $changelog[$version];
-        $notes = explode("\n", trim($info['notes']));
+        $notes = trim($info['notes']);
+        $notes = $notes ? explode("\n", $notes) : array();
         array_unshift($notes, $entry);
         $info['notes'] = implode("\n", $notes) . "\n";
         $changelog[$version] = $info;
@@ -297,8 +298,12 @@ class Components_Helper_ChangeLog
             if ($version == 'extra') {
                 continue;
             }
-            $version = Components_Helper_Version::validatePear($version);
-            $changes[$version] = $info;
+            try {
+                $version = Components_Helper_Version::validatePear($version);
+                $changes[$version] = $info;
+            } catch (Components_Exception $e) {
+                break;
+            }
         }
         $xml->setNotes(array_reverse($changes));
 
@@ -316,7 +321,7 @@ class Components_Helper_ChangeLog
      */
     public function getChangelogLink($root)
     {
-        if ($this->changesFileExists()) {
+        if ($changes = $this->changesFileExists()) {
             $hordeInfo = $this->_component->getWrapper('HordeYml');
             $blob = trim(
                 $this->_systemInDirectory(
@@ -324,9 +329,17 @@ class Components_Helper_ChangeLog
                     $this->_directory
                 )
             );
+
+            // special case of the horde base application
+            // @todo better solution for this. Can't change the 'id' attribute
+            // since that's also used elsewhere, like in the package.xml
+            // generation.
+            $id = $hordeInfo['id'] == 'horde' ? 'base' : $hordeInfo['id'];
+
             $changes = preg_replace('#^' . $this->_directory . '#', '', $changes);
-            return 'https://github.com/horde/' . $hordeInfo['id'] . '/blob/'
-                . $blob . $root . $changes;
+
+            return 'https://github.com/horde/' . $id . '/blob/'
+                . $blob . $changes;
         }
         return '';
     }
@@ -349,7 +362,7 @@ class Components_Helper_ChangeLog
     /**
      * Updates CHANGES from changelog.yml.
      *
-     * @return string  Path to the updated CHANGES file.
+     * @return string|null  Path to the updated CHANGES file.
      */
     public function updateChanges()
     {

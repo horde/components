@@ -77,12 +77,20 @@ trait Components_Wrapper_Trait
     /**
      * Returns a diff between the saved and the current version of the file.
      *
+     * @param Components_Wrapper_Trait $wrapper
+     *
      * @return string  File diff.
      */
-    public function diff()
+    public function diff(Components_Wrapper $wrapper = null)
     {
         $renderer = new Horde_Text_Diff_Renderer_Unified();
-        $old = $this->exists() ? file($this->getFullPath()) : array();
+        if ($wrapper) {
+            $old = explode("\n", trim($wrapper, "\n"));
+        } elseif ($this->exists()) {
+            $old = file($this->getFullPath());
+        } else {
+            $old = array();
+        }
         return $renderer->render(
             new Horde_Text_Diff(
                 'auto', array($old, explode("\n", rtrim($this, "\n")))

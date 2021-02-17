@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 
@@ -47,7 +47,7 @@ use PDepend\Source\AST\AbstractASTArtifact;
 /**
  * Coverage report implementation for clover formatted xml files.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 class CloverReport implements Report
@@ -55,7 +55,7 @@ class CloverReport implements Report
     /**
      * Holds the line coverage for all files found in the coverage report.
      *
-     * @var array(string=>array)
+     * @var array<string, array>
      */
     private $fileLineCoverage = array();
 
@@ -139,7 +139,7 @@ class CloverReport implements Report
      * Returns the lines of the covered file.
      *
      * @param  string $fileName The source file name.
-     * @return array(boolean)
+     * @return array<boolean>
      */
     private function getLines($fileName)
     {

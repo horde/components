@@ -76,6 +76,9 @@ class Components_Component_Identify
     {
         $arguments = $this->_config->getArguments();
         if (list($component, $path) = $this->_determineComponent($arguments)) {
+            if (strpos($path, './') === 0 || strpos($path, '../') === 0) {
+                $path = realpath(getcwd() . '/' . $path);
+            }
             $this->_config->setComponent($component);
             $this->_config->setPath($path);
         }

@@ -113,7 +113,7 @@ extends Components_TestCase
     }
 
     /**
-     * @expectedException Components_Exception
+     * @expectedException Horde_Exception_NotFound
      */
     public function testInvalidComponent()
     {

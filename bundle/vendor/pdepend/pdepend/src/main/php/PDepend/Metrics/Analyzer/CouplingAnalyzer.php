@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 
@@ -76,7 +76,7 @@ use PDepend\Source\AST\ASTProperty;
  * The implemented algorithm counts each type only once for a method and function.
  * Any type that is either a supertype or a subtype of the class is not counted.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 class CouplingAnalyzer extends AbstractAnalyzer implements AnalyzerNodeAware, AnalyzerProjectAware
@@ -116,7 +116,7 @@ class CouplingAnalyzer extends AbstractAnalyzer implements AnalyzerNodeAware, An
      * Temporary map that is used to hold the id combinations of dependee and
      * depender.
      *
-     * @var   array(string=>array)
+     * @var   array<string, array>
      * @since 0.10.2
      */
     private $dependencyMap = array();
@@ -125,7 +125,7 @@ class CouplingAnalyzer extends AbstractAnalyzer implements AnalyzerNodeAware, An
      * This array holds a mapping between node identifiers and an array with
      * the node's metrics.
      *
-     * @var   array(string=>array)
+     * @var   array<string, array>
      * @since 0.10.2
      */
     private $nodeMetrics = array();
@@ -140,7 +140,7 @@ class CouplingAnalyzer extends AbstractAnalyzer implements AnalyzerNodeAware, An
      * )
      * </code>
      *
-     * @return array(string=>mixed)
+     * @return array<string, mixed>
      */
     public function getProjectMetrics()
     {
@@ -164,7 +164,7 @@ class CouplingAnalyzer extends AbstractAnalyzer implements AnalyzerNodeAware, An
      * </code>
      *
      * @param  \PDepend\Source\AST\ASTArtifact $artifact
-     * @return array(string=>mixed)
+     * @return array<string, mixed>
      */
     public function getNodeMetrics(ASTArtifact $artifact)
     {
@@ -299,7 +299,7 @@ class CouplingAnalyzer extends AbstractAnalyzer implements AnalyzerNodeAware, An
     public function visitClass(ASTClass $class)
     {
         $this->initDependencyMap($class);
-        return parent::visitClass($class);
+        parent::visitClass($class);
     }
 
     /**
@@ -313,7 +313,7 @@ class CouplingAnalyzer extends AbstractAnalyzer implements AnalyzerNodeAware, An
     public function visitInterface(ASTInterface $interface)
     {
         $this->initDependencyMap($interface);
-        return parent::visitInterface($interface);
+        parent::visitInterface($interface);
     }
 
     /**

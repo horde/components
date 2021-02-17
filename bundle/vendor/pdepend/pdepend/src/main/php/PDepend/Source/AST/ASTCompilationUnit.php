@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 
@@ -48,7 +48,7 @@ use PDepend\Util\Cache\CacheDriver;
 /**
  * This class provides an interface to a single source file.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 class ASTCompilationUnit extends AbstractASTArtifact
@@ -128,7 +128,9 @@ class ASTCompilationUnit extends AbstractASTArtifact
      */
     public function __construct($fileName)
     {
-        if ($fileName !== null) {
+        if (strpos($fileName, 'php://') === 0) {
+            $this->fileName = $fileName;
+        } elseif ($fileName !== null) {
             $this->fileName = realpath($fileName);
         }
     }
@@ -191,7 +193,7 @@ class ASTCompilationUnit extends AbstractASTArtifact
     /**
      * Returns normalized source code with stripped whitespaces.
      *
-     * @return array(integer=>string)
+     * @return string
      */
     public function getSource()
     {
@@ -202,7 +204,7 @@ class ASTCompilationUnit extends AbstractASTArtifact
     /**
      * Returns an <b>array</b> with all tokens within this file.
      *
-     * @return array(array)
+     * @return array<array>
      */
     public function getTokens()
     {
@@ -214,7 +216,7 @@ class ASTCompilationUnit extends AbstractASTArtifact
     /**
      * Sets the tokens for this file.
      *
-     * @param array(array) $tokens The generated tokens.
+     * @param array<array> $tokens The generated tokens.
      *
      * @return void
      */
@@ -298,7 +300,7 @@ class ASTCompilationUnit extends AbstractASTArtifact
      * before it serializes an instance of this class. This method returns an
      * array with those property names that should be serialized.
      *
-     * @return array(string)
+     * @return array<string>
      * @since  0.10.0
      */
     public function __sleep()
@@ -350,7 +352,7 @@ class ASTCompilationUnit extends AbstractASTArtifact
      */
     protected function readSource()
     {
-        if ($this->source === null && file_exists($this->fileName)) {
+        if ($this->source === null && (file_exists($this->fileName) || strpos($this->fileName, 'php://') === 0)) {
             $source = file_get_contents($this->fileName);
 
             $this->source = str_replace(array("\r\n", "\r"), "\n", $source);
@@ -359,7 +361,7 @@ class ASTCompilationUnit extends AbstractASTArtifact
             $this->endLine   = substr_count($this->source, "\n") + 1;
         }
     }
-
+    
     // Deprecated methods
     // @codeCoverageIgnoreStart
 

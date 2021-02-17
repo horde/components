@@ -33,7 +33,7 @@ extends Horde_Exception_Pear
      *
      * @return mixed Returns the original result if it was no PEAR_Error.
      *
-     * @throws Horde_Exception_Pear In case the result was a PEAR_Error.
+     * @throws Components_Exception_Pear In case the result was a PEAR_Error.
      */
     public static function catchError($result)
     {

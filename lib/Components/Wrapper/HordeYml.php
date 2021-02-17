@@ -28,7 +28,8 @@ implements Components_Wrapper
     /**
      * Constructor.
      *
-     * @param string $baseDir  Directory with .horde.yml.
+     * @param string $baseDir Directory with .horde.yml.
+     * @throws Components_Exception
      */
     public function __construct($baseDir)
     {

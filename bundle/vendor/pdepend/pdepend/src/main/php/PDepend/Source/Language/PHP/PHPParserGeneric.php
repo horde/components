@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,17 +36,13 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  * @since 0.9.20
  */
 
 namespace PDepend\Source\Language\PHP;
 
-use PDepend\Source\AST\ASTValue;
-use PDepend\Source\Parser\TokenStreamEndException;
-use PDepend\Source\Parser\UnexpectedTokenException;
-use PDepend\Source\Tokenizer\Tokenizer;
 use PDepend\Source\Tokenizer\Tokens;
 
 /**
@@ -54,17 +50,17 @@ use PDepend\Source\Tokenizer\Tokens;
  * constructs and keywords that are reserved in newer php versions, but not in
  * older versions.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  * @since 0.9.20
  */
-class PHPParserGeneric extends PHPParserVersion70
+class PHPParserGeneric extends PHPParserVersion74
 {
     /**
      * Tests if the given token type is a reserved keyword in the supported PHP
      * version.
      *
-     * @param  $tokenType
+     * @param  integer $tokenType
      * @return boolean
      * @since  1.1.1
      */
@@ -139,29 +135,6 @@ class PHPParserGeneric extends PHPParserVersion70
                 return true;
         }
         return false;
-    }
-
-    /**
-     * Implements some quirks and hacks to support php here- and now-doc for
-     * PHP 5.2.x versions :/
-     *
-     * @return \PDepend\Source\AST\ASTHeredoc
-     * @since 1.0.0
-     */
-    protected function parseHeredoc()
-    {
-        $heredoc = parent::parseHeredoc();
-        if (version_compare(phpversion(), "5.3.0alpha") >= 0) {
-            return $heredoc;
-        }
-
-        // Consume dangling semicolon
-        $this->tokenizer->next();
-
-        $token = $this->tokenizer->next();
-        preg_match('(/\*(\'|")\*/)', $token->image, $match);
-
-        return $heredoc;
     }
 
     /**

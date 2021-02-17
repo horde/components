@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 
@@ -47,7 +47,7 @@ use PDepend\Source\ASTVisitor\ASTVisitor;
 /**
  * This code class represents a class property.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 class ASTProperty extends AbstractASTArtifact
@@ -200,7 +200,7 @@ class ASTProperty extends AbstractASTArtifact
      * Returns the type of this property. This method will return <b>null</b>
      * for all scalar type, only class properties will have a type.
      *
-     * @return \PDepend\Source\AST\AbstractASTClassOrInterface
+     * @return \PDepend\Source\AST\AbstractASTClassOrInterface|null
      * @since  0.9.5
      */
     public function getClass()
@@ -342,11 +342,9 @@ class ASTProperty extends AbstractASTArtifact
      */
     public function __toString()
     {
-        $default = ($this->isDefault() === true ? ' <default>' : '');
         $static  = '';
 
         if ($this->isStatic() === true) {
-            $default = '';
             $static  = ' static';
         }
 
@@ -358,8 +356,7 @@ class ASTProperty extends AbstractASTArtifact
         }
 
         return sprintf(
-            'Property [%s%s%s %s ]%s',
-            $default,
+            'Property [%s%s %s ]%s',
             $visibility,
             $static,
             $this->getName(),

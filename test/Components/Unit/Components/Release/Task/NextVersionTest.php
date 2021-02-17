@@ -47,8 +47,8 @@ extends Components_TestCase
     release: stable
     api: stable
   license:
-    identifier:
-    uri:
+    identifier: ~
+    uri: ~
 5.0.0:
   api: 5.0.0
   date: 2017-12-31
@@ -58,8 +58,8 @@ extends Components_TestCase
     release: stable
     api: stable
   license:
-    identifier:
-    uri:
+    identifier: ~
+    uri: ~
 ',
             file_get_contents($tmp_dir . '/doc/changelog.yml')
         );
@@ -141,6 +141,7 @@ name: Horde
 type: application
 full: Horde
 description: Horde
+authors: []
 version:
   release: 5.0.1-git
   api: 5.0.0
@@ -148,9 +149,9 @@ state:
   release: stable
   api: stable
 license:
-  identifier:
-  uri:
-dependencies:
+  identifier: ~
+  uri: ~
+dependencies: []
 ',
             file_get_contents($tmp_dir . '/.horde.yml')
         );
@@ -169,22 +170,23 @@ dependencies:
                 'next_note' => '',
                 'pretend' => true,
                 'commit' => new Components_Helper_Commit(
-                    $this->output,
+                    $this->_output,
                     array('pretend' => true)
                 )
             )
         );
         $this->assertEquals(
             array(
-                'Would add next version "5.0.0-git" with the initial note "" to .horde.yml, package.xml, doc/CHANGES, lib/Application.php, doc/changelog.yml now.',
+                'Would add next version "5.0.0-git" with the initial note "" to .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Application.php, doc/changelog.yml now.',
                 'Would run "git add .horde.yml" now.',
                 'Would run "git add package.xml" now.',
+                'Would run "git add composer.json" now.',
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git add doc/changelog.yml" now.',
                 'Would run "git commit -m "Development mode for Horde-5.0.0"" now.'
             ),
-            $this->output->getOutput()
+            $this->_output->getOutput()
         );
     }
 
@@ -200,22 +202,23 @@ dependencies:
                 'next_note' => '',
                 'pretend' => true,
                 'commit' => new Components_Helper_Commit(
-                    $this->output,
+                    $this->_output,
                     array('pretend' => true)
                 )
             )
         );
         $this->assertEquals(
             array(
-                'Would add next version "5.0.1" with the initial note "" to .horde.yml, package.xml, doc/CHANGES, lib/Application.php, doc/changelog.yml now.',
+                'Would add next version "5.0.1" with the initial note "" to .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Application.php, doc/changelog.yml now.',
                 'Would run "git add .horde.yml" now.',
                 'Would run "git add package.xml" now.',
+                'Would run "git add composer.json" now.',
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git add doc/changelog.yml" now.',
                 'Would run "git commit -m "Development mode for Horde-5.0.1"" now.'
             ),
-            $this->output->getOutput()
+            $this->_output->getOutput()
         );
     }
 
@@ -231,22 +234,23 @@ dependencies:
                 'next_note' => '',
                 'pretend' => true,
                 'commit' => new Components_Helper_Commit(
-                    $this->output,
+                    $this->_output,
                     array('pretend' => true)
                 )
             )
         );
         $this->assertEquals(
             array(
-                'Would add next version "5.0.0alpha2" with the initial note "" to .horde.yml, package.xml, doc/CHANGES, lib/Application.php, doc/changelog.yml now.',
+                'Would add next version "5.0.0alpha2" with the initial note "" to .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Application.php, doc/changelog.yml now.',
                 'Would run "git add .horde.yml" now.',
                 'Would run "git add package.xml" now.',
+                'Would run "git add composer.json" now.',
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git add doc/changelog.yml" now.',
                 'Would run "git commit -m "Development mode for Horde-5.0.0alpha2"" now.'
             ),
-            $this->output->getOutput()
+            $this->_output->getOutput()
         );
     }
 
@@ -322,6 +326,7 @@ type: application
 full: Horde
 description: Horde
 type: application
+authors: []
 version:
   release: 5.0.0
   api: 5.0.0
@@ -331,7 +336,7 @@ state:
 license:
   identifier: ~
   uri: ~
-dependencies:
+dependencies: []
 '
         );
         return $tmp_dir;
@@ -407,6 +412,7 @@ name: Horde
 full: Horde
 description: Horde
 type: application
+authors: []
 version:
   release: 5.0.0alpha1
   api: 5.0.0
@@ -416,7 +422,7 @@ state:
 license:
   identifier: ~
   uri: ~
-dependencies:
+dependencies: []
 '
         );
         return $tmp_dir;

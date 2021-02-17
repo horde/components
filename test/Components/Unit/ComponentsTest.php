@@ -47,7 +47,7 @@ extends Components_TestCase
             '--help'
         );
         $this->assertRegExp(
-            '/-h,[ ]*--help[ ]*show this help message and exit/',
+            '/-h,[ ]*--help[ ]*' . Horde_Argv_Translation::t("show this help message and exit") . '/',
             $this->_callStrictComponents()
         );
     }

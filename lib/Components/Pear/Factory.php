@@ -145,7 +145,7 @@ class Components_Pear_Factory
      * @param string                          $package_xml_path Path to the package.xml file.
      * @param Components_Pear_Environment $environment      The PEAR environment.
      *
-     * @return PEAR_PackageFile
+     * @return PEAR_PackageFile_v2
      */
     public function getPackageFile(
         $package_xml_path,

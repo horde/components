@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 
@@ -57,11 +57,83 @@ use PDepend\Source\ASTVisitor\ASTVisitor;
  * }
  * </code>
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 class ASTConstantDefinition extends AbstractASTNode
 {
+    /**
+     * This method returns a OR combined integer of the declared modifiers for
+     * this property.
+     *
+     * @return integer
+     */
+    public function getModifiers()
+    {
+        return $this->getMetadataInteger(5);
+    }
+
+    /**
+     * This method sets a OR combined integer of the declared modifiers for this
+     * node.
+     *
+     * This method will throw an exception when the value of given <b>$modifiers</b>
+     * contains an invalid/unexpected modifier
+     *
+     * @param integer $modifiers The declared modifiers for this node.
+     *
+     * @return void
+     * @throws \InvalidArgumentException If the given modifier contains unexpected values.
+     */
+    public function setModifiers($modifiers)
+    {
+        $expected = ~State::IS_PUBLIC
+            & ~State::IS_PROTECTED
+            & ~State::IS_PRIVATE;
+
+        if (($expected & $modifiers) !== 0) {
+            throw new \InvalidArgumentException(
+                'Invalid field modifiers given, allowed modifiers are ' .
+                'IS_PUBLIC, IS_PROTECTED and IS_PRIVATE.'
+            );
+        }
+
+        $this->setMetadataInteger(5, $modifiers);
+    }
+
+    /**
+     * Returns <b>true</b> if this node is marked as public, otherwise the
+     * returned value will be <b>false</b>.
+     *
+     * @return boolean
+     */
+    public function isPublic()
+    {
+        return (($this->getModifiers() & State::IS_PUBLIC) === State::IS_PUBLIC);
+    }
+
+    /**
+     * Returns <b>true</b> if this node is marked as protected, otherwise the
+     * returned value will be <b>false</b>.
+     *
+     * @return boolean
+     */
+    public function isProtected()
+    {
+        return (($this->getModifiers() & State::IS_PROTECTED) === State::IS_PROTECTED);
+    }
+
+    /**
+     * Returns <b>true</b> if this node is marked as private, otherwise the
+     * returned value will be <b>false</b>.
+     *
+     * @return boolean
+     */
+    public function isPrivate()
+    {
+        return (($this->getModifiers() & State::IS_PRIVATE) === State::IS_PRIVATE);
+    }
+
     /**
      * Accept method of the visitor design pattern. This method will be called
      * by a visitor during tree traversal.
@@ -74,5 +146,18 @@ class ASTConstantDefinition extends AbstractASTNode
     public function accept(ASTVisitor $visitor, $data = null)
     {
         return $visitor->visitConstantDefinition($this, $data);
+    }
+
+
+    /**
+     * Returns the total number of the used property bag.
+     *
+     * @return integer
+     * @since  0.10.4
+     * @see    \PDepend\Source\AST\ASTNode#getMetadataSize()
+     */
+    protected function getMetadataSize()
+    {
+        return 6;
     }
 }

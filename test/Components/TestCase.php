@@ -28,6 +28,11 @@
 class Components_TestCase
 extends PHPUnit_Framework_TestCase
 {
+    /**
+     * @var Components_Stub_Output
+     */
+    protected $_output;
+
     protected function getComponentFactory(
         $arguments = array(), $options = array()
     )
@@ -54,16 +59,16 @@ extends PHPUnit_Framework_TestCase
     protected function getReleaseTask($name, $package)
     {
         $dependencies = new Components_Dependencies_Injector();
-        $this->output = new Components_Stub_Output();
-        $dependencies->setInstance('Components_Output', $this->output);
+        $this->_output = new Components_Stub_Output();
+        $dependencies->setInstance('Components_Output', $this->_output);
         return $dependencies->getReleaseTasks()->getTask($name, $package);
     }
 
     protected function getReleaseTasks()
     {
         $dependencies = new Components_Dependencies_Injector();
-        $this->output = new Components_Stub_Output();
-        $dependencies->setInstance('Components_Output', $this->output);
+        $this->_output = new Components_Stub_Output();
+        $dependencies->setInstance('Components_Output', $this->_output);
         return $dependencies->getReleaseTasks();
     }
 

@@ -28,24 +28,25 @@
 class Components_Unit_Components_Release_Task_TimestampTest
 extends Components_TestCase
 {
+    protected $_fixture;
+
     public function setUp()
     {
         $this->_fixture = __DIR__ . '/../../../../fixture/simple';
     }
 
-    public function testValidateSucceeds()
+    public function testPreValidateSucceeds()
     {
-        $this->markTestSkipped('Release no longer possible with outdated package.xml');
         $package = $this->getComponent($this->_fixture);
         $task = $this->getReleaseTask('timestamp', $package);
-        $this->assertEquals(array(), $task->validate(array()));
+        $this->assertEquals(array(), $task->preValidate(array()));
     }
 
-    public function testValidateFails()
+    public function testPreValidateFails()
     {
         $package = $this->getComponent($this->_fixture . '/NO_SUCH_PACKAGE');
         $task = $this->getReleaseTask('timestamp', $package);
-        $this->assertFalse($task->validate(array()) === array());
+        $this->assertFalse($task->preValidate(array()) === array());
     }
 
     public function testRunTaskWithoutCommit()
@@ -53,7 +54,7 @@ extends Components_TestCase
         $tasks = $this->getReleaseTasks();
         $package = $this->_getValidPackage();
         $package->expects($this->once())
-            ->method('timestampAndSync');
+            ->method('timestamp');
         $tasks->run(array('timestamp'), $package);
     }
 
@@ -68,7 +69,7 @@ extends Components_TestCase
             array(
                 'pretend' => true,
                 'commit' => new Components_Helper_Commit(
-                    $this->output,
+                    $this->_output,
                     array('pretend' => true)
                 )
             )
@@ -79,16 +80,20 @@ extends Components_TestCase
                 sprintf('Would run "git add %s" now.', realpath($this->_fixture . '/package.xml')),
                 'Would run "git commit -m "Released Fixture-0.0.1"" now.'
             ),
-            $this->output->getOutput()
+            $this->_output->getOutput()
         );
     }
 
     private function _getValidPackage()
     {
+        $wrapper = $this->getMock('Components_Wrapper_ChangelogYml', array(), array(), '', false, false);
+        $wrapper->expects($this->any())
+            ->method('exists')
+            ->will($this->returnValue(true));
         $package = $this->getMock('Components_Component_Source', array(), array(), '', false, false);
         $package->expects($this->any())
-            ->method('hasLocalPackageXml')
-            ->will($this->returnValue(true));
+            ->method('getWrapper')
+            ->will(($this->returnValue($wrapper)));
         return $package;
     }
 }

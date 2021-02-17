@@ -28,49 +28,49 @@ class Components_Pear_Environment
     /**
      * The output handler.
      *
-     * @param Component_Output
+     * @var Components_Output
      */
     private $_output;
 
     /**
      * The factory for PEAR class instances.
      *
-     * @param Components_Pear_Factory
+     * @var Components_Pear_Factory
      */
     private $_factory;
 
     /**
      * The base directory for the PEAR install location.
      *
-     * @param string
+     * @var string
      */
     private $_base_directory;
 
     /**
      * The path to the configuration file.
      *
-     * @param string
+     * @var string
      */
     private $_config_file;
 
     /**
      * The directory that contains channel definitions.
      *
-     * @param string
+     * @var string
      */
     private $_channel_directory;
 
     /**
      * The directory that contains package sources.
      *
-     * @param string
+     * @var string
      */
     private $_source_directory;
 
     /**
      * Constructor.
      *
-     * @param Component_Output $output The output handler.
+     * @param Components_Output $output The output handler.
      */
     public function __construct(Components_Output $output) {
         $this->_output = $output;
@@ -80,8 +80,6 @@ class Components_Pear_Environment
      * Define the factory that creates our PEAR dependencies.
      *
      * @param Components_Pear_Factory
-     *
-     * @return NULL
      */
     public function setFactory(Components_Pear_Factory $factory)
     {
@@ -91,10 +89,11 @@ class Components_Pear_Environment
     /**
      * Set the path to the install location.
      *
-     * @param string $base_directory The base directory for the PEAR install location.
+     * @param string $base_directory The base directory for the PEAR install
+     *                               location.
      * @param string $config_file    The name of the configuration file.
      *
-     * @return NULL
+     * @throws Components_Exception
      */
     public function setLocation($base_directory, $config_file)
     {
@@ -115,7 +114,7 @@ class Components_Pear_Environment
      *
      * @param array &$options The application options
      *
-     * @return NULL
+     * @throws Components_Exception
      */
     public function setChannelDirectory(&$options)
     {
@@ -152,7 +151,7 @@ class Components_Pear_Environment
      *
      * @param array &$options The application options
      *
-     * @return NULL
+     * @throws Components_Exception
      */
     public function setSourceDirectory(&$options)
     {
@@ -185,7 +184,7 @@ class Components_Pear_Environment
      *
      * @param array &$options The application options
      *
-     * @return NULL
+     * @throws Components_Exception
      */
     public function setResourceDirectories(&$options)
     {
@@ -193,6 +192,10 @@ class Components_Pear_Environment
         $this->setChannelDirectory($options);
     }
 
+    /**
+     * @throws Components_Exception
+     * @throws Components_Exception_Pear
+     */
     public function createPearConfig()
     {
         if (empty($this->_config_file)) {
@@ -241,12 +244,18 @@ class Components_Pear_Environment
         );
     }
 
+    /**
+     * @return PEAR_Config
+     * @throws Components_Exception
+     * @throws Components_Exception_Pear
+     */
     public function getPearConfig()
     {
         if (!isset($GLOBALS['_PEAR_Config_instance'])) {
             $GLOBALS['_PEAR_Config_instance'] = false;
         }
         if (empty($this->_config_file)) {
+            /** @var PEAR_Config $config */
             $config = PEAR_Config::singleton();
             if (!$config->validConfiguration()) {
                 throw new Components_Exception(
@@ -269,9 +278,12 @@ class Components_Pear_Environment
      * @param string $channel The channel name.
      *
      * @return boolean True if the channel exists.
+     * @throws Components_Exception
+     * @throws Components_Exception_Pear
      */
     public function channelExists($channel)
     {
+        /** @var PEAR_ChannelFile[] $registered */
         $registered = $this->getPearConfig()->getRegistry()->getChannels();
         foreach ($registered as $c) {
             if ($channel == $c->getName()) {
@@ -285,10 +297,11 @@ class Components_Pear_Environment
      * Ensure the specified channel exists within the install location.
      *
      * @param string $channel The channel name.
-     * @param array  $options Install options.
+     * @param array $options  Install options.
      * @param string $reason  Optional reason for adding the channel.
      *
-     * @return NULL
+     * @throws Components_Exception
+     * @throws Components_Exception_Pear
      */
     public function provideChannel($channel, $options = array(), $reason = '')
     {
@@ -301,6 +314,8 @@ class Components_Pear_Environment
      * Provide the PEAR specific installer.
      *
      * @return PEAR_Command_Install
+     * @throws Components_Exception
+     * @throws Components_Exception_Pear
      */
     private function getInstallationHandler()
     {
@@ -314,10 +329,12 @@ class Components_Pear_Environment
     /**
      * Add a package based on a source directory.
      *
-     * @param string $package The path to the package.xml in the source directory.
+     * @param string $package The path to the package.xml in the source
+     *                        directory.
      * @param string $reason  Optional reason for adding the package.
      *
-     * @return NULL
+     * @throws Components_Exception
+     * @throws Components_Exception_Pear
      */
     public function linkPackageFromSource($package, $reason = '')
     {
@@ -399,10 +416,11 @@ class Components_Pear_Environment
      * Add a channel within the install location.
      *
      * @param string $channel The channel name.
-     * @param array  $options Install options.
+     * @param array $options  Install options.
      * @param string $reason  Optional reason for adding the channel.
      *
-     * @return NULL
+     * @throws Components_Exception_Pear
+     * @throws Components_Exception
      */
     public function addChannel($channel, $options = array(), $reason = '')
     {
@@ -472,18 +490,19 @@ class Components_Pear_Environment
     }
 
     /**
-     * Add a component to the environemnt.
+     * Add a component to the environment.
      *
      * @param string $component The name of the component that should be
      *                          installed.
-     * @param string $install   The package that should be installed.
-     * @param array  $options   PEAR specific installation opions.
+     * @param array $install    The packages that should be installed.
+     * @param array $options    PEAR specific installation options.
      * @param string $info      Installation details.
      * @param string $reason    Optional reason for adding the package.
-     * @param array  $warnings  Optional warnings that should be displayed to
+     * @param array $warnings   Optional warnings that should be displayed to
      *                          the user.
      *
-     * @return NULL
+     * @throws Components_Exception_Pear
+     * @throws Components_Exception
      */
     public function addComponent(
         $component,
@@ -521,19 +540,4 @@ class Components_Pear_Environment
             )
         );
     }
-
-    /**
-     * Validate that the required instance parameters are set.
-     *
-     * @return NULL
-     *
-     * @throws Components_Exception In case some settings are missing.
-     */
-    private function _checkSetup()
-    {
-        if ($this->_factory === null) {
-            throw new Components_Exception('You need to set the factory first!');
-        }
-    }
-
 }

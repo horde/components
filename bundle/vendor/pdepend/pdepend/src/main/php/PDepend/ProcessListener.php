@@ -4,7 +4,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2008-2015, Manuel Pichler <mapi@pdepend.org>.
+ * Copyright (c) 2008-2017 Manuel Pichler <mapi@pdepend.org>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
   */
 
@@ -51,7 +51,7 @@ use PDepend\Source\Tokenizer\Tokenizer;
 /**
  * This listener can be used to get informations about the current pdepend process.
  *
- * @copyright 2008-2015 Manuel Pichler. All rights reserved.
+ * @copyright 2008-2017 Manuel Pichler. All rights reserved.
  * @license http://www.opensource.org/licenses/bsd-license.php BSD License
  */
 interface ProcessListener extends ASTVisitListener, AnalyzerListener
@@ -63,7 +63,7 @@ interface ProcessListener extends ASTVisitListener, AnalyzerListener
      * @return void
      */
     public function startParseProcess(Builder $builder);
-
+    
     /**
      * Is called when PDepend has finished the file parsing process.
      *
@@ -71,7 +71,7 @@ interface ProcessListener extends ASTVisitListener, AnalyzerListener
      * @return void
      */
     public function endParseProcess(Builder $builder);
-
+    
     /**
      * Is called when PDepend starts parsing of a new file.
      *
@@ -79,7 +79,7 @@ interface ProcessListener extends ASTVisitListener, AnalyzerListener
      * @return void
      */
     public function startFileParsing(Tokenizer $tokenizer);
-
+    
     /**
      * Is called when PDepend has finished a file.
      *
@@ -87,28 +87,28 @@ interface ProcessListener extends ASTVisitListener, AnalyzerListener
      * @return void
      */
     public function endFileParsing(Tokenizer $tokenizer);
-
+    
     /**
      * Is called when PDepend starts the analyzing process.
      *
      * @return void
      */
     public function startAnalyzeProcess();
-
+    
     /**
      * Is called when PDepend has finished the analyzing process.
      *
      * @return void
      */
     public function endAnalyzeProcess();
-
+    
     /**
      * Is called when PDepend starts the logging process.
      *
      * @return void
      */
     public function startLogProcess();
-
+    
     /**
      * Is called when PDepend has finished the logging process.
      *
