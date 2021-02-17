@@ -48,3 +48,4 @@ For a system-wide installation via Composer, you can run:
     composer global require 'sebastian/phpdcd=*'
 
 Make sure you have `~/.composer/vendor/bin/` in your path.
+

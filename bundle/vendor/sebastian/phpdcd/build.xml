@@ -130,3 +130,4 @@
   <chmod file="${basedir}/build/phpdcd-${version}.phar" perm="ugo+rx"/>
  </target>
 </project>
+

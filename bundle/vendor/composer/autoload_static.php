@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit14083e86eeb146b40d06f7dcca054f42
+class ComposerStaticInit68258343c891cb68bf0f77963ef9208c
 {
     public static $files = array (
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
@@ -26,9 +26,9 @@ class ComposerStaticInit14083e86eeb146b40d06f7dcca054f42
         ),
         'P' => 
         array (
-            'PHP_CodeSniffer\\' => 16,
             'Psr\\Log\\' => 8,
             'Psr\\Container\\' => 14,
+            'PHP_CodeSniffer\\' => 16,
             'PDepend\\' => 8,
         ),
         'C' => 
@@ -74,9 +74,6 @@ class ComposerStaticInit14083e86eeb146b40d06f7dcca054f42
         array (
             0 => __DIR__ . '/..' . '/symfony/config',
         ),
-        'PHP_CodeSniffer\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/squizlabs/php_codesniffer/src',
         'Psr\\Log\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
@@ -84,6 +81,10 @@ class ComposerStaticInit14083e86eeb146b40d06f7dcca054f42
         'Psr\\Container\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
+        ),
+        'PHP_CodeSniffer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/squizlabs/php_codesniffer/src',
         ),
         'PDepend\\' => 
         array (
@@ -107,7 +108,6 @@ class ComposerStaticInit14083e86eeb146b40d06f7dcca054f42
 
     public static $classMap = array (
         'PHP_CodeSniffer\\Autoload' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/autoload.php',
-        'PHP_Timer' => __DIR__ . '/..' . '/phpunit/php-timer/src/Timer.php',
         'PHP_Token' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_TokenWithScope' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_TokenWithScopeAndVisibility' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
@@ -336,10 +336,10 @@ class ComposerStaticInit14083e86eeb146b40d06f7dcca054f42
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit14083e86eeb146b40d06f7dcca054f42::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit14083e86eeb146b40d06f7dcca054f42::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit14083e86eeb146b40d06f7dcca054f42::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit14083e86eeb146b40d06f7dcca054f42::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit68258343c891cb68bf0f77963ef9208c::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit68258343c891cb68bf0f77963ef9208c::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit68258343c891cb68bf0f77963ef9208c::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit68258343c891cb68bf0f77963ef9208c::$classMap;
 
         }, null, ClassLoader::class);
     }
