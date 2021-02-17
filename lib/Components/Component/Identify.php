@@ -136,7 +136,7 @@ class Components_Component_Identify
                         return array($result, '');
                     }
                 }
-                
+
                 throw new Components_Exception(
                     sprintf(Components::ERROR_NO_ACTION_OR_COMPONENT, $arguments[0])
                 );
@@ -145,6 +145,18 @@ class Components_Component_Identify
 
         $cwd = getcwd();
         if ($this->_isDirectory($cwd) && $this->_containsPackageXml($cwd)) {
+            return array(
+                $this->_dependencies
+                ->getComponentFactory()
+                ->createSource($cwd),
+                $cwd
+            );
+        }
+
+        /* This feels a little hacky. Should we implement
+         * a more generic "no component but valid" solution?
+         */
+        if ($this->_isDirectory($cwd) && $arguments[0] == 'init') {
             return array(
                 $this->_dependencies
                 ->getComponentFactory()
