@@ -20,6 +20,12 @@ authors:
     email: p@rdus.de
     active: false
     role: lead
+  -
+    name: Ralf Lang
+    user: rlang
+    email: lang@b1-systems.de
+    active: true
+    role: contributor
 version:
   release: 1.0.0
   api: 1.0.0
@@ -31,7 +37,7 @@ license:
   uri: http://www.horde.org/licenses/lgpl21
 dependencies:
   required:
-    php: ^5.4 || ^7
+    php: ^7
     pear:
       pear.horde.org/Horde_Autoloader: '*'
       pear.horde.org/Horde_Argv: '*'
@@ -55,3 +61,8 @@ dependencies:
       pear.phpunit.de/phpdcd: '*'
       pear.phpunit.de/phploc: '*'
       pear.phpmd.org/PHP_PMD: '*'
+    composer:
+        squizlabs/php_codesniffer: '*'
+
+nocommands:
+  - 'bin/horde-bootstrap'

@@ -1,31 +1,11 @@
 <?php
 /**
- * This class provides the standard error class for the Components
- * package.
- *
- * PHP version 5
- *
- * @category Horde
- * @package  Components
- * @author   Gunnar Wrobel <wrobel@pardus.de>
- * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * PSR-0 Non-Namespaced compatibility wrapper for Horde\Components\Exception
+ * 
+ * Horde\GitTools currently hooks into this class to leverage components.
+ * 
+ * TODO: Remove For Horde 7.
+ * @deprecated Deprecated since Horde 6. Use the namespaced variant
  */
-
-/**
- * This class provides the standard error class for the Components
- * package.
- *
- * Copyright 2010-2017 Horde LLC (http://www.horde.org/)
- *
- * See the enclosed file LICENSE for license information (LGPL). If you
- * did not receive this file, see http://www.horde.org/licenses/lgpl21.
- *
- * @category Horde
- * @package  Components
- * @author   Gunnar Wrobel <wrobel@pardus.de>
- * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
- */
-class Components_Exception
-extends Horde_Exception
-{
-}
+use Horde\Components\Exception as ComponentsException;
+class Components_Exception extends ComponentsException {};

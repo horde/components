@@ -35,23 +35,27 @@ require_once $framework . '/Http/lib/Horde/Http/Response/Base.php';
 require_once $framework . '/Http/lib/Horde/Http/Response/Curl.php';
 require_once $framework . '/Http/lib/Horde/Http/Response/Fopen.php';
 
-$base = __DIR__ .'/../lib';
-require_once $base . '/Components/Exception.php';
-require_once $base . '/Components/Exception/Pear.php';
-require_once $base . '/Components/Dependencies.php';
-require_once $base . '/Components/Dependencies/Bootstrap.php';
-require_once $base . '/Components/Component.php';
-require_once $base . '/Components/Component/Base.php';
-require_once $base . '/Components/Component/Dependency.php';
-require_once $base . '/Components/Component/DependencyList.php';
-require_once $base . '/Components/Component/Match.php';
-require_once $base . '/Components/Component/Source.php';
-require_once $base . '/Components/Component/Remote.php';
-require_once $base . '/Components/Component/Resolver.php';
-require_once $base . '/Components/Helper/Installer.php';
-require_once $base . '/Components/Helper/Root.php';
-require_once $base . '/Components/Pear/Environment.php';
-require_once $base . '/Components/Pear/Package.php';
+$base = __DIR__ .'/../src';
+require_once $base . '/Exception.php';
+require_once $base . '/Exception/Pear.php';
+require_once $base . '/Dependencies.php';
+require_once $base . '/Dependencies/Bootstrap.php';
+require_once $base . '/Component.php';
+require_once $base . '/Component/Base.php';
+require_once $base . '/Component/Dependency.php';
+require_once $base . '/Component/DependencyList.php';
+require_once $base . '/Component/Match.php';
+require_once $base . '/Component/Source.php';
+require_once $base . '/Component/Remote.php';
+require_once $base . '/Component/Resolver.php';
+require_once $base . '/Helper/Installer.php';
+require_once $base . '/Helper/Root.php';
+require_once $base . '/Pear/Environment.php';
+require_once $base . '/Pear/Package.php';
+
+use Horde\Components\Dependencies\Bootstrap;
+use Horde\Components\Exception\Pear as ExceptionPear;
+use Horde\Components\Helper\Installer as HelperInstaller;
 
 $path = __DIR__ . '/../../lib';
 if (!file_exists($path)) {
@@ -59,21 +63,21 @@ if (!file_exists($path)) {
 }
 $environment = realpath($path);
 
-$dependencies = new Components_Dependencies_Bootstrap();
-$factory = $dependencies->getInstance('Components_Pear_Factory');
-$options = $dependencies->getInstance('Components_Config')->getOptions();
+$dependencies = new Bootstrap();
+$factory = $dependencies->getInstance('Pear\Factory');
+$options = $dependencies->getInstance('Config')->getOptions();
 $options['pearrc'] = $environment . '/pear.conf';
 $options['allow_remote'] = true;
 $options['symlink'] = true;
 $options['instructions'] = array('ALL' => array('exclude'));
-$component = $dependencies->getInstance('Components_Component_Factory')
+$component = $dependencies->getInstance('Horde\Components\Component\Factory')
     ->createSource(realpath(__DIR__ .'/../'));
 $environment = $factory->createEnvironment($environment, $environment . '/pear.conf');
 $environment->provideChannel('pear.horde.org', $options);
 $environment->getPearConfig()->setChannels(array('pear.horde.org', true));
 $environment->getPearConfig()->set('horde_dir', $base . '/horde', 'user', 'pear.horde.org');
-Components_Exception_Pear::catchError($environment->getPearConfig()->store());
-$installer = new Components_Helper_Installer($dependencies->getInstance('Components_Output'));
+ExceptionPear::catchError($environment->getPearConfig()->store());
+$installer = new HelperInstaller($dependencies->getInstance('Output'));
 $installer->installTree($environment, $component, $options);
 
 $php_ini = 'include_path = ".:' . realpath($path) . '/pear/php"';

@@ -11,6 +11,20 @@ if (defined('E_DEPRECATED')) {
 } else {
     error_reporting(E_ALL & ~E_STRICT);
 }
+// horde-components standalone run in composer setups
+$autoloaders = [
+    __DIR__ . '/../config/autoload.php', // custom autoload config
+    __DIR__ . '/../vendor/autoload.php', // components is root app
+    __DIR__ . '/../../../vendor/autoload.php', // components is installed in a horde-deployment
+    // handle "git developer install" and pear cases
+    'Horde/Autoloader/Default.php'
+];
 
-require_once 'Horde/Autoloader/Default.php';
-Components::main();
+foreach ($autoloaders as $autoloader) {
+    if (file_exists($autoloader)) {
+        require_once $autoloader;
+        break;
+    }
+}
+// in case of calling components via git-tools, this file plays no role
+Horde\Components\Components::main();
