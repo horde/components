@@ -1,0 +1,32 @@
+{
+    "name": "horde/fixture",
+    "description": "Test fixture.",
+    "type": "horde-library",
+    "homepage": "https://www.horde.org",
+    "license": "LGPL-2.1",
+    "authors": [
+        {
+            "name": "Gunnar Wrobel",
+            "email": "p@rdus.de",
+            "role": "lead"
+        }
+    ],
+    "version": "0.0.1",
+    "time": "2020-10-17",
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://horde-satis.maintaina.com"
+        }
+    ],
+    "require": {
+        "horde/horde-installer-plugin": "dev-master",
+        "php": "^5"
+    },
+    "suggest": {},
+    "autoload": {
+        "psr-0": {
+            "Horde_Fixture": "lib/"
+        }
+    }
+}

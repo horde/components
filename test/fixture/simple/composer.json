@@ -1,0 +1,27 @@
+{
+    "name": "horde/fixture",
+    "description": "Test fixture.",
+    "type": "horde-application",
+    "homepage": "https://www.horde.org",
+    "license": "LGPL-2.1",
+    "authors": [
+        {
+            "name": "Gunnar Wrobel",
+            "email": "p@rdus.de",
+            "role": "lead"
+        }
+    ],
+    "version": "0.0.1",
+    "time": "2020-10-17",
+    "repositories": [],
+    "require": {
+        "horde/horde-installer-plugin": "*",
+        "php": "^5"
+    },
+    "suggest": {},
+    "autoload": {
+        "psr-0": {
+            "Fixture": "lib/"
+        }
+    }
+}
