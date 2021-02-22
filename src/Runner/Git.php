@@ -83,9 +83,7 @@ class Git
         if ($arguments[1] == 'clone' && count($arguments) > 1) {
             /** 
              * TODO: Mind cwd
-             * TODO: Mind authentication
              * TODO: Mind Pretend Mode
-             * TODO: Move implementation to helper method
              */
             if (empty($arguments[2])) {
                 $this->output->help('Provide a component name.');
@@ -95,18 +93,14 @@ class Git
             $component = $arguments[2];
             $branch = $arguments[4] ?? '';
             $componentDir = $this->localCheckoutDir . $component . '/';
-            $cloneUrl = $this->gitRepoBase . $component . '.git';
-
-            $this->output->info(
-                sprintf(
-                    'Will clone component %s from %s to %s',
-                    $component,
-                    $cloneUrl,
-                    $componentDir
-                )
+            $cloneUrl = $this->gitRepoBase . '/' .  $component . '.git';
+            // Achieved fixed format, delegate to helper
+            return $this->gitHelper->workflowClone(
+                $this->output,
+                $cloneUrl,
+                $componentDir,
+                $branch
             );
-            $this->gitHelper->clone($cloneUrl, $componentDir, $branch);
-            return;
         }
         if ($arguments[1] == 'checkout') {
             if (count($arguments) != 4) {
@@ -114,28 +108,64 @@ class Git
                 $this->output->help('checkout component branch');    
             }
             list($git, $action, $component, $branch) = $arguments;
-            // Achieved fixed format, everything below could move to a helper
             $componentDir = $this->localCheckoutDir . $component . '/';
-            // Do nothing if already checked out
-            if ($branch == $this->gitHelper->getCurrentBranch($componentDir)) {
-                $this->output->info('Branch already checked out');
-                return;
-            }
-            if ($this->gitHelper->localBranchExists($componentDir, $branch)) {
-                $this->output->info('Branch exists locally');
-                $this->gitHelper->checkout($componentDir, $branch);
-            }
-
+            return $this->gitHelper->workflowCheckout(
+                $this->output,
+                $componentDir,
+                $branch
+            );
         }
         if ($arguments[1] == 'fetch') {
             if (count($arguments) != 3) {
-                $this->output->help('checkout currently only supports a fixed format');
-                $this->output->help('fetch component');
+                $this->output->help('fetch currently only supports a fixed format');
+                $this->output->help('fetch [component]');
+                return;
             }
             list($git, $action, $component) = $arguments;
             $componentDir = $this->localCheckoutDir . $component . '/';
             $this->gitHelper->fetch($componentDir);
         }
-
+        if ($arguments[1] == 'branch') {
+            if (count($arguments) != 5) {
+                $this->output->help('branch currently only supports a fixed format');
+                $this->output->help('branch [component] [branch] [source branch]');
+            }            
+            list($git, $action, $component, $branch, $source) = $arguments;
+            $componentDir = $this->localCheckoutDir . $component . '/';
+            $this->gitHelper(
+                $this->output,
+                $componentDir,
+                $branch,
+                $source                
+            );
+        }
+        if ($arguments[1] == 'tag') {
+            if (count($arguments) != 6) {
+                $this->output->help('tag currently only supports a fixed format');
+                $this->output->help('tag component branch tagname comment');
+            }            
+            list($git, $action, $component, $branch, $tag, $comment) = $arguments;
+            $componentDir = $this->localCheckoutDir . $component . '/';
+            if (!$this->gitHelper->localBranchExists($componentDir, $branch)) {
+                $this->output->warn("Cannot tag, local branch does not exist");
+                return;
+            }
+            $this->gitHelper->checkoutBranch($componentDir, $branch);
+            // Do we really want to update existing tags?
+            $this->gitHelper->tag($componentDir, $tag, $comment);
+            return;
+        }
+        if ($arguments[1] == 'push') {
+            if (count($arguments) != 3) {
+                $this->output->help('push currently only supports a fixed format');
+                $this->output->help('push component');
+            }
+            list($git, $action, $component) = $arguments;
+            $componentDir = $this->localCheckoutDir . $component . '/';            
+            $this->gitHelper->push($componentDir);
+            return;
+        }
+        $this->output->warn("Could not understand your command:");
+        $this->output->warn(implode(" ", $arguments));
     }
 }

@@ -111,10 +111,15 @@ class Git extends Base
 
         clone [component] [branch]
           Clone a component from an online repo
+        fetch [component]
+          Fetch metadata from all remotes, including tags
         checkout [component] [branch]
           Locally checkout a branch
-        update-branch [component] [branch] [source branch]
-          Locally update a branch from another branch
+        branch [component] [branch] [source branch]
+          Update a branch from another branch
+        tag [component] [branch] [tag] [comment]
+          write a tag to a branch
+        push [component] [remote]
         ';
     }
 
