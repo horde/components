@@ -160,7 +160,8 @@ class Git
     public function workflowBranch(
         Output $output,
         string $componentDir,
-        string $branch
+        string $branch,
+        string $source
     ){
         if ($this->localBranchExists($componentDir, $branch)) {
             $output->info('branch already exists');
