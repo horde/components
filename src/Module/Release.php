@@ -16,7 +16,7 @@ use Horde\Components\Exception;
 /**
  * Components_Module_Release:: generates a release.
  *
- * Copyright 2011-2020 Horde LLC (http://www.horde.org/)
+ * Copyright 2011-2021 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -149,7 +149,7 @@ class Release extends Base
      */
     public function getUsage()
     {
-        return 'Releases a component via pear.horde.org.';
+        return 'Releases a component.';
     }
 
     /**
@@ -171,10 +171,13 @@ class Release extends Base
      */
     public function getHelp($action)
     {
-        return 'Releases the component. This handles a number of automated steps usually required when releasing a package to pear.horde.org. In the most simple situation it will be sufficient to move to the directory of the component you wish to release and run
-
+        return 'Releases the component. This handles a number of automated steps usually required when releasing a package. In the most simple situation it will be sufficient to move to the directory of the component you wish to release and run
+For a classic H5 pear release
   horde-components release
-
+For running a release pipeline from conf.php
+  horde-components release for :pipeline
+For running the horde H6 release pipeline
+  horde-components release for h6
 This should perform all required actions. Sometimes it might be necessary to avoid some of the steps that are part of the release process. This can be done by adding additional arguments after the "release" keyword. Each argument indicates that the corresponding task should be run.
 
 The available tasks are:
