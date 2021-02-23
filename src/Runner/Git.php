@@ -129,15 +129,17 @@ class Git
             if (count($arguments) != 5) {
                 $this->output->help('branch currently only supports a fixed format');
                 $this->output->help('branch [component] [branch] [source branch]');
+                return;
             }            
             list($git, $action, $component, $branch, $source) = $arguments;
             $componentDir = $this->localCheckoutDir . $component . '/';
-            $this->gitHelper(
+            $this->gitHelper->workflowBranch(
                 $this->output,
                 $componentDir,
                 $branch,
                 $source                
             );
+            return;
         }
         if ($arguments[1] == 'tag') {
             if (count($arguments) != 6) {

@@ -124,11 +124,13 @@ class Git
         }
         if ($this->localBranchExists($componentDir, $branch)) {
             $output->info('Branch exists locally, checking out');
+            $this->checkoutBranch($componentDir, $branch);
             return true;
         }
         if ($this->remoteBranchExists($componentDir, $branch)) {
             $output->info('Branch exists in remote, tracking and checking out');
             $this->createRemoteTrackingBranch($componentDir, $branch);
+            $this->checkoutBranch($componentDir, $branch);
             return true;
         }
         $output->warn("The branch $branch does not exist on local copy or in remotes");
