@@ -305,6 +305,7 @@ class Composer
             }
             if ($element == 'ext') {
                foreach ($required as $ext => $version) {
+                    $repo = '';
                     $this->_handleVersion($version, $composerDefinition->require, 'ext', $repo, $ext);
                }
             }
