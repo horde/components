@@ -71,7 +71,11 @@ class GitBranch extends Base
         $this->getOutput()->info(
             sprintf('Checking out branch "%s".', $wanted)
         );
-        $this->_checkout($wanted, $source);
+        if (empty($options['update'])) {
+            $this->_checkout($wanted, $source);
+        } else {
+            $this->_update($wanted, $source);
+        }
         return; 
     }
 
@@ -99,7 +103,7 @@ class GitBranch extends Base
             $issues[] = 'Could not detect installed git binary';
             return $issues;
         }
-        if (!$this->_branchExists($wantedBranch)) {
+        if ($prereq && !$this->_branchExists($wantedBranch)) {
             $issues[] = "The local branch $wantedBranch does not exist";
         }
         $currentBranch = $this->_currentBranch();
@@ -165,7 +169,7 @@ class GitBranch extends Base
      */
     protected function _currentBranch()
     {
-        return $this->getDepenpendency('git')->getCurrentBranch(
+        return $this->getDependency('git')->getCurrentBranch(
             $this->getComponent()->getComponentDirectory()
         );
     }
@@ -179,7 +183,7 @@ class GitBranch extends Base
      */
     protected function _checkout(string $branch, string $source)
     {
-        return $this->getDepenpendency('git')->workflowCheckout(
+        return $this->getDependency('git')->workflowCheckout(
             $this->getOutput(),
             $this->getComponent()->getComponentDirectory(),
             $branch,
@@ -195,7 +199,7 @@ class GitBranch extends Base
      */
     protected function _update(string $branch, string $source)
     {
-        return $this->getDepenpendency('git')->workflowCheckout(
+        return $this->getDependency('git')->workflowUpdate(
             $this->getOutput(),
             $this->getComponent()->getComponentDirectory(),
             $branch,
@@ -210,7 +214,7 @@ class GitBranch extends Base
      */
     protected function _getBranches(): array
     {
-        return $this->getDepenpendency('git')->getLocalBranches(
+        return $this->getDependency('git')->getLocalBranches(
             $this->getComponent()->getComponentDirectory()
         );
     }

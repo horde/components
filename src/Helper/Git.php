@@ -191,6 +191,86 @@ class Git
     }
 
     /**
+     * Workflow update a branch
+     *
+     * Intended for release preparation.
+     *
+     * Run fetch
+     * Create local source branch from remote if missing.
+     * Update the source branch from remote source.
+     * Create branch from local source branch if missing.
+     * Update the target branch from remote.
+     * Update the target branch from local source.
+     *
+     * Return false if missing and source branch also missing.
+     *
+     * Do nothing and return success if already checked out
+     * Return false if neither local nor remote branch found
+     *
+     * @param Output $output       The output utility
+     * @param string $componentDir The Component checkout dir
+     * @param string $branch       The branch to check out
+     * @param string $source       The source branch
+     *
+     * @return bool True if workflow was successful
+     */
+    public function workflowUpdate(
+        Output $output,
+        string $componentDir,
+        string $branch,
+        string $source
+    ){
+        $output->info('Fetching remote');
+        $this->fetch($componentDir);
+        // Set up local source branch.
+        if ($this->localBranchExists($componentDir, $source)) {
+            $output->info('Local source branch already exists');
+        } else {
+            if ($this->remoteBranchExists($componentDir, $source)) {
+                $output->info('Local source branch created from remote');
+                $this->createRemoteTrackingBranch($componentDir, $source);
+            }
+        }
+        // If we do not have a source branch by now, give up.
+        if (!$this->localBranchExists($componentDir, $source)) {
+            $output->warn('Neither local nor remote source branch');
+            // TODO: Exception instead? This is never an intended scenario.
+            return;
+        }
+        // Update local source branch from remote if exists.
+        if ($this->remoteBranchExists($componentDir, $source)) {
+            $this->checkoutBranch($componentDir, $source);
+            // TODO: Support other remotes than origin?
+            $this->rebase($componentDir, $source, 'origin/' . $source);
+        }
+        // Local source branch is good by now.
+
+        // Ensure we have a local target branch
+        if ($this->localBranchExists($componentDir, $branch)) {
+            $output->info('Local branch already exists');
+        } elseif ($this->remoteBranchExists($componentDir, $branch)) {
+            $output->info('Setting up branch from remote');
+            $this->createRemoteTrackingBranch($componentDir, $branch);
+        } else {
+            $output->info('No remote branch. Setting up branch from source');
+            $this->branchFromLocal($componentDir, $branch, $source);
+        }
+        $output->info('Checkout branch ' . $branch);
+        $this->checkoutBranch($componentDir, $branch);
+        // Update from remote first if possible
+        if ($this->remoteBranchExists($componentDir, $branch)) {
+            // TODO: Support other remotes than origin?
+            $output->info('Rebase branch on remote first' . $branch);
+            $this->rebase($componentDir, $branch, 'origin/' . $branch);
+        }
+        // Finally: Update from local source branch
+        $output->info('Rebase branch on source' . $source);
+        $this->rebase($componentDir, $branch, $source);
+        $output->info('Done updating branch');
+        $this->checkoutBranch($componentDir, $branch);
+        return;
+    }
+    /**
      * Check some well known locations, fallback to which
      * 
      * @return string Fully qualified location of git command
@@ -243,6 +323,36 @@ class Git
             $this->gitBin . ' rev-parse --abbrev-ref HEAD', 
             $localDir
         )->getOutputString();
+    }
+
+    /**
+     * Rebase branch on a local or remote source
+     *
+     * @param string $localDir Full path to repo
+     * @param string $branch   Full path to repo
+     * @param string $source   Full path to repo. If empty, origin/branch
+     *
+     * @return string SystemCallResult
+     */
+    public function rebase(
+        string $localDir,
+        string $branch,
+        string $source = ''
+    ): SystemCallResult
+    {
+        if ($source == '') {
+            $source = 'origin/' . $branch;
+        }
+        $cmd = sprintf(
+            '%s rebase %s %s',
+            $this->gitBin,
+            $branch,
+            $source
+        );
+        return $this->execInDirectory(
+            $cmd,
+            $localDir
+        );
     }
 
     /**
