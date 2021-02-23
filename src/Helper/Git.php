@@ -88,8 +88,7 @@ class Git
             // TODO: Mind pretend mode
             $output->info(
                 sprintf(
-                    'Will clone component %s from %s to %s',
-                    $component,
+                    'Will clone component from %s to %s',
                     $cloneUrl,
                     $componentDir
                 )
