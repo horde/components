@@ -855,7 +855,15 @@ class Source extends Base
     {
         $package = $this->getPackageXml();
         $package->setState($rel_state, $api_state);
+        $hordeYml = $this->getHordeYml();
+        if ($rel_state) {
+            $hordeYml['state']['release'] = $rel_state;
+        }
+        if ($api_state) {
+            $hordeYml['state']['api'] = $api_state;
+        }
         if (empty($options['pretend'])) {
+            $hordeYml->save();
             if (!empty($options['commit'])) {
                 $options['commit']->add($package, $this->_directory);
             }
