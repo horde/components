@@ -9,6 +9,10 @@
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
   notes: |
+    [rla] Composer command now generates composer files independent of pirum.
+    [rla] Introduce configurable release pipelines.
+    [rla] Add a new git action for automation tasks.
+    [rla] Refactor to namespaced PSR-4 compliant code.
     [rla] Add an init command to start new apps or libraries.
     [jan] Remove next-sentinel release task.
     [jan] In the 'update' command, update composer.json from .horde.yml.
