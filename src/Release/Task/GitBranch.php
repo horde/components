@@ -10,7 +10,7 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 namespace Horde\Components\Release\Task;
-
+use Horde\Components\Helper\Git as GitHelper;
 /**
  * Components_Release_Task_GitBranch:: Check or enforce a branch checkout
  *
@@ -27,6 +27,16 @@ namespace Horde\Components\Release\Task;
 class GitBranch extends Base
 {
     /**
+     * Ask for the Qc\Tasks dependency
+     * 
+     * @return array The list of dependencies requested
+     */
+    public function askDependencies()
+    {
+        return ['git' => GitHelper::class];
+    }
+
+    /**
      * Run the task.
      * 
      * Checkout the wanted branch
@@ -40,6 +50,8 @@ class GitBranch extends Base
     {
         // use master branch unless otherwise stated
         $wanted = $options['git_branch'] ?? 'master';
+        // create branch from master unless otherwise stated
+        $source = $options['git_source_branch'] ?? 'master';
         $current = $this->_currentBranch();
         // save the current git branch to options
         // unless another one was saved before (running twice)
@@ -59,7 +71,7 @@ class GitBranch extends Base
         $this->getOutput()->info(
             sprintf('Checking out branch "%s".', $wanted)
         );
-        $this->_checkout($wanted);
+        $this->_checkout($wanted, $source);
         return; 
     }
 
@@ -150,14 +162,11 @@ class GitBranch extends Base
      * Get the current branch
      * 
      * @return string current branch
-     * Might make sense to factor out into a git helper for reuse?
      */
     protected function _currentBranch()
     {
-        return $this->execInDirectory(
-            'git rev-parse --abbrev-ref HEAD', 
-            $this->getComponent()->getComponentDirectory(),
-            true
+        return $this->getDepenpendency('git')->getCurrentBranch(
+            $this->getComponent()->getComponentDirectory()
         );
     }
 
@@ -165,16 +174,32 @@ class GitBranch extends Base
      * Check out a branch
      * 
      * @param string $branch The branch to check out
+     * @param string $source The source branch to create from if missing
      * 
-     * @return string current branch
-     * Might make sense to factor out into a git helper for reuse?
      */
-    protected function _checkout($branch)
+    protected function _checkout(string $branch, string $source)
     {
-        return $this->systemInDirectory(
-            'git checkout ' . $branch,
+        return $this->getDepenpendency('git')->workflowCheckout(
+            $this->getOutput(),
             $this->getComponent()->getComponentDirectory(),
-            true
+            $branch,
+            $source
+        );
+    }
+
+    /**
+     * Update branch from source branch
+     *
+     * @param string $branch The branch to check out
+     * @param string $source The source branch to create from if missing
+     */
+    protected function _update(string $branch, string $source)
+    {
+        return $this->getDepenpendency('git')->workflowCheckout(
+            $this->getOutput(),
+            $this->getComponent()->getComponentDirectory(),
+            $branch,
+            $source
         );
     }
 
@@ -182,14 +207,12 @@ class GitBranch extends Base
      * Get the list of branch
      * 
      * @return string[] The list of local branches
-     * Might make sense to factor out into a git helper for reuse?
      */
-    protected function _getBranches()
+    protected function _getBranches(): array
     {
-        return $this->execInDirectory(
-            'git branch --format "%(refname:short)"',
+        return $this->getDepenpendency('git')->getLocalBranches(
             $this->getComponent()->getComponentDirectory()
-        )->getOutputArray();
+        );
     }
 
     /**
@@ -198,7 +221,6 @@ class GitBranch extends Base
      * @param string $branch The branch to check
      * 
      * @return boolean  True if the branch exists
-     * Might make sense to factor out into a git helper for reuse?
      */
     protected function _branchExists(string $branch)
     {
