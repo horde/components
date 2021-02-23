@@ -133,9 +133,15 @@ class ChangeLog
         }
         $oldVersion = $hordeInfo['version']['release'];
         $changelog = $this->_component->getWrapper('ChangelogYml');
+        /**
+         * Unintended things happen if we run array_walk on
+         * the original changelog ArrayObject/ChangelogYmlWrapper.
+         * Iterating over changelogArr fixes this
+         */
+        $changelogArr = $changelog->getArrayCopy();
         $newChangelog = array();
-        array_walk(
-            $changelog,
+        \array_walk(
+            $changelogArr,
             function($entry, $ver)
                 use (&$newChangelog, $oldVersion, $version, $api)
             {
