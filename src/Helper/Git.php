@@ -613,7 +613,7 @@ class Git
             return new SystemCallResult($output, $retval);
         }
         $this->output->info(\sprintf('Would run "%s" now.', $call));
-        return new SystemCallResult('', 0);
+        return new SystemCallResult([], 0);
     }
 
     /**
