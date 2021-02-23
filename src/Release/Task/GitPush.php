@@ -89,7 +89,7 @@ class GitPush extends Base
     protected function _push(string $remote, string $branch = '')
     {
         return $this->execInDirectory(
-            sprintf('git push %s %s', $remote, $branch),
+            sprintf('git push --set-upstream %s %s', $remote, $branch),
             $this->getComponent()->getComponentDirectory()      
         );
     }
@@ -106,7 +106,7 @@ class GitPush extends Base
     protected function _pushTags(string $remote, string $branch = '')
     {
         return $this->execInDirectory(
-            sprintf('git push %s %s --tags', $remote, $branch),
+            sprintf('git push --set-upstream %s %s --tags', $remote, $branch),
             $this->getComponent()->getComponentDirectory()      
         );
     }
