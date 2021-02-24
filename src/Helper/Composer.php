@@ -236,8 +236,14 @@ class Composer
                 }
             }
         } else {
-            $composerDefinition->autoload['psr-0']  = [$Psr0Name  => 'lib/'];
-            $composerDefinition->autoload['psr-4']  = [$Psr4Name  => 'src/'];
+            // Autosense
+            $dir = dirname($package->getFullPath());
+            if (is_dir($dir . '/lib')) {
+                $composerDefinition->autoload['psr-0']  = [$Psr0Name  => 'lib/'];
+            }
+            if (is_dir($dir . '/src')) {
+                $composerDefinition->autoload['psr-4']  = [$Psr4Name  => 'src/'];
+            }
         }
     }
 
