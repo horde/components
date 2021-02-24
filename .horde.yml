@@ -27,11 +27,11 @@ authors:
     active: true
     role: contributor
 version:
-  release: 1.0.0
-  api: 1.0.0
+  release: 1.0.0alpha1
+  api: 1.0.0alpha1
 state:
-  release: beta
-  api: beta
+  release: alpha
+  api: alpha
 license:
   identifier: LGPL-2.1
   uri: http://www.horde.org/licenses/lgpl21
@@ -62,7 +62,6 @@ dependencies:
       pear.phpunit.de/phploc: '*'
       pear.phpmd.org/PHP_PMD: '*'
     composer:
-        squizlabs/php_codesniffer: '*'
-
+      squizlabs/php_codesniffer: '*'
 nocommands:
-  - 'bin/horde-bootstrap'
+  - bin/horde-bootstrap

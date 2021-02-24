@@ -1,7 +1,7 @@
 {
     "name": "horde/components",
     "description": "Developer tool for managing Horde components",
-    "type": "project",
+    "type": "horde-application",
     "homepage": "https://www.horde.org",
     "license": "LGPL-2.1",
     "authors": [
@@ -14,48 +14,69 @@
             "name": "Gunnar Wrobel",
             "email": "p@rdus.de",
             "role": "lead"
+        },
+        {
+            "name": "Ralf Lang",
+            "email": "lang@b1-systems.de",
+            "role": "contributor"
         }
     ],
-    "version": "1.0.0",
-    "time": "2020-03-15",
+    "version": "1.0.0alpha1",
+    "time": "2021-02-24",
     "repositories": [
         {
-            "type": "pear",
-            "url": "https://pear.horde.org"
+            "type": "composer",
+            "url": "https://horde-satis.maintaina.com/"
+        },
+        {
+            "url": "https://pear.php.net",
+            "type": "pear"
+        },
+        {
+            "url": "https://pear.phpunit.de",
+            "type": "pear"
+        },
+        {
+            "url": "https://pear.phpmd.org",
+            "type": "pear"
         }
     ],
     "require": {
+        "horde/horde-installer-plugin": "*",
         "php": "^7",
-        "pear-pear.horde.org/Horde_Autoloader": "*",
-        "pear-pear.horde.org/Horde_Argv": "*",
-        "pear-pear.horde.org/Horde_Cli": "^2.3",
-        "pear-pear.horde.org/Horde_Cli_Modular": "^2.1",
-        "pear-pear.horde.org/Horde_Http": "*",
-        "pear-pear.horde.org/Horde_Pear": "*",
-        "pear-pear.horde.org/Horde_Role": "*",
-        "pear-pear.horde.org/Horde_Text_Diff": "*",
-        "pear-pear.horde.org/Horde_Util": "*",
-        "pear-pear.horde.org/Horde_Injector": "*",
-        "pear-pear.horde.org/Horde_Release": "*",
-        "pear-pear.horde.org/Horde_Yaml": "*"
+        "horde/autoloader": "*",
+        "horde/argv": "*",
+        "horde/cli": "^2.3",
+        "horde/cli_modular": "^2.1",
+        "horde/http": "*",
+        "horde/pear": "*",
+        "horde/role": "*",
+        "horde/text_diff": "*",
+        "horde/util": "*",
+        "horde/injector": "*",
+        "horde/release": "*",
+        "horde/yaml": "*"
     },
     "suggest": {
-        "pear-pear.horde.org/Horde_Test": "*",
+        "horde/test": "*",
         "pear-pear.php.net/Archive_Tar": "*",
         "pear-pear.php.net/PHP_CodeSniffer": "*",
         "pear-pear.phpunit.de/PHPUnit": "*",
         "pear-pear.phpunit.de/phpcpd": "*",
         "pear-pear.phpunit.de/phpdcd": "*",
         "pear-pear.phpunit.de/phploc": "*",
-        "pear-pear.phpmd.org/PHP_PMD": "*"
-    },
-    "replace": {
-        "pear-pear.horde.org/components": "1.*",
-        "pear-horde/components": "1.*"
+        "pear-pear.phpmd.org/PHP_PMD": "*",
+        "squizlabs/php_codesniffer": "*"
     },
     "autoload": {
         "psr-0": {
             "Components": "lib/"
+        },
+        "psr-4": {
+            "Horde\\Components\\": "src/"
         }
-    }
+    },
+    "bin": [
+        "bin/horde-components"
+    ]
 }
