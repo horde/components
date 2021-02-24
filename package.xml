@@ -28,6 +28,12 @@
   <email>lang@b1-systems.de</email>
   <active>yes</active>
  </contributor>
+ <contributor>
+  <name>Ralf Lang</name>
+  <user>rlang</user>
+  <email>lang@b1-systems.de</email>
+  <active>yes</active>
+ </contributor>
  <lead>
   <name>Jan Schneider</name>
   <user>jan</user>
@@ -48,7 +54,7 @@
  </contributor>
  <date>2021-02-24</date>
  <version>
-  <release>1.0.0alpha1</release>
+  <release>1.0.0alpha2</release>
   <api>1.0.0alpha1</api>
  </version>
  <stability>
@@ -57,41 +63,7 @@
  </stability>
  <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
  <notes>
-* [rla] Composer command now generates composer files independent of pirum.
-* [rla] Introduce configurable release pipelines.
-* [rla] Add a new git action for automation tasks.
-* [rla] Refactor to namespaced PSR-4 compliant code.
-* [rla] Add an init command to start new apps or libraries.
-* [jan] Remove next-sentinel release task.
-* [jan] In the &apos;update&apos; command, update composer.json from .horde.yml.
-* [jan] In the &apos;update&apos; command, update package.xml from .horde.yml.
-* [jan] Don&apos;t use underscores in command line arguments.
-* [jan] Officially support PHP 7.
-* [jan] Use coloring capabilities of Horde_Cli_Modular.
-* [jan] Add --theme argument to &apos;update&apos; command to package themes.
-* [jan] Add --dump switch to release module to dump the release notes.
-* [jan] Add --sentinel argument to &apos;update&apos; command.
-* [jan] Fix using --pretend with --new-version or --new-state.
-* [jan] Allow to set component and release information via YAML files.
-* [jan] Add Components_Helper_Version::parsePearVersion().
-* [jan] Add Components_Component#getPreviousVersion().
-* [jan] Bundle QC tools.
-* [jan] Remove Freecode support.
-* [jan] Update website versions after releasing a package.
-* [mms] Run unit tests before releasing a package.
-* [mms] Composer file is now generated/updated before releasing.
-* [mms] Add PHP Composer generator.
-* [mms] Added PHPDCD QC test.
-* [mms] Added PHPLOC QC test.
-* [jan] Fix post-release incrementing of version numbers (Bug #11659).
-* [jan] Increment release state instead of version after releasing unstable versions.
-* [jan] Use new version name scheme, matching PEAR&apos;s.
-* [gwr] Replaced use of PEAR_PackageFileManager for updating package.xml with Horde_Pear.
-* [gwr] Better help display for context modules.
-* [gwr] Extracted the .gitignore handling for content lists to the Horde_Pear packages.
-* [gwr] Fix appending the snapshot date for pre-releases.
-* [gwr] Allow to keep the version when generating snapshots.
-* [gwr] Accept an empty initial note.
+* 
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -5833,6 +5805,8 @@
   </filelist>
  </phprelease>
  <changelog>
+ 
+ 
   <release>
    <version>
     <release>0.0.1</release>
@@ -5854,10 +5828,10 @@
     <api>1.0.0alpha1</api>
    </version>
    <stability>
-    <release>alpha</release>
-    <api>alpha</api>
+    <release>beta</release>
+    <api>beta</api>
    </stability>
-   <date>2017-10-20</date>
+   <date>2021-02-24</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
 * [rla] Composer command now generates composer files independent of pirum.
@@ -5895,6 +5869,21 @@
 * [gwr] Fix appending the snapshot date for pre-releases.
 * [gwr] Allow to keep the version when generating snapshots.
 * [gwr] Accept an empty initial note.
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>1.0.0alpha2</release>
+    <api>1.0.0alpha1</api>
+   </version>
+   <stability>
+    <release>alpha</release>
+    <api>alpha</api>
+   </stability>
+   <date>2021-02-24</date>
+   <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
+   <notes>
+* 
    </notes>
   </release>
  </changelog>
