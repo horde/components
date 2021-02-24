@@ -10,6 +10,24 @@
   <email>lang@b1-systems.de</email>
   <active>yes</active>
  </contributor>
+ <contributor>
+  <name>Ralf Lang</name>
+  <user>rlang</user>
+  <email>lang@b1-systems.de</email>
+  <active>yes</active>
+ </contributor>
+ <contributor>
+  <name>Ralf Lang</name>
+  <user>rlang</user>
+  <email>lang@b1-systems.de</email>
+  <active>yes</active>
+ </contributor>
+ <contributor>
+  <name>Ralf Lang</name>
+  <user>rlang</user>
+  <email>lang@b1-systems.de</email>
+  <active>yes</active>
+ </contributor>
  <lead>
   <name>Jan Schneider</name>
   <user>jan</user>
@@ -39,6 +57,10 @@
  </stability>
  <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
  <notes>
+* [rla] Composer command now generates composer files independent of pirum.
+* [rla] Introduce configurable release pipelines.
+* [rla] Add a new git action for automation tasks.
+* [rla] Refactor to namespaced PSR-4 compliant code.
 * [rla] Add an init command to start new apps or libraries.
 * [jan] Remove next-sentinel release task.
 * [jan] In the &apos;update&apos; command, update composer.json from .horde.yml.
@@ -3456,95 +3478,7 @@
    <pearinstaller>
     <min>1.7.0</min>
    </pearinstaller>
-   <package>
-    <name>Horde_Autoloader</name>
-    <channel>pear.horde.org</channel>
-   </package>
-   <package>
-    <name>Horde_Argv</name>
-    <channel>pear.horde.org</channel>
-   </package>
-   <package>
-    <name>Horde_Cli</name>
-    <channel>pear.horde.org</channel>
-    <min>2.3.0</min>
-    <max>3.0.0alpha1</max>
-    <exclude>3.0.0alpha1</exclude>
-   </package>
-   <package>
-    <name>Horde_Cli_Modular</name>
-    <channel>pear.horde.org</channel>
-    <min>2.1.0</min>
-    <max>3.0.0alpha1</max>
-    <exclude>3.0.0alpha1</exclude>
-   </package>
-   <package>
-    <name>Horde_Http</name>
-    <channel>pear.horde.org</channel>
-   </package>
-   <package>
-    <name>Horde_Pear</name>
-    <channel>pear.horde.org</channel>
-   </package>
-   <package>
-    <name>Horde_Role</name>
-    <channel>pear.horde.org</channel>
-   </package>
-   <package>
-    <name>Horde_Text_Diff</name>
-    <channel>pear.horde.org</channel>
-   </package>
-   <package>
-    <name>Horde_Util</name>
-    <channel>pear.horde.org</channel>
-   </package>
-   <package>
-    <name>Horde_Injector</name>
-    <channel>pear.horde.org</channel>
-   </package>
-   <package>
-    <name>Horde_Release</name>
-    <channel>pear.horde.org</channel>
-   </package>
-   <package>
-    <name>Horde_Yaml</name>
-    <channel>pear.horde.org</channel>
-   </package>
   </required>
-  <optional>
-   <package>
-    <name>Horde_Test</name>
-    <channel>pear.horde.org</channel>
-   </package>
-   <package>
-    <name>Archive_Tar</name>
-    <channel>pear.php.net</channel>
-   </package>
-   <package>
-    <name>PHP_CodeSniffer</name>
-    <channel>pear.php.net</channel>
-   </package>
-   <package>
-    <name>PHPUnit</name>
-    <channel>pear.phpunit.de</channel>
-   </package>
-   <package>
-    <name>phpcpd</name>
-    <channel>pear.phpunit.de</channel>
-   </package>
-   <package>
-    <name>phpdcd</name>
-    <channel>pear.phpunit.de</channel>
-   </package>
-   <package>
-    <name>phploc</name>
-    <channel>pear.phpunit.de</channel>
-   </package>
-   <package>
-    <name>PHP_PMD</name>
-    <channel>pear.phpmd.org</channel>
-   </package>
-  </optional>
  </dependencies>
  <phprelease>
   <filelist>
@@ -5923,9 +5857,13 @@
     <release>alpha</release>
     <api>alpha</api>
    </stability>
-   <date>2021-02-24</date>
+   <date>2017-10-20</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
+* [rla] Composer command now generates composer files independent of pirum.
+* [rla] Introduce configurable release pipelines.
+* [rla] Add a new git action for automation tasks.
+* [rla] Refactor to namespaced PSR-4 compliant code.
 * [rla] Add an init command to start new apps or libraries.
 * [jan] Remove next-sentinel release task.
 * [jan] In the &apos;update&apos; command, update composer.json from .horde.yml.

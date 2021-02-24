@@ -38,30 +38,28 @@ license:
 dependencies:
   required:
     php: ^7
-    pear:
-      pear.horde.org/Horde_Autoloader: '*'
-      pear.horde.org/Horde_Argv: '*'
-      pear.horde.org/Horde_Cli: ^2.3
-      pear.horde.org/Horde_Cli_Modular: ^2.1
-      pear.horde.org/Horde_Http: '*'
-      pear.horde.org/Horde_Pear: '*'
-      pear.horde.org/Horde_Role: '*'
-      pear.horde.org/Horde_Text_Diff: '*'
-      pear.horde.org/Horde_Util: '*'
-      pear.horde.org/Horde_Injector: '*'
-      pear.horde.org/Horde_Release: '*'
-      pear.horde.org/Horde_Yaml: '*'
-  optional:
-    pear:
-      pear.horde.org/Horde_Test: '*'
-      pear.php.net/Archive_Tar: '*'
-      pear.php.net/PHP_CodeSniffer: '*'
-      pear.phpunit.de/PHPUnit: '*'
-      pear.phpunit.de/phpcpd: '*'
-      pear.phpunit.de/phpdcd: '*'
-      pear.phpunit.de/phploc: '*'
-      pear.phpmd.org/PHP_PMD: '*'
     composer:
-      squizlabs/php_codesniffer: '*'
+      horde/Autoloader: '*'
+      horde/Argv: '*'
+      horde/Cli: ^2.3
+      horde/Cli_Modular: ^2.1
+      horde/Http: '*'
+      horde/Pear: '*'
+      horde/Role: '*'
+      horde/Text_Diff: '*'
+      horde/Util: '*'
+      horde/Injector: '*'
+      horde/Release: '*'
+      horde/Yaml: '*'
+  optional:
+    composer:
+      horde/test: 3
+      squizlabs/php_codesniffer: ^3.5
+      pear/archive_tar: ^1.4
+      sebastian/phpcpd: ^6
+      sebastian/phpdcd: ^1
+      phploc/phploc: ^7
+      phpmd/phpmd: ^2.9
+      phpunit/phpunit: ^9
 nocommands:
   - bin/horde-bootstrap
