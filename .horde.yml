@@ -41,8 +41,8 @@ dependencies:
     composer:
       horde/Autoloader: '*'
       horde/Argv: '*'
-      horde/Cli: ^2.3
-      horde/Cli_Modular: ^2.1
+      horde/Cli: ^3
+      horde/Cli_Modular: ^3
       horde/Http: '*'
       horde/Pear: '*'
       horde/Role: '*'

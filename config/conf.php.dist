@@ -192,7 +192,7 @@ $conf['pipeline']['release']['downstream'] = [
     ['name' => 'NextVersion'],
     // Force our component to require staging branch dependencies
     // This is useful for development mode
-    ['name' => 'Composer', 'options' => ['composer_version' => 'dev-staging' ]],
+    ['name' => 'Composer', 'options' => ['composer_version' => 'dev-FRAMEWORK_6_0']],
     ['name' => 'CommitPostRelease'],
     ['name' => 'GitPush'],
     // Our downstream pipeline uses satis rather than packagist
