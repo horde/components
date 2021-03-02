@@ -32,7 +32,7 @@ use Horde\Components\Release\Notes as ReleaseNotes;
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class TestCase extends \PHPUnit_Framework_TestCase
+class TestCase extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var Output
@@ -175,7 +175,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
         $this->old_errorreporting = error_reporting(E_ALL & ~(E_STRICT | E_DEPRECATED));
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         if (!empty($this->cwd)) {
             chdir($this->cwd);

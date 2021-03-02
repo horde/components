@@ -30,9 +30,9 @@ use Horde\Components\Stub\Config;
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class CIdentifyTest extends TestCase
+class IdentifyTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         if (isset($this->oldcwd) && $this->oldcwd != getcwd()) {
             chdir($this->oldcwd);

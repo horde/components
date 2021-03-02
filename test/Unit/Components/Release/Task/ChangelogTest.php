@@ -31,7 +31,7 @@ class ChangelogTest extends TestCase
 {
     protected $_fixture;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->_fixture = __DIR__ . '/../../../../fixture/simple';
     }

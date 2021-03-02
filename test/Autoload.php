@@ -21,7 +21,7 @@ if (!class_exists('Components')) {
 }
 
 /** Load the basic test definition */
-require_once __DIR__ . '/StoryTestCase.php';
+//require_once __DIR__ . '/StoryTestCase.php';
 require_once __DIR__ . '/TestCase.php';
 
 /** Load stub definitions */

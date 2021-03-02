@@ -25,13 +25,13 @@ use Horde\Components\TestCase;
  */
 class UpdateFromHordeYmlTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->yamlFile = __DIR__ . '/../../../fixture/horde_yml/.horde.yml';
         $this->yaml = file_get_contents($this->yamlFile);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         file_put_contents($this->yamlFile, $this->yaml);
     }
