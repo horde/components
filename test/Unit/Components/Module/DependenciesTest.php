@@ -46,7 +46,7 @@ class DependenciesTest extends TestCase
             '--list-deps',
             __DIR__ . '/../../../fixture/framework/Install'
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             'Dependency-0.0.1', $this->_callUnstrictComponents()
         );
     }
@@ -59,7 +59,7 @@ class DependenciesTest extends TestCase
             '--alldeps',
             __DIR__ . '/../../../fixture/framework/Install'
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             '_Console_Getopt', $this->_callUnstrictComponents()
         );
     }
@@ -73,7 +73,7 @@ class DependenciesTest extends TestCase
             '--short',
             __DIR__ . '/../../../fixture/framework/Install'
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             'Console_Getopt', $this->_callUnstrictComponents()
         );
     }

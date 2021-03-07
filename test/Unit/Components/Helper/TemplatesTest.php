@@ -11,6 +11,8 @@
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 namespace Horde\Components\Unit\Components\Helper;
+
+use Horde\Components\Exception;
 use Horde\Components\TestCase;
 use Horde\Components\Helper\Templates\Directory as TemplatesDirectory;
 use Horde\Components\Helper\Templates\RecursiveDirectory as TemplatesRecursiveDirectory;
@@ -61,11 +63,9 @@ class TemplatesTest extends TestCase
         );
     }
 
-    /**
-     * @expectedException Horde\Components\Exception
-     */
     public function testMissingSource()
     {
+        $this->expectException(Exception::class);
         $source = __DIR__ . '/NO_SUCH_TEMPLATE';
         $templates = new TemplatesSingle($source, '', '', '');
     }
@@ -136,11 +136,9 @@ class TemplatesTest extends TestCase
         );
     }
 
-    /**
-     * @expectedException Horde\Components\Exception
-     */
     public function testMissingDirectory()
     {
+        $this->expectException(Exception::class);
         new TemplatesDirectory(
             __DIR__ . '/../../../fixture/templates/NOSUCHDIR',
             $this->getTemporaryDirectory()
@@ -198,11 +196,9 @@ class TemplatesTest extends TestCase
         );
     }
 
-    /**
-     * @expectedException Horde\Components\Exception
-     */
     public function testMissingRecursiveDirectory()
     {
+        $this->expectException(Exception::class);
         new TemplatesRecursiveDirectory(
             __DIR__ . '/../../../fixture/templates/NOSUCHDIR',
             $this->getTemporaryDirectory()

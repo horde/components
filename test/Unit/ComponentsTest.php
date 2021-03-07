@@ -36,7 +36,7 @@ class ComponentsTest extends TestCase
         $_SERVER['argv'] = array(
             'horde-components'
         );
-        $this->assertContains(
+        $this->assertStringContainsString(
             Components::ERROR_NO_COMPONENT,
             $this->_callStrictComponents()
         );
@@ -62,7 +62,7 @@ class ComponentsTest extends TestCase
             __DIR__ . '/../fixture/framework/Install/package.xml'
         );
         $output = $this->_callUnstrictComponents();
-        $this->assertContains(
+        $this->assertStringContainsString(
             '|_Dependency',
             $output
         );
@@ -76,7 +76,7 @@ class ComponentsTest extends TestCase
             __DIR__ . '/../fixture/framework/Install'
         );
         $output = $this->_callUnstrictComponents();
-        $this->assertContains(
+        $this->assertStringContainsString(
             '|_Dependency',
             $output
         );
@@ -92,7 +92,7 @@ class ComponentsTest extends TestCase
         );
         $output = $this->_callUnstrictComponents();
         chdir($oldcwd);
-        $this->assertContains(
+        $this->assertStringContainsString(
             '|_Dependency',
             $output
         );
@@ -107,7 +107,7 @@ class ComponentsTest extends TestCase
         );
         $output = $this->_callUnstrictComponents();
         chdir($oldcwd);
-        $this->assertContains(
+        $this->assertStringContainsString(
             Components::ERROR_NO_ACTION,
             $output
         );

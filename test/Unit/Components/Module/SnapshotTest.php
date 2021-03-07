@@ -85,11 +85,11 @@ class SnapshotTest extends TestCase
             $this->_callUnstrictComponents();
         } catch (ExceptionPear $e) {
             ob_end_clean();
-            $this->assertContains(
+            $this->assertStringContainsString(
                 'PEAR_Packagefile_v2::toTgz: invalid package.xml',
                 (string) $e
             );
-            $this->assertContains(
+            $this->assertStringContainsString(
                 'Old.php" in package.xml does not exist',
                 $e
             );

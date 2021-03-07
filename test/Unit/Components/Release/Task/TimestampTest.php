@@ -87,11 +87,11 @@ class TimestampTest extends TestCase
 
     private function _getValidPackage()
     {
-        $wrapper = $this->getMock('Components_Wrapper_ChangelogYml', array(), array(), '', false, false);
+        $wrapper = $this->getMockBuilder('Components_Wrapper_ChangelogYml')->getMock();
         $wrapper->expects($this->any())
             ->method('exists')
             ->will($this->returnValue(true));
-        $package = $this->getMock('Horde\Components\Component\Source', array(), array(), '', false, false);
+        $package = $this->getMockBuilder('Horde\Components\Component\Source')->getMock();
         $package->expects($this->any())
             ->method('getWrapper')
             ->will(($this->returnValue($wrapper)));
