@@ -119,16 +119,13 @@ class IdentifyTest extends TestCase
         );
     }
 
-    /**
-     * #expectedException Horde\Components\Exception
-     */
-/* This test might fail by now as we now can identify Components itself from the fixture dir
     public function testWithoutValidComponent()
     {
+        $this->expectException(Exception::class);
         $this->_initIdentify(
             array(__DIR__ . '/../../../fixture/DOESNOTEXIST')
         );
-    }*/
+    }
 
     private function _initIdentify(
         $arguments, $options = array(), $dependencies = null
