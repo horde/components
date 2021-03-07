@@ -31,12 +31,12 @@ class SnapshotTest extends TestCase
 {
     public function testSnapshotOption()
     {
-        $this->assertRegExp('/-z,\s*--snapshot/', $this->getHelp());
+        $this->assertMatchesRegularExpression('/-z,\s*--snapshot/', $this->getHelp());
     }
 
     public function testSnapshotAction()
     {
-        $this->assertRegExp('/ACTION "snapshot"/', $this->getActionHelp('snapshot'));
+        $this->assertMatchesRegularExpression('/ACTION "snapshot"/', $this->getActionHelp('snapshot'));
     }
 
     public function testSnapshot()

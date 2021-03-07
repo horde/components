@@ -31,12 +31,12 @@ class DependenciesTest extends TestCase
 {
     public function testDependenciesOption()
     {
-        $this->assertRegExp('/-L,\s*--list-deps/', $this->getHelp());
+        $this->assertMatchesRegularExpression('/-L,\s*--list-deps/', $this->getHelp());
     }
 
     public function testDependenciesAction()
     {
-        $this->assertRegExp('/ACTION "deps"/', $this->getActionHelp('deps'));
+        $this->assertMatchesRegularExpression('/ACTION "deps"/', $this->getActionHelp('deps'));
     }
 
     public function testDependencies()

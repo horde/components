@@ -48,7 +48,7 @@ class ComponentsTest extends TestCase
             'horde-components',
             '--help'
         );
-        $this->assertRegExp(
+        $this->assertMatchesRegularExpression(
             '/-h,[ ]*--help[ ]*' . \Horde_Argv_Translation::t("show this help message and exit") . '/',
             $this->_callStrictComponents()
         );

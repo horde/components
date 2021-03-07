@@ -31,12 +31,12 @@ class UpdateTest extends TestCase
 {
     public function testUpdateOption()
     {
-        $this->assertRegExp('/-u,\s*--updatexml/', $this->getHelp());
+        $this->assertMatchesRegularExpression('/-u,\s*--updatexml/', $this->getHelp());
     }
 
     public function testActionOption()
     {
-        $this->assertRegExp('/-A ACTION,\s*--action=ACTION/m', $this->getHelp());
+        $this->assertMatchesRegularExpression('/-A ACTION,\s*--action=ACTION/m', $this->getHelp());
     }
 
     public function testXmlCreation()
@@ -90,7 +90,7 @@ dependencies:
 
     public function testXmlUpdate()
     {
-        $this->assertRegExp(
+        $this->assertMatchesRegularExpression(
             '/<file name="New.php" role="php" \/>/',
             $this->_simpleUpdate()
         );
@@ -98,7 +98,7 @@ dependencies:
 
     public function testRetainTasks()
     {
-        $this->assertRegExp(
+        $this->assertMatchesRegularExpression(
             '#<tasks:replace from="@data_dir@" to="data_dir" type="pear-config" />#',
             $this->_simpleUpdate()
         );
@@ -106,7 +106,7 @@ dependencies:
 
     public function testJavaScriptFiles()
     {
-        $this->assertRegExp(
+        $this->assertMatchesRegularExpression(
             '#<install as="js/test.js" name="js/test.js" />#',
             $this->_simpleUpdate()
         );
@@ -114,7 +114,7 @@ dependencies:
 
     public function testMigrationFiles()
     {
-        $this->assertRegExp(
+        $this->assertMatchesRegularExpression(
                 '#<install as="migration/test.sql" name="migration/test.sql" />#',
             $this->_simpleUpdate()
         );
@@ -122,7 +122,7 @@ dependencies:
 
     public function testScriptFiles()
     {
-        $this->assertRegExp(
+        $this->assertMatchesRegularExpression(
                 '#<install as="script.php" name="bin/script.php" />#',
             $this->_simpleUpdate()
         );
@@ -130,7 +130,7 @@ dependencies:
 
     public function testIgnoredFile1()
     {
-        $this->assertNotRegExp(
+        $this->assertDoesNotMatchRegularExpression(
             '#IGNORE.txt#',
             $this->_simpleUpdate()
         );
@@ -138,7 +138,7 @@ dependencies:
 
     public function testIgnoredFile2()
     {
-        $this->assertNotRegExp(
+        $this->assertDoesNotMatchRegularExpression(
             '#test1#',
             $this->_simpleUpdate()
         );
@@ -146,7 +146,7 @@ dependencies:
 
     public function testNotIgnored()
     {
-        $this->assertRegExp(
+        $this->assertMatchesRegularExpression(
             '/<file name="test2" role="php" \/>/',
             $this->_simpleUpdate()
         );

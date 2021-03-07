@@ -363,81 +363,81 @@ class StoryTestCase extends \PHPUnit_Extensions_Story_TestCase
     {
         switch($action) {
         case 'the help will be displayed':
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '/-h,[ ]*--help[ ]*show this help message and exit/',
                 $world['output']
             );
             break;
         case 'the help will contain the "A" option.':
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '/-A ACTION,\s*--action=ACTION/m',
                 $world['output']
             );
             break;
         case 'the help will contain the "u" option.':
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '/-u,\s*--updatexml/',
                 $world['output']
             );
             break;
         case 'the help will contain the "z" option.':
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '/-z,\s*--snapshot/',
                 $world['output']
             );
             break;
         case 'the help will contain the option':
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '/' . $arguments[0] . '/',
                 $world['output']
             );
             break;
         case 'the new package.xml of the Horde element will be printed.':
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '/<file name="New.php" role="php" \/>/',
                 $world['output']
             );
             break;
         case 'the new package.xml of the Horde component will retain all "replace" tasks.':
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '#<tasks:replace from="@data_dir@" to="data_dir" type="pear-config" />#',
                 $world['output']
             );
             break;
         case 'the new package.xml will install java script files in a default location':
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '#<install as="js/test.js" name="js/test.js" />#',
                 $world['output']
             );
             break;
         case 'the new package.xml will install migration files in a default location':
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '#<install as="migration/test.sql" name="migration/test.sql" />#',
                 $world['output']
             );
             break;
         case 'the new package.xml will install script files in a default location':
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '#<install as="other_script" name="script/other_script" />#',
                 $world['output']
             );
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '#<install as="shell_script.sh" name="script/shell_script.sh" />#',
                 $world['output']
             );
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '#<install as="script" name="script/script.php" />#',
                 $world['output']
             );
             break;
         case 'the new package.xml of the Horde component will not contain the file':
-            $this->assertNotRegExp(
+            $this->assertDoesNotMatchRegularExpression(
                 '#' . $arguments[0] . '#',
                 $world['output']
             );
             break;
         case 'the new package.xml of the Horde component will contain the file':
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '#' . $arguments[0] . '#',
                 $world['output']
             );
@@ -448,7 +448,7 @@ class StoryTestCase extends \PHPUnit_Extensions_Story_TestCase
             );
             break;
         case 'the new package.xml of the Horde component will have a changelog entry':
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '#</changelog>#',
                 $world['output']
             );
@@ -546,35 +546,35 @@ class StoryTestCase extends \PHPUnit_Extensions_Story_TestCase
             break;
         case 'the Horde dependencies of the component would be installed':
             $trimmed = strtr($world['output'], array(' ' => '', "\n" => ''));
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '#Wouldinstallpackage.*Dependency/package.xml#',
                 $trimmed
             );
             break;
         case 'the old-style Horde dependencies of the component would be installed':
             $trimmed = strtr($world['output'], array(' ' => '', "\n" => ''));
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '#Wouldinstallpackage.*Old/package.xml#',
                 $trimmed
             );
             break;
         case 'the Optional package will be listed':
             $trimmed = strtr($world['output'], array(' ' => '', "\n" => ''));
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '#Wouldinstallpackage.*Optional/package.xml#',
                 $trimmed
             );
             break;
         case 'the Optional package will not be listed':
             $trimmed = strtr($world['output'], array(' ' => '', "\n" => ''));
-            $this->assertNotRegExp(
+            $this->assertDoesNotMatchRegularExpression(
                 '#Wouldinstallpackage.*Optional/package.xml#',
                 $trimmed
             );
             break;
         case 'the component will be listed':
             $trimmed = strtr($world['output'], array(' ' => '', "\n" => ''));
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '#Wouldinstallpackage.*Install/package.xml#',
                 $trimmed
             );
