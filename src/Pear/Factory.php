@@ -138,7 +138,7 @@ class Factory
      */
     private function _createPackage(Environment $environment)
     {
-        $package = $this->_dependencies->createInstance('Pear\Package');
+        $package = $this->_dependencies->createInstance(Package::class);
         $package->setFactory($this);
         $package->setEnvironment($environment);
         return $package;
