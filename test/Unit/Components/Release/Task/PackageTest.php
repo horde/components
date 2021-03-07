@@ -63,7 +63,8 @@ class PackageTest extends TestCase
     {
         $package = $this->_getPackage();
         $package->expects($this->once())
-            ->method('placeArchive');
+            ->method('placeArchive')
+            ->willReturn(['/some/path/to/package.xml']);
         $this->getReleaseTasks()->run(
             array('Package'),
             $package,
