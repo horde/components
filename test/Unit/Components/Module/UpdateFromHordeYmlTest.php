@@ -212,9 +212,10 @@ class UpdateFromHordeYmlTest extends TestCase
         $this->assertEquals(
             array(
                 'php' => '^5.3 || ^7',
-                'pear-pear.horde.org/Horde_Core' => '^2.31',
-                'pear-pear.horde.org/Horde_Date' => '^2',
-                'pear-pear.horde.org/Horde_Form' => '^2.0.16',
+                'horde/core' => '^2.31',
+                'horde/date' => '^2',
+                'horde/form' => '^2.0.16',
+                'horde/horde-installer-plugin' => '*'
             ),
             $json['require']
         );
