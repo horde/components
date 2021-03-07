@@ -11,6 +11,7 @@
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 namespace Horde\Components\Unit\Components\Component;
+use Horde\Components\Exception;
 use Horde\Components\TestCase;
 use Horde\Components\Dependencies\Injector;
 use Horde\Components\Component\Identify;
@@ -39,11 +40,9 @@ class IdentifyTest extends TestCase
         }
     }
 
-    /**
-     * @expectedException Horde\Components\Exception
-     */
     public function testHelp()
     {
+        $this->expectException(Exception::class);
         $this->_initIdentify(array('help'));
         $this->config->getComponent();
     }

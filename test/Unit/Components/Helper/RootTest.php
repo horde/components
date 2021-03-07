@@ -11,6 +11,7 @@
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 namespace Horde\Components\Unit\Components\Helper;
+use Horde\Components\Exception;
 use Horde\Components\TestCase;
 use Horde\Components\Helper\Root as HelperRoot;
 /**
@@ -29,11 +30,9 @@ use Horde\Components\Helper\Root as HelperRoot;
  */
 class RootTest extends TestCase
 {
-    /**
-     * @expectedException Horde\Components\Exception
-     */
     public function testInvalidCwd()
     {
+        $this->expectException(Exception::class);
         $this->changeDirectory('/');
         $root = new HelperRoot();
         $root->getRoot();
@@ -55,11 +54,9 @@ class RootTest extends TestCase
         $this->assertEquals(realpath($path), realpath($root->getRoot()));
     }
 
-    /**
-     * @expectedException Horde\Components\Exception
-     */
     public function testInvalidPath()
     {
+        $this->expectException(\Horde_Exception_NotFound::class);
         $this->changeDirectory('/');
         $root = new HelperRoot('/');
         $root->getRoot();
@@ -79,11 +76,9 @@ class RootTest extends TestCase
         $this->assertEquals($path, $root->getRoot());
     }
 
-    /**
-     * @expectedException Horde\Components\Exception
-     */
     public function testInvalidOption()
     {
+        $this->expectException(\Horde_Exception_NotFound::class);
         $this->changeDirectory('/');
         $root = new HelperRoot(
             array('horde_root' => '/')
@@ -100,11 +95,9 @@ class RootTest extends TestCase
         $this->assertEquals($path, $root->getRoot());
     }
 
-    /**
-     * @expectedException Horde\Components\Exception
-     */
     public function testDetermineRootViaOptionSubdirectory()
     {
+        $this->expectException(Exception::class);
         $this->changeDirectory('/');
         $path = __DIR__ . '/../../../fixture';
         $root = new HelperRoot(
@@ -113,11 +106,9 @@ class RootTest extends TestCase
         $root->getRoot();
     }
 
-    /**
-     * @expectedException \Horde_Exception_NotFound
-     */
     public function testInvalidComponent()
     {
+        $this->expectException(\Horde_Exception_NotFound::class);
         $this->changeDirectory('/');
         $root = new HelperRoot(null, $this->getComponent('/'));
         $root->getRoot();
