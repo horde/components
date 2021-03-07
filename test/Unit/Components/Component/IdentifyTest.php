@@ -47,17 +47,12 @@ class IdentifyTest extends TestCase
         $this->config->getComponent();
     }
 
-    /**
-     * This test does not yield an exception anymore because
-     * the identifyer would find the Components app from the subdir
-     * Rewriting Test to prove that.
-     * 
-     * #expectedException Horde\Components\Exception
-     */
     public function testNoArgument()
     {
+        $this->expectException(Exception::class);
         $this->oldcwd = getcwd();
-        chdir(__DIR__ . '/../../../fixture/');
+        // cwd cannot be inside any component
+        chdir('/');
         $this->_initIdentify(array());
         chdir($this->oldcwd);
     }
