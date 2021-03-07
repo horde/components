@@ -56,7 +56,7 @@ class RootTest extends TestCase
 
     public function testInvalidPath()
     {
-        $this->expectException(\Horde_Exception_NotFound::class);
+        $this->expectException(Exception::class);
         $this->changeDirectory('/');
         $root = new HelperRoot('/');
         $root->getRoot();

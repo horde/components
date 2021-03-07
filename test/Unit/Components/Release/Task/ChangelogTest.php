@@ -94,7 +94,9 @@ class ChangelogTest extends TestCase
 
     private function _getValidPackage()
     {
-        $package = $this->getMockBuilder('Horde\Components\Component\Source')->getMock();
+        $package = $this->getMockBuilder('Horde\Components\Component\Source')
+        ->disableOriginalConstructor()
+        ->getMock();
         $package->expects($this->any())
             ->method('hasLocalPackageXml')
             ->will($this->returnValue(true));
