@@ -35,7 +35,7 @@ class DocsOriginTest extends TestCase
         $do = __DIR__ . '/../../../fixture/docsorigin/empty';
         $docs_origin = new HelperDocsOrigin($do, $this->_getClient());
         $this->assertEquals(
-            array(),
+            [],
             $docs_origin->getDocuments()
         );
     }

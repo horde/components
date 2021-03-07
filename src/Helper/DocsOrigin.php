@@ -51,10 +51,13 @@ class DocsOrigin
     /**
      * Constructor.
      *
-     * @param string $docs_origin Path to the DOCS_ORIGIN file.
+     * @param string|string[] $docs_origin Path to the DOCS_ORIGIN file.
      */
     public function __construct($docs_origin, \Horde_Http_Client $client)
     {
+        if (!is_array($docs_origin)) {
+            $docs_origin = [$docs_origin];
+        }
         $this->_docs_origin = $docs_origin;
         $this->_client = $client;
     }
@@ -67,7 +70,7 @@ class DocsOrigin
     private function _parse()
     {
         if ($this->_documents === null) {
-            $this->_documents = array();
+            $this->_documents = [];
             $rst = \file_get_contents($this->_docs_origin[0]);
             if (\preg_match_all('/^:`([^:]*)`_:(.*)$/m', $rst, $matches)) {
                 foreach ($matches[1] as $match) {
