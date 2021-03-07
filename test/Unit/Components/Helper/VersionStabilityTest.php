@@ -28,7 +28,7 @@ use Horde\Components\Exception;
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class HelperVersionStabilityTest extends TestCase
+class VersionStabilityTest extends TestCase
 {
     public function testStable()
     {

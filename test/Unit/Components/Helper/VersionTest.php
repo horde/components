@@ -27,7 +27,7 @@ use Horde\Components\Helper\Version as HelperVersion;
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class HelperVersionTest extends TestCase
+class VersionTest extends TestCase
 {
     public function testNextVersion()
     {
