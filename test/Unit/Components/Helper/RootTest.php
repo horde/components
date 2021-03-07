@@ -78,7 +78,7 @@ class RootTest extends TestCase
 
     public function testInvalidOption()
     {
-        $this->expectException(\Horde_Exception_NotFound::class);
+        $this->expectException(Exception::class);
         $this->changeDirectory('/');
         $root = new HelperRoot(
             array('horde_root' => '/')

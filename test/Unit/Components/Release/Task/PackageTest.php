@@ -99,7 +99,9 @@ class PackageTest extends TestCase
 
     private function _getPackage()
     {
-        $package = $this->getMockBuilder('Horde\Components\Component\Source')->getMock();
+        $package = $this->getMockBuilder('Horde\Components\Component\Source')
+        ->disableOriginalConstructor()
+        ->getMock();
         $package->expects($this->any())
             ->method('getState')
             ->will($this->returnValue('stable'));
