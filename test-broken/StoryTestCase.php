@@ -509,19 +509,19 @@ class StoryTestCase extends \PHPUnit_Extensions_Story_TestCase
             );
             break;
         case 'the dummy PEAR package will be listed':
-            $this->assertContains(
+            $this->assertStringContainsString(
                 'Would install external package pear.php.net/PEAR',
                 $world['output']
             );
             break;
         case 'the non-Horde dependencies of the component would be installed':
-            $this->assertContains(
+            $this->assertStringContainsString(
                 'Would install external package pear.php.net/Console_Getopt',
                 $world['output']
             );
             break;
         case 'the PECL will package will be listed':
-            $this->assertContains(
+            $this->assertStringContainsString(
                 'Would install external package pecl.php.net/PECL',
                 $world['output']
             );
@@ -533,7 +533,7 @@ class StoryTestCase extends \PHPUnit_Extensions_Story_TestCase
             );
             break;
         case 'the Console_Getopt package will be listed':
-            $this->assertContains(
+            $this->assertStringContainsString(
                 'Would install external package pear.php.net/Console_Getopt',
                 $world['output']
             );
