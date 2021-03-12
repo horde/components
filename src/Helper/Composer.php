@@ -43,7 +43,7 @@ class Composer
     protected $_composerRepo = '';
 
     /**
-     * @var string Overwrite horde dependency versions
+     * @var string Amend horde dependency versions
      */
     protected $_composerVersion = '';
 
@@ -65,7 +65,6 @@ class Composer
         {
             $this->_substitutes = $options['composer_opts']['pear-substitutes'];
         }
-
         // Handle cases where vendor is not horde.
         $this->_vendor = $options['vendor'] ?? 'horde';
         // The git repo base URL, defaults to github/vendor.
@@ -91,6 +90,20 @@ class Composer
 
         $filename = dirname($package->getFullPath()) . '/composer.json';
         $composerDefinition = new \stdClass();
+        /**
+         * Allow setting a minimum stability.
+         * Normally we would either want the default (empty, stable)
+         * or delegate that setting to some baseplate (horde/horde-deployment)
+         * 
+         * However, during a CI unit test it might make sense to deploy a temporary
+         * composer.json which just accepts development dependencies.
+         * 
+         */
+        if (!empty($options['minimum-stability']))
+        {
+            $composerDefinition->{'minimum-stability'} = $options['minimum-stability'];
+        }
+
         $this->_setName($package, $composerDefinition);
         // Is this intentional? "description" seems always longer than full
         $composerDefinition->description = $package['full'];
@@ -100,7 +113,9 @@ class Composer
         $this->_setAuthors($package, $composerDefinition);
         // cut off any -git or similar
         list($version) = explode('-', $package['version']['release']);
-        $composerDefinition->version = $version;
+        // Composer docs advise against writing the version tag to file
+        // https://getcomposer.org/doc/04-schema.md#version
+        // $composerDefinition->version = $version;
         $composerDefinition->time = (new \Horde_Date(time()))->format('Y-m-d');
         $composerDefinition->repositories = [];
         $this->_setRequire($package, $composerDefinition);
@@ -179,7 +194,14 @@ class Composer
     protected function _setType(WrapperHordeYml $package, \stdClass $composerDefinition)
     {
         if ($package['type'] == 'library') {
-            $composerDefinition->type = 'horde-library';
+            // Only use custom type horde-library if we have to
+            // expose something under /web/
+            $dir = dirname($package->getFullPath());
+            if (is_dir($dir . '/js')) {
+                $composerDefinition->type = 'horde-library';
+            } else {
+                $composerDefinition->type = 'library';
+            }
         }
         if ($package['type'] == 'application') {
             $composerDefinition->type = 'horde-application';
@@ -259,7 +281,10 @@ class Composer
     protected function _setRequire(WrapperHordeYml $package, \stdClass $composerDefinition)
     {
         $version = ($this->_composerVersion) ?: '*';
-        $composerDefinition->require = array('horde/horde-installer-plugin' => $version);
+        // Only require the installer if we really need it
+        if (!in_array($composerDefinition->type, ['library', 'project', 'application'])) {
+            $composerDefinition->require = array('horde/horde-installer-plugin' => $version);
+        }
 
         if (empty($package['dependencies']['required'])) {
             return;
@@ -268,8 +293,11 @@ class Composer
             if ($element == 'composer') {
                 // composer dependencies which have no pear equivalent, i.e. unbundling
                 foreach ($required as $dep => $version) {
-                    // Do we need to override versions or the likes here?
-                    $composerDefinition->require[$dep] = $version;
+                    if ($this->_composerVersion && substr($dep, 0, 5) == 'horde') {
+                        $composerDefinition->require[$dep] = "$version || $this->_composerVersion" ;
+                    } else {
+                        $composerDefinition->require[$dep] = $version;
+                    }
                     continue;
                 }
             }
@@ -364,8 +392,11 @@ class Composer
             if ($element == 'composer') {
                 // composer dependencies which have no pear equivalent, i.e. unbundling
                 foreach ($suggested as $dep => $version) {
-                    // Do we need to override versions or the likes here?
-                    $composerDefinition->suggest[$dep] = $version;
+                    if ($this->_composerVersion && substr($dep, 0, 5) == 'horde') {
+                        $composerDefinition->suggest[$dep] = "$version || $this->_composerVersion" ;
+                    } else {
+                        $composerDefinition->suggest[$dep] = $version;
+                    }
                     continue;
                 }
             }
