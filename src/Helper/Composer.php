@@ -116,7 +116,7 @@ class Composer
         // Composer docs advise against writing the version tag to file
         // https://getcomposer.org/doc/04-schema.md#version
         // $composerDefinition->version = $version;
-        $composerDefinition->time = (new \Horde_Date(time()))->format('Y-m-d');
+        $composerDefinition->time = $package['time'] ?? (new \Horde_Date(time()))->format('Y-m-d');
         $composerDefinition->repositories = [];
         $this->_setRequire($package, $composerDefinition);
         $this->_setSuggest($package, $composerDefinition);
