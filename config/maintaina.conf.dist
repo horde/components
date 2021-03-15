@@ -62,7 +62,7 @@ $conf['composer_repo'] = 'satis:https://horde-satis.maintaina.com/';
  * Default: Depend on versions from .horde.yml
  */
 // depend on master branch
-$conf['composer_version'] = 'dev-master';
+// $conf['composer_version'] = 'dev-master';
 // depend on a staging branch - components won't check if it even exists!
 // $conf['composer_version'] = 'dev-staging';
 
@@ -126,7 +126,11 @@ $conf['pipeline']['release']['h6-maintaina'] = [
             'next_relstate' => 'alpha'
         ]
     ],
-    ['name' => 'Composer'],
+    ['name' => 'Composer', 'options' => [
+    // Allow branch versions in development mode but not for tagged releases
+        'composer_version' => 'dev-FRAMEWORK_6_0',
+        'minimum-stability' => 'dev'
+    ]],
     // Commit development mode
     ['name' => 'CommitPostRelease'],
     // Push branch to github
