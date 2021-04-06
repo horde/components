@@ -48,6 +48,14 @@ class Composer extends Base
                 [
                     'action' => 'store',
                     'help' => 'A fixed version or branch expression to append after the version from yaml'
+                ],
+            ),
+            new \Horde_Argv_Option(
+                '--minimum-stability',
+                [
+                    'action' => 'store',
+                    'dest' => 'minimum-stability',
+                    'help' => 'A minimum stability statement (dev, alpha, beta, rc, stable)'
                 ]
             )
         ];
