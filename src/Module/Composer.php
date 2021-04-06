@@ -42,7 +42,15 @@ class Composer extends Base
      */
     public function getOptionGroupOptions()
     {
-        return array();
+        return [
+            new \Horde_Argv_Option(
+                '--composer-version',
+                [
+                    'action' => 'store',
+                    'help' => 'A fixed version or branch expression to append after the version from yaml'
+                ]
+            )
+        ];
     }
 
     /**
