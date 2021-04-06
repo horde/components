@@ -94,10 +94,10 @@ class Composer
          * Allow setting a minimum stability.
          * Normally we would either want the default (empty, stable)
          * or delegate that setting to some baseplate (horde/horde-deployment)
-         * 
+         *
          * However, during a CI unit test it might make sense to deploy a temporary
          * composer.json which just accepts development dependencies.
-         * 
+         *
          */
         if (!empty($options['minimum-stability']))
         {
@@ -119,6 +119,7 @@ class Composer
         $composerDefinition->time = $package['time'] ?? (new \Horde_Date(time()))->format('Y-m-d');
         $composerDefinition->repositories = [];
         $this->_setRequire($package, $composerDefinition);
+        $this->_setDevRequire($package, $composerDefinition);
         $this->_setSuggest($package, $composerDefinition);
         $this->_setRepositories($package, $composerDefinition);
         $this->_setAutoload($package, $composerDefinition);
@@ -130,6 +131,9 @@ class Composer
         // Enforce suggest to be a json object rather than array
         if (empty($composerDefinition->suggest)) {
             $composerDefinition->suggest = new \stdClass();
+        }
+        if (empty($composerDefinition->{'require-dev'})) {
+            $composerDefinition->{'require-dev'} = new \stdClass();
         }
         $jsonDefinition = json_encode($composerDefinition, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
         file_put_contents($filename, $jsonDefinition);
@@ -441,6 +445,41 @@ class Composer
             }
         }
     }
+
+
+    /**
+     * Handle .horde.yml dev dependencies
+     *
+     * No known pear equivalent, this is composer-only
+     * We still require the composer: key for consistency with optional
+     */
+    protected function _setDevRequire(WrapperHordeYml $package, \stdClass $composerDefinition)
+    {
+        $composerDefinition->{'require-dev'} = array();
+        if (empty($package['dependencies']['dev'])) {
+            return;
+        }
+        foreach ($package['dependencies']['dev'] as $element => $suggested) {
+            if ($element == 'composer') {
+                // composer dependencies which have no pear equivalent, i.e. unbundling
+                foreach ($suggested as $dep => $version) {
+                    if ($this->_composerVersion && substr($dep, 0, 5) == 'horde') {
+                        $composerDefinition->{'require-dev'}[$dep] = "$version || $this->_composerVersion" ;
+                    } else {
+                        $composerDefinition->{'require-dev'}[$dep] = $version;
+                    }
+                    continue;
+                }
+            }
+            if ($element == 'ext') {
+                foreach ($suggested as $ext => $version) {
+                    $repo = '';
+                    $this->_handleVersion($version, $composerDefinition->{'require-dev'}, 'ext', $repo, $ext);
+                }
+            }
+        }
+    }
+
 
     // Handle the substitution list
     protected function _substitute($pear, $version, &$stack)
