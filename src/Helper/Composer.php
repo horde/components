@@ -213,7 +213,10 @@ class Composer
         if ($package['type'] == 'component') {
             $composerDefinition->type = 'horde-application';
         }
-        // No type is perfectly valid for composer. Types for themes, bundles?
+        if ($package['type'] == 'horde-theme') {
+            $composerDefinition->type = 'horde-theme';
+        }
+        // No type is perfectly valid for composer. Types for bundles?
     }
 
     protected function _setAuthors(WrapperHordeYml $package, \stdClass $composerDefinition)
