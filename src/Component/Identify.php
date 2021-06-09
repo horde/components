@@ -107,7 +107,7 @@ class Identify
                 return;
             }
 
-            if ($this->_isPackageXml($arguments[0])) {
+            if ($this->_isPackageXml($arguments[0]) || $this->_isHordeYml($arguments[0])) {
                 $this->_config->shiftArgument();
                 return array(
                     $this->_dependencies
@@ -153,7 +153,10 @@ class Identify
         $cwd = getcwd();
         // Usability: check if we are in a subdir of a component
         do {
-            if ($this->_isDirectory($cwd) && $this->_containsPackageXml($cwd)) {
+            if (
+                $this->_isDirectory($cwd) &&
+                ($this->_containsPackageXml($cwd) || $this->_containsHordeYml($cwd))
+            ) {
                 return array(
                     $this->_dependencies
                     ->getComponentFactory()
@@ -240,4 +243,33 @@ class Identify
         }
         return false;
     }
+
+    /**
+     * Checks if the file name is a .horde.yml file.
+     *
+     * @param string $path The path.
+     *
+     * @return boolean True if the provided file name points to a .horde.yml
+     *                 file.
+     */
+    private function _isHordeYml($path)
+    {
+        if (basename($path) == '.horde.yml' && file_exists($path)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the directory contains a .horde.yml file.
+     *
+     * @param string $path The path to the directory.
+     *
+     * @return boolean True if the directory contains the file.
+     */
+    private function _containsHordeYml($path)
+    {
+        return file_exists($path . '/.horde.yml');
+    }
+
 }
