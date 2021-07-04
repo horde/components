@@ -34,6 +34,24 @@
   <email>lang@b1-systems.de</email>
   <active>yes</active>
  </contributor>
+ <contributor>
+  <name>Ralf Lang</name>
+  <user>rlang</user>
+  <email>lang@b1-systems.de</email>
+  <active>yes</active>
+ </contributor>
+ <contributor>
+  <name>Ralf Lang</name>
+  <user>rlang</user>
+  <email>lang@b1-systems.de</email>
+  <active>yes</active>
+ </contributor>
+ <contributor>
+  <name>Ralf Lang</name>
+  <user>rlang</user>
+  <email>lang@b1-systems.de</email>
+  <active>yes</active>
+ </contributor>
  <lead>
   <name>Jan Schneider</name>
   <user>jan</user>
@@ -52,7 +70,7 @@
   <email>lang@b1-systems.de</email>
   <active>yes</active>
  </contributor>
- <date>2021-02-24</date>
+ <date>2021-07-04</date>
  <version>
   <release>1.0.0alpha2</release>
   <api>1.0.0alpha1</api>
@@ -63,7 +81,7 @@
  </stability>
  <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
  <notes>
-* 
+* |+
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -2897,6 +2915,7 @@
    <dir name="config">
     <file name=".htaccess" role="cfg" />
     <file name="conf.php.dist" role="cfg" />
+    <file name="maintaina.conf.dist" role="cfg" />
    </dir> <!-- /config -->
    <dir name="data">
     <dir name="distribute">
@@ -3006,7 +3025,9 @@
    </dir> <!-- /data -->
    <dir name="doc">
     <file name="CHANGES" role="doc" />
+    <file name="conf.php.dist-maintaina-com" role="doc" />
     <file name="TODO.rst" role="doc" />
+    <file name="UPGRADE_COMPONENT_H6.sh" role="doc" />
    </dir> <!-- /doc -->
    <dir name="lib">
     <dir name="Components">
@@ -3359,17 +3380,6 @@
       <file name="variables.template" role="test" />
      </dir> <!-- /test/fixture/templates -->
     </dir> <!-- /test/fixture -->
-    <dir name="Integration">
-     <dir name="Components">
-      <dir name="Module">
-       <file name="CiSetupTest.php" role="test" />
-       <file name="DistributeTest.php" role="test" />
-       <file name="DocumentTest.php" role="test" />
-       <file name="InstallerTest.php" role="test" />
-       <file name="ReleaseTest.php" role="test" />
-      </dir> <!-- /test/Integration/Components/Module -->
-     </dir> <!-- /test/Integration/Components -->
-    </dir> <!-- /test/Integration -->
     <dir name="Stub">
      <file name="Config.php" role="test" />
      <file name="Output.php" role="test" />
@@ -3434,9 +3444,22 @@
     <file name="AllTests.php" role="test" />
     <file name="Autoload.php" role="test" />
     <file name="bootstrap.php" role="test" />
-    <file name="StoryTestCase.php" role="test" />
     <file name="TestCase.php" role="test" />
    </dir> <!-- /test -->
+   <dir name="test-broken">
+    <dir name="Integration">
+     <dir name="Components">
+      <dir name="Module">
+       <file name="CiSetupTest.php" role="php" />
+       <file name="DistributeTest.php" role="php" />
+       <file name="DocumentTest.php" role="php" />
+       <file name="InstallerTest.php" role="php" />
+       <file name="ReleaseTest.php" role="php" />
+      </dir> <!-- /test-broken/Integration/Components/Module -->
+     </dir> <!-- /test-broken/Integration/Components -->
+    </dir> <!-- /test-broken/Integration -->
+    <file name="StoryTestCase.php" role="php" />
+   </dir> <!-- /test-broken -->
    <file name="LICENSE" role="doc" />
   </dir> <!-- / -->
  </contents>
@@ -5512,6 +5535,7 @@
    <install as="Horde/components/vendor/theseer/fdomdocument/src/XPathQueryException.php" name="bundle/vendor/theseer/fdomdocument/src/XPathQueryException.php" />
    <install as=".htaccess" name="config/.htaccess" />
    <install as="conf.php.dist" name="config/conf.php.dist" />
+   <install as="maintaina.conf.dist" name="config/maintaina.conf.dist" />
    <install as="distribute/debian/components.php" name="data/distribute/debian/components.php" />
    <install as="distribute/debian/templates-php-horde-ansel/rules" name="data/distribute/debian/templates-php-horde-ansel/rules" />
    <install as="distribute/debian/templates-php-horde-content/rules" name="data/distribute/debian/templates-php-horde-content/rules" />
@@ -5551,7 +5575,9 @@
    <install as="qc_standards/phpcs.xml" name="data/qc_standards/phpcs.xml" />
    <install as="qc_standards/phpmd.xml" name="data/qc_standards/phpmd.xml" />
    <install as="CHANGES" name="doc/CHANGES" />
+   <install as="conf.php.dist-maintaina-com" name="doc/conf.php.dist-maintaina-com" />
    <install as="TODO.rst" name="doc/TODO.rst" />
+   <install as="UPGRADE_COMPONENT_H6.sh" name="doc/UPGRADE_COMPONENT_H6.sh" />
    <install as=".htaccess" name="lib/.htaccess" />
    <install as="Components.php" name="lib/Components.php" />
    <install as="Components/Configs.php" name="lib/Components/Configs.php" />
@@ -5677,6 +5703,12 @@
    <install as="Wrapper/HordeYml.php" name="src/Wrapper/HordeYml.php" />
    <install as="Wrapper/PackageXml.php" name="src/Wrapper/PackageXml.php" />
    <install as="WrapperTrait.php" name="src/WrapperTrait.php" />
+   <install as="Integration/Components/Module/CiSetupTest.php" name="test-broken/Integration/Components/Module/CiSetupTest.php" />
+   <install as="Integration/Components/Module/DistributeTest.php" name="test-broken/Integration/Components/Module/DistributeTest.php" />
+   <install as="Integration/Components/Module/DocumentTest.php" name="test-broken/Integration/Components/Module/DocumentTest.php" />
+   <install as="Integration/Components/Module/InstallerTest.php" name="test-broken/Integration/Components/Module/InstallerTest.php" />
+   <install as="Integration/Components/Module/ReleaseTest.php" name="test-broken/Integration/Components/Module/ReleaseTest.php" />
+   <install as="StoryTestCase.php" name="test-broken/StoryTestCase.php" />
    <install as="AllTests.php" name="test/AllTests.php" />
    <install as="Autoload.php" name="test/Autoload.php" />
    <install as="bootstrap.php" name="test/bootstrap.php" />
@@ -5766,12 +5798,6 @@
    <install as="fixture/templates/rewrite/one" name="test/fixture/templates/rewrite/one" />
    <install as="fixture/templates/simple.template" name="test/fixture/templates/simple.template" />
    <install as="fixture/templates/variables.template" name="test/fixture/templates/variables.template" />
-   <install as="Integration/Components/Module/CiSetupTest.php" name="test/Integration/Components/Module/CiSetupTest.php" />
-   <install as="Integration/Components/Module/DistributeTest.php" name="test/Integration/Components/Module/DistributeTest.php" />
-   <install as="Integration/Components/Module/DocumentTest.php" name="test/Integration/Components/Module/DocumentTest.php" />
-   <install as="Integration/Components/Module/InstallerTest.php" name="test/Integration/Components/Module/InstallerTest.php" />
-   <install as="Integration/Components/Module/ReleaseTest.php" name="test/Integration/Components/Module/ReleaseTest.php" />
-   <install as="StoryTestCase.php" name="test/StoryTestCase.php" />
    <install as="Stub/Config.php" name="test/Stub/Config.php" />
    <install as="Stub/Output.php" name="test/Stub/Output.php" />
    <install as="Stub/OutputCli.php" name="test/Stub/OutputCli.php" />
@@ -5805,8 +5831,6 @@
   </filelist>
  </phprelease>
  <changelog>
- 
- 
   <release>
    <version>
     <release>0.0.1</release>
@@ -5883,7 +5907,7 @@
    <date>2021-02-24</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
-* 
+* |+
    </notes>
   </release>
  </changelog>
