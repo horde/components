@@ -52,6 +52,12 @@
   <email>lang@b1-systems.de</email>
   <active>yes</active>
  </contributor>
+ <contributor>
+  <name>Ralf Lang</name>
+  <user>rlang</user>
+  <email>lang@b1-systems.de</email>
+  <active>yes</active>
+ </contributor>
  <lead>
   <name>Jan Schneider</name>
   <user>jan</user>
@@ -72,7 +78,7 @@
  </contributor>
  <date>2021-07-04</date>
  <version>
-  <release>1.0.0alpha2</release>
+  <release>1.0.0alpha3</release>
   <api>1.0.0alpha1</api>
  </version>
  <stability>
@@ -81,7 +87,7 @@
  </stability>
  <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
  <notes>
-* |+
+* 
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -5831,6 +5837,9 @@
   </filelist>
  </phprelease>
  <changelog>
+ 
+ 
+ 
   <release>
    <version>
     <release>0.0.1</release>
@@ -5904,10 +5913,25 @@
     <release>alpha</release>
     <api>alpha</api>
    </stability>
-   <date>2021-02-24</date>
+   <date>2021-07-04</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
 * |+
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>1.0.0alpha3</release>
+    <api>1.0.0alpha1</api>
+   </version>
+   <stability>
+    <release>alpha</release>
+    <api>alpha</api>
+   </stability>
+   <date>2021-07-04</date>
+   <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
+   <notes>
+* 
    </notes>
   </release>
  </changelog>
