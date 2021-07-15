@@ -32,7 +32,7 @@
     "require": {
         "horde/horde-installer-plugin": "dev-FRAMEWORK_6_0 || *",
         "php": "^7",
-        "horde/Autoloader": "* || dev-FRAMEWORK_6_0",
+        "horde/autoloader": "* || dev-FRAMEWORK_6_0",
         "horde/Argv": "* || dev-FRAMEWORK_6_0",
         "horde/Cli": "^3 || dev-FRAMEWORK_6_0",
         "horde/Cli_Modular": "^3 || dev-FRAMEWORK_6_0",
