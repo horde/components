@@ -4,12 +4,13 @@
   state:
     release: alpha
     api: alpha
-  date: 2021-07-04
+  date: 2021-07-19
   license:
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |+
-    
+  notes: |
+    [rla] Added github actions for phpdoc and unit testing.
+    |+
 1.0.0alpha2:
   api: 1.0.0alpha1
   state:

@@ -58,6 +58,24 @@
   <email>lang@b1-systems.de</email>
   <active>yes</active>
  </contributor>
+ <contributor>
+  <name>Ralf Lang</name>
+  <user>rlang</user>
+  <email>lang@b1-systems.de</email>
+  <active>yes</active>
+ </contributor>
+ <contributor>
+  <name>Ralf Lang</name>
+  <user>rlang</user>
+  <email>lang@b1-systems.de</email>
+  <active>yes</active>
+ </contributor>
+ <contributor>
+  <name>Ralf Lang</name>
+  <user>rlang</user>
+  <email>lang@b1-systems.de</email>
+  <active>yes</active>
+ </contributor>
  <lead>
   <name>Jan Schneider</name>
   <user>jan</user>
@@ -76,7 +94,7 @@
   <email>lang@b1-systems.de</email>
   <active>yes</active>
  </contributor>
- <date>2021-07-04</date>
+ <date>2021-07-19</date>
  <version>
   <release>1.0.0alpha3</release>
   <api>1.0.0alpha1</api>
@@ -87,10 +105,18 @@
  </stability>
  <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
  <notes>
-* 
+* [rla] Added github actions for phpdoc and unit testing.
+* |+
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
+   <dir name=".github">
+    <dir name="workflows">
+     <file name="ci.yml" role="php" />
+     <file name="phpdoc.yml" role="php" />
+     <file name="update-satis.yml" role="php" />
+    </dir> <!-- /.github/workflows -->
+   </dir> <!-- /.github -->
    <dir name="bin">
     <file name="horde-bootstrap" role="script">
      <tasks:replace from="/usr/bin/env php" to="php_bin" type="pear-config" />
@@ -3483,6 +3509,9 @@
  </dependencies>
  <phprelease>
   <filelist>
+   <install as="workflows/ci.yml" name=".github/workflows/ci.yml" />
+   <install as="workflows/phpdoc.yml" name=".github/workflows/phpdoc.yml" />
+   <install as="workflows/update-satis.yml" name=".github/workflows/update-satis.yml" />
    <install as="horde-bootstrap" name="bin/horde-bootstrap" />
    <install as="horde-components" name="bin/horde-components" />
    <install as="Horde/components/vendor/autoload.php" name="bundle/vendor/autoload.php" />
@@ -5837,9 +5866,6 @@
   </filelist>
  </phprelease>
  <changelog>
- 
- 
- 
   <release>
    <version>
     <release>0.0.1</release>
@@ -5931,7 +5957,8 @@
    <date>2021-07-04</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
-* 
+* [rla] Added github actions for phpdoc and unit testing.
+* |+
    </notes>
   </release>
  </changelog>
