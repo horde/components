@@ -123,6 +123,7 @@ class Composer
         $this->_setSuggest($package, $composerDefinition);
         $this->_setRepositories($package, $composerDefinition);
         $this->_setAutoload($package, $composerDefinition);
+        $this->_setAutoloadDev($package, $composerDefinition);
         $this->_setVendorBin($package, $composerDefinition);
         // Development dependencies?
         // Replaces ? Only needed for special cases. Default cases are handled implicitly
@@ -272,6 +273,43 @@ class Composer
             }
             if (is_dir($dir . '/src')) {
                 $composerDefinition->autoload['psr-4']  = [$Psr4Name  => 'src/'];
+            }
+        }
+    }
+    /**
+     * Configure Autoloading
+     * 
+     * The default is to autoload both PSR-0 and PSR-4 if no rule is found
+     * 
+     * @param WrapperHordeYml A Yaml definition of the package
+     * @param stdClass the composer definition file to build
+     */
+    protected function _setAutoloadDev(WrapperHordeYml $package, \stdClass $composerDefinition)
+    {
+        $composerDefinition->{'autoload-dev'} = [];
+        $parts = explode('_', $package['name']);
+        $parts[] = 'Test';
+        $Psr4Name = 'Horde\\';
+        foreach ($parts as $part) {
+            $Psr4Name .= ucfirst($part) . '\\';
+        }
+        if (!empty($package['autoload-dev'])) {
+            foreach ($package['autoload'] as $type => $definition) {
+                if ($type == 'classmap') {
+                    $composerDefinition->{'autoload-dev'}['classmap']  =  $definition;
+                }
+                if ($type == 'psr-0') {
+                    $composerDefinition->{'autoload-dev'}['psr-0']  =  $definition;
+                }
+                if ($type == 'psr-4') {
+                    $composerDefinition->{'autoload-dev'}['psr-4']  =  $definition;
+                }
+            }
+        } else {
+            // Autosense
+            $dir = dirname($package->getFullPath());
+            if (is_dir($dir . '/test')) {
+                $composerDefinition->{'autoload-dev'}['psr-4']  = [$Psr4Name  => 'test/'];
             }
         }
     }
