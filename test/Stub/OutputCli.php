@@ -11,7 +11,7 @@
  * @author     Ralf Lang <lang@b1-systems.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-namespace Horde\Components\Stub;
+namespace Horde\Components\Test\Stub;
 use Horde\Components\Exception;
 
 class OutputCli extends \Horde_Cli

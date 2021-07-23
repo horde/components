@@ -10,8 +10,8 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-namespace Horde\Components\Unit\Components;
-use Horde\Components\TestCase;
+namespace Horde\Components\Test\Unit\Components;
+use Horde\Components\Test\TestCase;
 use Horde\Components\Configs;
 use Horde\Components\Config\File as ConfigFile;
 /**

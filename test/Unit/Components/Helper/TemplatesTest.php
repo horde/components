@@ -13,7 +13,7 @@
 namespace Horde\Components\Unit\Components\Helper;
 
 use Horde\Components\Exception;
-use Horde\Components\TestCase;
+use Horde\Components\Test\TestCase;
 use Horde\Components\Helper\Templates\Directory as TemplatesDirectory;
 use Horde\Components\Helper\Templates\RecursiveDirectory as TemplatesRecursiveDirectory;
 use Horde\Components\Helper\Templates\Single as TemplatesSingle;

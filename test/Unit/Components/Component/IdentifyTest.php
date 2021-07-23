@@ -12,10 +12,10 @@
  */
 namespace Horde\Components\Unit\Components\Component;
 use Horde\Components\Exception;
-use Horde\Components\TestCase;
+use Horde\Components\Test\TestCase;
 use Horde\Components\Dependencies\Injector;
 use Horde\Components\Component\Identify;
-use Horde\Components\Stub\Config;
+use Horde\Components\Test\Stub\Config;
 
 /**
  * Test the identification of the selected component.

@@ -36,3 +36,4 @@ run-tests.log
 /config/*.local.php
 /config/*-*.php
 
+.phpunit.cache

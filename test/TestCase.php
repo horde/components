@@ -10,7 +10,7 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-namespace Horde\Components;
+namespace Horde\Components\Test;
 use Horde\Components\Dependencies\Injector;
 use Horde\Components\Components;
 use Horde\Components\Component\Source;

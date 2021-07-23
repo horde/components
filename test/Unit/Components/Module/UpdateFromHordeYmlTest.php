@@ -12,7 +12,7 @@
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 namespace Horde\Components\Unit\Components\Module;
-use Horde\Components\TestCase;
+use Horde\Components\Test\TestCase;
 
 /**
  * Test the Update module updating package.xml from .horde.yml.

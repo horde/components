@@ -11,7 +11,7 @@
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 namespace Horde\Components\Unit\Components\Release\Task;
-use Horde\Components\TestCase;
+use Horde\Components\Test\TestCase;
 use Horde\Components\Helper\Commit as HelperCommit;
 /**
  * Test the current sentinel release task.

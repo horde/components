@@ -12,7 +12,7 @@
  */
 namespace Horde\Components\Unit\Components\Helper;
 use Horde\Components\Exception;
-use Horde\Components\TestCase;
+use Horde\Components\Test\TestCase;
 use Horde\Components\Helper\Root as HelperRoot;
 /**
  * Test the root helper.
