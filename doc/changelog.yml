@@ -9,6 +9,7 @@
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
   notes: |
+    [rla] .horde.yml now supports composer's 'provide' statement.
     [rla] Add autoload-dev support to composer generator
     |+
 1.0.0alpha3:

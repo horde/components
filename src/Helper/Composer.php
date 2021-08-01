@@ -128,6 +128,7 @@ class Composer
         // Development dependencies?
         // Replaces ? Only needed for special cases. Default cases are handled implicitly
         // provides? apps can depend on provided APIs rather than other apps
+        $this->_setProvides($package, $composerDefinition);
 
         // Enforce suggest to be a json object rather than array
         if (empty($composerDefinition->suggest)) {
@@ -147,6 +148,21 @@ class Composer
         return $jsonDefinition;
     }
 
+    /**
+     * Turn a provides: block in yml into a composer.json provide: block
+     */
+    public function _setProvides(WrapperHordeYml $package, \stdClass $composerDefinition)
+    {
+        if (empty($package['provides'])) {
+            return;
+        }
+        foreach ($package['provides'] as $impl => $version) {
+            if (empty($composerDefinition->provide)) {
+                $composerDefinition->provide = [];
+            }
+            $composerDefinition->provide[$impl] = $version;
+        }
+    }
     /**
      * Build a list of commands which should be exposed to vendor/bin.
      *
