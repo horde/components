@@ -42,9 +42,10 @@ class CommitPostRelease extends Base
     {
         if (empty($options['next_version'])) {
             if (empty($options['old_version'])) {
-                $options['old_version'] = $this->getComponent()->getVersion();
+                $next_version = $this->getComponent()->getVersion();
+            } else {
+                $next_version = HelperVersion::nextPearVersion($options['old_version']);
             }
-            $next_version = HelperVersion::nextPearVersion($options['old_version']);
         } else {
             $next_version = $options['next_version'];
         }
