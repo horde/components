@@ -132,20 +132,15 @@ class Components_Helper_ChangeLog
         $oldVersion = $hordeInfo['version']['release'];
         $changelog = $this->_component->getWrapper('ChangelogYml');
         $newChangelog = array();
-        array_walk(
-            $changelog,
-            function($entry, $ver)
-                use (&$newChangelog, $oldVersion, $version, $api)
-            {
-                if ($ver == $oldVersion) {
-                    $ver = $version;
-                    if ($api) {
-                        $entry['api'] = $api;
-                    }
+        foreach ($changelog as $ver => $entry) {
+            if ($ver == $oldVersion) {
+                $ver = $version;
+                if ($api) {
+                    $entry['api'] = $api;
                 }
-                $newChangelog[$ver] = $entry;
             }
-        );
+            $newChangelog[$ver] = $entry;
+        }
         $changelog->exchangeArray($newChangelog);
     }
 
