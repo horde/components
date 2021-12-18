@@ -4,7 +4,7 @@
     "description": "Developer tool for managing Horde components",
     "type": "horde-application",
     "homepage": "https://www.horde.org",
-    "license": "LGPL-2.1",
+    "license": "LGPL-2.1-only",
     "authors": [
         {
             "name": "Jan Schneider",
@@ -30,8 +30,8 @@
         }
     ],
     "require": {
-        "horde/horde-installer-plugin": "dev-FRAMEWORK_6_0 || *",
-        "php": "^7",
+        "horde/horde-installer-plugin": "^2 || dev-FRAMEWORK_6_0",
+        "php": "^7.4 || ^8",
         "horde/autoloader": "* || dev-FRAMEWORK_6_0",
         "horde/argv": "* || dev-FRAMEWORK_6_0",
         "horde/cli": "^3 || dev-FRAMEWORK_6_0",
