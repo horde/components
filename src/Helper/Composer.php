@@ -341,7 +341,7 @@ class Composer
      */
     protected function _setRequire(WrapperHordeYml $package, \stdClass $composerDefinition)
     {
-        $version = ($this->_composerVersion) ? $this->_composerVersion . " || *" : '*';
+        $version = ($this->_composerVersion) ? $this->_composerVersion . " || ^2" : '^2';
         // Only require the installer if we really need it
         if (!in_array($composerDefinition->type, ['library', 'project', 'application'])) {
             $composerDefinition->require = array('horde/horde-installer-plugin' => $version);
