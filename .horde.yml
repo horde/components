@@ -49,7 +49,7 @@ dependencies:
       horde/text_diff: '*'
       horde/util: '*'
       horde/injector: '*'
-      horde/release: '*'
+      horde/release: ^4
       horde/yaml: '*'
   optional:
     composer:

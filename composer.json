@@ -42,7 +42,7 @@
         "horde/text_diff": "* || dev-FRAMEWORK_6_0",
         "horde/util": "* || dev-FRAMEWORK_6_0",
         "horde/injector": "* || dev-FRAMEWORK_6_0",
-        "horde/release": "* || dev-FRAMEWORK_6_0",
+        "horde/release": "^4 || dev-FRAMEWORK_6_0",
         "horde/yaml": "* || dev-FRAMEWORK_6_0"
     },
     "require-dev": {},
