@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Horde Components Configuration File
  *
@@ -51,7 +52,7 @@ $conf['git_repo_base'] = 'https://github.com/maintaina-com';
 // generate a vcs repo source per horde internal dependency
 // $conf['composer_repo'] = 'vcs';
 // generate a satis source for all horde namespace
-$conf['composer_repo'] = 'satis:https://horde-satis.maintaina.com/';
+$conf['composer_repo'] = 'satis:https://horde-satis.maintaina.com';
 
 /**
  * composer_version - tweak all dependency versions
@@ -65,20 +66,21 @@ $conf['composer_repo'] = 'satis:https://horde-satis.maintaina.com/';
 // $conf['composer_version'] = 'dev-master';
 // depend on a staging branch - components won't check if it even exists!
 // $conf['composer_version'] = 'dev-staging';
+$conf['composer_version'] = 'dev-FRAMEWORK_6_0';
 
 
 /* Well known composer native substitutes for pear dependencies */
 $conf['composer_opts']['pear-substitutes'] = [
     ['pear.php.net/Archive_Tar' =>
-        ['source' => 'Packagist', 'name' => 'pear/archive_tar']],
+    ['source' => 'Packagist', 'name' => 'pear/archive_tar']],
     ['pear.php.net/Console_Color2' =>
-        ['source' => 'Packagist', 'name' => 'pear/console_color2']],
+    ['source' => 'Packagist', 'name' => 'pear/console_color2']],
     ['pear.php.net/Net_DNS2' =>
-        ['source' => 'Packagist', 'name' => 'pear/net_dns2']],
+    ['source' => 'Packagist', 'name' => 'pear/net_dns2']],
     ['pear.php.net/Console_Table' =>
-        ['source' => 'Packagist', 'name' => 'pear/console_table']],
+    ['source' => 'Packagist', 'name' => 'pear/console_table']],
     ['pear.php.net/PHP_CodeSniffer' =>
-        ['source' => 'Packagist', 'name' => 'squizlabs/php_codesniffer']],
+    ['source' => 'Packagist', 'name' => 'squizlabs/php_codesniffer']],
     ['pear.phpunit.de/phpcpd' => ['source' => 'Packagist', 'name' => 'sebastian/phpcpd']],
     ['pear.phpunit.de/phpdcd' => ['source' => 'Packagist', 'name' => 'sebastian/phpdcd']],
     ['pear.phpunit.de/phploc' => ['source' => 'Packagist', 'name' => 'phploc/phploc']]
@@ -90,29 +92,30 @@ $conf['composer_opts']['pear-substitutes'] = [
 
 /**
  * h6-maintaina
- * 
+ *
  * Usage: horde-components path/to/component release for h6-maintaina
- * 
+ *
  * WARNING: This pipeline will rebase FRAMEWORK_6_0 on maintaina-bare branch
  */
 $conf['pipeline']['release']['h6-maintaina'] = [
     // Create or checkout branch FRAMEWORK_6_0
-    ['name' => 'GitBranch', 'options' => [
-        'git_branch' => 'FRAMEWORK_6_0',
-        'git_source_branch' => 'maintaina-bare',
-        'git_branch_prereq' => false,
-        'update' => 'rebase'
+    [
+        'name' => 'GitBranch', 'options' => [
+            'git_branch' => 'FRAMEWORK_6_0',
+            'git_source_branch' => 'maintaina-bare',
+            'git_branch_prereq' => false,
+            'update' => 'rebase'
         ]
     ],
     // Run Unit Tests
-//    ['name' => 'Unit'],
+    //    ['name' => 'Unit'],
     // Update changelog
     ['name' => 'Changelog'],
     // Timestamp component
     ['name' => 'Timestamp'],
     // Update the CHANGES file
     ['name' => 'CurrentSentinel'],
-    // Update Composer file for release    
+    // Update Composer file for release
     // The composer task will use global options like composer_opts,
     // composer_version, composer_repo unless explicitly overwritten here
     ['name' => 'Composer'],
@@ -121,20 +124,21 @@ $conf['pipeline']['release']['h6-maintaina'] = [
     // Tag the release-ready commit
     ['name' => 'TagRelease'],
     // Write next version development mode to relevant files
-    ['name' => 'NextVersion', 'options' => [
+    [
+        'name' => 'NextVersion', 'options' => [
             'next_apistate' => 'alpha',
             'next_relstate' => 'alpha'
         ]
     ],
     ['name' => 'Composer', 'options' => [
-    // Allow branch versions in development mode but not for tagged releases
+        // Allow branch versions in development mode but not for tagged releases
         'composer_version' => 'dev-FRAMEWORK_6_0',
         'minimum-stability' => 'dev'
     ]],
     // Commit development mode
     ['name' => 'CommitPostRelease'],
     // Push branch to github
-//    ['name' => 'GitPush']*/
+    //    ['name' => 'GitPush']*/
 ];
 
 /**
@@ -156,9 +160,10 @@ $conf['pipeline']['release']['h6-maintaina'] = [
  */
 $conf['pipeline']['release']['upstream'] = [
     // Checkout the FRAMEWORK_5_2 branch, don't accidentally release master
-    ['name' => 'GitBranch', 'options' => [
-        'git_branch' => 'FRAMEWORK_5_2',
-        'git_branch_prereq' => false
+    [
+        'name' => 'GitBranch', 'options' => [
+            'git_branch' => 'FRAMEWORK_5_2',
+            'git_branch_prereq' => false
         ]
     ],
     ['name' => 'Unit'],
@@ -181,10 +186,11 @@ $conf['pipeline']['release']['upstream'] = [
     ['name' => 'GitPush'],
     // Nudge Packagist that we have an update
     // Requires API key. Does not work for new packages not yet registered.
-    ['name' => 'Packagist', 'options' => [
-        'packagist_api_key' => '',
-        'packagist_user' => 'horde',
-        'vendor' => 'horde'
+    [
+        'name' => 'Packagist', 'options' => [
+            'packagist_api_key' => '',
+            'packagist_user' => 'horde',
+            'vendor' => 'horde'
         ]
     ]
     // Optional: A local Satis installation satis.horde.org
@@ -192,7 +198,7 @@ $conf['pipeline']['release']['upstream'] = [
     // satis_json: path to satis json file
     // satis_outdir: path where satis should write the repository
     // satis_push: If the output dir is a git checkout, try to commit and push?
-/*    ['name' => 'Satis', 'options' => [
+    /*    ['name' => 'Satis', 'options' => [
         'satis_bin' => '',
         'satis_json' => '',
         'satis_outdir' => '',
@@ -223,9 +229,10 @@ $conf['pipeline']['release']['upstream'] = [
  */
 $conf['pipeline']['release']['downstream'] = [
     // Ensure we create release from the staging branch. Break if not.
-    ['name' => 'GitBranch', 'options' => [
-        'git_branch' => 'staging',
-        'git_branch_prereq' => true
+    [
+        'name' => 'GitBranch', 'options' => [
+            'git_branch' => 'staging',
+            'git_branch_prereq' => true
         ]
     ],
     ['name' => 'Unit'],
@@ -235,14 +242,14 @@ $conf['pipeline']['release']['downstream'] = [
     // Pear related steps have been removed
     // The composer task will use global options like composer_opts,
     // composer_version, composer_repo unless explicitly overwritten here
-    ['name' => 'Composer', 'options' => ['composer_version' => '' ] ],
+    ['name' => 'Composer', 'options' => ['composer_version' => '']],
     ['name' => 'CommitPreRelease'],
     ['name' => 'TagRelease'],
     // Increase version numbers for development mode
     ['name' => 'NextVersion'],
     // Force our component to require staging branch dependencies
     // This is useful for development mode
-    ['name' => 'Composer', 'options' => ['composer_version' => 'dev-staging' ]],
+    ['name' => 'Composer', 'options' => ['composer_version' => 'dev-staging']],
     ['name' => 'CommitPostRelease'],
     ['name' => 'GitPush'],
     // Our downstream pipeline uses satis rather than packagist
@@ -250,12 +257,43 @@ $conf['pipeline']['release']['downstream'] = [
     // satis_json: path to satis json file
     // satis_outdir: path where satis should write the repository
     // satis_push: If the output dir is a git checkout, try to commit and push?
-    ['name' => 'Satis', 'options' => [
-        'satis_bin' => '',
-        'satis_json' => '',
-        'satis_outdir' => '',
-        'satis_push' => true
+    [
+        'name' => 'Satis', 'options' => [
+            'satis_bin' => '',
+            'satis_json' => '',
+            'satis_outdir' => '',
+            'satis_push' => true
         ]
     ]
     // TODO: Missing a step to update the release branch from the latest tag
+];
+
+
+$conf['pipeline']['release']['maintaina'] = [
+    // Ensure we create release from the master branch. Break if not.
+    [
+        'name' => 'GitBranch', 'options' => [
+            'git_branch' => 'FRAMEWORK_6_0',
+            'git_branch_prereq' => true
+        ]
+    ],
+    // no unit tests for now
+    // ['name' => 'Unit'],
+    ['name' => 'Changelog'],
+    ['name' => 'Timestamp'],
+    ['name' => 'CurrentSentinel'],
+    ['name' => 'Composer'],
+    ['name' => 'CommitPreRelease'],
+    ['name' => 'TagRelease'],
+    ['name' => 'NextVersion'],
+    // Allow branch versions in development mode but not for tagged releases
+    [
+        'name' => 'Composer', 'options' => [
+            'composer_version' => 'dev-FRAMEWORK_6_0',
+            'minimum-stability' => 'dev',
+        ],
+    ],
+    // Increase version numbers for development mode
+    ['name' => 'CommitPostRelease'],
+    // ['name' => 'GitPush'],
 ];
