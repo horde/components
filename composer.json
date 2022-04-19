@@ -1,5 +1,4 @@
 {
-    "minimum-stability": "dev",
     "name": "horde/components",
     "description": "Developer tool for managing Horde components",
     "type": "horde-application",
@@ -22,15 +21,15 @@
             "role": "contributor"
         }
     ],
-    "time": "2021-07-19",
+    "time": "2022-04-19",
     "repositories": [
         {
             "type": "composer",
-            "url": "https://horde-satis.maintaina.com/"
+            "url": "https://horde-satis.maintaina.com"
         }
     ],
     "require": {
-        "horde/horde-installer-plugin": "^2 || dev-FRAMEWORK_6_0",
+        "horde/horde-installer-plugin": "dev-FRAMEWORK_6_0 || ^2",
         "php": "^7.4 || ^8",
         "horde/autoloader": "* || dev-FRAMEWORK_6_0",
         "horde/argv": "* || dev-FRAMEWORK_6_0",
@@ -45,9 +44,11 @@
         "horde/release": "^4 || dev-FRAMEWORK_6_0",
         "horde/yaml": "* || dev-FRAMEWORK_6_0"
     },
-    "require-dev": {},
+    "require-dev": {
+        "horde/test": "^3 || dev-FRAMEWORK_6_0"
+    },
     "suggest": {
-        "horde/test": "3 || dev-FRAMEWORK_6_0",
+        "horde/test": "^3 || dev-FRAMEWORK_6_0",
         "squizlabs/php_codesniffer": "^3.5",
         "pear/archive_tar": "^1.4",
         "sebastian/phpcpd": "^6",
@@ -62,6 +63,11 @@
         },
         "psr-4": {
             "Horde\\Components\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Horde\\Components\\Test\\": "test/"
         }
     },
     "bin": [
