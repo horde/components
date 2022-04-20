@@ -125,6 +125,7 @@ class Composer
         $this->_setAutoload($package, $composerDefinition);
         $this->_setAutoloadDev($package, $composerDefinition);
         $this->_setVendorBin($package, $composerDefinition);
+        $this->_setConfig($package, $composerDefinition);
         // Development dependencies?
         // Replaces ? Only needed for special cases. Default cases are handled implicitly
         // provides? apps can depend on provided APIs rather than other apps
@@ -357,7 +358,7 @@ class Composer
                     if ($this->_composerVersion && substr($dep, 0, 5) == 'horde') {
                         $composerDefinition->require[$dep] = "$version || $this->_composerVersion" ;
                     } else {
-                        $composerDefinition->require[$dep] = $version;
+                        $composerDefinition->require[$dep] = "$version";
                     }
                     continue;
                 }
@@ -456,7 +457,7 @@ class Composer
                     if ($this->_composerVersion && substr($dep, 0, 5) == 'horde') {
                         $composerDefinition->suggest[$dep] = "$version || $this->_composerVersion" ;
                     } else {
-                        $composerDefinition->suggest[$dep] = $version;
+                        $composerDefinition->suggest[$dep] = "$version";
                     }
                     continue;
                 }
@@ -523,7 +524,7 @@ class Composer
                     if ($this->_composerVersion && substr($dep, 0, 5) == 'horde') {
                         $composerDefinition->{'require-dev'}[$dep] = "$version || $this->_composerVersion" ;
                     } else {
-                        $composerDefinition->{'require-dev'}[$dep] = $version;
+                        $composerDefinition->{'require-dev'}[$dep] = "$version";
                     }
                     continue;
                 }
@@ -555,5 +556,14 @@ class Composer
     protected function _setRepositories(WrapperHordeYml $package, \stdClass $composerDefinition)
     {
         $composerDefinition->repositories = array_values($this->_repositories);
+    }
+
+    protected function _setConfig(WrapperHordeYml $package, \stdClass $composerDefinition)
+    {
+        $composerDefinition->config = [
+            'allow-plugins' => [
+                "horde/horde-installer-plugin" => true,
+            ],
+        ];
     }
 }
