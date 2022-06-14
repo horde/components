@@ -14,8 +14,8 @@ namespace Horde\Components\Test;
 use Horde\Components\Dependencies\Injector;
 use Horde\Components\Components;
 use Horde\Components\Component\Source;
-use Horde\Components\Stub\Output;
-use Horde\Components\Stub\Config;
+use Horde\Components\Test\Stub\Output;
+use Horde\Components\Test\Stub\Config;
 use Horde\Components\Release\Notes as ReleaseNotes;
 
 /**

@@ -256,6 +256,39 @@ dependencies: []
         );
     }
 
+    public function testPretendAlphaWithoutVersionMinorPart()
+    {
+        $tmp_dir = $this->_prepareAlphaApplicationDirectory();
+        $tasks = $this->getReleaseTasks();
+        $package = $this->getComponent($tmp_dir);
+        $tasks->run(
+            array('NextVersion', 'CommitPostRelease'),
+            $package,
+            array(
+                'next_note' => '',
+                'version_part' => 'minor',
+                'pretend' => true,
+                'commit' => new HelperCommit(
+                    $this->_output,
+                    array('pretend' => true)
+                )
+            )
+        );
+        $this->assertEquals(
+            array(
+                'Would add next version "5.1.0" with the initial note "" to .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Application.php, doc/changelog.yml now.',
+                'Would run "git add .horde.yml" now.',
+                'Would run "git add package.xml" now.',
+                'Would run "git add composer.json" now.',
+                'Would run "git add doc/CHANGES" now.',
+                'Would run "git add lib/Application.php" now.',
+                'Would run "git add doc/changelog.yml" now.',
+                'Would run "git commit -m "Development mode for Horde-5.1.0"" now.'
+            ),
+            $this->_output->getOutput()
+        );
+    }
+
     private function _prepareApplicationDirectory()
     {
         $tmp_dir = $this->getTemporaryDirectory();

@@ -73,5 +73,10 @@
     },
     "bin": [
         "bin/horde-components"
-    ]
+    ],
+    "config": {
+        "allow-plugins": {
+            "horde/horde-installer-plugin": true
+        }
+    }
 }

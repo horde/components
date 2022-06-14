@@ -73,6 +73,13 @@ class Release extends Base
                 )
             ),
             new \Horde_Argv_Option(
+                '--version-part',
+                array(
+                    'action' => 'store',
+                    'help'   => 'Select the version part that should be incremented if no version is specified. Either "minor" or "patch" (default)'
+                )
+            ),
+            new \Horde_Argv_Option(
                 '--next-note',
                 array(
                     'action' => 'store',
@@ -217,6 +224,7 @@ The following example would generate the package and add the release tag to git 
             '--releasedir' => '',
             '--next-note' => '',
             '--next-version' => '',
+            '--version-part' => '',
             '--next-relstate' => '',
             '--next-apistate' => '',
             '--from' => '',

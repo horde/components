@@ -278,6 +278,49 @@ class Version
     }
 
     /**
+     * Increments the minor version number by one.
+     *
+     * If there is a release state suffix on the current version, this will be removed on the next version.
+     * The patch version will always be set to 0 for the next version.
+     *
+     * @param string $version  A version number.
+     *
+     * @return string  The incremented version number.
+     *
+     * @throws Exception on invalid version string.
+     */
+    public static function nextMinorVersion($version)
+    {
+        if (!preg_match('/^(\d+\.)(\d+)\.(\d+)(alpha|beta|RC|dev)?(\d*)$/', $version, $match)) {
+            throw new Exception('Invalid version number ' . $version);
+        }
+
+        return $match[1] . ++$match[2] . '.0';
+    }
+
+    /**
+     * Increments a version part number by one.
+     *
+     *
+     * @param string $version  A version number.
+     * @param string $versionPart The part of the version that should be incremented.
+     *
+     * @return string  The incremented version number.
+     *
+     * @throws Exception on invalid version string.
+     */
+    public static function nextVersionByPart($version, $versionPart = 'patch')
+    {
+        if ($versionPart === 'patch') {
+            return self::nextPearVersion($version);
+        } elseif ($versionPart === 'minor') {
+            return self::nextMinorVersion($version);
+        }
+        throw new Exception('invalid version part. Only "patch" and "minor" are supported for now.');
+    }
+
+
+    /**
      * Converts (a limited set of) Composer version constraints to PEAR version
      * constraints.
      *
