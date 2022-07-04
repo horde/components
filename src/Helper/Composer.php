@@ -202,6 +202,7 @@ class Composer
             $commands = array_diff($commands, $noCommands);
         }
         if ($commands) {
+            sort($commands);
             $composerDefinition->bin = array_values($commands);
         }
     }
