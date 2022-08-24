@@ -1,0 +1,34 @@
+{
+  "chmod": "0755",
+  "compression": "GZ",
+  "directories": [
+    "src"
+  ],
+  "files": [
+    "LICENSE",
+    "bin/horde-components"
+  ],
+  "finder": [
+    {
+      "name": "*.php",
+      "exclude": [
+        "tests",
+        "test"
+      ],
+      "in": "vendor"
+    },
+    {
+      "name": "*.po",
+      "exclude": [
+        "tests",
+        "test"
+      ],
+      "in": "vendor/horde"
+    }
+  ],
+  "git-version": "package_version",
+  "intercept": true,
+  "main": "bin/horde-components",
+  "output": "horde-components.phar",
+  "stub": true
+}
