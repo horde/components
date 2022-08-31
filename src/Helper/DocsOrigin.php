@@ -31,8 +31,10 @@ class DocsOrigin
 {
     /**
      * Path to the DOCS_ORIGIN file.
+     * 
+     * @var string[]
      */
-    private string $_docs_origin;
+    private array $_docs_origin;
 
     /**
      * The list of remote documents. Keys represent the local target positions,

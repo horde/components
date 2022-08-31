@@ -106,7 +106,7 @@ class Commit
      *
      * @return string The command output.
      */
-    protected function system($call)
+    protected function system($call): string
     {
         if (empty($this->_options['pretend'])) {
             //@todo Error handling
@@ -114,6 +114,7 @@ class Commit
         } else {
             $this->_output->info(\sprintf('Would run "%s" now.', $call));
         }
+        return '';
     }
 
     /**

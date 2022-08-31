@@ -33,7 +33,7 @@ class DependencyList implements Iterator
     /**
      * The dependency list.
      *
-     * @param array
+     * @param array<Dependency>
      */
     private $_dependencies;
 
@@ -80,7 +80,7 @@ class DependencyList implements Iterator
     /**
      * Return all dependencies for this package.
      *
-     * @return array The list of dependencies.
+     * @return array<Dependency> The list of dependencies.
      */
     private function _getDependencies(): ?array
     {
@@ -100,9 +100,9 @@ class DependencyList implements Iterator
     /**
      * Implementation of the Iterator rewind() method. Rewinds the dependency list.
      *
-     * return void
+     * @return Dependency|null
      */
-    public function __get($key)
+    public function __get($key): Dependency|null
     {
         $dependencies = $this->_getDependencies();
         if (isset($dependencies[$key])) {
@@ -113,9 +113,9 @@ class DependencyList implements Iterator
     /**
      * Implementation of the Iterator rewind() method. Rewinds the dependency list.
      *
-     * return void
+     * @return Dependency|null
      */
-    public function rewind(): void
+    public function rewind(): Dependency|null
     {
         $this->_getDependencies();
         return reset($this->_dependencies);
@@ -126,7 +126,7 @@ class DependencyList implements Iterator
      *
      * @return Dependency|null The current dependency.
      */
-    public function current(): ?\Horde\Components\Component\Dependency
+    public function current(): Dependency|null
     {
         return current($this->_dependencies);
     }
@@ -136,7 +136,7 @@ class DependencyList implements Iterator
      *
      * @return mixed The key for the current position.
      */
-    public function key(): mixed
+    public function key(): Dependency|null
     {
         return key($this->_dependencies);
     }
@@ -147,9 +147,13 @@ class DependencyList implements Iterator
      * @return Dependency|null The next
      * dependency or null if there are no more dependencies.
      */
-    public function next(): void
+    public function next(): Dependency|null
     {
-        return next($this->_dependencies);
+        $res = next($this->_dependencies);
+        if ($res === false) {
+            return null;
+        }
+        return $res;
     }
 
     /**
