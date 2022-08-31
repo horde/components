@@ -9,10 +9,13 @@
  * @author   Ralf Lang <lang@b1-systems.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Runner;
+
 use Horde\Components\Config;
 use Horde\Components\Exception;
 use Horde\Components\Output;
+
 /**
  * Horde\Components\Runner\Init:: create new metadata.
  *
@@ -29,35 +32,23 @@ use Horde\Components\Output;
 class Init
 {
     /**
-     * The configuration for the current job.
-     *
-     * @var Config
-     */
-    private $_config;
-
-    /**
-     * The output handler.
-     *
-     * @param Output
-     */
-    private $_output;
-
-    /**
      * Constructor.
      *
-     * @param Config $config  The configuration for the current job.
-     * @param Output $output  The output handler.
+     * @param Config $_config The configuration for the current job.
+     * @param Output $_output The output handler.
      */
     public function __construct(
-        Config $config,
-        Output $output
-    )
-    {
-        $this->_config = $config;
-        $this->_output = $output;
+        private readonly Config $_config,
+        /**
+         * The output handler.
+         *
+         * @param Output
+         */
+        private readonly Output $_output
+    ) {
     }
 
-    public function run()
+    public function run(): void
     {
         $options = $this->_config->getOptions();
         $arguments = $this->_config->getArguments();
@@ -75,43 +66,18 @@ class Init
         } elseif ($type == 'application') {
             $homepage = 'http://www.horde.org/apps/' . $id;
         }
-        $authors = array(
-            array(
-                'name' => $authorName,
-                'user' => $user,
-                'email' => $authorEmail,
-                'role' => 'lead',
-                'active' => true
-            )
-        );
-        $dt = new \Horde_Date(mktime());
-        $version = array(
-            'release' => '1.0.0alpha1',
-            'api' => '1.0.0'
-        );
-        $state = array(
-            'release' => 'alpha',
-            'api' => 'alpha',
-        );
-        $license = array(
-            'identifier' => 'LGP-2.1',
-            'uri' => 'http://www.horde.org/licenses/lgpl21'
-        );
-        $dependencies = array(
-            'required' => array(
-                'php' => '^5.3 || ^7',
-                'pear' => array('pear.horde.org/Horde_Exception' => '^2')
-            ),
-            'optional' => array(
-                'pear' => array('pear.horde.org/Horde_Test' => '^2.1')
-            )
-        );
+        $authors = [['name' => $authorName, 'user' => $user, 'email' => $authorEmail, 'role' => 'lead', 'active' => true]];
+        $dt = new \Horde_Date(time());
+        $version = ['release' => '1.0.0alpha1', 'api' => '1.0.0'];
+        $state = ['release' => 'alpha', 'api' => 'alpha'];
+        $license = ['identifier' => 'LGP-2.1', 'uri' => 'http://www.horde.org/licenses/lgpl21'];
+        $dependencies = ['required' => ['php' => '^5.3 || ^7', 'pear' => ['pear.horde.org/Horde_Exception' => '^2']], 'optional' => ['pear' => ['pear.horde.org/Horde_Test' => '^2.1']]];
         $description = "Long, detailed description of $id which may span multiple lines";
         $summary = "Short headline for $id";
         // First create a .horde.yml
-        //$yaml = $this->_config->getComponent()->getWrapper('HordeYml'); 
+        //$yaml = $this->_config->getComponent()->getWrapper('HordeYml');
         // Doesn't currently work, create a plain Horde_Yaml instead
-        $yaml = array();
+        $yaml = [];
         $yaml['id'] = $id;
         $yaml['name'] = ucfirst($id);
         $yaml['full'] = $summary;
@@ -138,7 +104,7 @@ class Init
          * Or refactor into Horde_Pear_Package_Xml::init()?
          */
         $xml = sprintf(
-'<?xml version="1.0" encoding="UTF-8"?>
+            '<?xml version="1.0" encoding="UTF-8"?>
 <package packagerversion="1.9.2" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
  <name>%s</name>
  <channel>pear.horde.org</channel>
@@ -254,18 +220,13 @@ class Init
         }
         mkdir($docdir, 0755, true);
         $yaml = $this->_config->getComponent()->getWrapper('ChangelogYml');
-        $yaml[$version['release']] = array(
-            'api' => $version['api'],
-            'state' => $state,
-            'date' => $dt->format('Y-m-d'),
-            'license' => $license,
-            'notes' => $changelog
-        );
+        $yaml[$version['release']] = ['api' => $version['api'], 'state' => $state, 'date' => $dt->format('Y-m-d'), 'license' => $license, 'notes' => $changelog];
         $yaml->save();
         $changes = $this->_config->getComponent()->getWrapper('Changes');
         // The changes helper seems to have no option to create a changes file
         $head = str_repeat('-', 12) . "\n";
-        $changeEntry = sprintf("%s%s\n%s\n%s\n", 
+        $changeEntry = sprintf(
+            "%s%s\n%s\n%s\n",
             $head,
             $version['release'],
             $head,

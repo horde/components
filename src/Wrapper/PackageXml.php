@@ -10,7 +10,9 @@
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Wrapper;
+
 use Horde\Components\Exception;
 use Horde\Components\Wrapper;
 use Horde\Components\WrapperTrait;
@@ -23,8 +25,7 @@ use Horde\Components\WrapperTrait;
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class PackageXml extends \Horde_Pear_Package_Xml
-implements Wrapper
+class PackageXml extends \Horde_Pear_Package_Xml implements Wrapper
 {
     use WrapperTrait;
 

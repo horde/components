@@ -10,9 +10,12 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Unit\Components\Component;
-use Horde\Components\Test\TestCase;
+
 use Horde\Components\Component\Dependency;
+use Horde\Components\Test\TestCase;
+
 /**
  * Test the dependency list.
  *
@@ -32,7 +35,7 @@ class DependencyTest extends TestCase
     public function testRequiredTrue()
     {
         $this->assertTrue(
-            $this->_getDependency(array('type' => 'pkg', 'optional' => 'no'))
+            $this->_getDependency(['type' => 'pkg', 'optional' => 'no'])
             ->isRequired()
         );
     }
@@ -40,7 +43,7 @@ class DependencyTest extends TestCase
     public function testRequiredFalse()
     {
         $this->assertFalse(
-            $this->_getDependency(array('type' => 'pkg'))
+            $this->_getDependency(['type' => 'pkg'])
             ->isRequired()
         );
     }
@@ -48,7 +51,7 @@ class DependencyTest extends TestCase
     public function testIsNotAPackage()
     {
         $this->assertFalse(
-            $this->_getDependency(array('type' => 'php'))
+            $this->_getDependency(['type' => 'php'])
             ->isPackage()
         );
     }
@@ -56,7 +59,7 @@ class DependencyTest extends TestCase
     public function testIsAPackage()
     {
         $this->assertTrue(
-            $this->_getDependency(array('type' => 'pkg'))
+            $this->_getDependency(['type' => 'pkg'])
             ->isPackage()
         );
     }
@@ -64,7 +67,7 @@ class DependencyTest extends TestCase
     public function testIsNotHorde()
     {
         $this->assertFalse(
-            $this->_getDependency(array())
+            $this->_getDependency([])
             ->isPackage()
         );
     }
@@ -72,7 +75,7 @@ class DependencyTest extends TestCase
     public function testIsNotHordeSinceOtherChannel()
     {
         $this->assertFalse(
-            $this->_getDependency(array('channel' => 'pear.php.net'))
+            $this->_getDependency(['channel' => 'pear.php.net'])
             ->isPackage()
         );
     }
@@ -80,7 +83,7 @@ class DependencyTest extends TestCase
     public function testIsHorde()
     {
         $this->assertFalse(
-            $this->_getDependency(array('channel' => 'pear.horde.org'))
+            $this->_getDependency(['channel' => 'pear.horde.org'])
             ->isPackage()
         );
     }
@@ -88,7 +91,7 @@ class DependencyTest extends TestCase
     public function testIsPhp()
     {
         $this->assertTrue(
-            $this->_getDependency(array('type' => 'php'))
+            $this->_getDependency(['type' => 'php'])
             ->isPhp()
         );
     }
@@ -96,7 +99,7 @@ class DependencyTest extends TestCase
     public function testIsNotPhp()
     {
         $this->assertFalse(
-            $this->_getDependency(array('type' => 'pkg'))
+            $this->_getDependency(['type' => 'pkg'])
             ->isPhp()
         );
     }
@@ -104,7 +107,7 @@ class DependencyTest extends TestCase
     public function testIsExtension()
     {
         $this->assertTrue(
-            $this->_getDependency(array('type' => 'ext'))
+            $this->_getDependency(['type' => 'ext'])
             ->isExtension()
         );
     }
@@ -112,7 +115,7 @@ class DependencyTest extends TestCase
     public function testIsNotExtension()
     {
         $this->assertFalse(
-            $this->_getDependency(array('type' => 'pkg'))
+            $this->_getDependency(['type' => 'pkg'])
             ->isExtension()
         );
     }
@@ -120,7 +123,7 @@ class DependencyTest extends TestCase
     public function testIsNotPear()
     {
         $this->assertFalse(
-            $this->_getDependency(array('type' => 'pkg'))
+            $this->_getDependency(['type' => 'pkg'])
             ->isPearBase()
         );
     }
@@ -129,11 +132,11 @@ class DependencyTest extends TestCase
     {
         $this->assertTrue(
             $this->_getDependency(
-                array(
+                [
                     'type' => 'pkg',
                     'name' => 'PEAR',
                     'channel' => 'pear.php.net'
-                )
+                ]
             )
             ->isPearBase()
         );
@@ -143,7 +146,7 @@ class DependencyTest extends TestCase
     {
         $this->assertEquals(
             'PEAR',
-            $this->_getDependency(array('type' => 'pkg', 'name' => 'PEAR'))
+            $this->_getDependency(['type' => 'pkg', 'name' => 'PEAR'])
             ->getName()
         );
     }
@@ -153,7 +156,7 @@ class DependencyTest extends TestCase
         $this->assertEquals(
             'pear.php.net',
             $this->_getDependency(
-                array('type' => 'pkg', 'channel' => 'pear.php.net')
+                ['type' => 'pkg', 'channel' => 'pear.php.net']
             )
             ->getChannel()
         );
@@ -164,11 +167,11 @@ class DependencyTest extends TestCase
         $this->assertEquals(
             'pear.php.net/PEAR',
             $this->_getDependency(
-                array(
+                [
                     'type' => 'pkg',
                     'name' => 'PEAR',
                     'channel' => 'pear.php.net'
-                )
+                ]
             )
             ->key()
         );
@@ -178,7 +181,7 @@ class DependencyTest extends TestCase
     {
         $this->assertEquals(
             'PHP Extension',
-            $this->_getDependency(array('type' => 'ext'))
+            $this->_getDependency(['type' => 'ext'])
             ->channelOrType()
         );
     }
@@ -188,7 +191,7 @@ class DependencyTest extends TestCase
         $this->assertEquals(
             'pear.php.net',
             $this->_getDependency(
-                array('type' => 'pkg', 'channel' => 'pear.php.net')
+                ['type' => 'pkg', 'channel' => 'pear.php.net']
             )
             ->channelOrType()
         );
@@ -197,7 +200,8 @@ class DependencyTest extends TestCase
     private function _getDependency($dependency)
     {
         return new Dependency(
-            $dependency, $this->getComponentFactory()
+            $dependency,
+            $this->getComponentFactory()
         );
     }
 

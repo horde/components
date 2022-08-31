@@ -10,9 +10,12 @@
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Wrapper;
+
 use Horde\Components\Wrapper;
 use Horde\Components\WrapperTrait;
+
 /**
  * Wrapper for the Application.php/Bundle.php files.
  *
@@ -21,19 +24,19 @@ use Horde\Components\WrapperTrait;
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class ApplicationPhp implements Wrapper
+class ApplicationPhp implements Wrapper, \Stringable
 {
     use WrapperTrait;
 
     /**
      * Regular expression to find bundle version.
      */
-    const BUNDLE_REGEXP = '/const VERSION = \'([^\']*)\';/';
+    final public const BUNDLE_REGEXP = '/const VERSION = \'([^\']*)\';/';
 
     /**
      * Regular expression to find application version.
      */
-    const APPLICATION_REGEXP = '/public \$version = \'([^\']*)\';/';
+    final public const APPLICATION_REGEXP = '/public \$version = \'([^\']*)\';/';
 
     /**
      * The file contents.
@@ -61,7 +64,7 @@ class ApplicationPhp implements Wrapper
     /**
      * Returns the file contents.
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->_contents;
     }
@@ -71,7 +74,7 @@ class ApplicationPhp implements Wrapper
      *
      * @return boolean  True if this is a Bundle.php wrapper.
      */
-    public function isBundle()
+    public function isBundle(): bool
     {
         return (bool)strpos($this->_file, '/Bundle.php');
     }
@@ -102,7 +105,7 @@ class ApplicationPhp implements Wrapper
      *
      * @param string $version  The new version.
      */
-    public function setVersion($version)
+    public function setVersion($version): void
     {
         if ($this->isBundle()) {
             $this->_contents = preg_replace(

@@ -10,12 +10,13 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Component;
 
-use Horde\Components\Dependencies;
-use Horde\Components\Config;
 use Horde\Components\Component;
 use Horde\Components\Components;
+use Horde\Components\Config;
+use Horde\Components\Dependencies;
 use Horde\Components\Exception;
 
 /**
@@ -35,42 +36,14 @@ use Horde\Components\Exception;
 class Identify
 {
     /**
-     * The active configuration.
-     *
-     * @var Config
-     */
-    private $_config;
-
-    /**
-     * The list of available actions
-     *
-     * @var array
-     */
-    private $_actions;
-
-    /**
-     * The dependency handler.
-     *
-     * @var Dependencies
-     */
-    private $_dependencies;
-
-    /**
      * Constructor.
      *
-     * @param Config       $config       The active configuration.
-     * @param array                   $actions      The list of available actions.
-     * @param Dependencies $dependencies The dependency handler.
+     * @param Config $_config The active configuration.
+     * @param array $_actions The list of available actions.
+     * @param Dependencies $_dependencies The dependency handler.
      */
-    public function __construct(
-        Config $config,
-        $actions,
-        Dependencies $dependencies
-    )
+    public function __construct(private readonly Config $_config, private $_actions, private readonly Dependencies $_dependencies)
     {
-        $this->_config        = $config;
-        $this->_actions       = $actions;
-        $this->_dependencies  = $dependencies;
     }
 
     /**
@@ -82,8 +55,8 @@ class Identify
     public function setComponentInConfiguration()
     {
         $arguments = $this->_config->getArguments();
-        if (list($component, $path) = $this->_determineComponent($arguments)) {
-            if (strpos($path, './') === 0 || strpos($path, '../') === 0) {
+        if ([$component, $path] = $this->_determineComponent($arguments)) {
+            if (str_starts_with((string) $path, './') || str_starts_with((string) $path, '../')) {
                 $path = realpath(getcwd() . '/' . $path);
             }
             $this->_config->setComponent($component);
@@ -109,23 +82,17 @@ class Identify
 
             if ($this->_isPackageXml($arguments[0]) || $this->_isHordeYml($arguments[0])) {
                 $this->_config->shiftArgument();
-                return array(
-                    $this->_dependencies
-                    ->getComponentFactory()
-                    ->createSource(dirname($arguments[0])),
-                    dirname($arguments[0])
-                );
+                return [$this->_dependencies
+                ->getComponentFactory()
+                ->createSource(dirname((string) $arguments[0])), dirname((string) $arguments[0])];
             }
 
             if (!in_array($arguments[0], $this->_actions['list'])) {
                 if ($this->_isDirectory($arguments[0])) {
                     $this->_config->shiftArgument();
-                    return array(
-                        $this->_dependencies
-                        ->getComponentFactory()
-                        ->createSource($arguments[0]),
-                        $arguments[0]
-                    );
+                    return [$this->_dependencies
+                    ->getComponentFactory()
+                    ->createSource($arguments[0]), $arguments[0]];
                 }
 
                 $options = $this->_config->getOptions();
@@ -140,7 +107,7 @@ class Identify
                         );
                     if ($result !== false) {
                         $this->_config->shiftArgument();
-                        return array($result, '');
+                        return [$result, ''];
                     }
                 }
 
@@ -157,12 +124,9 @@ class Identify
                 $this->_isDirectory($cwd) &&
                 ($this->_containsPackageXml($cwd) || $this->_containsHordeYml($cwd))
             ) {
-                return array(
-                    $this->_dependencies
-                    ->getComponentFactory()
-                    ->createSource($cwd),
-                    $cwd
-                );
+                return [$this->_dependencies
+                ->getComponentFactory()
+                ->createSource($cwd), $cwd];
             }
             $cwd = dirname($cwd, 1);
         } while ($cwd != '/');
@@ -193,12 +157,9 @@ class Identify
                 }
             }
             // Tuple successfully checked
-            return array(
-                $this->_dependencies
-                ->getComponentFactory()
-                ->createSource($cwd),
-                $cwd
-            );
+            return [$this->_dependencies
+            ->getComponentFactory()
+            ->createSource($cwd), $cwd];
         }
         // Finally fail, all good options gone
         throw new Exception(Components::ERROR_NO_COMPONENT);
@@ -271,5 +232,4 @@ class Identify
     {
         return file_exists($path . '/.horde.yml');
     }
-
 }

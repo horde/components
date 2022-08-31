@@ -9,6 +9,7 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Qc\Task;
 
 /**
@@ -31,7 +32,7 @@ class Lint extends Base
      *
      * @return string The task name.
      */
-    public function getName()
+    public function getName(): string
     {
         return 'syntax check';
     }
@@ -41,9 +42,9 @@ class Lint extends Base
      *
      * @param array &$options Additional options.
      *
-     * @return integer Number of errors.
+     * @return int Number of errors.
      */
-    public function run(array &$options = [])
+    public function run(array &$options = []): int
     {
         $lib = realpath($this->_config->getPath());
         $recursion = new \RecursiveIteratorIterator(
@@ -51,23 +52,23 @@ class Lint extends Base
         );
         $errors = 0;
         foreach ($recursion as $file) {
-            if ($file->isFile() && preg_match('/.php$/', $file->getFilename())) {
+            if ($file->isFile() && preg_match('/.php$/', (string) $file->getFilename())) {
                 $errors += $this->_lint($file->getPathname());
             }
         }
         return $errors;
     }
 
-    private function _lint($file)
+    private function _lint($file): bool
     {
-        $command = 'php -l ' . escapeshellarg($file);
+        $command = 'php -l ' . escapeshellarg((string) $file);
 
         if (\DIRECTORY_SEPARATOR == '\\') {
             $command = '"' . $command . '"';
         }
 
         $output = shell_exec($command);
-        if (strpos($output, 'Errors parsing') !== false) {
+        if (str_contains($output, 'Errors parsing')) {
             $this->getOutput()->plain($output);
             return true;
         }

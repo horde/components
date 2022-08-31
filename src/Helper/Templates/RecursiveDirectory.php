@@ -10,9 +10,11 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Helper\Templates;
-use Horde\Components\Helper\Templates;
+
 use Horde\Components\Exception;
+use Horde\Components\Helper\Templates;
 
 /**
  * Components_Helper_Templates_RecursiveDirectory:: converts template files
@@ -32,42 +34,30 @@ class RecursiveDirectory extends Templates
 {
     /**
      * The source location.
-     *
-     * @var string
      */
-    private $_source;
-
-    /**
-     * The target location.
-     *
-     * @var string
-     */
-    private $_target;
+    private ?string $_source = null;
 
     /**
      * Constructor.
      *
      * @param string $sdir  The templates source directory.
-     * @param string $tdir  The templates target directory.
+     * @param string $_target The templates target directory.
      */
-    public function __construct($sdir, $tdir)
+    public function __construct($sdir, private $_target)
     {
         if (file_exists($sdir)) {
             $this->_source = $sdir;
         } else {
             throw new Exception("No template directory at $sdir!");
         }
-        $this->_target = $tdir;
     }
 
     /**
      * Rewrite the template(s) from the source(s) to the target location(s).
      *
      * @param array  $parameters The template(s) parameters.
-     *
-     * @return void
      */
-    public function write(array $parameters = array())
+    public function write(array $parameters = []): void
     {
         if (!file_exists($this->_target)) {
             mkdir($this->_target, 0777, true);

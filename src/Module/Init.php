@@ -9,7 +9,9 @@
  * @author   Ralf Lang <lang@b1-systems.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Module;
+
 use Horde\Components\Config;
 use Horde\Components\Exception;
 use Horde\Components\Output;
@@ -29,44 +31,31 @@ use Horde\Components\Output;
  */
 class Init extends Base
 {
-    public function getOptionGroupTitle()
+    public function getOptionGroupTitle(): string
     {
         return 'Init';
     }
 
-    public function getOptionGroupDescription()
+    public function getOptionGroupDescription(): string
     {
         return 'This module initializes .horde.yml, doc/changelog.yml and package.xml (and doc/CHANGES for apps).';
     }
 
-    public function getOptionGroupOptions()
+    public function getOptionGroupOptions(): array
     {
-        return array(
-            new \Horde_Argv_Option(
-                '',
-                '--author',
-                array(
-                    'action' => 'store',
-                    'help'   => 'First author\'s name'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '',
-                '--email',
-                array(
-                    'action' => 'store',
-                    'help'   => 'Author\'s email'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '',
-                '--license',
-                array(
-                    'action' => 'store',
-                    'help'   => 'License'
-                )
-            )
-        );
+        return [new \Horde_Argv_Option(
+            '',
+            '--author',
+            ['action' => 'store', 'help'   => 'First author\'s name']
+        ), new \Horde_Argv_Option(
+            '',
+            '--email',
+            ['action' => 'store', 'help'   => 'Author\'s email']
+        ), new \Horde_Argv_Option(
+            '',
+            '--license',
+            ['action' => 'store', 'help'   => 'License']
+        )];
     }
 
     /**
@@ -74,7 +63,7 @@ class Init extends Base
      *
      * @return string The title.
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return 'init';
     }
@@ -84,7 +73,7 @@ class Init extends Base
      *
      * @return string The description.
      */
-    public function getUsage()
+    public function getUsage(): string
     {
         return 'Initialize metadata and dirs';
     }
@@ -94,9 +83,9 @@ class Init extends Base
      *
      * @return array A list of supported action arguments.
      */
-    public function getActions()
+    public function getActions(): array
     {
-        return array('init');
+        return ['init'];
     }
 
     /**
@@ -106,7 +95,7 @@ class Init extends Base
      *
      * @return string The help text.
      */
-    public function getHelp($action)
+    public function getHelp($action): string
     {
         return 'This module creates doc/changelog.yml, package.xml, and
 doc/CHANGES. It will also create the .horde.yml metadata.
@@ -117,7 +106,6 @@ and run
   horde-components init application --author "Some Guy" --email "foo@bar.com"
 or
   horde-components init library --author "Some Guy" --email "foo@bar.com"';
-
     }
 
     /**
@@ -125,12 +113,9 @@ or
      *
      * @return array A list of option help texts.
      */
-    public function getContextOptionHelp()
+    public function getContextOptionHelp(): array
     {
-        return array(
-            '--author' => 'The primary author\'s name',
-            '--email' => 'Your Email Address'
-        );
+        return ['--author' => 'The primary author\'s name', '--email' => 'Your Email Address'];
     }
 
     /**
@@ -147,7 +132,6 @@ or
         $arguments = $config->getArguments();
 
         if (!empty($arguments[0]) && $arguments[0] == 'init') {
-
             switch ($arguments[1]) {
                 case 'application':
                     $this->_dependencies->getRunnerInit()->run();
@@ -156,8 +140,8 @@ or
                 case 'library':
                     $this->_dependencies->getRunnerInit()->run();
                     return true;
-                default;
-                    return false;
+                default:
+                return false;
             }
         }
     }

@@ -9,13 +9,16 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Qc\Task;
-use Horde\Components\Config;
+
 use Horde\Components\Component;
+use Horde\Components\Component\Task\SystemCall;
+use Horde\Components\Config;
 use Horde\Components\Output;
 use Horde\Components\Qc\Tasks as QcTasks;
 use Horde\Components\Release\Tasks as ReleaseTasks;
-use Horde\Components\Component\Task\SystemCall;
+
 /**
  * Components_Qc_Task_Base:: provides core functionality for qc tasks.
  *
@@ -31,56 +34,29 @@ use Horde\Components\Component\Task\SystemCall;
  */
 class Base
 {
-    /**
-     * The configuration for the current job.
-     *
-     * @var Config
-     */
-    protected $_config;
-
-    /**
-     * The tasks handler.
-     *
-     * @var QcTasks
-     */
-    private $_tasks;
-
-    /**
-     * The task output.
-     *
-     * @var Output
-     */
-    private $_output;
-
+    use SystemCall;
     /**
      * The component that should be checked
-     *
-     * @var Component
      */
-    private $_component;
+    private ?\Horde\Components\Component $_component = null;
 
     /**
      * The task name.
-     *
-     * @var string
      */
-    private $_name;
+    private ?string $_name = null;
 
     /**
      * Constructor.
      *
-     * @param Config   $config The configuration for the current job.
-     * @param QcTasks $tasks  The task handler.
-     * @param Output   $output Accepts output.
+     * @param Config $_config The configuration for the current job.
+     * @param QcTasks $_tasks The task handler.
+     * @param Output $_output Accepts output.
      */
     public function __construct(
-        Config $config,
-        QcTasks $tasks,
-        Output $output
+        protected Config $_config,
+        private readonly QcTasks $_tasks,
+        private readonly Output $_output
     ) {
-        $this->_config = $config;
-        $this->_tasks = $tasks;
-        $this->_output = $output;
         if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
             require __DIR__ . '/../vendor/autoload.php';
         } elseif (file_exists('/../../../bundle/vendor/autoload.php')) {
@@ -92,10 +68,8 @@ class Base
      * Set the component this task should act upon.
      *
      * @param Component $component The component to be checked.
-     *
-     * @return void
      */
-    public function setComponent(Component $component)
+    public function setComponent(Component $component): void
     {
         $this->_component = $component;
     }
@@ -105,7 +79,7 @@ class Base
      *
      * @return Component The component to be checked.
      */
-    protected function getComponent()
+    protected function getComponent(): ?\Horde\Components\Component
     {
         return $this->_component;
     }
@@ -114,10 +88,8 @@ class Base
      * Set the name of this task.
      *
      * @param string $name The task name.
-     *
-     * @return void
      */
-    public function setName($name)
+    public function setName($name): void
     {
         $this->_name = $name;
     }
@@ -127,7 +99,7 @@ class Base
      *
      * @return string The task name.
      */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->_name;
     }
@@ -137,7 +109,7 @@ class Base
      *
      * @return ReleaseTasks The release tasks handler.
      */
-    protected function getTasks()
+    protected function getTasks(): QcTasks
     {
         return $this->_tasks;
     }
@@ -147,7 +119,7 @@ class Base
      *
      * @return Output The output handler.
      */
-    protected function getOutput()
+    protected function getOutput(): \Horde\Components\Output
     {
         return $this->_output;
     }
@@ -170,11 +142,9 @@ class Base
      *
      * @param array &$options Additional options.
      *
-     * @return integer Number of errors.
+     * @return int Number of errors.
      */
-    public function run(array &$options = [])
+    public function run(array &$options = []): int
     {
     }
-
-    use SystemCall;
 }

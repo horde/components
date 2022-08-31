@@ -10,10 +10,13 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Test\Unit\Components;
-use Horde\Components\Test\TestCase;
-use Horde\Components\Configs;
+
 use Horde\Components\Config\File as ConfigFile;
+use Horde\Components\Configs;
+use Horde\Components\Test\TestCase;
+
 /**
  * Test the configuration handler.
  *

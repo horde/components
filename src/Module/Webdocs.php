@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Module;
+
 use Horde\Components\Config;
 
 /**
@@ -32,7 +34,7 @@ class Webdocs extends Base
      *
      * @return string The group title.
      */
-    public function getOptionGroupTitle()
+    public function getOptionGroupTitle(): string
     {
         return 'Generate website documentation';
     }
@@ -42,7 +44,7 @@ class Webdocs extends Base
      *
      * @return string The group description.
      */
-    public function getOptionGroupDescription()
+    public function getOptionGroupDescription(): string
     {
         return 'This module generates the www.horde.org data for the component.';
     }
@@ -52,25 +54,16 @@ class Webdocs extends Base
      *
      * @return array The group options.
      */
-    public function getOptionGroupOptions()
+    public function getOptionGroupOptions(): array
     {
-        return array(
-            new \Horde_Argv_Option(
-                '-W',
-                '--webdocs',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Generate the documentation for the component in the specified DESTINATION or WEBSOURCE location.'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '--html-generator',
-                array(
-                    'action' => 'store',
-                    'help'   => 'Path to the Python docutils HTML generator script.'
-                )
-            ),
-        );
+        return [new \Horde_Argv_Option(
+            '-W',
+            '--webdocs',
+            ['action' => 'store_true', 'help'   => 'Generate the documentation for the component in the specified DESTINATION or WEBSOURCE location.']
+        ), new \Horde_Argv_Option(
+            '--html-generator',
+            ['action' => 'store', 'help'   => 'Path to the Python docutils HTML generator script.']
+        )];
     }
 
     /**
@@ -78,7 +71,7 @@ class Webdocs extends Base
      *
      * @return string The title.
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return 'webdocs';
     }
@@ -88,7 +81,7 @@ class Webdocs extends Base
      *
      * @return string The description.
      */
-    public function getUsage()
+    public function getUsage(): string
     {
         return 'Generate documentation for www.horde.org.';
     }
@@ -98,9 +91,9 @@ class Webdocs extends Base
      *
      * @return array A list of supported action arguments.
      */
-    public function getActions()
+    public function getActions(): array
     {
-        return array('webdocs');
+        return ['webdocs'];
     }
 
     /**
@@ -110,7 +103,7 @@ class Webdocs extends Base
      *
      * @return string The help text.
      */
-    public function getHelp($action)
+    public function getHelp($action): string
     {
         $formatter = new \Horde_Argv_IndentedHelpFormatter();
         return 'This module generates the required set of data to publish information about this component on www.horde.org. The operation will only work with an already relased package! Make sure you enter the name of the package on the PEAR server rather than using a local path and ensure you added the "' . $formatter->highlightOption('--allow-remote') . '" flag as well.';
@@ -121,14 +114,9 @@ class Webdocs extends Base
      *
      * @return array A list of option help texts.
      */
-    public function getContextOptionHelp()
+    public function getContextOptionHelp(): array
     {
-        return array(
-            '--destination' => 'The documentation for the component will be written to the location specified as DESTINATION. The module will assume DESTINATION is a checkout of the "horde-web" git repository.',
-            '--html-generator' => '',
-            '--pretend' => '',
-            '--allow-remote' => '',
-        );
+        return ['--destination' => 'The documentation for the component will be written to the location specified as DESTINATION. The module will assume DESTINATION is a checkout of the "horde-web" git repository.', '--html-generator' => '', '--pretend' => '', '--allow-remote' => ''];
     }
 
     /**

@@ -10,10 +10,12 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Unit\Components\Component;
-use Horde\Components\Test\TestCase;
+
 use Horde\Components\Component\Resolver;
 use Horde\Components\Helper\Root as HelperRoot;
+use Horde\Components\Test\TestCase;
 
 /**
  * Test the component resolver.
@@ -36,7 +38,7 @@ class ResolverTest extends TestCase
         $resolver = $this->_getResolver();
         $this->assertInstanceOf(
             'Horde\Components\Component',
-            $resolver->resolveName('Install', 'pear.horde.org', array('git'))
+            $resolver->resolveName('Install', 'pear.horde.org', ['git'])
         );
     }
 
@@ -44,7 +46,9 @@ class ResolverTest extends TestCase
     {
         return new Resolver(
             new HelperRoot(
-                null, null, __DIR__ . '/../../../fixture/framework'
+                null,
+                null,
+                __DIR__ . '/../../../fixture/framework'
             ),
             $this->getComponentFactory()
         );

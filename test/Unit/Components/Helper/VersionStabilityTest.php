@@ -10,10 +10,13 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Unit\Components\Helper;
-use Horde\Components\Test\TestCase;
-use Horde\Components\Helper\Version as HelperVersion;
+
 use Horde\Components\Exception;
+use Horde\Components\Helper\Version as HelperVersion;
+use Horde\Components\Test\TestCase;
+
 /**
  * Test the version/stability check.
  *
@@ -34,7 +37,8 @@ class VersionStabilityTest extends TestCase
     {
         $this->assertNull(
             HelperVersion::validateReleaseStability(
-                '4.0.0', 'stable'
+                '4.0.0',
+                'stable'
             )
         );
     }
@@ -43,7 +47,8 @@ class VersionStabilityTest extends TestCase
     {
         try {
             HelperVersion::validateReleaseStability(
-                '4.0.0', 'beta'
+                '4.0.0',
+                'beta'
             );
             $this->fail('No exception!');
         } catch (Exception $e) {
@@ -58,7 +63,8 @@ class VersionStabilityTest extends TestCase
     {
         $this->assertNull(
             HelperVersion::validateReleaseStability(
-                '4.0.0alpha1', 'alpha'
+                '4.0.0alpha1',
+                'alpha'
             )
         );
     }
@@ -67,7 +73,8 @@ class VersionStabilityTest extends TestCase
     {
         try {
             HelperVersion::validateReleaseStability(
-                '4.0.0alpha1', 'stable'
+                '4.0.0alpha1',
+                'stable'
             );
             $this->fail('No exception!');
         } catch (Exception $e) {
@@ -82,7 +89,8 @@ class VersionStabilityTest extends TestCase
     {
         $this->assertNull(
             HelperVersion::validateReleaseStability(
-                '4.0.0beta1', 'beta'
+                '4.0.0beta1',
+                'beta'
             )
         );
     }
@@ -91,7 +99,8 @@ class VersionStabilityTest extends TestCase
     {
         try {
             HelperVersion::validateReleaseStability(
-                '4.0.0beta1', 'stable'
+                '4.0.0beta1',
+                'stable'
             );
             $this->fail('No exception!');
         } catch (Exception $e) {
@@ -106,7 +115,8 @@ class VersionStabilityTest extends TestCase
     {
         $this->assertNull(
             HelperVersion::validateReleaseStability(
-                '4.0.0RC1', 'beta'
+                '4.0.0RC1',
+                'beta'
             )
         );
     }
@@ -115,7 +125,8 @@ class VersionStabilityTest extends TestCase
     {
         try {
             HelperVersion::validateReleaseStability(
-                '4.0.0RC1', 'stable'
+                '4.0.0RC1',
+                'stable'
             );
             $this->fail('No exception!');
         } catch (Exception $e) {
@@ -130,7 +141,8 @@ class VersionStabilityTest extends TestCase
     {
         $this->assertNull(
             HelperVersion::validateReleaseStability(
-                '4.0.0dev1', 'devel'
+                '4.0.0dev1',
+                'devel'
             )
         );
     }
@@ -139,7 +151,8 @@ class VersionStabilityTest extends TestCase
     {
         try {
             HelperVersion::validateReleaseStability(
-                '4.0.0dev1', 'stable'
+                '4.0.0dev1',
+                'stable'
             );
             $this->fail('No exception!');
         } catch (Exception $e) {
@@ -154,7 +167,8 @@ class VersionStabilityTest extends TestCase
     {
         $this->assertNull(
             HelperVersion::validateApiStability(
-                '4.0.0RC1', 'beta'
+                '4.0.0RC1',
+                'beta'
             )
         );
     }
@@ -163,7 +177,8 @@ class VersionStabilityTest extends TestCase
     {
         $this->assertNull(
             HelperVersion::validateApiStability(
-                '4.0.0', 'stable'
+                '4.0.0',
+                'stable'
             )
         );
     }
@@ -172,7 +187,8 @@ class VersionStabilityTest extends TestCase
     {
         try {
             HelperVersion::validateApiStability(
-                '4.0.0', 'beta'
+                '4.0.0',
+                'beta'
             );
             $this->fail('No exception!');
         } catch (Exception $e) {

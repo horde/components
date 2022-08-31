@@ -10,9 +10,11 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Helper\Templates;
-use Horde\Components\Helper\Templates;
+
 use Horde\Components\Exception;
+use Horde\Components\Helper\Templates;
 
 /**
  * Components_Helper_Templates_Single:: converts a single template file into a
@@ -32,17 +34,13 @@ class Single extends Templates
 {
     /**
      * The source location.
-     *
-     * @var string
      */
-    private $_source;
+    private ?string $_source = null;
 
     /**
      * The target location.
-     *
-     * @var string
      */
-    private $_target;
+    private readonly string $_target;
 
     /**
      * Constructor.
@@ -67,10 +65,8 @@ class Single extends Templates
      * Rewrite the template(s) from the source(s) to the target location(s).
      *
      * @param array  $parameters The template(s) parameters.
-     *
-     * @return void
      */
-    public function write(array $parameters = array())
+    public function write(array $parameters = []): void
     {
         $this->writeSourceToTarget($this->_source, $this->_target, $parameters);
     }

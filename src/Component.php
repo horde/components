@@ -9,11 +9,14 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components;
+
 use Horde\Components\Component\DependencyList;
 use Horde\Components\Helper\Commit as HelperCommit;
 use Horde\Components\Helper\Root as HelperRoot;
 use Horde\Components\Pear\Environment as PearEnvironment;
+use stdClass;
 
 /**
  * Represents a component.
@@ -35,56 +38,56 @@ interface Component
      *
      * @return string The component name.
      */
-    public function getName();
+    public function getName(): string;
 
     /**
      * Return the component summary.
      *
      * @return string The summary of the component.
      */
-    public function getSummary();
+    public function getSummary(): string;
 
     /**
      * Return the component description.
      *
      * @return string The description of the component.
      */
-    public function getDescription();
+    public function getDescription(): string;
 
     /**
      * Return the version of the component.
      *
      * @return string The component version.
      */
-    public function getVersion();
+    public function getVersion(): string;
 
     /**
      * Returns the previous version of the component.
      *
      * @return string The previous component version.
      */
-    public function getPreviousVersion();
+    public function getPreviousVersion(): string;
 
     /**
      * Return the last release date of the component.
      *
      * @return string The date.
      */
-    public function getDate();
+    public function getDate(): string;
 
     /**
      * Return the channel of the component.
      *
      * @return string The component channel.
      */
-    public function getChannel();
+    public function getChannel(): string;
 
     /**
      * Return the dependencies for the component.
      *
      * @return array The component dependencies.
      */
-    public function getDependencies();
+    public function getDependencies(): array ;
 
     /**
      * Return the stability of the release or api.
@@ -93,7 +96,7 @@ interface Component
      *
      * @return string The stability.
      */
-    public function getState($key = 'release');
+    public function getState($key = 'release'): string;
 
     /**
      * Return the component lead developers.
@@ -114,28 +117,28 @@ interface Component
      *
      * @return string The component license URI.
      */
-    public function getLicenseLocation();
+    public function getLicenseLocation(): string;
 
     /**
      * Indicate if the component has a local package.xml.
      *
      * @return boolean True if a package.xml exists.
      */
-    public function hasLocalPackageXml();
+    public function hasLocalPackageXml(): bool;
 
     /**
      * Returns the link to the change log.
      *
      * @return string The link to the change log.
      */
-    public function getChangelogLink();
+    public function getChangelogLink(): string;
 
     /**
      * Return the path to the release notes.
      *
      * @return string|boolean The path to the release notes or false.
      */
-    public function getReleaseNotesPath();
+    public function getReleaseNotesPath(): string|bool;
 
     /**
      * Return the dependency list for the component.
@@ -150,14 +153,14 @@ interface Component
      *
      * @return \stdClass Information about this component.
      */
-    public function getData();
+    public function getData(): stdClass;
 
     /**
      * Return the path to a DOCS_ORIGIN file within the component.
      *
      * @return string|null The path name or NULL if there is no DOCS_ORIGIN file.
      */
-    public function getDocumentOrigin();
+    public function getDocumentOrigin(): string|null;
 
     /**
      * Update the package.xml file for this component.
@@ -165,10 +168,8 @@ interface Component
      * @param string $action  The action to perform. Either "update", "diff",
      *                        or "print".
      * @param array  $options Options for this operation.
-     *
-     * @return void
      */
-    public function updatePackage($action, $options);
+    public function updatePackage($action, $options): string;
 
     /**
      * Update the component changelog.
@@ -178,7 +179,7 @@ interface Component
      *
      * @return string[]  Output messages.
      */
-    public function changed($log, $options);
+    public function changed($log, $options): array;
 
     /**
      * Timestamp the package.xml file with the current time.
@@ -187,7 +188,7 @@ interface Component
      *
      * @return string The success message.
      */
-    public function timestamp($options);
+    public function timestamp($options): string;
 
     /**
      * Add the next version to the package.xml.
@@ -205,7 +206,7 @@ interface Component
         $initial_note,
         $stability_api = null,
         $stability_release = null,
-        $options = array()
+        $options = []
     );
 
     /**
@@ -217,7 +218,7 @@ interface Component
      *
      * @return string The success message.
      */
-    public function currentSentinel($changes, $app, $options);
+    public function currentSentinel($changes, $app, $options): string;
 
     /**
      * Tag the component.
@@ -225,10 +226,8 @@ interface Component
      * @param string       $tag     Tag name.
      * @param string       $message Tag message.
      * @param HelperCommit $commit  The commit helper.
-     *
-     * @return void
      */
-    public function tag(string $tag, string $message, HelperCommit $commit);
+    public function tag(string $tag, string $message, HelperCommit $commit): string;
 
     /**
      * Place the component source archive at the specified location.
@@ -240,26 +239,24 @@ interface Component
      *               archive, optionally [1] an array of error strings, and [2]
      *               PEAR output.
      */
-    public function placeArchive($destination, $options = array());
+    public function placeArchive($destination, $options = []): array;
 
     /**
      * Identify the repository root.
      *
      * @param HelperRoot $helper The root helper.
      *
-     * @return void
+     * @return string
      */
-    public function repositoryRoot(HelperRoot $helper);
+    public function repositoryRoot(HelperRoot $helper): string;
 
     /**
      * Install the channel of this component in the environment.
      *
      * @param PearEnvironment $env     The environment to install into.
      * @param array           $options Install options.
-     *
-     * @return void
      */
-    public function installChannel(PearEnvironment $env, $options = array());
+    public function installChannel(PearEnvironment $env, $options = []): void;
 
     /**
      * Install a component.
@@ -267,10 +264,10 @@ interface Component
      * @param PearEnvironment $env     The environment to install into.
      * @param array           $options Install options.
      * @param string          $reason  Optional reason for adding the package.
-     *
-     * @return void
      */
     public function install(
-        PearEnvironment $env, $options = array(), $reason = ''
-    );
+        PearEnvironment $env,
+        $options = [],
+        $reason = ''
+    ): void;
 }

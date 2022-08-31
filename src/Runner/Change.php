@@ -9,10 +9,12 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Runner;
+
 use Horde\Components\Config;
-use Horde\Components\Output;
 use Horde\Components\Helper\Commit as HelperCommit;
+use Horde\Components\Output;
 
 /**
  * Components_Runner_Change:: adds a new change log entry.
@@ -30,32 +32,23 @@ use Horde\Components\Helper\Commit as HelperCommit;
 class Change
 {
     /**
-     * The configuration for the current job.
-     *
-     * @var Config
-     */
-    private $_config;
-
-    /**
-     * The output handler.
-     *
-     * @param Output
-     */
-    private $_output;
-
-    /**
      * Constructor.
      *
-     * @param Config $config  The configuration for the current job.
-     * @param Output $output  The output handler.
+     * @param Config $_config The configuration for the current job.
+     * @param Output $_output The output handler.
      */
-    public function __construct(Config $config, Output $output)
-    {
-        $this->_config = $config;
-        $this->_output = $output;
+    public function __construct(
+        private readonly Config $_config,
+        /**
+         * The output handler.
+         *
+         * @param Output
+         */
+        private readonly Output $_output
+    ) {
     }
 
-    public function run()
+    public function run(): void
     {
         $options = $this->_config->getOptions();
         $arguments = $this->_config->getArguments();
@@ -68,7 +61,8 @@ class Change
 
         if ($log && !empty($options['commit'])) {
             $options['commit'] = new HelperCommit(
-                $this->_output, $options
+                $this->_output,
+                $options
             );
         }
         $output = $this->_config->getComponent()->changed($log, $options);

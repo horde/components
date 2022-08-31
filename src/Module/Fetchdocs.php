@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.fsf.org/copyleft/lgpl.html LGPL
  */
+
 namespace Horde\Components\Module;
+
 use Horde\Components\Config;
 
 /**
@@ -32,7 +34,7 @@ class Fetchdocs extends Base
      *
      * @return string The group title.
      */
-    public function getOptionGroupTitle()
+    public function getOptionGroupTitle(): string
     {
         return 'Fetch Documentation';
     }
@@ -42,7 +44,7 @@ class Fetchdocs extends Base
      *
      * @return string The group description.
      */
-    public function getOptionGroupDescription()
+    public function getOptionGroupDescription(): string
     {
         return 'This module fetches remote documentation files.';
     }
@@ -52,18 +54,13 @@ class Fetchdocs extends Base
      *
      * @return array The group options.
      */
-    public function getOptionGroupOptions()
+    public function getOptionGroupOptions(): array
     {
-        return array(
-            new \Horde_Argv_Option(
-                '-F',
-                '--fetchdocs',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Fetches documentation files from remote locations. The files to fetch and their target location will be determined by a DOCS_ORIGIN file in the "doc" or "docs" folder of the selected component.'
-                )
-            ),
-        );
+        return [new \Horde_Argv_Option(
+            '-F',
+            '--fetchdocs',
+            ['action' => 'store_true', 'help'   => 'Fetches documentation files from remote locations. The files to fetch and their target location will be determined by a DOCS_ORIGIN file in the "doc" or "docs" folder of the selected component.']
+        )];
     }
 
     /**
@@ -71,7 +68,7 @@ class Fetchdocs extends Base
      *
      * @return string The title.
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return 'fetchdocs';
     }
@@ -81,7 +78,7 @@ class Fetchdocs extends Base
      *
      * @return string The description.
      */
-    public function getUsage()
+    public function getUsage(): string
     {
         return 'Fetch remote documentation.';
     }
@@ -91,9 +88,9 @@ class Fetchdocs extends Base
      *
      * @return array A list of supported action arguments.
      */
-    public function getActions()
+    public function getActions(): array
     {
-        return array('fetchdocs');
+        return ['fetchdocs'];
     }
 
     /**
@@ -103,7 +100,7 @@ class Fetchdocs extends Base
      *
      * @return string The help text.
      */
-    public function getHelp($action)
+    public function getHelp($action): string
     {
         return 'This module fetches documentation files from remote locations. The files to fetch and their target location will be determined by a DOCS_ORIGIN file in the "doc" or "docs" folder of the selected component.';
     }
@@ -113,11 +110,9 @@ class Fetchdocs extends Base
      *
      * @return array A list of option help texts.
      */
-    public function getContextOptionHelp()
+    public function getContextOptionHelp(): array
     {
-        return array(
-            '--pretend' => '',
-        );
+        return ['--pretend' => ''];
     }
 
     /**

@@ -10,13 +10,14 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Unit\Components\Helper;
 
 use Horde\Components\Exception;
-use Horde\Components\Test\TestCase;
 use Horde\Components\Helper\Templates\Directory as TemplatesDirectory;
 use Horde\Components\Helper\Templates\RecursiveDirectory as TemplatesRecursiveDirectory;
 use Horde\Components\Helper\Templates\Single as TemplatesSingle;
+use Horde\Components\Test\TestCase;
 
 /**
  * Test the template machinery.
@@ -79,7 +80,7 @@ class TemplatesTest extends TestCase
             'variables',
             'target'
         );
-        $templates->write(array('1' => 'One', '2' => 'Two'));
+        $templates->write(['1' => 'One', '2' => 'Two']);
         $this->assertEquals(
             "One : Two\n",
             file_get_contents($tdir . '/target')
@@ -111,7 +112,7 @@ class TemplatesTest extends TestCase
             'input',
             'target'
         );
-        $templates->write(array('input' => 'SOME INPUT'));
+        $templates->write(['input' => 'SOME INPUT']);
         $this->assertEquals(
             "SOME INPUT",
             file_get_contents($tdir . '/target')
@@ -125,7 +126,7 @@ class TemplatesTest extends TestCase
             __DIR__ . '/../../../fixture/templates/dir',
             $tdir
         );
-        $templates->write(array('one' => 'One', 'two' => 'Two'));
+        $templates->write(['one' => 'One', 'two' => 'Two']);
         $this->assertEquals(
             "One",
             file_get_contents($tdir . '/one')
@@ -153,7 +154,7 @@ class TemplatesTest extends TestCase
             __DIR__ . '/../../../fixture/templates/dir',
             $tdir
         );
-        $templates->write(array('one' => 'One', 'two' => 'Two'));
+        $templates->write(['one' => 'One', 'two' => 'Two']);
         $this->assertEquals(
             "One",
             file_get_contents($tdir . '/one')
@@ -171,7 +172,7 @@ class TemplatesTest extends TestCase
             __DIR__ . '/../../../fixture/templates/rewrite',
             $tdir
         );
-        $templates->write(array('one' => 'One'));
+        $templates->write(['one' => 'One']);
         $this->assertEquals(
             "One",
             file_get_contents($tdir . '/rewritten')
@@ -185,7 +186,7 @@ class TemplatesTest extends TestCase
             __DIR__ . '/../../../fixture/templates/rec-dir',
             $tdir
         );
-        $templates->write(array('one' => 'One', 'two' => 'Two'));
+        $templates->write(['one' => 'One', 'two' => 'Two']);
         $this->assertEquals(
             "One",
             file_get_contents($tdir . '/one/one')
@@ -213,7 +214,7 @@ class TemplatesTest extends TestCase
             __DIR__ . '/../../../fixture/templates/rec-dir',
             $tdir
         );
-        $templates->write(array('one' => 'One', 'two' => 'Two'));
+        $templates->write(['one' => 'One', 'two' => 'Two']);
         $this->assertEquals(
             "One",
             file_get_contents($tdir . '/one/one')
@@ -223,5 +224,4 @@ class TemplatesTest extends TestCase
             file_get_contents($tdir . '/two/two')
         );
     }
-
 }

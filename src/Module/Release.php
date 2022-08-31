@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Module;
+
 use Horde\Components\Config;
 use Horde\Components\Exception;
 
@@ -28,115 +30,61 @@ use Horde\Components\Exception;
  */
 class Release extends Base
 {
-    public function getOptionGroupTitle()
+    public function getOptionGroupTitle(): string
     {
         return 'Package release';
     }
 
-    public function getOptionGroupDescription()
+    public function getOptionGroupDescription(): string
     {
         return 'This module releases a new version for the specified package';
     }
 
-    public function getOptionGroupOptions()
+    public function getOptionGroupOptions(): array
     {
-        return array(
-            new \Horde_Argv_Option(
-                '-r',
-                '--release',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Release the next version of the package.'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '-M',
-                '--releaseserver',
-                array(
-                    'action' => 'store',
-                    'help'   => 'The remote server SSH connection string. The release package will be copied here via "scp".'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '-U',
-                '--releasedir',
-                array(
-                    'action' => 'store',
-                    'help'   => 'PEAR server target directory on the remote machine.'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '--next-version',
-                array(
-                    'action' => 'store',
-                    'help'   => 'The version number planned for the next release of the component.'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '--version-part',
-                array(
-                    'action' => 'store',
-                    'help'   => 'Select the version part that should be incremented if no version is specified. Either "minor" or "patch" (default)'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '--next-note',
-                array(
-                    'action' => 'store',
-                    'default' => '',
-                    'help'   => 'Initial change log note for the next version of the component [default: empty entry].'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '--next-apistate',
-                array(
-                    'action' => 'store',
-                    'help'   => 'The next API stability [default: no change].'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '--next-relstate',
-                array(
-                    'action' => 'store',
-                    'help'   => 'The next release stability [default: no change].'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '--from',
-                array(
-                    'action' => 'store',
-                    'help'   => 'The sender address for mailing list announcements.'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '--horde-user',
-                array(
-                    'action' => 'store',
-                    'help'   => 'The username for accessing bugs.horde.org.'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '--horde-pass',
-                array(
-                    'action' => 'store',
-                    'help'   => 'The password for accessing bugs.horde.org.'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '--web-dir',
-                array(
-                    'action' => 'store',
-                    'help'   => 'The directory of a horde-web checkout.'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '--dump',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Prints the release notes only.'
-                )
-            ),
-        );
+        return [new \Horde_Argv_Option(
+            '-r',
+            '--release',
+            ['action' => 'store_true', 'help'   => 'Release the next version of the package.']
+        ), new \Horde_Argv_Option(
+            '-M',
+            '--releaseserver',
+            ['action' => 'store', 'help'   => 'The remote server SSH connection string. The release package will be copied here via "scp".']
+        ), new \Horde_Argv_Option(
+            '-U',
+            '--releasedir',
+            ['action' => 'store', 'help'   => 'PEAR server target directory on the remote machine.']
+        ), new \Horde_Argv_Option(
+            '--next-version',
+            ['action' => 'store', 'help'   => 'The version number planned for the next release of the component.']
+        ), new \Horde_Argv_Option(
+            '--version-part',
+            ['action' => 'store', 'help'   => 'Select the version part that should be incremented if no version is specified. Either "minor" or "patch" (default)']
+        ), new \Horde_Argv_Option(
+            '--next-note',
+            ['action' => 'store', 'default' => '', 'help'   => 'Initial change log note for the next version of the component [default: empty entry].']
+        ), new \Horde_Argv_Option(
+            '--next-apistate',
+            ['action' => 'store', 'help'   => 'The next API stability [default: no change].']
+        ), new \Horde_Argv_Option(
+            '--next-relstate',
+            ['action' => 'store', 'help'   => 'The next release stability [default: no change].']
+        ), new \Horde_Argv_Option(
+            '--from',
+            ['action' => 'store', 'help'   => 'The sender address for mailing list announcements.']
+        ), new \Horde_Argv_Option(
+            '--horde-user',
+            ['action' => 'store', 'help'   => 'The username for accessing bugs.horde.org.']
+        ), new \Horde_Argv_Option(
+            '--horde-pass',
+            ['action' => 'store', 'help'   => 'The password for accessing bugs.horde.org.']
+        ), new \Horde_Argv_Option(
+            '--web-dir',
+            ['action' => 'store', 'help'   => 'The directory of a horde-web checkout.']
+        ), new \Horde_Argv_Option(
+            '--dump',
+            ['action' => 'store_true', 'help'   => 'Prints the release notes only.']
+        )];
     }
 
     /**
@@ -144,7 +92,7 @@ class Release extends Base
      *
      * @return string The title.
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return 'release';
     }
@@ -154,7 +102,7 @@ class Release extends Base
      *
      * @return string The description.
      */
-    public function getUsage()
+    public function getUsage(): string
     {
         return 'Releases a component.';
     }
@@ -164,9 +112,9 @@ class Release extends Base
      *
      * @return array A list of supported action arguments.
      */
-    public function getActions()
+    public function getActions(): array
     {
-        return array('release');
+        return ['release'];
     }
 
     /**
@@ -176,7 +124,7 @@ class Release extends Base
      *
      * @return string The help text.
      */
-    public function getHelp($action)
+    public function getHelp($action): string
     {
         return 'Releases the component. This handles a number of automated steps usually required when releasing a package. In the most simple situation it will be sufficient to move to the directory of the component you wish to release and run
 For a classic H5 pear release
@@ -215,24 +163,9 @@ The following example would generate the package and add the release tag to git 
      *
      * @return array A list of option help texts.
      */
-    public function getContextOptionHelp()
+    public function getContextOptionHelp(): array
     {
-        return array(
-            '--pretend' => '',
-            '--config' => '',
-            '--releaseserver' => '',
-            '--releasedir' => '',
-            '--next-note' => '',
-            '--next-version' => '',
-            '--version-part' => '',
-            '--next-relstate' => '',
-            '--next-apistate' => '',
-            '--from' => '',
-            '--horde-user' => '',
-            '--horde-pass' => '',
-            '--web-dir' => '',
-            '--dump' => '',
-        );
+        return ['--pretend' => '', '--config' => '', '--releaseserver' => '', '--releasedir' => '', '--next-note' => '', '--next-version' => '', '--version-part' => '', '--next-relstate' => '', '--next-apistate' => '', '--from' => '', '--horde-user' => '', '--horde-pass' => '', '--web-dir' => '', '--dump' => ''];
     }
 
     /**

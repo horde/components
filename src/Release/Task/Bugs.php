@@ -10,10 +10,12 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Release\Task;
+
 use Horde\Components\Exception;
-use Horde\Components\Output;
 use Horde\Components\Helper\Version as HelperVersion;
+use Horde\Components\Output;
 
 /**
  * Components_Release_Task_Bugs adds the new release to the issue tracker.
@@ -27,10 +29,8 @@ class Bugs extends Base
 {
     /**
      * Queue id.
-     *
-     * @var string|boolean
      */
-    private $_qid;
+    private string|bool|null $_qid = null;
 
     /**
      * Validate the preconditions required for this release task.
@@ -40,16 +40,16 @@ class Bugs extends Base
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
      */
-    public function preValidate($options)
+    public function preValidate($options): array
     {
-        $errors = array();
+        $errors = [];
         if (empty($options['horde_user'])) {
             $errors[] = 'The "horde_user" option has no value. Who is updating bugs.horde.org?';
         }
         if (empty($options['horde_pass'])) {
             $errors[] = 'The "horde_pass" option has no value. What is your password for updating bugs.horde.org?';
         }
-        if (!class_exists('Horde_Release_Whups')) {
+        if (!class_exists(\Horde_Release_Whups::class)) {
             $errors[] = 'The \Horde_Release package is missing (specifically the class \Horde_Release_Whups)!';
         }
         try {
@@ -57,7 +57,8 @@ class Bugs extends Base
                 ->getQueueId($this->getComponent()->getName());
         } catch (\Horde_Exception $e) {
             $errors[] = sprintf(
-                'Failed accessing bugs.horde.org: %s', $e->getMessage()
+                'Failed accessing bugs.horde.org: %s',
+                $e->getMessage()
             );
         }
         if (!$this->_qid) {
@@ -70,25 +71,16 @@ class Bugs extends Base
      * Return the handler for bugs.horde.org.
      *
      * @param array $options Additional options.
-     *
-     * @return void
      */
-    public function _getBugs($options)
+    public function _getBugs($options): \Horde_Release_Whups
     {
         if (!isset($options['horde_user']) || !isset($options['horde_user'])) {
             throw new Exception('Missing credentials!');
         }
         return new \Horde_Release_Whups(
-            array(
-                'client' => new \Horde_Http_Client(
-                    array(
-                        'request.username' => $options['horde_user'],
-                        'request.password' => $options['horde_pass'],
-                        'request.timeout' => 10
-                    )
-                ),
-                'url' => 'https://dev.horde.org/horde/rpc.php',
-            )
+            ['client' => new \Horde_Http_Client(
+                ['request.username' => $options['horde_user'], 'request.password' => $options['horde_pass'], 'request.timeout' => 10]
+            ), 'url' => 'https://dev.horde.org/horde/rpc.php']
         );
     }
 
@@ -96,10 +88,8 @@ class Bugs extends Base
      * Run the task.
      *
      * @param array &$options Additional options.
-     *
-     * @return void
      */
-    public function run(&$options)
+    public function run(&$options): void
     {
         if (!$this->_qid) {
             $this->getOutput()->warn(

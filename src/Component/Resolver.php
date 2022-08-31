@@ -10,7 +10,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Component;
+
 use Horde\Components\Component;
 use Horde\Components\Exception;
 use Horde\Components\Helper\Root as HelperRoot;
@@ -32,36 +34,18 @@ use Horde\Components\Helper\Root as HelperRoot;
 class Resolver
 {
     /**
-     * The factory for the component representation of a dependency.
-     *
-     * @var Horde\Components\Component\Factory
-     */
-    private $_factory;
-
-    /**
-     * The repository root.
-     *
-     * @var HelperRoot
-     */
-    private $_root;
-
-    /**
      * The list of remotes already generated.
-     *
-     * @var array
      */
-    private $_remotes;
+    private ?array $_remotes = null;
 
     /**
      * Constructor.
      *
-     * @param HelperRoot $root    The repository root.
-     * @param Factory    $factory Helper factory.
+     * @param HelperRoot $_root The repository root.
+     * @param Factory $_factory Helper factory.
      */
-    public function __construct(HelperRoot $root, Factory $factory)
+    public function __construct(private readonly HelperRoot $_root, private readonly Factory $_factory)
     {
-        $this->_factory = $factory;
-        $this->_root = $root;
     }
 
     /**
@@ -77,10 +61,12 @@ class Resolver
      * @return Component|boolean The component if the name could be
      *                                      resolved.
      */
-    public function resolveDependency(Dependency $dependency, $options)
+    public function resolveDependency(Dependency $dependency, $options): \Horde\Components\Component|bool
     {
         return $this->resolveName(
-            $dependency->getName(), $dependency->getChannel(), $options
+            $dependency->getName(),
+            $dependency->getChannel(),
+            $options
         );
     }
 
@@ -94,14 +80,14 @@ class Resolver
      * @return Component|boolean The component if the name could be
      *                                      resolved.
      */
-    public function resolveName($name, $channel, $options)
+    public function resolveName($name, $channel, $options): \Horde\Components\Component|bool
     {
         foreach ($this->_getAttempts($options) as $attempt) {
             if ($attempt == 'git' && $channel == 'pear.horde.org') {
                 try {
                     $path = $this->_root->getPackageXml($name);
                     return $this->_factory->createSource(dirname($path));
-                } catch (Exception $e) {
+                } catch (Exception) {
                 }
             }
             if ($attempt == 'snapshot') {
@@ -115,7 +101,10 @@ class Resolver
                 $remote = $this->_getRemote($channel);
                 if ($remote->getLatestRelease($name, $attempt)) {
                     return $this->_factory->createRemote(
-                        $name, $attempt, $channel, $remote
+                        $name,
+                        $attempt,
+                        $channel,
+                        $remote
                     );
                 }
             }
@@ -135,26 +124,26 @@ class Resolver
         if (isset($options['order'])) {
             return $options['order'];
         }
-        $order = array('git', 'snapshot', 'stable', 'beta', 'alpha', 'devel');
+        $order = ['git', 'snapshot', 'stable', 'beta', 'alpha', 'devel'];
         if (!empty($options['snapshot'])) {
-            $order = array('snapshot', 'stable', 'beta', 'alpha', 'devel', 'git');
+            $order = ['snapshot', 'stable', 'beta', 'alpha', 'devel', 'git'];
         }
         if (!empty($options['stable'])) {
-            $order = array('stable', 'beta', 'alpha', 'devel', 'snapshot', 'git');
+            $order = ['stable', 'beta', 'alpha', 'devel', 'snapshot', 'git'];
         }
         if (!empty($options['beta'])) {
-            $order = array('beta', 'stable', 'alpha', 'devel', 'snapshot', 'git');
+            $order = ['beta', 'stable', 'alpha', 'devel', 'snapshot', 'git'];
         }
         if (!empty($options['alpha'])) {
-            $order = array('alpha', 'beta', 'stable', 'devel', 'snapshot', 'git');
+            $order = ['alpha', 'beta', 'stable', 'devel', 'snapshot', 'git'];
         }
         if (!empty($options['devel'])) {
-            $order = array('devel', 'alpha', 'beta', 'stable', 'snapshot', 'git');
+            $order = ['devel', 'alpha', 'beta', 'stable', 'snapshot', 'git'];
         }
         if (empty($options['allow_remote'])) {
-            $result = array();
+            $result = [];
             foreach ($order as $element) {
-                if (in_array($element, array('git', 'snapshot'))) {
+                if (in_array($element, ['git', 'snapshot'])) {
                     $result[] = $element;
                 }
             }
@@ -170,7 +159,7 @@ class Resolver
      *
      * @return \Horde_Pear_Remote The remote handler.
      */
-    private function _getRemote($channel)
+    private function _getRemote($channel): \Horde_Pear_Remote
     {
         if (!isset($this->_remotes[$channel])) {
             $this->_remotes[$channel] = $this->_factory->createRemoteChannel(
@@ -189,7 +178,7 @@ class Resolver
      *
      * @return string A path to the local archive if it was found.
      */
-    public function _identifyMatchingLocalPackage($name, $channel, $options)
+    public function _identifyMatchingLocalPackage($name, $channel, $options): bool|string
     {
         if (empty($options['sourcepath'])) {
             return false;
@@ -205,5 +194,4 @@ class Resolver
         }
         return false;
     }
-
 }

@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Runner;
+
 use Horde\Components\Config;
 use Horde\Components\Helper\Commit as HelperCommit;
 use Horde\Components\Output;
@@ -32,62 +34,45 @@ use Horde\Components\Release\Tasks as ReleaseTasks;
 class Release
 {
     /**
-     * The configuration for the current job.
-     *
-     * @var Config
-     */
-    private $_config;
-
-    /**
-     * The output handler.
-     *
-     * @param Output
-     */
-    private $_output;
-
-    /**
-     * The QC tasks handler.
-     *
-     * @param QcTasks
-     */
-    private $_qc;
-
-    /**
-     * The release tasks handler.
-     *
-     * @param ReleaseTasks
-     */
-    private $_release;
-
-    /**
      * Constructor.
      *
-     * @param Config       $config  The current job's configuration
-     * @param Output       $output  The output handler.
-     * @param ReleaseTasks $release The tasks handler.
-     * @param QcTasks      $qc      QC tasks handler.
+     * @param Config $_config The current job's configuration
+     * @param Output $_output The output handler.
+     * @param ReleaseTasks $_release The tasks handler.
+     * @param QcTasks $_qc QC tasks handler.
      */
     public function __construct(
-        Config $config,
-        Output $output,
-        ReleaseTasks $release,
-        QcTasks $qc
+        private readonly Config $_config,
+        /**
+         * The output handler.
+         *
+         * @param Output
+         */
+        private readonly Output $_output,
+        /**
+         * The release tasks handler.
+         *
+         * @param ReleaseTasks
+         */
+        private readonly ReleaseTasks $_release,
+        /**
+         * The QC tasks handler.
+         *
+         * @param QcTasks
+         */
+        private readonly QcTasks $_qc
     ) {
-        $this->_config = $config;
-        $this->_output = $output;
-        $this->_release = $release;
-        $this->_qc = $qc;
     }
 
     /**
      * @throws Exception
      */
-    public function run()
+    public function run(): void
     {
         $component = $this->_config->getComponent();
         $options = $this->_config->getOptions();
 
-        $sequence = array();
+        $sequence = [];
 
         $pre_commit = false;
 
@@ -178,7 +163,8 @@ class Release
         if (in_array('CommitPreRelease', $sequence) ||
             in_array('CommitPostRelease', $sequence)) {
             $options['commit'] = new HelperCommit(
-                $this->_output, $options
+                $this->_output,
+                $options
             );
         }
 
@@ -202,7 +188,7 @@ class Release
      *
      * @return boolean True if the task is active.
      */
-    private function _doTask($task)
+    private function _doTask($task): bool
     {
         $arguments = $this->_config->getArguments();
         if ((count($arguments) == 1 && $arguments[0] == 'release') ||

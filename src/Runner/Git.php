@@ -9,11 +9,13 @@
  * @author   Ralf Lang <lang@b1-systems.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Runner;
+
 use Horde\Components\Config;
 use Horde\Components\Exception;
-use Horde\Components\Output;
 use Horde\Components\Helper\Git as GitHelper;
+use Horde\Components\Output;
 
 /**
  * Horde\Components\Runner\Git:: runner for git operations.
@@ -31,25 +33,9 @@ use Horde\Components\Helper\Git as GitHelper;
 class Git
 {
     /**
-     * The configuration for the current job.
-     *
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * The output handler.
-     *
-     * @var Output
-     */
-    private $output;
-
-    /**
      * The repo base url.
-     *
-     * @var string
      */
-    private $gitRepoBase;
+    private readonly string $gitRepoBase;
 
     /**
      * Constructor.
@@ -59,18 +45,15 @@ class Git
      * @param GitHelper $git     The output handler.
      */
     public function __construct(
-        Config $config,
-        Output $output,
+        private readonly Config $config,
+        private readonly Output $output,
         GitHelper $git
     ) {
-        $this->config  = $config;
-        $this->output  = $output;
         $this->gitHelper = $git;
         $options = $this->config->getOptions();
-        $this->gitRepoBase = $options['git_repo_base'] ?? 
+        $this->gitRepoBase = $options['git_repo_base'] ??
         'https://github.com/horde/';
         $this->localCheckoutDir = $options['checkout_dir'] ?? '/srv/git/';
-
     }
 
     public function run()
@@ -81,14 +64,14 @@ class Git
             return;
         }
         if ($arguments[1] == 'clone' && count($arguments) > 1) {
-            /** 
+            /**
              * TODO: Mind cwd
              * TODO: Mind Pretend Mode
              */
             if (empty($arguments[2])) {
                 $this->output->help('Provide a component name.');
                 $this->output->help('Cloning all components has not yet been ported from git-tools');
-                return;    
+                return;
             }
             $component = $arguments[2];
             $branch = $arguments[4] ?? '';
@@ -105,9 +88,9 @@ class Git
         if ($arguments[1] == 'checkout') {
             if (count($arguments) != 4) {
                 $this->output->help('checkout currently only supports a fixed format');
-                $this->output->help('checkout component branch');    
+                $this->output->help('checkout component branch');
             }
-            list($git, $action, $component, $branch) = $arguments;
+            [$git, $action, $component, $branch] = $arguments;
             $componentDir = $this->localCheckoutDir . $component . '/';
             return $this->gitHelper->workflowCheckout(
                 $this->output,
@@ -121,7 +104,7 @@ class Git
                 $this->output->help('fetch [component]');
                 return;
             }
-            list($git, $action, $component) = $arguments;
+            [$git, $action, $component] = $arguments;
             $componentDir = $this->localCheckoutDir . $component . '/';
             $this->gitHelper->fetch($componentDir);
         }
@@ -130,14 +113,14 @@ class Git
                 $this->output->help('branch currently only supports a fixed format');
                 $this->output->help('branch [component] [branch] [source branch]');
                 return;
-            }            
-            list($git, $action, $component, $branch, $source) = $arguments;
+            }
+            [$git, $action, $component, $branch, $source] = $arguments;
             $componentDir = $this->localCheckoutDir . $component . '/';
             $this->gitHelper->workflowBranch(
                 $this->output,
                 $componentDir,
                 $branch,
-                $source                
+                $source
             );
             return;
         }
@@ -145,8 +128,8 @@ class Git
             if (count($arguments) != 6) {
                 $this->output->help('tag currently only supports a fixed format');
                 $this->output->help('tag component branch tagname comment');
-            }            
-            list($git, $action, $component, $branch, $tag, $comment) = $arguments;
+            }
+            [$git, $action, $component, $branch, $tag, $comment] = $arguments;
             $componentDir = $this->localCheckoutDir . $component . '/';
             if (!$this->gitHelper->localBranchExists($componentDir, $branch)) {
                 $this->output->warn("Cannot tag, local branch does not exist");
@@ -162,8 +145,8 @@ class Git
                 $this->output->help('push currently only supports a fixed format');
                 $this->output->help('push component');
             }
-            list($git, $action, $component) = $arguments;
-            $componentDir = $this->localCheckoutDir . $component . '/';            
+            [$git, $action, $component] = $arguments;
+            $componentDir = $this->localCheckoutDir . $component . '/';
             $this->gitHelper->push($componentDir);
             return;
         }

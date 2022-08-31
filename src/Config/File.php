@@ -10,7 +10,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Config;
+
 use Horde\Components\Config;
 
 /**
@@ -27,8 +29,7 @@ use Horde\Components\Config;
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class File
-extends Base
+class File extends Base
 {
     /**
      * Constructor.
@@ -41,8 +42,8 @@ extends Base
             include $path;
             $this->_options = $conf;
         } else {
-            $this->_options = array();
+            $this->_options = [];
         }
-        $this->_arguments = array();
+        $this->_arguments = [];
     }
 }

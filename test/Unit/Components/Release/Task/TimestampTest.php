@@ -10,11 +10,14 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Unit\Components\Release\Task;
-use Horde\Components\Test\TestCase;
-use Horde\Components\Helper\Commit as HelperCommit;
-use Horde\Components\Wrapper\ChangelogYml;
+
 use Horde\Components\Component\Source as SourceComponent;
+use Horde\Components\Helper\Commit as HelperCommit;
+use Horde\Components\Test\TestCase;
+use Horde\Components\Wrapper\ChangelogYml;
+
 /**
  * Test the timestamp release task.
  *
@@ -42,14 +45,14 @@ class TimestampTest extends TestCase
     {
         $package = $this->getComponent($this->_fixture);
         $task = $this->getReleaseTask('timestamp', $package);
-        $this->assertEquals(array(), $task->preValidate(array()));
+        $this->assertEquals([], $task->preValidate([]));
     }
 
     public function testPreValidateFails()
     {
         $package = $this->getComponent($this->_fixture . '/NO_SUCH_PACKAGE');
         $task = $this->getReleaseTask('timestamp', $package);
-        $this->assertFalse($task->preValidate(array()) === array());
+        $this->assertFalse($task->preValidate([]) === []);
     }
 
     public function testRunTaskWithoutCommit()
@@ -58,7 +61,7 @@ class TimestampTest extends TestCase
         $package = $this->_getValidPackage();
         $package->expects($this->once())
             ->method('timestamp');
-        $tasks->run(array('timestamp'), $package);
+        $tasks->run(['timestamp'], $package);
     }
 
     public function testPretend()
@@ -67,22 +70,22 @@ class TimestampTest extends TestCase
         $tasks = $this->getReleaseTasks();
         $package = $this->getComponent($this->_fixture);
         $tasks->run(
-            array('Timestamp', 'CommitPreRelease'),
+            ['Timestamp', 'CommitPreRelease'],
             $package,
-            array(
+            [
                 'pretend' => true,
                 'commit' => new HelperCommit(
                     $this->_output,
-                    array('pretend' => true)
+                    ['pretend' => true]
                 )
-            )
+            ]
         );
         $this->assertEquals(
-            array(
+            [
                 sprintf('Would timestamp "%s" now and synchronize its change log.', realpath($this->_fixture . '/package.xml')),
                 sprintf('Would run "git add %s" now.', realpath($this->_fixture . '/package.xml')),
                 'Would run "git commit -m "Released Fixture-0.0.1"" now.'
-            ),
+            ],
             $this->_output->getOutput()
         );
     }

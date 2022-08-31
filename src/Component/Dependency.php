@@ -9,8 +9,11 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Component;
+
 use Horde\Components\Component;
+
 /**
  * Horde\Components\Component\Dependency:: wraps PEAR dependency information.
  *
@@ -49,59 +52,40 @@ class Dependency
 
     /**
      * Indicates if this is an optional dependency.
-     *
-     * @var boolean
      */
-    private $_optional = true;
+    private bool $_optional = true;
 
     /**
      * Indicates if this is a package dependency.
-     *
-     * @var boolean
      */
-    private $_package = false;
+    private bool $_package = false;
 
     /**
-     * Original dependency information.
-     *
-     * @var array
-     */
-    private $_dependency;
-    /**
-     * The factory for the component representation of a dependency.
-     *
-     * @var Horde\Components\Component\Factory
-     */
-    private $_factory;
-
-    /**
-     * Constructor.
-     *
-     * @param array                        $dependency The dependency
-     *                                                 information.
-     * @param Horde\Components\Component\Factory $factory    Helper factory.
-     */
+    * Constructor.
+    *
+     * @param array $_dependency The dependency
+                                               information.
+     * @param Horde\Components\Component\Factory $_factory Helper factory.
+    */
     public function __construct(
-        $dependency, Factory $factory
-    )
-    {
-        $this->_factory = $factory;
-        $this->_dependency = $dependency;
-        if (isset($dependency['name'])) {
-            $this->_name = $dependency['name'];
+        private $_dependency,
+        private readonly Factory $_factory
+    ) {
+        if (isset($_dependency['name'])) {
+            $this->_name = $_dependency['name'];
         }
-        if (isset($dependency['channel'])) {
-            $this->_channel = $dependency['channel'];
+        if (isset($_dependency['channel'])) {
+            $this->_channel = $_dependency['channel'];
         }
-        if (isset($dependency['optional'])
-            && $dependency['optional'] == 'no') {
+        if (isset($_dependency['optional'])
+            && $_dependency['optional'] == 'no') {
             $this->_optional = false;
         }
-        if (isset($dependency['type'])) {
-            $this->_type = $dependency['type'];
+        if (isset($_dependency['type'])) {
+            $this->_type = $_dependency['type'];
         }
-        if (isset($dependency['type'])
-            && $dependency['type'] == 'pkg') {
+        if (isset($_dependency['type'])
+            && $_dependency['type'] == 'pkg') {
             $this->_package = true;
         }
     }
@@ -113,7 +97,7 @@ class Dependency
      *
      * @return Component The component.
      */
-    public function getComponent($options = array())
+    public function getComponent($options = []): bool|\Horde\Components\Component
     {
         return $this->_factory->createResolver()
             ->resolveDependency($this, $options);
@@ -124,7 +108,7 @@ class Dependency
      *
      * @return array The original dependency information.
      */
-    public function getDependencyInformation()
+    public function getDependencyInformation(): array
     {
         return $this->_dependency;
     }
@@ -134,7 +118,7 @@ class Dependency
      *
      * @return boolen True if the dependency is required.
      */
-    public function isRequired()
+    public function isRequired(): bool
     {
         return !$this->_optional;
     }
@@ -144,7 +128,7 @@ class Dependency
      *
      * @return boolen True if the dependency is a package.
      */
-    public function isPackage()
+    public function isPackage(): bool
     {
         return $this->_package;
     }
@@ -154,7 +138,7 @@ class Dependency
      *
      * @return boolen True if it is a Horde dependency.
      */
-    public function isHorde()
+    public function isHorde(): bool
     {
         if (empty($this->_channel)) {
             return false;
@@ -170,7 +154,7 @@ class Dependency
      *
      * @return boolen True if it is the PHP dependency.
      */
-    public function isPhp()
+    public function isPhp(): bool
     {
         if ($this->_type != 'php') {
             return false;
@@ -183,7 +167,7 @@ class Dependency
      *
      * @return boolen True if it is a PHP extension dependency.
      */
-    public function isExtension()
+    public function isExtension(): bool
     {
         if ($this->_type != 'ext') {
             return false;
@@ -196,9 +180,9 @@ class Dependency
      *
      * @return boolen True if it is the PEAR base package.
      */
-    public function isPearBase()
+    public function isPearBase(): bool
     {
-        if ($this->_name == 'PEAR' && $this->_channel == 'pear.php.net') {
+        if ($this->_name == \PEAR::class && $this->_channel == 'pear.php.net') {
             return true;
         }
         return false;
@@ -209,7 +193,7 @@ class Dependency
      *
      * @return string The package name.
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->_name;
     }
@@ -219,7 +203,7 @@ class Dependency
      *
      * @return string The package channel.
      */
-    public function getChannel()
+    public function getChannel(): string
     {
         return $this->_channel;
     }
@@ -243,7 +227,7 @@ class Dependency
      *
      * @return string The uniqe key for this dependency.
      */
-    public function key()
+    public function key(): string
     {
         return $this->_channel . '/' . $this->_name;
     }

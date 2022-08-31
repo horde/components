@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components;
+
 /**
  * Components_Module:: represents a task for a Horde component.
  *

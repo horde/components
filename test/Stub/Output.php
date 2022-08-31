@@ -11,11 +11,12 @@
  * @author     Ralf Lang <lang@b1-systems.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Test\Stub;
 
-use Horde\Components\Output as ComponentsOutput;
-use Horde\Components\Exception;
 use Horde\Components\Config;
+use Horde\Components\Exception;
+use Horde\Components\Output as ComponentsOutput;
 
 class Output extends ComponentsOutput
 {
@@ -25,7 +26,7 @@ class Output extends ComponentsOutput
      * @param \Horde_Cli         $cli    The CLI handler.
      * @param Config $config The configuration for the current job.
      */
-    public function __construct($options = array())
+    public function __construct($options = [])
     {
         $this->output = new OutputCli();
 

@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Qc\Task;
+
 use Horde\Components\Constants;
 use PHP_CodeSniffer\Autoload;
 use PHP_CodeSniffer\Config;
@@ -37,7 +39,7 @@ class Cs extends Base
      *
      * @return string The task name.
      */
-    public function getName()
+    public function getName(): string
     {
         return 'code style check';
     }
@@ -63,9 +65,9 @@ class Cs extends Base
      *
      * @param array &$options Additional options.
      *
-     * @return integer Number of errors.
+     * @return int Number of errors.
      */
-    public function run(array &$options = [])
+    public function run(array &$options = []): int
     {
         $lib_dir = realpath($this->_config->getPath() . '/lib');
 

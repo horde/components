@@ -10,7 +10,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Helper;
+
 use Horde\Components\Exception;
 
 /**
@@ -32,7 +34,7 @@ class Version
      *
      * @throws Exception on invalid version string.
      */
-    public static function validatePear($version)
+    public static function validatePear($version): string
     {
         // Guard: Some older changelogs may contain only two-part versions like
         // Horde 3.3 or Horde 3.3RC1 - These should be re-interpreted as three
@@ -44,7 +46,7 @@ class Version
             } else {
                 $match[2] = str_replace(
                     [
-                        'ALPHA', '-ALPHA', '-alpha', 
+                        'ALPHA', '-ALPHA', '-alpha',
                         'BETA', '-BETA', '-beta',
                         '-RC'
                     ],
@@ -53,7 +55,7 @@ class Version
                         'beta', 'beta', 'beta',
                         'RC'
                     ],
-                     $match[2]
+                    (string) $match[2]
                 );
             }
             print($match[2]);
@@ -66,7 +68,7 @@ class Version
         // We also had horde version 2.2.6-RC1 - make this 2.2.6RC1
         if (preg_match('/^(\d+\.\d+\.\d+)(-RC\d+)?$/', $version, $match) &&
             !empty($match[2])) {
-            $match[2] = substr($match[2], 1);
+            $match[2] = substr((string) $match[2], 1);
             $version = $match[1] . $match[2];
         }
         // Now version must be proper or croak
@@ -87,7 +89,7 @@ class Version
      *
      * @throws Exception on invalid version string.
      */
-    public static function validateReleaseStability($version, $stability)
+    public static function validateReleaseStability($version, $stability): void
     {
         preg_match('/^(\d+\.\d+\.\d+)(alpha|beta|RC|dev)?\d*$/', $version, $match);
         if (!isset($match[2]) && $stability != 'stable') {
@@ -99,12 +101,7 @@ class Version
                 )
             );
         }
-        $requires = array(
-            'alpha' => 'alpha',
-            'beta' => 'beta',
-            'RC' => 'beta',
-            'dev' => 'devel'
-        );
+        $requires = ['alpha' => 'alpha', 'beta' => 'beta', 'RC' => 'beta', 'dev' => 'devel'];
         foreach ($requires as $m => $s) {
             if (isset($match[2]) && $match[2] == $m && $stability != $s) {
                 throw new Exception(
@@ -127,7 +124,7 @@ class Version
      *
      * @throws Exception on invalid version string.
      */
-    public static function validateApiStability($version, $stability)
+    public static function validateApiStability($version, $stability): void
     {
         \preg_match('/^(\d+\.\d+\.\d+)(alpha|beta|RC|dev)?\d*$/', $version, $match);
         if (!isset($match[2]) && $stability != 'stable') {
@@ -151,7 +148,7 @@ class Version
      *
      * @throws Exception on invalid version string.
      */
-    public static function pearToTicketDescription($version)
+    public static function pearToTicketDescription($version): string
     {
         $info = self::parsePearVersion($version);
         $version = $info->version;
@@ -179,7 +176,7 @@ class Version
      *
      * @throws Exception on invalid version string.
      */
-    public static function parsePearVersion($version)
+    public static function parsePearVersion($version): \stdClass
     {
         \preg_match('/([.\d]+)(.*)/', $version, $matches);
 
@@ -188,21 +185,21 @@ class Version
         $result->description = '';
         $result->subversion = null;
 
-        if (!empty($matches[2]) && !\preg_match('/^pl\d/', $matches[2])) {
-            if (\preg_match('/^RC(\d+)/', $matches[2], $postmatch)) {
+        if (!empty($matches[2]) && !\preg_match('/^pl\d/', (string) $matches[2])) {
+            if (\preg_match('/^RC(\d+)/', (string) $matches[2], $postmatch)) {
                 $result->description = 'Release Candidate';
                 $result->subversion = $postmatch[1];
-            } elseif (\preg_match('/^alpha(\d+)/', $matches[2], $postmatch)) {
+            } elseif (\preg_match('/^alpha(\d+)/', (string) $matches[2], $postmatch)) {
                 $result->description = 'Alpha';
                 $result->subversion = $postmatch[1];
-            } elseif (\preg_match('/^beta(\d+)/', $matches[2], $postmatch)) {
+            } elseif (\preg_match('/^beta(\d+)/', (string) $matches[2], $postmatch)) {
                 $result->description = 'Beta';
                 $result->subversion = $postmatch[1];
             }
         } else {
             $result->description = 'Final';
         }
-        $vcomp = \explode('.', $result->version);
+        $vcomp = \explode('.', (string) $result->version);
         if (\count($vcomp) != 3) {
             throw new Exception('A version number must have 3 parts.');
         }
@@ -218,7 +215,7 @@ class Version
      *
      * @return string The Horde style version.
      */
-    public static function pearToHordeWithBranch($version, $branch)
+    public static function pearToHordeWithBranch($version, $branch): string
     {
         if (empty($branch)) {
             return $version;
@@ -238,7 +235,7 @@ class Version
      *
      * @throws Exception on invalid version string.
      */
-    public static function nextVersion($version)
+    public static function nextVersion($version): string
     {
         if (!\preg_match('/^(\d+\.\d+\.)(\d+)(alpha|beta|RC|dev)?\d*$/', $version, $match)) {
             throw new Exception('Invalid version number ' . $version);
@@ -261,7 +258,7 @@ class Version
      *
      * @throws Exception on invalid version string.
      */
-    public static function nextPearVersion($version)
+    public static function nextPearVersion($version): string
     {
         if (!preg_match('/^(\d+\.\d+\.)(\d+)(alpha|beta|RC|dev)?(\d*)$/', $version, $match)) {
             throw new Exception('Invalid version number ' . $version);
@@ -289,7 +286,7 @@ class Version
      *
      * @throws Exception on invalid version string.
      */
-    public static function nextMinorVersion($version)
+    public static function nextMinorVersion($version): string
     {
         if (!preg_match('/^(\d+\.)(\d+)\.(\d+)(alpha|beta|RC|dev)?(\d*)$/', $version, $match)) {
             throw new Exception('Invalid version number ' . $version);
@@ -309,7 +306,7 @@ class Version
      *
      * @throws Exception on invalid version string.
      */
-    public static function nextVersionByPart($version, $versionPart = 'patch')
+    public static function nextVersionByPart($version, $versionPart = 'patch'): string
     {
         if ($versionPart === 'patch') {
             return self::nextPearVersion($version);
@@ -330,11 +327,11 @@ class Version
      * @return array  Version constraints with possible keys 'min', 'max', and
      *                'exclude'.
      */
-    public static function composerToPear($version)
+    public static function composerToPear($version): array
     {
         // Shortcut for any version.
         if ($version == '*') {
-            return array();
+            return [];
         }
 
         // Massage versions by splitting at '||', checking for and removing
@@ -343,8 +340,7 @@ class Version
         $versions = \array_map('trim', $versions);
         \array_walk(
             $versions,
-            function($v) use ($version, $versions)
-            {
+            function ($v) use ($version, $versions) {
                 if ($v[0] != '^' &&
                     (!preg_match('/^\d+\.\d+\.\d+$/', $version) ||
                      count($versions) > 1)) {
@@ -356,16 +352,15 @@ class Version
         );
         \usort(
             $versions,
-            function($a, $b)
-            {
-                return \version_compare(\ltrim($a, '^'), \ltrim($b, '^'));
-            }
+            fn ($a, $b) => \version_compare(\ltrim((string) $a, '^'), \ltrim((string) $b, '^'))
         );
 
-        $constraints = array();
+        $constraints = [];
         if ($versions[0][0] == '^') {
             $constraints['min'] = \preg_replace(
-                '/^\^(\d+\.\d+\.\d+).*/', '$1', $versions[0] . '.0.0'
+                '/^\^(\d+\.\d+\.\d+).*/',
+                '$1',
+                $versions[0] . '.0.0'
             );
         } else {
             $constraints['min'] = $constraints['max'] = $versions[0];

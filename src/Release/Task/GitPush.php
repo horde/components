@@ -9,10 +9,12 @@
  * @author   Ralf Lang <lang@b1-systems.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Release\Task;
 
 use Horde\Components\Component\Task\SystemCall;
 use Horde\Components\Component\Task\SystemCallResult;
+
 /**
  * Components_Release_Task_GitPush:: Push any changes to a remote server
  *
@@ -34,15 +36,13 @@ class GitPush extends Base
      *
      * Push the branch to the desired remote
      * Supports pretend mode
-     * 
+     *
      * @param array $options Additional options by-reference.
      *                       Keys:
      *                       'remote' Defaults to origin
      *                       'branch' Default empty, use tracking branch
-     *
-     * @return void
      */
-    public function run(&$options)
+    public function run(&$options): void
     {
         $remote = $options['remote'] ?? 'origin';
         // use tracking branch name unless otherwise stated
@@ -61,53 +61,53 @@ class GitPush extends Base
         if ($res->getReturnValue()) {
             $this->getOutput()->fail(sprintf(
                 "Failed to push with code '%d' and result:\n%s",
-		$res->getReturnValue(),
-		$res->getOutputString()
-	));
+                $res->getReturnValue(),
+                $res->getOutputString()
+            ));
         }
     }
 
     /**
      * This task may not be skipped
-     * 
+     *
      * @return boolean Always false, this task may not be skipped
      */
-    public function skip($options)
+    public function skip($options): bool
     {
         return false;
     }
 
     /**
      * Push a the current checkout to remote
-     * 
+     *
      * @param string $remote The remote to push to
      * @param string $branch The remote branch. Leave empty for tracking branch
-     * 
+     *
      * @return SystemCallResult The result object
      * Might make sense to factor out into a git helper for reuse?
      */
-    protected function _push(string $remote, string $branch = '')
+    protected function _push(string $remote, string $branch = ''): \Horde\Components\Component\Task\SystemCallResult
     {
         return $this->execInDirectory(
             sprintf('git push --set-upstream %s %s', $remote, $branch),
-            $this->getComponent()->getComponentDirectory()      
+            $this->getComponent()->getComponentDirectory()
         );
     }
 
     /**
      * Push a the current checkout's tags to remote
-     * 
+     *
      * @param string $remote The remote to push to
      * @param string $branch The remote branch. Leave empty for tracking branch
-     * 
+     *
      * @return SystemCallResult The result object
      * Might make sense to factor out into a git helper for reuse?
      */
-    protected function _pushTags(string $remote, string $branch = '')
+    protected function _pushTags(string $remote, string $branch = ''): \Horde\Components\Component\Task\SystemCallResult
     {
         return $this->execInDirectory(
             sprintf('git push --set-upstream %s %s --tags', $remote, $branch),
-            $this->getComponent()->getComponentDirectory()      
+            $this->getComponent()->getComponentDirectory()
         );
     }
 }

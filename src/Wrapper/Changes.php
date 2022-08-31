@@ -10,7 +10,9 @@
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Wrapper;
+
 use Horde\Components\Wrapper;
 use Horde\Components\WrapperTrait;
 
@@ -22,7 +24,7 @@ use Horde\Components\WrapperTrait;
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class Changes implements \IteratorAggregate, Wrapper
+class Changes implements \IteratorAggregate, Wrapper, \Stringable
 {
     use WrapperTrait;
 
@@ -31,7 +33,7 @@ class Changes implements \IteratorAggregate, Wrapper
      *
      * @var string
      */
-    protected $_changes = array();
+    protected $_changes = [];
 
     /**
      * Constructor.
@@ -51,7 +53,7 @@ class Changes implements \IteratorAggregate, Wrapper
      *
      * @return \ArrayIterator  An iterator.
      */
-    public function getIterator()
+    public function getIterator(): \ArrayIterator
     {
         return new \ArrayIterator($this->_changes);
     }
@@ -59,9 +61,9 @@ class Changes implements \IteratorAggregate, Wrapper
     /**
      * Clears the content of the CHANGES file.
      */
-    public function clear()
+    public function clear(): void
     {
-        $this->_changes = array();
+        $this->_changes = [];
     }
 
     /**
@@ -69,7 +71,7 @@ class Changes implements \IteratorAggregate, Wrapper
      *
      * @param string $content  Content to add.
      */
-    public function add($content)
+    public function add($content): void
     {
         $this->_changes[] = $content;
     }
@@ -77,7 +79,7 @@ class Changes implements \IteratorAggregate, Wrapper
     /**
      * Returns the file contents.
      */
-    public function __toString()
+    public function __toString(): string
     {
         return implode('', $this->_changes);
     }

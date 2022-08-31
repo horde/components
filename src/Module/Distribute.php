@@ -10,7 +10,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Module;
+
 use Horde\Components\Config;
 
 /**
@@ -34,7 +36,7 @@ class Distribute extends Base
      *
      * @return string The group title.
      */
-    public function getOptionGroupTitle()
+    public function getOptionGroupTitle(): string
     {
         return 'Distribute';
     }
@@ -44,7 +46,7 @@ class Distribute extends Base
      *
      * @return string The group description.
      */
-    public function getOptionGroupDescription()
+    public function getOptionGroupDescription(): string
     {
         return 'This module prepares a distribution package (e.g. RPM, APT, Ebuild, ...) for a component.';
     }
@@ -54,17 +56,12 @@ class Distribute extends Base
      *
      * @return array The group options.
      */
-    public function getOptionGroupOptions()
+    public function getOptionGroupOptions(): array
     {
-        return array(
-            new \Horde_Argv_Option(
-                '--distribute',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Prepare the package definition for the component in the specified DISTRIBUTE location'
-                )
-            ),
-        );
+        return [new \Horde_Argv_Option(
+            '--distribute',
+            ['action' => 'store_true', 'help'   => 'Prepare the package definition for the component in the specified DISTRIBUTE location']
+        )];
     }
 
     /**
@@ -72,7 +69,7 @@ class Distribute extends Base
      *
      * @return string The title.
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return 'distribute';
     }
@@ -82,7 +79,7 @@ class Distribute extends Base
      *
      * @return string The description.
      */
-    public function getUsage()
+    public function getUsage(): string
     {
         return 'Generate a distributable package.';
     }
@@ -92,9 +89,9 @@ class Distribute extends Base
      *
      * @return array A list of supported action arguments.
      */
-    public function getActions()
+    public function getActions(): array
     {
-        return array('distribute');
+        return ['distribute'];
     }
 
     /**
@@ -104,7 +101,7 @@ class Distribute extends Base
      *
      * @return string The help text.
      */
-    public function getHelp($action)
+    public function getHelp($action): string
     {
         return 'This module prepares a distribution package (e.g. RPM, APT, Ebuild, ...) for the selected component.';
     }
@@ -114,12 +111,9 @@ class Distribute extends Base
      *
      * @return array A list of option help texts.
      */
-    public function getContextOptionHelp()
+    public function getContextOptionHelp(): array
     {
-        return array(
-            '--destination' => '',
-            '--templatedir' => 'Location of a template directory that contains the distribution specific template definitions. *DO NOT* use the default value here as that one does not contain distribution specific templates.',
-        );
+        return ['--destination' => '', '--templatedir' => 'Location of a template directory that contains the distribution specific template definitions. *DO NOT* use the default value here as that one does not contain distribution specific templates.'];
     }
 
     /**

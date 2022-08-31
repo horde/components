@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Exception;
+
 /**
  * This class converts PEAR errors into exceptions for the Components package.
  *
@@ -36,7 +38,7 @@ class Pear extends \Horde_Exception_Pear
      */
     public static function catchError($result)
     {
-        self::$_class = __CLASS__;
+        self::$_class = self::class;
         return parent::catchError($result);
     }
 }

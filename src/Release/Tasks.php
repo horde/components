@@ -10,7 +10,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Release;
+
 use Horde\Components\Component;
 use Horde\Components\Dependencies;
 use Horde\Components\Exception;
@@ -34,35 +36,22 @@ use Horde\Components\Release\Task\Base as TaskBase;
 class Tasks
 {
     /**
-     * Provides the tasks.
-     *
-     * @var Dependencies
-     */
-    private $_dependencies;
-
-    /**
      * The options for the current release run.
-     *
-     * @var array
      */
-    private $_options = array();
+    private array $_options = [];
 
     /**
      * The sequence for the current release run.
-     *
-     * @var array
      */
-    private $_sequence = array();
+    private array $_sequence = [];
 
     /**
      * Constructor.
      *
-     * @param Dependencies $dependencies The task factory.
+     * @param Dependencies $_dependencies The task factory.
      */
-    public function __construct(
-        Dependencies $dependencies
-    ) {
-        $this->_dependencies = $dependencies;
+    public function __construct(private readonly Dependencies $_dependencies)
+    {
     }
 
     /**
@@ -73,7 +62,7 @@ class Tasks
      *
      * @return TaskBase The task.
      */
-    public function getTask($name, Component $component)
+    public function getTask($name, Component $component): TaskBase
     {
         $task = $this->_dependencies->getInstance(
             'Horde\Components\Release\Task\\' . ucfirst($name)
@@ -84,7 +73,7 @@ class Tasks
         foreach ($task->askDependencies() as $key => $dependency) {
             try {
                 $deps[$key] = $this->_dependencies->getInstance($dependency);
-            } catch (\Horde_Exception $e) {
+            } catch (\Horde_Exception) {
                 // what to do here?
             }
         }
@@ -99,29 +88,28 @@ class Tasks
      * @param Component     $component The component to be released.
      * @param array         $options   Additional options.
      *
-     * @return void
      * @throws Exception
      */
     public function run(
         array $sequence,
         Component $component,
-        $options = array()
-    ) {
+        $options = []
+    ): void {
         $this->_options = $options;
         $this->_sequence = $sequence;
-        $taskSequence = array();
+        $taskSequence = [];
         // check for predefined pipelines
         if ((count($sequence) == 2) &&
             $sequence[0] == 'pipeline:'
         ) {
             $pipeline = $sequence[1];
             $this->_dependencies->getOutput()->info("Running Pipeline $pipeline");
-            foreach ($options['pipeline']['release'][$pipeline] as $task)
-            {
+            foreach ($options['pipeline']['release'][$pipeline] as $task) {
                 $taskSequence[] = $this->getTask($task['name'], $component);
                 if (in_array($task['name'], ['CommitPreRelease', 'CommitPostRelease'])) {
                     $options['commit'] = new HelperCommit(
-                        $this->_dependencies->getOutput(), $options
+                        $this->_dependencies->getOutput(),
+                        $options
                     );
                 }
                 $extraOptions[] = empty($task['options']) ? [] : $task['options'];
@@ -134,7 +122,7 @@ class Tasks
                 $extraOptions[] = [];
             }
         }
-        $selectedTasks = array();
+        $selectedTasks = [];
         foreach ($taskSequence as $index => $task) {
             $taskOptions = array_merge($options, $extraOptions[$index]);
             $taskErrors = $task->preValidate($taskOptions);
@@ -188,7 +176,7 @@ class Tasks
      *
      * @return boolean True in case we should be pretending.
      */
-    public function pretend()
+    public function pretend(): bool
     {
         return !empty($this->_options['pretend']);
     }
@@ -200,9 +188,8 @@ class Tasks
      *
      * @return boolean True in case the task is active.
      */
-    public function isTaskActive($task)
+    public function isTaskActive($task): bool
     {
         return in_array($task, $this->_sequence);
     }
-
 }

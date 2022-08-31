@@ -10,7 +10,9 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Unit\Components\Module;
+
 use Horde\Components\Test\TestCase;
 
 /**
@@ -77,11 +79,11 @@ dependencies:
             $tmp_dir . '/framework/test/test.php',
             '<?php'
         );
-        $_SERVER['argv'] = array(
+        $_SERVER['argv'] = [
             'horde-components',
             '--updatexml',
             $tmp_dir . '/framework/test'
-        );
+        ];
         $this->_callStrictComponents();
         $this->assertTrue(
             file_exists($tmp_dir . '/framework/test/package.xml')
@@ -115,7 +117,7 @@ dependencies:
     public function testMigrationFiles()
     {
         $this->assertMatchesRegularExpression(
-                '#<install as="migration/test.sql" name="migration/test.sql" />#',
+            '#<install as="migration/test.sql" name="migration/test.sql" />#',
             $this->_simpleUpdate()
         );
     }
@@ -123,7 +125,7 @@ dependencies:
     public function testScriptFiles()
     {
         $this->assertMatchesRegularExpression(
-                '#<install as="script.php" name="bin/script.php" />#',
+            '#<install as="script.php" name="bin/script.php" />#',
             $this->_simpleUpdate()
         );
     }
@@ -154,12 +156,12 @@ dependencies:
 
     private function _simpleUpdate()
     {
-        $_SERVER['argv'] = array(
+        $_SERVER['argv'] = [
             'horde-components',
             '--action=print',
             '--updatexml',
             __DIR__ . '/../../../fixture/framework/simple'
-        );
+        ];
         return $this->_callStrictComponents();
     }
 

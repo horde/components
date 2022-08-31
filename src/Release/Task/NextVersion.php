@@ -10,7 +10,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Release\Task;
+
 use Horde\Components\Helper\Version as HelperVersion;
 
 /**
@@ -37,9 +39,9 @@ class NextVersion extends Base
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
      */
-    public function preValidate($options)
+    public function preValidate($options): array
     {
-        $errors = array();
+        $errors = [];
         if (!isset($options['next_note']) || $options['next_note'] === null) {
             $errors[] = 'The "next_note" option has no value! What should the initial change log note be?';
         }
@@ -50,13 +52,11 @@ class NextVersion extends Base
      * Run the task.
      *
      * @param array &$options Additional options.
-     *
-     * @return void
      */
-    public function run(&$options)
+    public function run(&$options): void
     {
-        $api_state = isset($options['next_apistate']) ? $options['next_apistate'] : null;
-        $rel_state = isset($options['next_relstate']) ? $options['next_relstate'] : null;
+        $api_state = $options['next_apistate'] ?? null;
+        $rel_state = $options['next_relstate'] ?? null;
         if (empty($options['next_version'])) {
             if (empty($options['old_version'])) {
                 $options['old_version'] = $this->getComponent()->getVersion();

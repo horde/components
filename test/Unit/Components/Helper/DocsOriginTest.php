@@ -10,9 +10,11 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Unit\Components\Helper;
+
+use Horde\Components\Helper\DocsOrigin as HelperDocsOrigin;
 use Horde\Components\Test\TestCase;
- use Horde\Components\Helper\DocsOrigin as HelperDocsOrigin;
 
 /**
  * Test the document fetching helper.
@@ -46,7 +48,7 @@ class DocsOriginTest extends TestCase
         $do = __DIR__ . '/../../../fixture/docsorigin/simple';
         $docs_origin = new HelperDocsOrigin($do, $this->_getClient());
         $this->assertEquals(
-            array('doc/TEST' => 'http://example.com/TEST'),
+            ['doc/TEST' => 'http://example.com/TEST'],
             $docs_origin->getDocuments()
         );
     }
@@ -57,12 +59,12 @@ class DocsOriginTest extends TestCase
         $do = __DIR__ . '/../../../fixture/docsorigin/multiple';
         $docs_origin = new HelperDocsOrigin($do, $this->_getClient());
         $this->assertEquals(
-            array(
+            [
                 'doc/ONE' => 'http://example.com/ONE',
                 'doc/TEST' => 'http://example.com/TEST',
                 'doc/THREE' => 'http://example.com/THREE',
                 'doc/TWO' => 'http://example.com/TWO',
-            ),
+            ],
             $docs_origin->getDocuments()
         );
     }
@@ -75,6 +77,6 @@ class DocsOriginTest extends TestCase
         $response->code = 200;
         $request = new \Horde_Http_Request_Mock();
         $request->setResponse($response);
-        return new \Horde_Http_Client(array('request' => $request));
+        return new \Horde_Http_Client(['request' => $request]);
     }
 }

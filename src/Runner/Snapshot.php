@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Runner;
+
 use Horde\Components\Config;
 use Horde\Components\Output;
 use Horde\Components\Pear\Factory as PearFactory;
@@ -30,44 +32,25 @@ use Horde\Components\Pear\Factory as PearFactory;
 class Snapshot
 {
     /**
-     * The configuration for the current job.
-     *
-     * @var Config
-     */
-    private $_config;
-
-    /**
-     * The factory for PEAR dependencies.
-     *
-     * @var PearFactory
-     */
-    private $_factory;
-
-    /**
-     * The output handler.
-     *
-     * @param Output
-     */
-    private $_output;
-
-    /**
      * Constructor.
      *
-     * @param Config      $config  The current job's configuration
-     * @param PearFactory $factory The factory for PEAR dependencies.
-     * @param Output      $output  The output handler.
+     * @param Config $_config The current job's configuration
+     * @param PearFactory $_factory The factory for PEAR dependencies.
+     * @param Output $_output The output handler.
      */
     public function __construct(
-        Config $config,
-        PearFactory $factory,
-        Output $output
+        private readonly Config $_config,
+        private readonly PearFactory $_factory,
+        /**
+         * The output handler.
+         *
+         * @param Output
+         */
+        private readonly Output $_output
     ) {
-        $this->_config = $config;
-        $this->_factory = $factory;
-        $this->_output = $output;
     }
 
-    public function run()
+    public function run(): void
     {
         $options = $this->_config->getOptions();
         if (!empty($options['destination'])) {
@@ -77,7 +60,8 @@ class Snapshot
         }
         $options['logger'] = $this->_output;
         $result = $this->_config->getComponent()->placeArchive(
-            $archivedir, $options
+            $archivedir,
+            $options
         );
         if (isset($result[2])) {
             $this->_output->pear($result[2]);

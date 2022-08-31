@@ -10,10 +10,11 @@
  * @license   http://www.horde.org/licenses/lgpl21 LGPL 2.1
  * @package   Components
  */
+
 namespace Horde\Components\Qc\Task;
 
-use SebastianBergmann\PHPLOC;
 use SebastianBergmann\FinderFacade\FinderFacade;
+use SebastianBergmann\PHPLOC;
 
 /**
  * Measure the size and analyze the structure of a PHP component.
@@ -31,7 +32,7 @@ class Loc extends Base
      *
      * @return string The task name.
      */
-    public function getName()
+    public function getName(): string
     {
         return 'analysis/statistics of component code';
     }
@@ -57,13 +58,11 @@ class Loc extends Base
      *
      * @param array &$options Additional options.
      *
-     * @return integer Number of errors.
+     * @return int Number of errors.
      */
-    public function run(array &$options = [])
+    public function run(array &$options = []): int
     {
-        $finder = new FinderFacade(array(
-            realpath($this->_config->getPath())
-        ));
+        $finder = new FinderFacade([realpath($this->_config->getPath())]);
         $files = $finder->findFiles();
 
         $analyser = new PHPLOC\Analyser();
@@ -74,16 +73,13 @@ class Loc extends Base
 
     /**
      * Prints a result set.
-     *
-     * @param array $count
      */
-    protected function _printResult(array $count)
+    protected function _printResult(array $count): void
     {
         if ($count['directories'] > 0) {
             printf(
                 "Directories                                 %10d\n" .
                 "Files                                       %10d\n\n",
-
                 $count['directories'],
                 $count['files']
             );
@@ -205,7 +201,6 @@ END;
             "\nTests\n" .
             "  Classes                                   %10d\n" .
             "  Methods                                   %10d\n",
-
             $count['testClasses'],
             $count['testMethods']
         );

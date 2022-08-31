@@ -10,10 +10,12 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Qc;
+
 use Horde\Components\Component;
-use Horde\Components\Output;
 use Horde\Components\Dependencies;
+use Horde\Components\Output;
 use Horde\Components\Qc\Task\Base as TaskBase;
 
 /**
@@ -33,33 +35,22 @@ use Horde\Components\Qc\Task\Base as TaskBase;
 class Tasks
 {
     /**
-     * Provides the tasks.
-     *
-     * @var Dependencies
-     */
-    private $_dependencies;
-
-    /**
      * The options for the current qc run.
-     *
-     * @var array
      */
-    private $_options = [];
+    private array $_options = [];
 
     /**
      * The sequence for the current qc run.
-     *
-     * @var array
      */
-    private $_sequence = [];
+    private array $_sequence = [];
 
     /**
      * Constructor.
      *
-     * @param Dependencies $dependencies The task factory.
+     * @param Dependencies $_dependencies The task factory.
      */
-    public function __construct(Dependencies $dependencies) {
-        $this->_dependencies = $dependencies;
+    public function __construct(private readonly Dependencies $_dependencies)
+    {
     }
 
     /**
@@ -70,7 +61,7 @@ class Tasks
      *
      * @return TaskBase The task.
      */
-    public function getTask($name, Component $component)
+    public function getTask($name, Component $component): TaskBase
     {
         $task = $this->_dependencies->getInstance(
             'Horde\Components\Qc\Task\\' . ucfirst($name)
@@ -86,22 +77,20 @@ class Tasks
      * @param array                $sequence The task sequence.
      * @param Component $component The component to be checked.
      * @param array                $options  Additional options.
-     *
-     * @return void
      */
     public function run(
         array $sequence,
         Component $component,
-        $options = array()
-    ) {
+        $options = []
+    ): void {
         $this->_options = $options;
         $this->_sequence = $sequence;
 
-        $task_sequence = array();
+        $task_sequence = [];
         foreach ($sequence as $name) {
             $task_sequence[] = $this->getTask($name, $component);
         }
-        $selected_tasks = array();
+        $selected_tasks = [];
         foreach ($task_sequence as $task) {
             $task_errors = $task->validate($options);
             if (!empty($task_errors)) {
@@ -129,7 +118,7 @@ class Tasks
             $output->plain('');
             if ($numErrors == 1) {
                 $output->warn("$numErrors error!");
-            } else if ($numErrors) {
+            } elseif ($numErrors) {
                 $output->warn("$numErrors errors!");
             } else {
                 $output->ok('No problems found.');

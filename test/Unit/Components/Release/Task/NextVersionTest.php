@@ -12,9 +12,11 @@
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Unit\Components\Release\Task;
-use Horde\Components\Test\TestCase;
+
 use Horde\Components\Helper\Commit as HelperCommit;
+use Horde\Components\Test\TestCase;
 
 /**
  * Tests the next-version release task.
@@ -34,9 +36,9 @@ class NextVersionTest extends TestCase
         $tasks = $this->getReleaseTasks();
         $package = $this->getComponent($tmp_dir);
         $tasks->run(
-            array('NextVersion'),
+            ['NextVersion'],
             $package,
-            array('next_version' => '5.0.1-git', 'next_note' => '')
+            ['next_version' => '5.0.1-git', 'next_note' => '']
         );
         $this->assertEquals(
             '---
@@ -165,20 +167,20 @@ dependencies: []
         $tasks = $this->getReleaseTasks();
         $package = $this->getComponent($tmp_dir);
         $tasks->run(
-            array('NextVersion', 'CommitPostRelease'),
+            ['NextVersion', 'CommitPostRelease'],
             $package,
-            array(
+            [
                 'next_version' => '5.0.0-git',
                 'next_note' => '',
                 'pretend' => true,
                 'commit' => new HelperCommit(
                     $this->_output,
-                    array('pretend' => true)
+                    ['pretend' => true]
                 )
-            )
+            ]
         );
         $this->assertEquals(
-            array(
+            [
                 'Would add next version "5.0.0-git" with the initial note "" to .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Application.php, doc/changelog.yml now.',
                 'Would run "git add .horde.yml" now.',
                 'Would run "git add package.xml" now.',
@@ -187,7 +189,7 @@ dependencies: []
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git add doc/changelog.yml" now.',
                 'Would run "git commit -m "Development mode for Horde-5.0.0"" now.'
-            ),
+            ],
             $this->_output->getOutput()
         );
     }
@@ -198,19 +200,19 @@ dependencies: []
         $tasks = $this->getReleaseTasks();
         $package = $this->getComponent($tmp_dir);
         $tasks->run(
-            array('NextVersion', 'CommitPostRelease'),
+            ['NextVersion', 'CommitPostRelease'],
             $package,
-            array(
+            [
                 'next_note' => '',
                 'pretend' => true,
                 'commit' => new HelperCommit(
                     $this->_output,
-                    array('pretend' => true)
+                    ['pretend' => true]
                 )
-            )
+            ]
         );
         $this->assertEquals(
-            array(
+            [
                 'Would add next version "5.0.1" with the initial note "" to .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Application.php, doc/changelog.yml now.',
                 'Would run "git add .horde.yml" now.',
                 'Would run "git add package.xml" now.',
@@ -219,7 +221,7 @@ dependencies: []
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git add doc/changelog.yml" now.',
                 'Would run "git commit -m "Development mode for Horde-5.0.1"" now.'
-            ),
+            ],
             $this->_output->getOutput()
         );
     }
@@ -230,19 +232,19 @@ dependencies: []
         $tasks = $this->getReleaseTasks();
         $package = $this->getComponent($tmp_dir);
         $tasks->run(
-            array('NextVersion', 'CommitPostRelease'),
+            ['NextVersion', 'CommitPostRelease'],
             $package,
-            array(
+            [
                 'next_note' => '',
                 'pretend' => true,
                 'commit' => new HelperCommit(
                     $this->_output,
-                    array('pretend' => true)
+                    ['pretend' => true]
                 )
-            )
+            ]
         );
         $this->assertEquals(
-            array(
+            [
                 'Would add next version "5.0.0alpha2" with the initial note "" to .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Application.php, doc/changelog.yml now.',
                 'Would run "git add .horde.yml" now.',
                 'Would run "git add package.xml" now.',
@@ -251,7 +253,7 @@ dependencies: []
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git add doc/changelog.yml" now.',
                 'Would run "git commit -m "Development mode for Horde-5.0.0alpha2"" now.'
-            ),
+            ],
             $this->_output->getOutput()
         );
     }
@@ -262,20 +264,20 @@ dependencies: []
         $tasks = $this->getReleaseTasks();
         $package = $this->getComponent($tmp_dir);
         $tasks->run(
-            array('NextVersion', 'CommitPostRelease'),
+            ['NextVersion', 'CommitPostRelease'],
             $package,
-            array(
+            [
                 'next_note' => '',
                 'version_part' => 'minor',
                 'pretend' => true,
                 'commit' => new HelperCommit(
                     $this->_output,
-                    array('pretend' => true)
+                    ['pretend' => true]
                 )
-            )
+            ]
         );
         $this->assertEquals(
-            array(
+            [
                 'Would add next version "5.1.0" with the initial note "" to .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Application.php, doc/changelog.yml now.',
                 'Would run "git add .horde.yml" now.',
                 'Would run "git add package.xml" now.',
@@ -284,7 +286,7 @@ dependencies: []
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git add doc/changelog.yml" now.',
                 'Would run "git commit -m "Development mode for Horde-5.1.0"" now.'
-            ),
+            ],
             $this->_output->getOutput()
         );
     }

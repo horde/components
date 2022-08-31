@@ -10,7 +10,9 @@
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Wrapper;
+
 use Horde\Components\Exception;
 use Horde\Components\Wrapper;
 use Horde\Components\WrapperTrait;
@@ -23,7 +25,7 @@ use Horde\Components\WrapperTrait;
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class ComposerJson extends \ArrayObject implements Wrapper
+class ComposerJson extends \ArrayObject implements Wrapper, \Stringable
 {
     use WrapperTrait;
 
@@ -42,7 +44,7 @@ class ComposerJson extends \ArrayObject implements Wrapper
                 throw new Exception($e);
             }
         } else {
-            $horde = array();
+            $horde = [];
         }
         parent::__construct($horde);
     }
@@ -50,9 +52,9 @@ class ComposerJson extends \ArrayObject implements Wrapper
     /**
      * Returns the file contents.
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return json_encode(
+        return (string) json_encode(
             iterator_to_array($this),
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
         );

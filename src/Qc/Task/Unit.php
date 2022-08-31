@@ -9,6 +9,7 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Qc\Task;
 
 /**
@@ -31,7 +32,7 @@ class Unit extends Base
      *
      * @return string The task name.
      */
-    public function getName()
+    public function getName(): string
     {
         return 'PHPUnit testsuite';
     }
@@ -46,10 +47,10 @@ class Unit extends Base
      */
     public function validate(array $options = []): array
     {
-        if (!class_exists('Horde_Test_AllTests')) {
+        if (!class_exists(\Horde_Test_AllTests::class)) {
             return ['Horde_Test is not installed!'];
         }
-        if (!class_exists('PHPUnit_Runner_BaseTestRunner') && !class_exists('PHPUnit\Runner\BaseTestRunner')) {
+        if (!class_exists(\PHPUnit_Runner_BaseTestRunner::class) && !class_exists('PHPUnit\Runner\BaseTestRunner')) {
             return ['PHPUnit is not installed!'];
         }
         return [];
@@ -62,13 +63,9 @@ class Unit extends Base
      *
      * @return integer Number of errors.
      */
-    public function run(array &$options = [])
+    public function run(array &$options = []): int
     {
-        try {
-            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(realpath($this->_config->getPath() . '/test')));
-        } catch (Exception $e) {
-            return false;
-        }
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(realpath($this->_config->getPath() . '/test')));
 
         $result = null;
         foreach ($iterator as $file) {

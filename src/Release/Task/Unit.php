@@ -9,16 +9,17 @@
  * @author   Ralf Lang <lang@b1-systems.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  * @link     https://wiki.horde.org/Doc/Dev/Component/Components
- * 
+ *
  * Adapted from original Code by Gunnar Wrobel and Jan Schneider
  */
+
 namespace Horde\Components\Release\Task;
 
 /**
  * Components_Release_Task_Unit:: Run Quality Checks and Unit Tests
  *
  * Wraps code originally part of the Release Runner
- * 
+ *
  * Copyright 2011-2019 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
@@ -41,7 +42,7 @@ class Unit extends Base
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
      */
-    public function preValidate($options)
+    public function preValidate($options): array
     {
         $component = $this->getComponent();
         $unit = $this->getDependency('qc')->getTask('unit', $component);
@@ -55,7 +56,7 @@ class Unit extends Base
      *
      * @return boolean Always True, can be skipped.
      */
-    public function skip($options)
+    public function skip($options): bool
     {
         return true;
     }
@@ -65,7 +66,7 @@ class Unit extends Base
      *
      * Push the branch to the desired remote
      * Supports pretend mode
-     * 
+     *
      * @param array $options Additional options.
      *                       Keys:
      *                       'remote' Defaults to origin
@@ -96,10 +97,10 @@ class Unit extends Base
 
     /**
      * Ask for the Qc\Tasks dependency
-     * 
+     *
      * @return array The list of dependencies requested
      */
-    public function askDependencies()
+    public function askDependencies(): array
     {
         return ['qc' => 'Qc\Tasks'];
     }

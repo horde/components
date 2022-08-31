@@ -10,13 +10,15 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Test;
-use Horde\Components\Dependencies\Injector;
-use Horde\Components\Components;
+
 use Horde\Components\Component\Source;
-use Horde\Components\Test\Stub\Output;
-use Horde\Components\Test\Stub\Config;
+use Horde\Components\Components;
+use Horde\Components\Dependencies\Injector;
 use Horde\Components\Release\Notes as ReleaseNotes;
+use Horde\Components\Test\Stub\Config;
+use Horde\Components\Test\Stub\Output;
 
 /**
  * Test base.
@@ -40,9 +42,9 @@ class TestCase extends \PHPUnit\Framework\TestCase
     protected $_output;
 
     protected function getComponentFactory(
-        $arguments = array(), $options = array()
-    )
-    {
+        $arguments = [],
+        $options = []
+    ) {
         $dependencies = new Injector();
         $config = new Config($arguments, $options);
         $dependencies->initConfig($config);
@@ -50,15 +52,19 @@ class TestCase extends \PHPUnit\Framework\TestCase
     }
 
     protected function getComponent(
-        $directory, $arguments = array(), $options = array()
-    )
-    {
+        $directory,
+        $arguments = [],
+        $options = []
+    ) {
         $dependencies = new Injector();
         $config = new Config($arguments, $options);
         $dependencies->initConfig($config);
         $factory = $dependencies->getComponentFactory();
         return new Source(
-            $directory, $config, $dependencies->getInstance(ReleaseNotes::class), $factory
+            $directory,
+            $config,
+            $dependencies->getInstance(ReleaseNotes::class),
+            $factory
         );
     }
 
@@ -87,24 +93,24 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
     protected function getHelp()
     {
-        $_SERVER['argv'] = array('horde-components', '--help');
+        $_SERVER['argv'] = ['horde-components', '--help'];
         return $this->_callStrictComponents();
     }
 
     protected function getActionHelp($action)
     {
-        $_SERVER['argv'] = array('horde-components', 'help', $action);
+        $_SERVER['argv'] = ['horde-components', 'help', $action];
         return $this->_callStrictComponents();
     }
 
-    protected function _callStrictComponents(array $parameters = array())
+    protected function _callStrictComponents(array $parameters = [])
     {
-        return $this->_callComponents($parameters, array($this, '_callStrict'));
+        return $this->_callComponents($parameters, [$this, '_callStrict']);
     }
 
-    protected function _callUnstrictComponents(array $parameters = array())
+    protected function _callUnstrictComponents(array $parameters = [])
     {
-        return $this->_callComponents($parameters, array($this, '_callUnstrict'));
+        return $this->_callComponents($parameters, [$this, '_callUnstrict']);
     }
 
     private function _callComponents(array $parameters, $callback)
@@ -115,9 +121,9 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $parameters['dependencies'] = new Injector();
         $parameters['dependencies']->setInstance(
             'Horde_Cli',
-            new \Horde_Test_Stub_Cli(array('output' => $stream))
+            new \Horde_Test_Stub_Cli(['output' => $stream])
         );
-        call_user_func_array($callback, array($parameters));
+        call_user_func_array($callback, [$parameters]);
         rewind($stream);
         $output = stream_get_contents($stream);
         fclose($stream);
@@ -141,7 +147,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
     protected function fileRegexpPresent($regex, $dir)
     {
-        $files = array();
+        $files = [];
         $found = false;
         foreach (new \DirectoryIterator($dir) as $file) {
             if (preg_match($regex, $file->getBasename('.tgz'))) {
@@ -157,11 +163,11 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
     protected function setPearGlobals()
     {
-        $GLOBALS['_PEAR_ERRORSTACK_DEFAULT_CALLBACK'] = array(
+        $GLOBALS['_PEAR_ERRORSTACK_DEFAULT_CALLBACK'] = [
             '*' => false,
-        );
+        ];
         $GLOBALS['_PEAR_ERRORSTACK_DEFAULT_LOGGER'] = false;
-        $GLOBALS['_PEAR_ERRORSTACK_OVERRIDE_CALLBACK'] = array();
+        $GLOBALS['_PEAR_ERRORSTACK_OVERRIDE_CALLBACK'] = [];
     }
 
     protected function changeDirectory($path)

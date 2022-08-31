@@ -11,7 +11,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Config;
+
 use Horde\Components\Config;
 use Horde\Components\Constants;
 
@@ -33,21 +35,12 @@ use Horde\Components\Constants;
 class Application
 {
     /**
-     * The generic configuration handler.
-     *
-     * @var Config
-     */
-    private $_config;
-
-    /**
      * Constructor.
      *
-     * @param Config $config The generic configuration handler.
+     * @param Config $_config The generic configuration handler.
      */
-    public function __construct(
-        Config $config
-    ) {
-        $this->_config = $config;
+    public function __construct(private readonly Config $_config)
+    {
     }
 
     /**

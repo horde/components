@@ -10,10 +10,11 @@
  * @license   http://www.horde.org/licenses/lgpl21 LGPL 2.1
  * @package   Components
  */
+
 namespace Horde\Components\Qc\Task;
 
-use SebastianBergmann\PHPDCD;
 use SebastianBergmann\FinderFacade\FinderFacade;
+use SebastianBergmann\PHPDCD;
 
 /**
  * PHP dead code detection.
@@ -31,7 +32,7 @@ class Dcd extends Base
      *
      * @return string The task name.
      */
-    public function getName()
+    public function getName(): string
     {
         return 'dead code detection';
     }
@@ -57,12 +58,12 @@ class Dcd extends Base
      *
      * @param array &$options Additional options.
      *
-     * @return integer Number of errors.
+     * @return int Number of errors.
      */
-    public function run(array &$options = [])
+    public function run(array &$options = []): int
     {
         $finder = new FinderFacade(
-            array(realpath($this->_config->getPath() . '/lib'))
+            [realpath($this->_config->getPath() . '/lib')]
         );
         $files = $finder->findFiles();
 
@@ -74,10 +75,8 @@ class Dcd extends Base
 
     /**
      * Prints a result set from PHPDCD_Detector::detectDeadCode().
-     *
-     * @param array  $result
      */
-    protected function _printResult(array $result)
+    protected function _printResult(array $result): void
     {
         foreach ($result as $name => $source) {
             printf(

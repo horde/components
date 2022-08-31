@@ -9,6 +9,7 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Helper;
 
 /**
@@ -27,39 +28,21 @@ namespace Horde\Components\Helper;
 class Template
 {
     /**
-     * Source template.
-     *
-     * @var string
-     */
-    protected $_source;
-
-    /**
-     * Target file.
-     *
-     * @var string
-     */
-    protected $_target;
-
-    /**
      * Constructor.
      *
-     * @param string $source     The source location.
-     * @param string $target     The target location.
+     * @param string $_source The source location.
+     * @param string $_target The target location.
      */
-    public function __construct($source, $target)
+    public function __construct(protected $_source, protected $_target)
     {
-        $this->_source = $source;
-        $this->_target = $target;
     }
 
     /**
      * Rewrite the template from the source to the target location.
      *
      * @param array  $parameters The template parameters.
-     *
-     * @return void
      */
-    public function write(array $parameters = array())
+    public function write(array $parameters = []): void
     {
         foreach ($parameters as $key => $value) {
             ${$key} = $value;

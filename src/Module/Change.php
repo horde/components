@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Module;
+
 use Horde\Components\Config;
 
 /**
@@ -25,22 +27,21 @@ use Horde\Components\Config;
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class Change
-extends Base
+class Change extends Base
 {
-    public function getOptionGroupTitle()
+    public function getOptionGroupTitle(): string
     {
         return 'Change log';
     }
 
-    public function getOptionGroupDescription()
+    public function getOptionGroupDescription(): string
     {
         return 'This module records a change log entry in doc/changelog.yml and package.xml (and doc/CHANGES in case it exists).';
     }
 
-    public function getOptionGroupOptions()
+    public function getOptionGroupOptions(): array
     {
-        return array();
+        return [];
     }
 
     /**
@@ -48,7 +49,7 @@ extends Base
      *
      * @return string The title.
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return 'changed';
     }
@@ -58,7 +59,7 @@ extends Base
      *
      * @return string The description.
      */
-    public function getUsage()
+    public function getUsage(): string
     {
         return 'Add a change log entry.';
     }
@@ -68,9 +69,9 @@ extends Base
      *
      * @return array A list of supported action arguments.
      */
-    public function getActions()
+    public function getActions(): array
     {
-        return array('changed');
+        return ['changed'];
     }
 
     /**
@@ -80,7 +81,7 @@ extends Base
      *
      * @return string The help text.
      */
-    public function getHelp($action)
+    public function getHelp($action): string
     {
         return 'This module records a change log entry in doc/changelog.yml, package.xml, and
 doc/CHANGES in case they exist.
@@ -110,12 +111,9 @@ to just update package.xml and doc/CHANGES:
      *
      * @return array A list of option help texts.
      */
-    public function getContextOptionHelp()
+    public function getContextOptionHelp(): array
     {
-        return array(
-            '--commit' => 'Commit the change log entries to git (using the change log entry as commit message).',
-            '--pretend' => ''
-        );
+        return ['--commit' => 'Commit the change log entries to git (using the change log entry as commit message).', '--pretend' => ''];
     }
 
     /**

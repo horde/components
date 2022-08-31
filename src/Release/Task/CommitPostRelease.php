@@ -10,9 +10,11 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Release\Task;
-use Horde\Components\Helper\Version as HelperVersion;
+
 use Horde\Components\Exception;
+use Horde\Components\Helper\Version as HelperVersion;
 use Horde\Components\Output;
 
 /**
@@ -35,10 +37,8 @@ class CommitPostRelease extends Base
      * Run the task.
      *
      * @param array &$options Additional options.
-     *
-     * @return void
      */
-    public function run(&$options)
+    public function run(&$options): void
     {
         if (empty($options['next_version'])) {
             if (empty($options['old_version'])) {

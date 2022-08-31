@@ -10,20 +10,22 @@
  * @author   Ralf Lang <lang@b1-systems.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-declare(strict_types = 1);
+declare(strict_types=1);
+
 namespace Horde\Components\Helper;
+
 use Horde\Components\Component;
-use Horde\Components\Output;
 use Horde\Components\Component\Task\SystemCallResult;
+use Horde\Components\Output;
 
 /**
  * HordeComponents\Helper\Git:: wraps git operations.
- * 
+ *
  * Git Helper provides two classes of methods:
- * 
+ *
  * Primitives which just do what they say
  * Primitives do not produce output unless by invoking commands
- * 
+ *
  * Workflows which provide some higher level usefulness
  * Workflow methods understand pretend mode and use output
  *
@@ -50,7 +52,7 @@ class Git
 
     /**
      * Constructor
-     * 
+     *
      * @param string $gitBin  Path to git binary. Empty string to autodetect.
      * @param array  $options Any options this helper consumes. None yet.
      */
@@ -59,22 +61,21 @@ class Git
         if (empty($gitBin)) {
             $this->gitBin = $this->detectGitBin();
         }
-        
     }
 
 
     /**
      * Workflow: Clone a component
-     * 
+     *
      * Add safety logic and output to the bare clone command
      * Authentication/Secrets handling is out of scope.
      * Configure git secrets handler or ssh key externally if needed.
-     * 
+     *
      * @param Output $output       The output utility
      * @param string $cloneUrl     The source repo URI
      * @param string $componentDir Where to clone to
      * @param string $branch       Optional the branch to check out
-     * 
+     *
      * @return bool True if workflow was successful
      */
     public function workflowClone(
@@ -82,41 +83,40 @@ class Git
         string $cloneUrl,
         string $componentDir,
         string $branch = ''
-    )
-    {
-            // TODO: Check if empty or missing before cloning
-            // TODO: Mind pretend mode
-            $output->info(
-                sprintf(
-                    'Will clone component from %s to %s',
-                    $cloneUrl,
-                    $componentDir
-                )
-            );
-            $this->clone($cloneUrl, $componentDir, $branch);
-            return true;
+    ): bool {
+        // TODO: Check if empty or missing before cloning
+        // TODO: Mind pretend mode
+        $output->info(
+            sprintf(
+                'Will clone component from %s to %s',
+                $cloneUrl,
+                $componentDir
+            )
+        );
+        $this->clone($cloneUrl, $componentDir, $branch);
+        return true;
     }
 
     /**
      * Workflow Checkout a branch
-     * 
+     *
      * Checkout an existing local branch or
      * Set up a known remote branch as a tracking local branch.
-     * 
+     *
      * Do nothing and return success if already checked out
      * Return false if neither local nor remote branch found
-     * 
+     *
      * @param Output $output       The output utility
      * @param string $componentDir The Component checkout dir
      * @param string $branch       The branch to check out
-     * 
+     *
      * @return bool True if workflow was successful
      */
     public function workflowCheckout(
         Output $output,
         string $componentDir,
         string $branch
-    ){
+    ): bool {
         // Do nothing if already checked out
         if ($branch == $this->getCurrentBranch($componentDir)) {
             $output->info('Branch already checked out');
@@ -139,23 +139,23 @@ class Git
 
     /**
      * Workflow create a branch if missing
-     * 
+     *
      * Return success if already present.
      * If missing,
      * Set up a known remote branch as a tracking local branch
      * Create a missing branch from local source branch
      * Create a missing local source branch from remote first
-     * 
+     *
      * Return false if missing and source branch also missing.
-     * 
+     *
      * Do nothing and return success if already checked out
      * Return false if neither local nor remote branch found
-     * 
+     *
      * @param Output $output       The output utility
      * @param string $componentDir The Component checkout dir
      * @param string $branch       The branch to check out
      * @param string $source       The source branch
-     * 
+     *
      * @return bool True if workflow was successful
      */
     public function workflowBranch(
@@ -163,7 +163,7 @@ class Git
         string $componentDir,
         string $branch,
         string $source
-    ){
+    ): bool {
         if ($this->localBranchExists($componentDir, $branch)) {
             $output->info('branch already exists');
             return true;
@@ -220,7 +220,7 @@ class Git
         string $componentDir,
         string $branch,
         string $source
-    ){
+    ): void {
         $output->info('Fetching remote');
         $this->fetch($componentDir);
         // Set up local source branch.
@@ -273,7 +273,7 @@ class Git
     }
     /**
      * Check some well known locations, fallback to which
-     * 
+     *
      * @return string Fully qualified location of git command
      */
     public function detectGitBin(): string
@@ -284,7 +284,7 @@ class Git
 
     /**
      * Run git branch -r
-     * 
+     *
      * @return string[] Remote branches
      */
     public function getRemoteBranches(string $localDir): array
@@ -293,14 +293,13 @@ class Git
             $this->gitBin . ' branch -r --format "%(refname:short)"',
             $localDir
         )->getOutputArray();
-
     }
 
     /**
      * Run git branch
-     * 
+     *
      * @param string $localDir Full path to repo
-     * 
+     *
      * @return string[] Local branches
      */
     public function getLocalBranches(string $localDir): array
@@ -313,15 +312,15 @@ class Git
 
     /**
      * Get currently checked out branch
-     * 
+     *
      * @param string $localDir Full path to repo
-     * 
+     *
      * @return string The active branch
      */
     public function getCurrentBranch(string $localDir): string
     {
         return $this->execInDirectory(
-            $this->gitBin . ' rev-parse --abbrev-ref HEAD', 
+            $this->gitBin . ' rev-parse --abbrev-ref HEAD',
             $localDir
         )->getOutputString();
     }
@@ -339,8 +338,7 @@ class Git
         string $localDir,
         string $branch,
         string $source = ''
-    ): SystemCallResult
-    {
+    ): SystemCallResult {
         if ($source == '') {
             $source = 'origin/' . $branch;
         }
@@ -358,57 +356,52 @@ class Git
 
     /**
      * Check if a remote branch exists as of last fetch
-     * 
+     *
      * @param string $localDir Full path to repo
      * @param string $branch   The branch to check for
-     * 
+     *
      * @return bool True if exists
      */
     public function remoteBranchExists(
-        string $localDir, 
+        string $localDir,
         string $branch,
         string $remote = 'origin'
-    ): bool
-    {
+    ): bool {
         $remoteBranches = $this->getRemoteBranches($localDir);
         return in_array("$remote/$branch", $remoteBranches);
     }
 
     /**
      * Check if a local branch exists
-     * 
+     *
      * @param string $localDir Full path to repo
      * @param string $branch   The branch to check for
-     * 
+     *
      * @return bool True if exists
      */
-    public function localBranchExists(string $localDir, string $branch)
+    public function localBranchExists(string $localDir, string $branch): bool
     {
         return in_array($branch, $this->getLocalBranches($localDir));
     }
 
     /**
      * Checkout a local branch (primitive)
-     * 
+     *
      * @param string $localDir Full path to repo
      * @param string $branch   The branch to check for
-     * 
-     * @return SystemCallResult
      */
     public function checkoutBranch(string $localDir, string $branch): SystemCallResult
     {
         $cmd = $this->gitBin . ' checkout ' . $branch;
         return $this->execInDirectory($cmd, $localDir);
     }
-    
+
     /**
      * Clone a remote repo (primitive)
-     * 
+     *
      * @param string $uri      The remote repo to clone
      * @param string $localDir The local target dir
      * @param string $branch   Optional: Checkout a specific branch
-     * 
-     * @return SystemCallResult
      */
     public function clone(string $uri, string $localDir, string $branch = ''): SystemCallResult
     {
@@ -430,16 +423,16 @@ class Git
 
     /**
      * Create a branch from a local source branch
-     * 
+     *
      * @param string $localDir The repo path
      * @param string $branch   The new branch's name
      * @param string $source   The source branch to use
-     * 
-     * @return SystemCallResult
      */
     public function branchFromLocal(
-        string $localDir, string $branch, string $source
-    ) {
+        string $localDir,
+        string $branch,
+        string $source
+    ): \Horde\Components\Component\Task\SystemCallResult {
         // git branch -t $branch origin/$branch
         $cmd = sprintf(
             '%s branch %s %s',
@@ -452,19 +445,16 @@ class Git
 
     /**
      * Create a local branch from a remote of same name
-     * 
+     *
      * @param string $localDir The repo path
      * @param string $branch   The new branch's name
      * @param string $remote   The remote
-     * 
-     * @return SystemCallResult
      */
     public function createRemoteTrackingBranch(
-        string $localDir, 
-        string $branch, 
+        string $localDir,
+        string $branch,
         string $remote = 'origin'
-    )
-    {
+    ): \Horde\Components\Component\Task\SystemCallResult {
         // git branch -t $branch origin/$branch
         $cmd = sprintf(
             '%s branch -t %s %s/%s',
@@ -478,35 +468,34 @@ class Git
 
     /**
      * Fetch remote metadata
-     * 
+     *
      * @param string $localDir Full path to repo
-     * 
-     * @return SystemCallResult
      */
     public function fetch(string $localDir): SystemCallResult
     {
         $cmd = sprintf(
             '%s fetch --all --tags',
-            $this->gitBin);
+            $this->gitBin
+        );
         return $this->execInDirectory($cmd, $localDir);
     }
 
-    public function addRemote()
+    public function addRemote(): void
     {
         // TODO
     }
 
-    public function removeRemote()
+    public function removeRemote(): void
     {
         // TODO
     }
 
-    public function updateRemote()
+    public function updateRemote(): void
     {
         // TODO
     }
 
-    public function pull()
+    public function pull(): void
     {
         // TODO
     }
@@ -515,7 +504,7 @@ class Git
      * @param string $localDir The checkout dir of the component
      * @param string $remote   Optional remote, defaults to origin
      */
-    public function push(string $localDir, $remote = 'origin')
+    public function push(string $localDir, $remote = 'origin'): void
     {
         $cmd = sprintf(
             'git push --set-upstream %s %s --follow-tags',
@@ -529,19 +518,16 @@ class Git
     }
 
     /**
-     * These methods below are imported from Commit helper 
+     * These methods below are imported from Commit helper
      * which I'd like to deprecate.
      */
-
-     /**
+    /**
      * Add a path to be included in the commit and record the working directory
      * for this git operation.
      *
      * @param string $item The relative path to the modified file
-     *
-     * @return void
      */
-    public function add(string $item)
+    public function add(string $item): void
     {
         $this->_added[$item] = $item;
     }
@@ -550,11 +536,10 @@ class Git
      * Add all modified files and commit them.
      *
      * @param string $log The commit message.
-     *
-     * @return void
      */
-    public function commit(string $localDir, string $log)
+    public function commit(string $localDir, string $log): void
     {
+        $wd = null;
         if (empty($this->_added)) {
             return;
         }
@@ -562,7 +547,7 @@ class Git
             $this->systemInDirectory('git add ' . $path, $localDir);
         }
         $this->systemInDirectory('git commit -m "' . $log . '"', $wd);
-        $this->_added = array();
+        $this->_added = [];
     }
 
     /**
@@ -571,13 +556,12 @@ class Git
      * @param string $tag       Tag name.
      * @param string $message   Tag message.
      * @param string $directory The working directory.
-     *
-     * @return void
      */
-    public function tag(string $localDir, string $tag, string $message)
+    public function tag(string $localDir, string $tag, string $message): void
     {
         $this->systemInDirectory(
-            'git tag -f -m "' . $message . '" ' . $tag, $localDir
+            'git tag -f -m "' . $message . '" ' . $tag,
+            $localDir
         );
     }
 
@@ -624,8 +608,9 @@ class Git
      *
      * @return string The command output.
      */
-    protected function systemInDirectory(string $call, string $target_dir)
+    protected function systemInDirectory(string $call, string $target_dir): string
     {
+        $old_dir = null;
         if (empty($this->options['pretend'])) {
             $old_dir = getcwd();
             chdir($target_dir);
@@ -645,8 +630,9 @@ class Git
      *
      * @return SystemCallResult The command output.
      */
-    protected function execInDirectory(string $call, string $targetDir)
+    protected function execInDirectory(string $call, string $targetDir): \Horde\Components\Component\Task\SystemCallResult
     {
+        $oldDir = null;
         if (empty($this->options['pretend'])) {
             $oldDir = getcwd();
             chdir($targetDir);

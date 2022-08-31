@@ -10,21 +10,22 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components;
+
+use Horde\Components\Release\Tasks as ReleaseTasks;
+use Horde\Components\Runner\Change as RunnerChange;
 use Horde\Components\Runner\CiPrebuild as RunnerCiPrebuilt;
 use Horde\Components\Runner\CiSetup as RunnerCiSetup;
-use Horde\Components\Runner\Release as RunnerRelease;
-use Horde\Components\Runner\Qc as RunnerQc;
-use Horde\Components\Runner\Change as RunnerChange;
 use Horde\Components\Runner\Composer as RunnerComposer;
-use Horde\Components\Runner\Snapshot as RunnerSnapshot;
 use Horde\Components\Runner\Distribute as RunnerDistribute;
 use Horde\Components\Runner\FetchDocs as RunnerFetchDocs;
 use Horde\Components\Runner\Installer as RunnerInstaller;
+use Horde\Components\Runner\Qc as RunnerQc;
+use Horde\Components\Runner\Release as RunnerRelease;
+use Horde\Components\Runner\Snapshot as RunnerSnapshot;
 use Horde\Components\Runner\Update as RunnerUpdate;
 use Horde\Components\Runner\Webdocs as RunnerWebdocs;
-use Horde\Components\Release\Tasks as ReleaseTasks;
-
 
 /**
  * The Components_Dependencies:: interface is a central broker for

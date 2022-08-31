@@ -9,8 +9,12 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Component;
+
 use Horde\Components\Component;
+use Iterator;
+
 /**
  * Horde\Components\Component\Dependencies:: provides dependency handling mechanisms.
  *
@@ -24,23 +28,8 @@ use Horde\Components\Component;
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class DependencyList
-implements \Iterator
+class DependencyList implements Iterator
 {
-    /**
-     * The component.
-     *
-     * @param Component
-     */
-    private $_component;
-
-    /**
-     * Factory helper.
-     *
-     * @param Factory
-     */
-    private $_factory;
-
     /**
      * The dependency list.
      *
@@ -49,19 +38,26 @@ implements \Iterator
     private $_dependencies;
 
     /**
-     * Constructor.
-     *
-     * @param Component         $component The component.
-     * @param Factory $factory   Generator for dependency
-     *                                                representations.
-     */
+    * Constructor.
+    *
+     * @param Component $_component The component.
+     * @param Factory $_factory Generator for dependency
+                                              representations.
+    */
     public function __construct(
-        Component $component,
-        Factory $factory
-    )
-    {
-        $this->_component = $component;
-        $this->_factory = $factory;
+        /**
+         * The component.
+         *
+         * @param Component
+         */
+        private readonly Component $_component,
+        /**
+         * Factory helper.
+         *
+         * @param Factory
+         */
+        private readonly Factory $_factory
+    ) {
     }
 
     /**
@@ -69,9 +65,9 @@ implements \Iterator
      *
      * @return array The list of channels.
      */
-    public function listAllChannels()
+    public function listAllChannels(): array
     {
-        $channel = array();
+        $channel = [];
         foreach ($this->_component->getDependencies() as $dependency) {
             if (isset($dependency['channel'])) {
                 $channel[] = $dependency['channel'];
@@ -79,19 +75,19 @@ implements \Iterator
         }
         $channel[] = $this->_component->getChannel();
         return array_unique($channel);
-    }    
+    }
 
     /**
      * Return all dependencies for this package.
      *
      * @return array The list of dependencies.
      */
-    private function _getDependencies()
+    private function _getDependencies(): ?array
     {
         if ($this->_dependencies === null) {
             $dependencies = $this->_component->getDependencies();
             if (empty($dependencies)) {
-                $this->_dependencies = array();
+                $this->_dependencies = [];
             }
             foreach ($dependencies as $dependency) {
                 $instance = $this->_factory->createDependency($dependency);
@@ -119,7 +115,7 @@ implements \Iterator
      *
      * return void
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->_getDependencies();
         return reset($this->_dependencies);
@@ -130,7 +126,7 @@ implements \Iterator
      *
      * @return Dependency|null The current dependency.
      */
-    public function current()
+    public function current(): ?\Horde\Components\Component\Dependency
     {
         return current($this->_dependencies);
     }
@@ -140,7 +136,7 @@ implements \Iterator
      *
      * @return mixed The key for the current position.
      */
-    public function key()
+    public function key(): mixed
     {
         return key($this->_dependencies);
     }
@@ -151,7 +147,7 @@ implements \Iterator
      * @return Dependency|null The next
      * dependency or null if there are no more dependencies.
      */
-    public function next()
+    public function next(): void
     {
         return next($this->_dependencies);
     }
@@ -161,9 +157,8 @@ implements \Iterator
      *
      * @return boolean Whether the current element is valid
      */
-    public function valid()
+    public function valid(): bool
     {
         return key($this->_dependencies) !== null;
     }
-
 }

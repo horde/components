@@ -9,14 +9,16 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Release\Task;
+
+use Horde\Components\Component\Source as ComponentSource;
+use Horde\Components\Component\Task\Dependencies;
+use Horde\Components\Component\Task\SystemCall;
 use Horde\Components\Exception;
 use Horde\Components\Output;
-use Horde\Components\Component\Source as ComponentSource;
-use Horde\Components\Release\Tasks as ReleaseTasks;
 use Horde\Components\Release\Notes as ReleaseNotes;
-use Horde\Components\Component\Task\SystemCall;
-use Horde\Components\Component\Task\Dependencies;
+use Horde\Components\Release\Tasks as ReleaseTasks;
 
 /**
  * Components_Release_Task_Base:: provides core functionality for release tasks.
@@ -33,27 +35,8 @@ use Horde\Components\Component\Task\Dependencies;
  */
 class Base
 {
-    /**
-     * The tasks handler.
-     *
-     * @var ReleaseTasks
-     */
-    protected $_tasks;
-
-    /**
-     * The release notes handler.
-     *
-     * @var ReleaseNotes
-     */
-    protected $_notes;
-
-    /**
-     * The task output.
-     *
-     * @var Output
-     */
-    protected $_output;
-
+    use SystemCall;
+    use Dependencies;
     /**
      * The component that should be released
      *
@@ -71,18 +54,12 @@ class Base
     /**
      * Constructor.
      *
-     * @param ReleaseTasks $tasks  The task handler.
-     * @param ReleaseNotes $notes  The release notes.
-     * @param Output       $output Accepts output.
+     * @param ReleaseTasks $_tasks The task handler.
+     * @param ReleaseNotes $_notes The release notes.
+     * @param Output $_output Accepts output.
      */
-    public function __construct(
-        ReleaseTasks $tasks,
-        ReleaseNotes $notes,
-        Output $output
-    ) {
-        $this->_tasks = $tasks;
-        $this->_notes = $notes;
-        $this->_output = $output;
+    public function __construct(protected ReleaseTasks $_tasks, protected ReleaseNotes $_notes, protected Output $_output)
+    {
     }
 
     /**
@@ -90,7 +67,7 @@ class Base
      *
      * @param ComponentSource $component The component to be released.
      */
-    public function setComponent(ComponentSource $component)
+    public function setComponent(ComponentSource $component): void
     {
         $this->_component = $component;
         $this->_notes->setComponent($component);
@@ -111,7 +88,7 @@ class Base
      *
      * @param string $name The task name.
      */
-    public function setName($name)
+    public function setName($name): void
     {
         $this->_name = $name;
     }
@@ -178,7 +155,7 @@ class Base
      */
     public function preValidate($options)
     {
-        return array();
+        return [];
     }
 
     /**
@@ -192,7 +169,7 @@ class Base
      */
     public function postValidate($options)
     {
-        return array();
+        return [];
     }
 
     /**
@@ -203,7 +180,4 @@ class Base
     public function run(&$options)
     {
     }
-
-    use SystemCall;
-    use Dependencies;
 }

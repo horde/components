@@ -15,8 +15,8 @@
 namespace Horde\Components\Unit\Components\Helper;
 
 use Exception;
-use Horde\Components\Test\TestCase;
 use Horde\Components\Helper\Version as HelperVersion;
+use Horde\Components\Test\TestCase;
 
 /**
  * Test the version helper.
@@ -69,39 +69,39 @@ class VersionTest extends TestCase
     public function testComposerToPear()
     {
         $this->assertEquals(
-            array(),
+            [],
             HelperVersion::composerToPear('*')
         );
         $this->assertEquals(
-            array(
+            [
                 'min' => '2.0.0',
                 'max' => '3.0.0alpha1',
                 'exclude' => '3.0.0alpha1'
-            ),
+            ],
             HelperVersion::composerToPear('^2')
         );
         $this->assertEquals(
-            array(
+            [
                 'min' => '2.1.0',
                 'max' => '3.0.0alpha1',
                 'exclude' => '3.0.0alpha1'
-            ),
+            ],
             HelperVersion::composerToPear('^2.1')
         );
         $this->assertEquals(
-            array(
+            [
                 'min' => '2.1.3',
                 'max' => '3.0.0alpha1',
                 'exclude' => '3.0.0alpha1'
-            ),
+            ],
             HelperVersion::composerToPear('^2.1.3')
         );
         $this->assertEquals(
-            array(
+            [
                 'min' => '5.3.0',
                 'max' => '8.0.0alpha1',
                 'exclude' => '8.0.0alpha1'
-            ),
+            ],
             HelperVersion::composerToPear('^5.3 || ^7')
         );
     }

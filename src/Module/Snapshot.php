@@ -10,7 +10,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Module;
+
 use Horde\Components\Config;
 
 /**
@@ -34,7 +36,7 @@ class Snapshot extends Base
      *
      * @return string The group title.
      */
-    public function getOptionGroupTitle()
+    public function getOptionGroupTitle(): string
     {
         return 'Package snapshot';
     }
@@ -44,7 +46,7 @@ class Snapshot extends Base
      *
      * @return string The group description.
      */
-    public function getOptionGroupDescription()
+    public function getOptionGroupDescription(): string
     {
         return 'This module generates a development snapshot for the specified package';
     }
@@ -54,25 +56,16 @@ class Snapshot extends Base
      *
      * @return array The group options.
      */
-    public function getOptionGroupOptions()
+    public function getOptionGroupOptions(): array
     {
-        return array(
-            new \Horde_Argv_Option(
-                '-z',
-                '--snapshot',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Generate a development snapshot'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '--keep-version',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Keep the package version as it is. Usually it will get appended with "devYYYYMMDD".'
-                )
-            )
-        );
+        return [new \Horde_Argv_Option(
+            '-z',
+            '--snapshot',
+            ['action' => 'store_true', 'help'   => 'Generate a development snapshot']
+        ), new \Horde_Argv_Option(
+            '--keep-version',
+            ['action' => 'store_true', 'help'   => 'Keep the package version as it is. Usually it will get appended with "devYYYYMMDD".']
+        )];
     }
 
     /**
@@ -80,7 +73,7 @@ class Snapshot extends Base
      *
      * @return string The title.
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return 'snapshot';
     }
@@ -90,7 +83,7 @@ class Snapshot extends Base
      *
      * @return string The description.
      */
-    public function getUsage()
+    public function getUsage(): string
     {
         return 'Generate a development snapshot.';
     }
@@ -100,9 +93,9 @@ class Snapshot extends Base
      *
      * @return array A list of supported action arguments.
      */
-    public function getActions()
+    public function getActions(): array
     {
-        return array('snapshot');
+        return ['snapshot'];
     }
 
     /**
@@ -112,7 +105,7 @@ class Snapshot extends Base
      *
      * @return string The help text.
      */
-    public function getHelp($action)
+    public function getHelp($action): string
     {
         return 'This module generates a COMPONENT-1.0.0devYYYYMMDD.tgz snapshot of the selected component.';
     }
@@ -122,12 +115,9 @@ class Snapshot extends Base
      *
      * @return array A list of option help texts.
      */
-    public function getContextOptionHelp()
+    public function getContextOptionHelp(): array
     {
-        return array(
-            '--destination' => '',
-            '--keep-version' => ''
-        );
+        return ['--destination' => '', '--keep-version' => ''];
     }
 
     /**

@@ -4,7 +4,7 @@
  *
  * Some code inherited from the Commit helper by Gunnar Wrobel
  * and the horde/git-tools codebase by Michael Rubinsky
- * 
+ *
  * PHP Version 7
  *
  * @category Horde
@@ -12,7 +12,9 @@
  * @author   Ralf Lang <lang@b1-systems.de>
  * @license  http://www.fsf.org/copyleft/lgpl.html LGPL
  */
+
 namespace Horde\Components\Module;
+
 use Horde\Components\Config;
 
 /**
@@ -35,7 +37,7 @@ class Git extends Base
      *
      * @return string The group title.
      */
-    public function getOptionGroupTitle()
+    public function getOptionGroupTitle(): string
     {
         return 'Git Workflows';
     }
@@ -45,7 +47,7 @@ class Git extends Base
      *
      * @return string The group description.
      */
-    public function getOptionGroupDescription()
+    public function getOptionGroupDescription(): string
     {
         return 'This module performs SCM operations.';
     }
@@ -55,17 +57,12 @@ class Git extends Base
      *
      * @return array The group options.
      */
-    public function getOptionGroupOptions()
+    public function getOptionGroupOptions(): array
     {
-        return array(
-            new \Horde_Argv_Option(
-                '--git-bin',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Path to git binary.'
-                )
-            )
-        );
+        return [new \Horde_Argv_Option(
+            '--git-bin',
+            ['action' => 'store_true', 'help'   => 'Path to git binary.']
+        )];
     }
 
     /**
@@ -73,7 +70,7 @@ class Git extends Base
      *
      * @return string The title.
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return 'git';
     }
@@ -83,7 +80,7 @@ class Git extends Base
      *
      * @return string The description.
      */
-    public function getUsage()
+    public function getUsage(): string
     {
         return 'Run git workflows';
     }
@@ -93,9 +90,9 @@ class Git extends Base
      *
      * @return array A list of supported action arguments.
      */
-    public function getActions()
+    public function getActions(): array
     {
-        return array('git');
+        return ['git'];
     }
 
     /**
@@ -105,7 +102,7 @@ class Git extends Base
      *
      * @return string The help text.
      */
-    public function getHelp($action)
+    public function getHelp($action): string
     {
         return 'Run Git Actions
 
@@ -128,11 +125,9 @@ class Git extends Base
      *
      * @return array A list of option help texts.
      */
-    public function getContextOptionHelp()
+    public function getContextOptionHelp(): array
     {
-        return array(
-            '--git-bin' => 'Path to git binary',
-        );
+        return ['--git-bin' => 'Path to git binary'];
     }
 
     /**

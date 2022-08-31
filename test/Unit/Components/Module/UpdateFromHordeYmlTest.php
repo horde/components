@@ -11,7 +11,9 @@
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Unit\Components\Module;
+
 use Horde\Components\Test\TestCase;
 
 /**
@@ -85,7 +87,7 @@ class UpdateFromHordeYmlTest extends TestCase
         $authors = $xml->getLeads();
         $this->assertCount(2, $authors);
         foreach ($authors as $id => $author) {
-            foreach (array('name', 'user', 'email') as $attribute) {
+            foreach (['name', 'user', 'email'] as $attribute) {
                 $this->assertEquals(
                     $yaml['authors'][$id][$attribute],
                     $author[$attribute],
@@ -100,28 +102,28 @@ class UpdateFromHordeYmlTest extends TestCase
 
         $dependencies = $xml->getDependencies();
         $this->assertEquals(
-            array(
-                array(
+            [
+                [
                     'type' => 'php',
                     'optional' => 'no',
                     'rel' => 'ge',
                     'version' => '5.3.0',
-                ),
-                array(
+                ],
+                [
                     'type' => 'php',
                     'optional' => 'no',
                     'rel' => 'le',
                     'version' => '8.0.0alpha1',
-                ),
-                array(
+                ],
+                [
                     'type' => 'pkg',
                     'name' => 'PEAR',
                     'channel' => 'pear.php.net',
                     'optional' => 'no',
                     'rel' => 'ge',
                     'version' => '1.7.0',
-                ),
-                array(
+                ],
+                [
                     'name' => 'Horde_Core',
                     'channel' => 'pear.horde.org',
                     'type' => 'pkg',
@@ -130,8 +132,8 @@ class UpdateFromHordeYmlTest extends TestCase
                     'version' => '2.31.0',
                     'min' => '2.31.0',
                     'max' => '3.0.0alpha1',
-                ),
-                array(
+                ],
+                [
                     'name' => 'Horde_Core',
                     'channel' => 'pear.horde.org',
                     'type' => 'pkg',
@@ -140,8 +142,8 @@ class UpdateFromHordeYmlTest extends TestCase
                     'version' => '3.0.0alpha1',
                     'min' => '2.31.0',
                     'max' => '3.0.0alpha1',
-                ),
-                array(
+                ],
+                [
                     'name' => 'Horde_Date',
                     'channel' => 'pear.horde.org',
                     'type' => 'pkg',
@@ -150,8 +152,8 @@ class UpdateFromHordeYmlTest extends TestCase
                     'version' => '2.0.0',
                     'min' => '2.0.0',
                     'max' => '3.0.0alpha1',
-                ),
-                array(
+                ],
+                [
                     'name' => 'Horde_Date',
                     'channel' => 'pear.horde.org',
                     'type' => 'pkg',
@@ -160,8 +162,8 @@ class UpdateFromHordeYmlTest extends TestCase
                     'version' => '3.0.0alpha1',
                     'min' => '2.0.0',
                     'max' => '3.0.0alpha1',
-                ),
-                array(
+                ],
+                [
                     'name' => 'Horde_Form',
                     'channel' => 'pear.horde.org',
                     'type' => 'pkg',
@@ -170,8 +172,8 @@ class UpdateFromHordeYmlTest extends TestCase
                     'version' => '2.0.16',
                     'min' => '2.0.16',
                     'max' => '3.0.0alpha1',
-                ),
-                array(
+                ],
+                [
                     'name' => 'Horde_Form',
                     'channel' => 'pear.horde.org',
                     'type' => 'pkg',
@@ -180,13 +182,13 @@ class UpdateFromHordeYmlTest extends TestCase
                     'version' => '3.0.0alpha1',
                     'min' => '2.0.16',
                     'max' => '3.0.0alpha1',
-                ),
-                array(
+                ],
+                [
                     'name' => 'iconv',
                     'type' => 'ext',
                     'optional' => 'yes',
-                ),
-            ),
+                ],
+            ],
             $dependencies
         );
     }
@@ -201,7 +203,7 @@ class UpdateFromHordeYmlTest extends TestCase
         $this->assertEquals($yaml['license']['identifier'], $json['license']);
         $this->assertCount(2, $json['authors']);
         foreach ($json['authors'] as $id => $author) {
-            foreach (array('name', 'role', 'email') as $attribute) {
+            foreach (['name', 'role', 'email'] as $attribute) {
                 $this->assertEquals(
                     $yaml['authors'][$id][$attribute],
                     $author[$attribute],
@@ -210,26 +212,27 @@ class UpdateFromHordeYmlTest extends TestCase
             }
         }
         $this->assertEquals(
-            array(
+            [
                 'php' => '^5.3 || ^7',
                 'horde/core' => '^2.31',
                 'horde/date' => '^2',
                 'horde/form' => '^2.0.16',
                 'horde/horde-installer-plugin' => '*'
-            ),
+            ],
             $json['require']
         );
         $this->assertEquals(
-            array(
+            [
                 'ext-iconv' => '*',
-            ),
+            ],
             $json['suggest']
         );
     }
 
     public function testSettingNewVersion()
     {
-        $fixtures = __DIR__ . '/../../../fixture/deps/';;
+        $fixtures = __DIR__ . '/../../../fixture/deps/';
+        ;
         $dir = \Horde_Util::createTempDir();
         mkdir($dir . '/doc/Horde/Deps', 0777, true);
         copy($fixtures . '.horde.yml', $dir . '/.horde.yml');
@@ -240,7 +243,7 @@ class UpdateFromHordeYmlTest extends TestCase
         );
         $files = $this->_update(
             $dir,
-            array('--new-version', '2.32.0', '--new-api', '2.32.0')
+            ['--new-version', '2.32.0', '--new-api', '2.32.0']
         );
         $this->assertStringEqualsFile(
             $fixtures . 'package-new.xml',
@@ -269,56 +272,56 @@ class UpdateFromHordeYmlTest extends TestCase
         $yaml['state']['api'] = 'beta';
         $yaml['license']['uri'] = 'http://www.horde.org/licenses/gpl';
         $yaml['license']['identifier'] = 'GPL';
-        $yaml['authors'] = array(
-            array(
+        $yaml['authors'] = [
+            [
                 'name' => 'Jan Schneider',
                 'user' => 'jan',
                 'email' => 'jan@horde.org',
                 'active' => true,
                 'role' => 'lead',
-            ),
-            array(
+            ],
+            [
                 'name' => 'John Doe',
                 'user' => 'john',
                 'email' => 'john@horde.org',
                 'active' => false,
                 'role' => 'lead',
-            ),
-        );
-        $yaml['dependencies'] = array(
-            'required' => array(
+            ],
+        ];
+        $yaml['dependencies'] = [
+            'required' => [
                 'php' => '^5.3 || ^7',
-                'pear' => array(
+                'pear' => [
                     'pear.horde.org/Horde_Core' => '^2.31',
                     'pear.horde.org/Horde_Date' => '^2',
                     'pear.horde.org/Horde_Form' => '^2.0.16',
-                ),
-            ),
-            'optional' => array(
-                'ext' => array(
+                ],
+            ],
+            'optional' => [
+                'ext' => [
                     'iconv' => '*'
-                ),
-            ),
-        );
+                ],
+            ],
+        ];
 
         file_put_contents($this->yamlFile, \Horde_Yaml::dump($yaml));
 
         return $yaml;
     }
 
-    protected function _update($dir = 'horde_yml', $additional = array())
+    protected function _update($dir = 'horde_yml', $additional = [])
     {
         if ($dir[0] != '/') {
             $dir = __DIR__ . '/../../../fixture/' . $dir;
         }
         $_SERVER['argv'] = array_merge(
-            array(
+            [
                 'horde-components',
                 '--action=print',
                 '--updatexml',
-            ),
+            ],
             $additional,
-            array($dir)
+            [$dir]
         );
         $result = str_replace(
             date('Y-m-d'),

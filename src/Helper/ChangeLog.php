@@ -11,7 +11,9 @@
  * @author   Jan Schneider <jan@horde.org>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Helper;
+
 use Horde\Components\Component;
 use Horde\Components\Config;
 use Horde\Components\Exception;
@@ -36,22 +38,14 @@ class ChangeLog
     protected $_directory;
 
     /**
-     * The component object.
-     *
-     * @var Component
-     */
-    protected $_component;
-
-    /**
      * Constructor.
      *
      * @param Config $config        The configuration.
-     * @param Component $component  A component object.
+     * @param Component $_component A component object.
      */
-    public function __construct(Config $config, Component $component)
+    public function __construct(Config $config, protected Component $_component)
     {
         $this->_directory = $config->getPath();
-        $this->_component = $component;
     }
 
     /* changelog.yml methods */
@@ -84,7 +78,7 @@ class ChangeLog
      * @return string|boolean The path to the changelog.yml file if it exists,
      *                        false otherwise.
      */
-    public function changelogFileExists()
+    public function changelogFileExists(): string|bool
     {
         $changelog = $this->_component->getWrapper('ChangelogYml');
 
@@ -99,7 +93,7 @@ class ChangeLog
      *
      * @param string $entry  Change log entry to add.
      */
-    public function addChangelog($entry)
+    public function addChangelog($entry): void
     {
         $hordeInfo = $this->_component->getWrapper('HordeYml');
         if (!isset($hordeInfo['version'])) {
@@ -108,8 +102,8 @@ class ChangeLog
         $version = $hordeInfo['version']['release'];
         $changelog = $this->_component->getWrapper('ChangelogYml');
         $info = $changelog[$version];
-        $notes = trim($info['notes']);
-        $notes = $notes ? explode("\n", $notes) : array();
+        $notes = trim((string) $info['notes']);
+        $notes = $notes ? explode("\n", $notes) : [];
         array_unshift($notes, $entry);
         $info['notes'] = implode("\n", $notes) . "\n";
         $changelog[$version] = $info;
@@ -125,7 +119,7 @@ class ChangeLog
      * @param string $version  The new release version.
      * @param string $api      The new api version.
      */
-    public function setVersion($version, $api)
+    public function setVersion($version, $api): void
     {
         $hordeInfo = $this->_component->getWrapper('HordeYml');
         if (!isset($hordeInfo['version'])) {
@@ -139,12 +133,10 @@ class ChangeLog
          * Iterating over changelogArr fixes this
          */
         $changelogArr = $changelog->getArrayCopy();
-        $newChangelog = array();
+        $newChangelog = [];
         \array_walk(
             $changelogArr,
-            function($entry, $ver)
-                use (&$newChangelog, $oldVersion, $version, $api)
-            {
+            function ($entry, $ver) use (&$newChangelog, $oldVersion, $version, $api) {
                 if ($ver == $oldVersion) {
                     $ver = $version;
                     if ($api) {
@@ -160,7 +152,7 @@ class ChangeLog
     /**
      * Timestamps the current version in changelog.yml.
      */
-    public function timestamp()
+    public function timestamp(): void
     {
         $hordeInfo = $this->_component->getWrapper('HordeYml');
         if (!isset($hordeInfo['version'])) {
@@ -183,14 +175,16 @@ class ChangeLog
      *
      * @param \Horde_Pear_Package_Xml $xml  The package xml handler.
      */
-    public function migrateToChangelogYml($xml)
+    public function migrateToChangelogYml($xml): void
     {
-        $changes = array();
+        $notes = null;
+        $changes = [];
 
         // Import releases from package.xml.
         foreach ($xml->findNodes('/p:package/p:changelog/p:release') as $release) {
             $version = $xml->getNodeTextRelativeTo(
-                'p:version/p:release', $release
+                'p:version/p:release',
+                $release
             );
             $license = $xml->findNodeRelativeTo('p:license', $release);
             $notes = trim(preg_replace(
@@ -201,25 +195,16 @@ class ChangeLog
             if ($notes) {
                 $notes .= "\n";
             }
-            $changes[$version] = array(
-                'api' => $xml->getNodeTextRelativeTo(
-                    'p:version/p:api', $release
-                ),
-                'state' => array(
-                    'release' => $xml->getNodeTextRelativeTo(
-                        'p:stability/p:release', $release
-                    ),
-                    'api' => $xml->getNodeTextRelativeTo(
-                        'p:stability/p:api', $release
-                    ),
-                ),
-                'date' => $xml->getNodeTextRelativeTo('p:date', $release),
-                'license' => array(
-                    'identifier' => $license->textContent,
-                    'uri' => $license->getAttribute('uri')
-                ),
-                'notes' => $notes,
-            );
+            $changes[$version] = ['api' => $xml->getNodeTextRelativeTo(
+                'p:version/p:api',
+                $release
+            ), 'state' => ['release' => $xml->getNodeTextRelativeTo(
+                'p:stability/p:release',
+                $release
+            ), 'api' => $xml->getNodeTextRelativeTo(
+                'p:stability/p:api',
+                $release
+            )], 'date' => $xml->getNodeTextRelativeTo('p:date', $release), 'license' => ['identifier' => $license->textContent, 'uri' => $license->getAttribute('uri')], 'notes' => $notes];
         }
         $changes = \array_reverse($changes);
 
@@ -228,7 +213,7 @@ class ChangeLog
         if ($changesFile->exists()) {
             $inHeader = $maybeHeader = $version = false;
             foreach ($changesFile as $line) {
-                if (!strcspn($line, '-')) {
+                if (!strcspn((string) $line, '-')) {
                     if ($inHeader) {
                         $inHeader = false;
                     } else {
@@ -237,12 +222,10 @@ class ChangeLog
                     continue;
                 }
                 if ($maybeHeader) {
-                    if (preg_match('/v([.\d]*?)(-git)?\n/m', $line, $match)) {
+                    if (preg_match('/v([.\d]*?)(-git)?\n/m', (string) $line, $match)) {
                         $inHeader = true;
                         if ($version && !isset($changes[$version])) {
-                            $changes[$version] = array(
-                                'notes' => trim($notes) . "\n"
-                            );
+                            $changes[$version] = ['notes' => trim($notes) . "\n"];
                         }
                         $notes = '';
                         $version = $match[1];
@@ -253,14 +236,14 @@ class ChangeLog
                         $maybeHeader = false;
                     }
                 }
-                if (strpos($line, '      ') === 0) {
-                    $line = ltrim($line);
+                if (str_starts_with((string) $line, '      ')) {
+                    $line = ltrim((string) $line);
                     $notes = substr($notes, 0, -1) . ' ';
                 }
                 $notes .= $line;
             }
             if ($version && !isset($changes[$version])) {
-                $changes[$version] = array('notes' => trim($notes) . "\n");
+                $changes[$version] = ['notes' => trim($notes) . "\n"];
             }
         }
 
@@ -301,7 +284,7 @@ class ChangeLog
             return;
         }
 
-        $changes = array();
+        $changes = [];
         foreach ($allchanges as $version => $info) {
             if ($version == 'extra') {
                 continue;
@@ -309,7 +292,7 @@ class ChangeLog
             try {
                 $version = HelperVersion::validatePear($version);
                 $changes[$version] = $info;
-            } catch (Exception $e) {
+            } catch (Exception) {
                 break;
             }
         }
@@ -327,7 +310,7 @@ class ChangeLog
      *
      * @return string  The link to the change log.
      */
-    public function getChangelogLink($root)
+    public function getChangelogLink($root): string
     {
         if ($changes = $this->changesFileExists()) {
             $hordeInfo = $this->_component->getWrapper('HordeYml');
@@ -358,7 +341,7 @@ class ChangeLog
      * @return string|boolean The path to the CHANGES file if it exists, false
      *                        otherwise.
      */
-    public function changesFileExists()
+    public function changesFileExists(): string|bool
     {
         $changes = $this->_component->getWrapper('Changes');
         if ($changes->exists()) {
@@ -407,7 +390,7 @@ class ChangeLog
             if (!$info['notes']) {
                 continue;
             }
-            $notes = explode("\n", $info['notes']);
+            $notes = explode("\n", (string) $info['notes']);
             foreach ($notes as $entry) {
                 if (preg_match('/^\[.*?\] (.*)$/', $entry, $match, PREG_OFFSET_CAPTURE) ||
                     preg_match('/^[A-Z]{3,}: (.*)$/', $entry, $match, PREG_OFFSET_CAPTURE)) {
@@ -431,7 +414,7 @@ class ChangeLog
      *
      * @return string The command output.
      */
-    protected function _systemInDirectory($call, $target_dir)
+    protected function _systemInDirectory($call, $target_dir): string|bool
     {
         $old_dir = getcwd();
         chdir($target_dir);

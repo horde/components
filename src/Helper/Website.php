@@ -10,7 +10,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Helper;
+
 use Horde\Components\Component;
 use Horde\Components\Exception;
 use Horde\Components\Output;
@@ -26,20 +28,18 @@ use Horde\Components\Output;
 class Website
 {
     /**
-     * The output handler.
-     *
-     * @param Output
-     */
-    private $_output;
-
-    /**
      * Constructor.
      *
-     * @param Output $output The output handler.
+     * @param Output $_output The output handler.
      */
-    public function __construct(Output $output)
-    {
-        $this->_output = $output;
+    public function __construct(
+        /**
+         * The output handler.
+         *
+         * @param Output
+         */
+        private readonly Output $_output
+    ) {
     }
 
     /**
@@ -49,10 +49,8 @@ class Website
      *                                        be updated.
      * @param array                $options   The set of options for the
      *                                        operation.
-     *
-     * @return void
      */
-    public function update(Component $component, $options)
+    public function update(Component $component, $options): void
     {
         if (empty($options['destination'])) {
             throw new Exception('"destination" MUST be set for this action!');
@@ -65,7 +63,8 @@ class Website
 
         $tmp_dir = \Horde_Util::createTempDir();
         $archive = $component->placeArchive(
-            $tmp_dir, array('logger' => $this->_output)
+            $tmp_dir,
+            ['logger' => $this->_output]
         );
         if (!$archive[0]) {
             throw new Exception('Failed retrieving the component archive!');
@@ -78,7 +77,7 @@ class Website
             $doc_files,
             $this->_identifyDocFiles($source . '/docs')
         );
-        foreach (array('README', 'README.md', 'README.rst') as $readme) {
+        foreach (['README', 'README.md', 'README.rst'] as $readme) {
             if (\file_exists($source . '/' . $readme)) {
                 $doc_files[$source . '/' . $readme] = 'README';
             }
@@ -129,11 +128,7 @@ class Website
                 $out .= $notes['changes'];
                 $out .= "</pre>\n";
             } else {
-                $descriptorspec = array(
-                    array('pipe', 'r'),
-                    array('pipe', 'w'),
-                    array('pipe', 'w')
-                );
+                $descriptorspec = [['pipe', 'r'], ['pipe', 'w'], ['pipe', 'w']];
                 $process = proc_open(
                     $options['html_generator'] . ' --output-encoding=UTF-8 --rfc-references ' . $path,
                     $descriptorspec,
@@ -191,7 +186,7 @@ class Website
         if (empty($options['pretend'])) {
             $data = $component->getData();
             $data->hasDocuments = !empty($doc_files);
-            file_put_contents($data_file, json_encode($data));
+            file_put_contents($data_file, json_encode($data, JSON_THROW_ON_ERROR));
             $this->_output->ok(
                 sprintf(
                     'Wrote data for component %s to %s',
@@ -212,16 +207,16 @@ class Website
 
     private function _identifyDocFiles($path)
     {
-        $doc_files = array();
+        $doc_files = [];
         if (!is_dir($path)) {
             return $doc_files;
         }
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path)) as $file) {
             if ($file->isFile() &&
-                preg_match('/[A-Z_]+/', $file->getFilename()) &&
-                !preg_match('/\.(html|php)$/', $file->getFilename()) &&
-                !in_array($file->getFilename(), array('COPYING', 'LICENSE')) &&
-                !preg_match('#/examples/#', $file->getPathname())) {
+                preg_match('/[A-Z_]+/', (string) $file->getFilename()) &&
+                !preg_match('/\.(html|php)$/', (string) $file->getFilename()) &&
+                !in_array($file->getFilename(), ['COPYING', 'LICENSE']) &&
+                !preg_match('#/examples/#', (string) $file->getPathname())) {
                 $doc_files[$file->getPathname()] = $file->getFilename();
             }
         }

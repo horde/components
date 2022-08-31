@@ -10,8 +10,8 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
-
 namespace Horde\Components\Component\Task;
+
 /**
  * Components\Component\Task\SystemCall:: Run system calls from tasks
  *
@@ -54,6 +54,7 @@ trait SystemCall
      */
     protected function systemInDirectory($call, $target_dir)
     {
+        $old_dir = null;
         if (!$this->getTasks()->pretend()) {
             $old_dir = getcwd();
             chdir($target_dir);
@@ -92,6 +93,7 @@ trait SystemCall
      */
     protected function execInDirectory($call, $target_dir)
     {
+        $old_dir = null;
         if (!$this->getTasks()->pretend()) {
             $old_dir = getcwd();
             chdir($target_dir);

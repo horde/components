@@ -10,7 +10,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Module;
+
 use Horde\Components\Config;
 
 /**
@@ -34,7 +36,7 @@ class Dependencies extends Base
      *
      * @return string The group title.
      */
-    public function getOptionGroupTitle()
+    public function getOptionGroupTitle(): string
     {
         return 'Package Dependencies';
     }
@@ -44,7 +46,7 @@ class Dependencies extends Base
      *
      * @return string The group description.
      */
-    public function getOptionGroupDescription()
+    public function getOptionGroupDescription(): string
     {
         return 'This module generates a list of dependencies for the specified package';
     }
@@ -54,39 +56,22 @@ class Dependencies extends Base
      *
      * @return array The group options.
      */
-    public function getOptionGroupOptions()
+    public function getOptionGroupOptions(): array
     {
-        return array(
-            new \Horde_Argv_Option(
-                '-L',
-                '--list-deps',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'generate a dependency listing'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '--short',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Generate a brief dependency list.'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '--alldeps',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Include all optional dependencies into the dependency list.'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '--no-tree',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Just print the dependencies of this package (YAML format) rather than generating a complete tree.'
-                )
-            ),
-        );
+        return [new \Horde_Argv_Option(
+            '-L',
+            '--list-deps',
+            ['action' => 'store_true', 'help'   => 'generate a dependency listing']
+        ), new \Horde_Argv_Option(
+            '--short',
+            ['action' => 'store_true', 'help'   => 'Generate a brief dependency list.']
+        ), new \Horde_Argv_Option(
+            '--alldeps',
+            ['action' => 'store_true', 'help'   => 'Include all optional dependencies into the dependency list.']
+        ), new \Horde_Argv_Option(
+            '--no-tree',
+            ['action' => 'store_true', 'help'   => 'Just print the dependencies of this package (YAML format) rather than generating a complete tree.']
+        )];
     }
 
     /**
@@ -94,7 +79,7 @@ class Dependencies extends Base
      *
      * @return string The title.
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return 'deps';
     }
@@ -104,7 +89,7 @@ class Dependencies extends Base
      *
      * @return string The description.
      */
-    public function getUsage()
+    public function getUsage(): string
     {
         return 'Generate a dependency list.';
     }
@@ -114,9 +99,9 @@ class Dependencies extends Base
      *
      * @return array A list of supported action arguments.
      */
-    public function getActions()
+    public function getActions(): array
     {
-        return array('deps');
+        return ['deps'];
     }
 
     /**
@@ -126,7 +111,7 @@ class Dependencies extends Base
      *
      * @return string The help text.
      */
-    public function getHelp($action)
+    public function getHelp($action): string
     {
         return 'This module generates a dependency tree for a component.';
     }
@@ -136,14 +121,9 @@ class Dependencies extends Base
      *
      * @return array A list of option help texts.
      */
-    public function getContextOptionHelp()
+    public function getContextOptionHelp(): array
     {
-        return array(
-            '--short' => '',
-            '--alldeps' => '',
-            '--no-tree' => '',
-            '--allow-remote' => 'The dependency list should also resolve the dependency tree of components from remote channels.',
-        );
+        return ['--short' => '', '--alldeps' => '', '--no-tree' => '', '--allow-remote' => 'The dependency list should also resolve the dependency tree of components from remote channels.'];
     }
 
     /**

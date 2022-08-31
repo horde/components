@@ -10,6 +10,7 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Release\Task;
 
 /**
@@ -32,10 +33,8 @@ class CommitPreRelease extends Base
      * Run the task.
      *
      * @param array &$options Additional options.
-     *
-     * @return void
      */
-    public function run(&$options)
+    public function run(&$options): void
     {
         if (isset($options['commit'])) {
             $options['commit']->commit(

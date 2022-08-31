@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Helper;
+
 use Horde\Components\Output;
 use Horde\Components\Wrapper;
 
@@ -30,35 +32,24 @@ class Commit
 {
     /**
      * Modified paths.
-     *
-     * @var array
      */
-    private $_added = array();
-
-    /**
-     * The output handler.
-     *
-     * @param Output
-     */
-    private $_output;
-
-    /**
-     * Applicaiton options.
-     *
-     * @var array
-     */
-    private $_options;
+    private array $_added = [];
 
     /**
      * Constructor.
      *
-     * @param Output $output  The output handler.
-     * @param array            $options Application options.
+     * @param Output $_output The output handler.
+     * @param array $_options Application options.
      */
-    public function __construct(Output $output, $options)
-    {
-        $this->_output  = $output;
-        $this->_options = $options;
+    public function __construct(
+        /**
+         * The output handler.
+         *
+         * @param Output
+         */
+        private readonly Output $_output,
+        private $_options
+    ) {
     }
 
     /**
@@ -67,10 +58,8 @@ class Commit
      *
      * @param string $path      The path to the modified file.
      * @param string $directory The working directory.
-     *
-     * @return void
      */
-    public function add($path, $directory)
+    public function add($path, $directory): void
     {
         if ($path instanceof Wrapper) {
             $path = $path->getLocalPath($directory);
@@ -82,10 +71,8 @@ class Commit
      * Add all modified files and commit them.
      *
      * @param string $log The commit message.
-     *
-     * @return void
      */
-    public function commit($log)
+    public function commit($log): void
     {
         if (empty($this->_added)) {
             return;
@@ -94,7 +81,7 @@ class Commit
             $this->systemInDirectory('git add ' . $path, $wd);
         }
         $this->systemInDirectory('git commit -m "' . $log . '"', $wd);
-        $this->_added = array();
+        $this->_added = [];
     }
 
     /**
@@ -103,13 +90,12 @@ class Commit
      * @param string $tag       Tag name.
      * @param string $message   Tag message.
      * @param string $directory The working directory.
-     *
-     * @return void
      */
-    public function tag($tag, $message, $directory)
+    public function tag($tag, $message, $directory): void
     {
         $this->systemInDirectory(
-            'git tag -f -m "' . $message . '" ' . $tag, $directory
+            'git tag -f -m "' . $message . '" ' . $tag,
+            $directory
         );
     }
 
@@ -138,8 +124,9 @@ class Commit
      *
      * @return string The command output.
      */
-    protected function systemInDirectory($call, $target_dir)
+    protected function systemInDirectory($call, $target_dir): string
     {
+        $old_dir = null;
         if (empty($this->_options['pretend'])) {
             $old_dir = getcwd();
             chdir($target_dir);
@@ -150,5 +137,4 @@ class Commit
         }
         return $result;
     }
-
 }

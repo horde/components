@@ -10,8 +10,11 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components;
+
 use Horde\Components\Config\Base;
+
 /**
  * Components_Configs:: class represents configuration for the
  * Horde component tool.
@@ -30,34 +33,27 @@ class Configs extends Base
 {
     /**
      * The different configuration handlers.
-     *
-     * @var array
      */
-    private $_configs;
+    private array $_configs = [];
 
     /**
      * Have the arguments been collected?
-     *
-     * @var boolean
      */
-    private $_collected = false;
+    private bool $_collected = false;
 
     /**
      * Constructor.
      */
     public function __construct()
     {
-        $this->_configs = array();
     }
 
     /**
      * Add a configuration type to the configuration handler.
      *
      * @param Config $type The configuration type.
-     *
-     * @return void
      */
-    public function addConfigurationType(Config $type)
+    public function addConfigurationType(Config $type): void
     {
         $this->_configs[] = $type;
     }
@@ -68,10 +64,8 @@ class Configs extends Base
      * configurations already present.
      *
      * @param Config $type The configuration type.
-     *
-     * @return void
      */
-    public function unshiftConfigurationType(Config $type)
+    public function unshiftConfigurationType(Config $type): void
     {
         array_unshift($this->_configs, $type);
     }
@@ -80,9 +74,8 @@ class Configs extends Base
      * Provide each configuration handler with the list of supported modules.
      *
      * @param Modules $modules A list of modules.
-     * @return void
      */
-    public function handleModules(Modules $modules)
+    public function handleModules(Modules $modules): void
     {
         foreach ($this->_configs as $config) {
             $config->handleModules($modules);
@@ -94,12 +87,12 @@ class Configs extends Base
      *
      * @return array An array of options.
      */
-    public function getOptions()
+    public function getOptions(): array
     {
-        $options = array();
+        $options = [];
         foreach ($this->_configs as $config) {
-            if (count($config->getOptions()) !== 0) {
-                $config_options = array();
+            if ((is_countable($config->getOptions()) ? count($config->getOptions()) : 0) !== 0) {
+                $config_options = [];
                 foreach ($config->getOptions() as $name => $option) {
                     if ($option !== null) {
                         $config_options[$name] = $option;
@@ -117,14 +110,15 @@ class Configs extends Base
      *
      * @return array An array of arguments.
      */
-    public function getArguments()
+    public function getArguments(): array
     {
         if (!$this->_collected) {
             foreach ($this->_configs as $config) {
                 $config_arguments = $config->getArguments();
                 if (!empty($config_arguments)) {
                     $this->_arguments = array_merge(
-                        $this->_arguments, $config_arguments
+                        $this->_arguments,
+                        $config_arguments
                     );
                 }
             }

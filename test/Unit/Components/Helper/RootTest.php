@@ -10,10 +10,13 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Unit\Components\Helper;
+
 use Horde\Components\Exception;
-use Horde\Components\Test\TestCase;
 use Horde\Components\Helper\Root as HelperRoot;
+use Horde\Components\Test\TestCase;
+
 /**
  * Test the root helper.
  *
@@ -81,7 +84,7 @@ class RootTest extends TestCase
         $this->expectException(Exception::class);
         $this->changeDirectory('/');
         $root = new HelperRoot(
-            array('horde_root' => '/')
+            ['horde_root' => '/']
         );
         $root->getRoot();
     }
@@ -90,7 +93,7 @@ class RootTest extends TestCase
     {
         $path = __DIR__ . '/../../../fixture';
         $root = new HelperRoot(
-            array('horde_root' => $path)
+            ['horde_root' => $path]
         );
         $this->assertEquals($path, $root->getRoot());
     }
@@ -101,7 +104,7 @@ class RootTest extends TestCase
         $this->changeDirectory('/');
         $path = __DIR__ . '/../../../fixture';
         $root = new HelperRoot(
-            array('horde_root' => $path . '/horde')
+            ['horde_root' => $path . '/horde']
         );
         $root->getRoot();
     }
@@ -118,7 +121,8 @@ class RootTest extends TestCase
     {
         $path = __DIR__ . '/../../../fixture/framework';
         $root = new HelperRoot(
-            null, $this->getComponent($path . '/Install')
+            null,
+            $this->getComponent($path . '/Install')
         );
         $this->assertEquals(realpath($path), realpath($root->getRoot()));
     }
@@ -126,7 +130,7 @@ class RootTest extends TestCase
     public function testFrameworkComponent()
     {
         $path = __DIR__ . '/../../../fixture/framework';
-        $root = new HelperRoot(array('horde_root' => $path));
+        $root = new HelperRoot(['horde_root' => $path]);
         $this->assertEquals(
             $path . '/Old/package.xml',
             $root->getPackageXml('Old')
@@ -136,7 +140,7 @@ class RootTest extends TestCase
     public function testFrameworkComponentTwo()
     {
         $path = __DIR__ . '/../../../fixture/framework';
-        $root = new HelperRoot(array('horde_root' => $path));
+        $root = new HelperRoot(['horde_root' => $path]);
         $this->assertEquals(
             $path . '/Old/package.xml',
             $root->getPackageXml('Horde_Old')
@@ -146,7 +150,7 @@ class RootTest extends TestCase
     public function testBundleComponent()
     {
         $path = __DIR__ . '/../../../fixture/bundles';
-        $root = new HelperRoot(array('horde_root' => $path));
+        $root = new HelperRoot(['horde_root' => $path]);
         $this->assertEquals(
             $path . '/Bundle/package.xml',
             $root->getPackageXml('Bundle')
@@ -156,7 +160,7 @@ class RootTest extends TestCase
     public function testApplicationComponent()
     {
         $path = __DIR__ . '/../../../fixture';
-        $root = new HelperRoot(array('horde_root' => $path));
+        $root = new HelperRoot(['horde_root' => $path]);
         $this->assertEquals(
             $path . '/horde/package.xml',
             $root->getPackageXml('horde')

@@ -9,6 +9,7 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Helper;
 
 /**
@@ -32,10 +33,8 @@ abstract class Templates
      * @param string $source     The source location.
      * @param string $target     The target location.
      * @param array  $parameters The template(s) parameters.
-     *
-     * @return void
      */
-    protected function writeSourceToTarget($source, $target, array $parameters = array())
+    protected function writeSourceToTarget($source, $target, array $parameters = []): void
     {
         $template = new Template($source, $target);
         $template->write($parameters);

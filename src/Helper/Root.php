@@ -10,7 +10,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Helper;
+
 use Horde\Components\Component;
 use Horde\Components\Exception;
 use Horde\Components\Output;
@@ -39,51 +41,27 @@ class Root
     protected $_root_path;
 
     /**
-     * Path used to determine the root of the Horde repository.
-     *
-     * @var string
-     */
-    protected $_path;
-
-    /**
-     * Component used to determine the root of the Horde repository.
-     *
-     * @var Component
-     */
-    protected $_component;
-
-    /**
-     * Options used to determine the root of the Horde repository.
-     *
-     * @var array
-     */
-    protected $_options;
-
-    /**
      * Errors that occured while trying to determine the root path.
      *
      * @var array
      */
-    protected $_errors = array();
+    protected $_errors = [];
 
     /**
-     * Constructor.
-     *
-     * @param array                $opts If given the helper will try to
-     *                                   determine the root of the Horde
-     *                                   repository based on these options.
-     * @param Component            $comp If given the helper will try to
-     *                                   determine the root of the Horde
-     *                                   repository based on this component.
-     * @param string               $path If given the helper will try to
-     *                                   determine the root of the Horde
-     *                                   repository based on this path.
-     */
-    public function __construct($opts = [], Component $comp = null, $path = null)
+    * Constructor.
+    *
+     * @param array $_options If given the helper will try to
+     *                            determine the root of the Horde
+     * repository based on these options.
+     * @param Component $_component If given the helper will try to
+     *                            determine the root of the Horde
+     *                            repository based on this component.
+     * @param string $_path If given the helper will try to
+     *                            determine the root of the Horde
+    *                           repository based on this path.
+    */
+    public function __construct(protected $_options = [], protected ?Component $_component = null, protected $_path = null)
     {
-        $this->_path = $path;
-        $this->_component = $comp;
-        $this->_options   = $opts;
     }
 
     /**
@@ -97,7 +75,7 @@ class Root
      * @throws Exception If the Horde repository root could not be
      *                              determined.
      */
-    public function getPackageXml($name)
+    public function getPackageXml($name): string
     {
         $package_file = $this->getRoot() . '/' . $name . '/package.xml';
         if (!file_exists($package_file) && substr($name, 0, 6) == 'Horde_') {
@@ -118,7 +96,7 @@ class Root
      * @throws Exception If the Horde repository root could not be
      *                              determined.
      */
-    public function getGitIgnore()
+    public function getGitIgnore(): string|bool
     {
         return \file_get_contents($this->getRoot() . '/.gitignore');
     }
@@ -131,7 +109,7 @@ class Root
      * @throws Exception If the Horde repository root could not be
      *                              determined.
      */
-    public function getRoot()
+    public function getRoot(): string|bool
     {
         if (empty($this->_root_path)) {
             $this->_root_path = $this->_determineRoot();
@@ -147,7 +125,7 @@ class Root
      * @throws Exception If the Horde repository root could not be
      *                              determined.
      */
-    private function _determineRoot()
+    private function _determineRoot(): string|bool
     {
         if (($result = $this->_determineRootFromOptions()) !== false) {
             return $result;
@@ -175,7 +153,7 @@ class Root
      * @return string|boolean The root path or false if it could not be
      *                        determined.
      */
-    private function _determineRootFromPath()
+    private function _determineRootFromPath(): string|bool
     {
         if (!empty($this->_path)) {
             if (($result = $this->traverseHierarchy($this->_path)) === false) {
@@ -195,12 +173,12 @@ class Root
      * @return string|boolean The root path or false if it could not be
      *                        determined.
      */
-    private function _determineRootFromComponent()
+    private function _determineRootFromComponent(): string|bool
     {
         if (!empty($this->_component)) {
             try {
                 return $this->_component->repositoryRoot($this);
-            } catch (Exception $e) {
+            } catch (Exception) {
                 $this->_errors[] = sprintf(
                     'Component %s has no repository root!',
                     $this->_component->getName()
@@ -217,7 +195,7 @@ class Root
      * @return string|boolean The root path or false if it could not be
      *                        determined.
      */
-    private function _determineRootFromOptions()
+    private function _determineRootFromOptions(): string|bool
     {
         if (isset($this->_options['horde_root'])) {
             if ($this->_isValidRoot($this->_options['horde_root'])) {
@@ -237,7 +215,7 @@ class Root
      * @return string|boolean The root path or false if it could not be
      *                        determined.
      */
-    private function _determineRootFromCwd()
+    private function _determineRootFromCwd(): string|bool
     {
         if (($result = $this->traverseHierarchy(getcwd())) === false) {
             $this->_errors[] = sprintf(
@@ -258,7 +236,7 @@ class Root
      * @return string|boolean The root path or false if it could not be
      *                        determined.
      */
-    public function traverseHierarchy($start)
+    public function traverseHierarchy($start): string|bool
     {
         $i = 0;
         while ($start != '/' || $i < 10) {
@@ -279,7 +257,7 @@ class Root
      * @return string|boolean The root path or false if it could not be
      *                        determined.
      */
-    private function _isValidRoot($directory)
+    private function _isValidRoot($directory): bool
     {
         if (glob($directory . '/*/.horde.yml')) {
             return true;

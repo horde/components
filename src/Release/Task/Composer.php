@@ -9,7 +9,9 @@
  * @author   Ralf Lang <lang@b1-systems.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Release\Task;
+
 use Horde\Components\Helper\Composer as HelperComposer;
 
 /**
@@ -37,7 +39,7 @@ class Composer extends Base
      *
      * @return void;
      */
-    public function run(&$options)
+    public function run(&$options): void
     {
         $composer = new HelperComposer();
         $options['logger'] = $this->getOutput();

@@ -9,6 +9,7 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components;
 
 /**
@@ -26,17 +27,17 @@ namespace Horde\Components;
  */
 class Constants
 {
-    const DATA_DIR = '@data_dir@';
-    const CFG_DIR  = '@cfg_dir@';
+    final public const DATA_DIR = '@data_dir@';
+    final public const CFG_DIR  = '@cfg_dir@';
 
     /**
      * Return the position of the package data directory.
      *
      * @return string Path to the directory holding data files.
      */
-    public static function getDataDirectory()
+    public static function getDataDirectory(): string
     {
-        if (strpos(self::DATA_DIR, '@data_dir') === 0) {
+        if (str_starts_with(self::DATA_DIR, '@data_dir')) {
             return __DIR__ . '/../data';
         }
         return self::DATA_DIR . '/Components';
@@ -47,9 +48,9 @@ class Constants
      *
      * @return string Path to the default configuration file.
      */
-    public static function getConfigFile()
+    public static function getConfigFile(): string
     {
-        if (strpos(self::CFG_DIR, '@cfg_dir') === 0) {
+        if (str_starts_with(self::CFG_DIR, '@cfg_dir')) {
             return __DIR__ . '/../config/conf.php';
         }
         return self::CFG_DIR . '/conf.php';

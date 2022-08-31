@@ -3,10 +3,10 @@
  * Components_Release_Task_Packagist:: Notify Packagist of update
  *
  * Ask packagist to re-read the repository now and find updated tags
- * 
+ *
  * You could substitute this step by using the Github Webhook feature
  * Packagist also auto-updates roughly every week
- * 
+ *
  * PHP version 7
  *
  * @category Horde
@@ -15,6 +15,7 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  * @link     https://packagist.org/about#how-to-update-packages
  */
+
 namespace Horde\Components\Release\Task;
 
 /**
@@ -35,13 +36,13 @@ class Packagist extends Base
 {
     /**
      * Validate if we can make a valid request
-     * 
+     *
      * @param array $options Additional options.
      *
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
      */
-    public function preValidate($options)
+    public function preValidate($options): array
     {
         $issues = [];
         $pretend = $this->getTasks()->pretend();
@@ -76,7 +77,7 @@ class Packagist extends Base
                     $options['vendor'],
                     $package->getName()
                 )
-            );           
+            );
         } else {
             $issues[] = sprintf(
                 'Package %s/%s does not exists in packagist',
@@ -90,17 +91,17 @@ class Packagist extends Base
 
     /**
      * Ask for the \Horde_Http_Client dependency
-     * 
+     *
      * @return array The list of dependencies requested
      */
-    public function askDependencies()
+    public function askDependencies(): array
     {
-        return ['http' => 'Horde_Http_Client'];
+        return ['http' => \Horde_Http_Client::class];
     }
 
     /**
      * Run the task.
-     * 
+     *
      * Checkout the wanted branch
      * Supports pretend mode
      *
@@ -108,12 +109,12 @@ class Packagist extends Base
      *
      * @return void;
      */
-    public function run(&$options)
+    public function run(&$options): void
     {
         $options = $this->_options($options);
         $http = $this->getDependency('http');
         $url = sprintf(
-            '%s/api/update-package?username=%s&apiToken=%s', 
+            '%s/api/update-package?username=%s&apiToken=%s',
             $options['packagist_url'],
             $options['packagist_user'],
             $options['packagist_api_key']
@@ -123,7 +124,7 @@ class Packagist extends Base
             '{"repository":{"url":"%s/packages/%s/%s"}}',
             $options['packagist_url'],
             $options['vendor'],
-            $this->getComponent()->getName()        
+            $this->getComponent()->getName()
         );
         $header = ['content-type' => 'application/json'];
         $response = $http->post($url, $body, $header);
@@ -136,42 +137,41 @@ class Packagist extends Base
 
     /**
      * Ensure default and required options
-     * 
+     *
      * - vendor defaults to horde
      * - packagist_api_key defaults to empty
      * - packagist_user defaults to empty
      * - packagist_url defaults to https://packagist.org
-     * 
+     *
      * @param array $options Additional options.
-     * 
+     *
      * @return array The processed options
      */
-    protected function _options($options)
+    protected function _options($options): array
     {
-        $options['vendor'] = $options['vendor'] ?? 'horde';
-        $options['packagist_api_key'] = $options['packagist_api_key'] ?? '';
-        $options['packagist_url'] = $options['packagist_url'] ??
-            'https://packagist.org';
-        $options['packagist_user'] = $options['packagist_user'] ?? '';
+        $options['vendor'] ??= 'horde';
+        $options['packagist_api_key'] ??= '';
+        $options['packagist_url'] ??= 'https://packagist.org';
+        $options['packagist_user'] ??= '';
         return $options;
     }
 
     /**
      * Ensure packagist has the package we want to nudge an update for
-     * 
+     *
      * Packagist has a published method for receiving update hints but
      * there is no published way of programmatically adding packages
      *
      * @param array                     $options Additional options.
      * @param Horde\Components\Component\Base $package The package to check
-     * 
+     *
      * @return boolean True if the package exists
      */
-    protected function _verifyPackageExists($options, $package)
+    protected function _verifyPackageExists($options, $package): bool
     {
         $http = $this->getDependency('http');
         $url = sprintf(
-            '%s/packages/%s/%s.json', 
+            '%s/packages/%s/%s.json',
             $options['packagist_url'],
             $options['vendor'],
             $package->getName()

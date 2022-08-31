@@ -10,13 +10,15 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Runner;
+
 use Horde\Components\Config;
+use Horde\Components\Config\Application as ConfigApplication;
 use Horde\Components\Factory;
+use Horde\Components\Helper\Templates\RecursiveDirectory as HelperTemplatesRecursiveDirectory;
 use Horde\Components\Output;
 use Horde\Components\Pear\Factory as PearFactory;
-use Horde\Components\Config\Application as ConfigApplication;
-use Horde\Components\Helper\Templates\RecursiveDirectory as HelperTemplatesRecursiveDirectory;
 
 /**
  * Components_Runner_CiPrebuild:: prepares a continuous integration setup for a
@@ -35,50 +37,23 @@ use Horde\Components\Helper\Templates\RecursiveDirectory as HelperTemplatesRecur
 class CiPrebuild
 {
     /**
-     * The configuration for the current job.
-     *
-     * @var Config
-     */
-    private $_config;
-
-    /**
-     * The application configuration.
-     *
-     * @var ConfigApplication
-     */
-    private $_config_application;
-
-    /**
-     * The factory for PEAR handlers.
-     *
-     * @var Factory
-     */
-    private $_factory;
-
-    /**
      * Constructor.
      *
-     * @param Config            $config  The configuration for the current job.
-     * @param ConfigApplication $cfgapp  The application configuration.
-     * @param PearFactory       $factory Generator for all required PEAR components.
+     * @param Config $_config The configuration for the current job.
+     * @param ConfigApplication $_config_application The application configuration.
+     * @param PearFactory $_factory Generator for all required PEAR components.
      */
-    public function __construct(
-        Config $config,
-        ConfigApplication $cfgapp,
-        PearFactory $factory
-    ) {
-        $this->_config             = $config;
-        $this->_config_application = $cfgapp;
-        $this->_factory            = $factory;
+    public function __construct(private readonly Config $_config, private readonly ConfigApplication $_config_application, private readonly PearFactory $_factory)
+    {
     }
 
-    public function run()
+    public function run(): void
     {
         $options = $this->_config->getOptions();
         $templates = new HelperTemplatesRecursiveDirectory(
             $this->_config_application->getTemplateDirectory(),
             $options['ciprebuild']
         );
-        $templates->write(array('config' => $this->_config));
+        $templates->write(['config' => $this->_config]);
     }
 }

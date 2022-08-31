@@ -10,7 +10,9 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Unit\Components\Release\Task;
+
 use Horde\Components\Test\TestCase;
 
 /**
@@ -34,8 +36,8 @@ class PackageTest extends TestCase
         $package = $this->_getPackage();
         $task = $this->getReleaseTask('Package', $package);
         $this->assertEquals(
-            array(),
-            $task->preValidate(array('releaseserver' => 'pear.horde.org', 'releasedir' => 'B'))
+            [],
+            $task->preValidate(['releaseserver' => 'pear.horde.org', 'releasedir' => 'B'])
         );
     }
 
@@ -44,8 +46,8 @@ class PackageTest extends TestCase
         $package = $this->_getPackage();
         $task = $this->getReleaseTask('Package', $package);
         $this->assertEquals(
-            array('The "releaseserver" option has no value. Where should the release be uploaded?'),
-            $task->preValidate(array('releasedir' => 'B'))
+            ['The "releaseserver" option has no value. Where should the release be uploaded?'],
+            $task->preValidate(['releasedir' => 'B'])
         );
     }
 
@@ -54,8 +56,8 @@ class PackageTest extends TestCase
         $package = $this->_getPackage();
         $task = $this->getReleaseTask('Package', $package);
         $this->assertEquals(
-            array('The "releasedir" option has no value. Where is the remote pirum install located?'),
-            $task->preValidate(array('releaseserver' => 'A'))
+            ['The "releasedir" option has no value. Where is the remote pirum install located?'],
+            $task->preValidate(['releaseserver' => 'A'])
         );
     }
 
@@ -66,9 +68,9 @@ class PackageTest extends TestCase
             ->method('placeArchive')
             ->willReturn(['/some/path/to/package.xml']);
         $this->getReleaseTasks()->run(
-            array('Package'),
+            ['Package'],
             $package,
-            array('releaseserver' => 'pear.horde.org', 'releasedir' => 'B')
+            ['releaseserver' => 'pear.horde.org', 'releasedir' => 'B']
         );
     }
 
@@ -79,21 +81,21 @@ class PackageTest extends TestCase
             ->method('getName')
             ->will($this->returnValue('NAME'));
         $this->getReleaseTasks()->run(
-            array('Package'),
+            ['Package'],
             $package,
-            array(
+            [
                 'releaseserver' => 'pear.horde.org',
                 'releasedir' => 'B',
                 'pretend' => true,
                 'upload' => true
-            )
+            ]
         );
         $this->assertEquals(
-            array(
+            [
                 'Would package NAME now.',
                 'Would run "scp [PATH TO RESULTING]/[PACKAGE.TGZ - PRETEND MODE] pear.horde.org:~/" now.',
                 'Would run "ssh pear.horde.org "umask 0002 && pirum add B ~/[PACKAGE.TGZ - PRETEND MODE] && rm [PACKAGE.TGZ - PRETEND MODE]"" now.'
-            ),
+            ],
             $this->_output->getOutput()
         );
     }

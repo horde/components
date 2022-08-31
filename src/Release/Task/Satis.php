@@ -3,7 +3,7 @@
  * Components_Release_Task_Satis:: Rebuild a satis repo
  *
  * Ask Satis to rebuild the repository now and find updated tags
- * 
+ *
  * PHP version 7
  *
  * @category Horde
@@ -12,6 +12,7 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  * @link     https://packagist.org/about#how-to-update-packages
  */
+
 namespace Horde\Components\Release\Task;
 
 /**
@@ -32,13 +33,13 @@ class Satis extends Base
 {
     /**
      * Validate if we are setup
-     * 
+     *
      * @param array $options Additional options.
      *
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
      */
-    public function preValidate($options)
+    public function preValidate($options): array
     {
         $issues = [];
         $options = $this->_options($options);
@@ -47,24 +48,24 @@ class Satis extends Base
             if (empty($options[$option])) {
                 $issues[] = "Required config key '$option' not set";
             }
-        } 
+        }
 
         return $issues;
     }
 
     /**
      * Ask for the \Horde_Http_Client dependency
-     * 
+     *
      * @return array The list of dependencies requested
      */
-    public function askDependencies()
+    public function askDependencies(): array
     {
-        return ['http' => 'Horde_Http_Client'];
+        return ['http' => \Horde_Http_Client::class];
     }
 
     /**
      * Run the task.
-     * 
+     *
      * Checkout the wanted branch
      * Supports pretend mode
      *
@@ -72,7 +73,7 @@ class Satis extends Base
      *
      * @return void;
      */
-    public function run(&$options)
+    public function run(&$options): void
     {
         $options = $this->_options($options);
         $pretend = $this->getTasks()->pretend();
@@ -140,9 +141,10 @@ class Satis extends Base
                 $options['satis_outdir']
             );
             $this->execInDirectory(
-                sprintf('git commit -m "Updated by %s release at %s"',
+                sprintf(
+                    'git commit -m "Updated by %s release at %s"',
                     $package->getName(),
-                    (new \Horde_Date(time(),'UTC'))->toJson()
+                    (new \Horde_Date(time(), 'UTC'))->toJson()
                 ),
                 $options['satis_outdir']
             );
@@ -163,24 +165,24 @@ class Satis extends Base
      * - satis_outdir: path where satis should write the repository default ''
      * - satis_push: Try to commit and push the generated content as git repo?
      *     Defaults to false
-     * 
+     *
      * @param array $options Additional options.
-     * 
+     *
      * @return array The processed options
      */
-    protected function _options($options)
+    protected function _options($options): array
     {
+        $found = null;
         if (empty($options['satis_bin'])) {
             $satisWhich = $this->exec('which satis');
             $found = $satisWhich->getReturnValue() ? '' : (string) $satisWhich;
         }
-        $options['satis_bin'] = $options['satis_bin'] ?? $found;
-        $options['satis_json'] = $options['satis_json'] ?? '';
-        $options['satis_outdir'] = $options['satis_outdir'] ?? '';
+        $options['satis_bin'] ??= $found;
+        $options['satis_json'] ??= '';
+        $options['satis_outdir'] ??= '';
         $options['satis_push'] = (bool) $options['satis_push'] ?? false;
-        $options['vendor'] = $options['vendor'] ?? 'horde';
-        $options['git_repo_base'] = $options['git_repo_base'] ??
-            'https://github.com/' . $options['vendor'] . '/';
+        $options['vendor'] ??= 'horde';
+        $options['git_repo_base'] ??= 'https://github.com/' . $options['vendor'] . '/';
         return $options;
     }
 }

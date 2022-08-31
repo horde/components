@@ -10,10 +10,11 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-namespace Horde\Components\Module;
-use Horde\Components\Module;
-use Horde\Components\Dependencies;
 
+namespace Horde\Components\Module;
+
+use Horde\Components\Dependencies;
+use Horde\Components\Module;
 
 /**
  * Components_Module_Base:: provides core functionality for the
@@ -29,24 +30,15 @@ use Horde\Components\Dependencies;
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-abstract class Base
-implements Module, \Horde_Cli_Modular_ModuleUsage
+abstract class Base implements Module, \Horde_Cli_Modular_ModuleUsage
 {
-    /**
-     * The dependency provider.
-     *
-     * @var Dependencies
-     */
-    protected $_dependencies;
-
     /**
      * Constructor.
      *
-     * @param Dependencies $dependencies The dependency provider.
+     * @param Dependencies $_dependencies The dependency provider.
      */
-    public function __construct(Dependencies $dependencies)
+    public function __construct(protected Dependencies $_dependencies)
     {
-        $this->_dependencies = $dependencies;
     }
 
     /**
@@ -54,7 +46,7 @@ implements Module, \Horde_Cli_Modular_ModuleUsage
      *
      * @return string The title.
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return '';
     }
@@ -64,7 +56,7 @@ implements Module, \Horde_Cli_Modular_ModuleUsage
      *
      * @return string The description.
      */
-    public function getUsage()
+    public function getUsage(): string
     {
         return '';
     }
@@ -75,9 +67,9 @@ implements Module, \Horde_Cli_Modular_ModuleUsage
      *
      * @return array The options.
      */
-    public function getBaseOptions()
+    public function getBaseOptions(): array
     {
-        return array();
+        return [];
     }
 
     /**
@@ -85,7 +77,7 @@ implements Module, \Horde_Cli_Modular_ModuleUsage
      *
      * @return boolean True if an option group should be added.
      */
-    public function hasOptionGroup()
+    public function hasOptionGroup(): bool
     {
         return true;
     }
@@ -95,9 +87,9 @@ implements Module, \Horde_Cli_Modular_ModuleUsage
      *
      * @return array A list of supported action arguments.
      */
-    public function getActions()
+    public function getActions(): array
     {
-        return array();
+        return [];
     }
 
     /**
@@ -105,9 +97,9 @@ implements Module, \Horde_Cli_Modular_ModuleUsage
      *
      * @return array A list of option help texts.
      */
-    public function getContextOptionHelp()
+    public function getContextOptionHelp(): array
     {
-        return array();
+        return [];
     }
 
     /**
@@ -117,7 +109,7 @@ implements Module, \Horde_Cli_Modular_ModuleUsage
      *
      * @return string The help text.
      */
-    public function getHelp($action)
+    public function getHelp($action): string
     {
         return '';
     }

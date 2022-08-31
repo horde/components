@@ -10,10 +10,12 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Helper;
+
 use Horde\Components\Component;
-use Horde\Components\Output;
 use Horde\Components\Component\Dependency as Dependency;
+use Horde\Components\Output;
 
 /**
  * Components_Helper_Dependencies:: provides a utility that produces a dependency
@@ -32,34 +34,28 @@ use Horde\Components\Component\Dependency as Dependency;
 class Dependencies
 {
     /**
-     * The output handler.
-     *
-     * @param Output
-     */
-    private $_output;
-
-    /**
      * The list of dependencies already displayed.
-     *
-     * @var array
      */
-    private $_displayed_dependencies = array();
+    private array $_displayed_dependencies = [];
 
     /**
      * The list of elements in case we are producing condensed output.
-     *
-     * @var array
      */
-    private $_short_list = array();
+    private array $_short_list = [];
 
     /**
      * Constructor.
      *
-     * @param Output       $output The output handler.
+     * @param Output $_output The output handler.
      */
-    public function __construct(Output $output)
-    {
-        $this->_output = $output;
+    public function __construct(
+        /**
+         * The output handler.
+         *
+         * @param Output
+         */
+        private readonly Output $_output
+    ) {
     }
 
     /**
@@ -68,10 +64,9 @@ class Dependencies
      * @param Component $component The component for which the
      *                                        dependency tree should be shown.
      * @param array                $options   Options for generating the list.
-     *
-     * @return void
      */
-    public function listTree(Component $component, $options) {
+    public function listTree(Component $component, $options): void
+    {
         if (!empty($options['alldeps'])) {
             $this->_output->bold('The list contains optional dependencies!');
         } else {
@@ -93,15 +88,13 @@ class Dependencies
      * @param array                $options   Options for generating the list.
      * @param int                  $level     The current list level.
      * @param string               $parent    The name of the parent element.
-     *
-     * @return void
      */
     private function _listTree(
         Component $component,
         $options,
         $level = 0,
         $parent = ''
-    ) {
+    ): void {
         if ($this->_listComponent($component, $level, $parent, $options)) {
             foreach ($component->getDependencyList() as $dependency) {
                 if (!$dependency->isPhp() && !$dependency->isPearBase()) {
@@ -113,11 +106,16 @@ class Dependencies
                         }
                         if ($dep === false) {
                             $this->_listExternal(
-                                $dependency, $level + 1, $options
+                                $dependency,
+                                $level + 1,
+                                $options
                             );
                         } else {
                             $this->_listTree(
-                                $dep, $options, $level + 1, $component->getName()
+                                $dep,
+                                $options,
+                                $level + 1,
+                                $component->getName()
                             );
                         }
                     }
@@ -130,7 +128,7 @@ class Dependencies
      * List a Horde component as dependency.
      *
      * @param Component $component The component for which the
-     *                                        dependency tree should be shown     
+     *                                        dependency tree should be shown
      * @param int                  $level     The current list level.
      * @param string               $parent    Name of the parent element.
      * @param array                $options   Options for generating the list.
@@ -177,14 +175,12 @@ class Dependencies
      * @param Dependency $dependency The package dependencies.
      * @param int        $level        The current list level.
      * @param array      $options      tbd
-     *
-     * @return void
      */
     private function _listExternal(
         Dependency $dependency,
         $level,
         $options
-    ) {
+    ): void {
         $this->_element(
             'yellow',
             $level,
@@ -198,8 +194,6 @@ class Dependencies
 
     /**
      * List a single element.
-     *
-     * @return void
      */
     private function _element(
         $color,
@@ -209,38 +203,32 @@ class Dependencies
         $channel,
         $info,
         $options
-    )
-    {
+    ): void {
         if (empty($options['short'])) {
             $this->_output->$color(
                 \Horde_String::pad(
-                    $this->_listLevel($level) . '|_' . $name, 45
+                    $this->_listLevel($level) . '|_' . $name,
+                    45
                 )
                 . \Horde_String::pad(' [' . $channel . ']', 20) . ' ' . $info
             );
         } else {
-            $this->_short_list[$key] = array(
-                'channel' => $channel,
-                'name' => $name,
-                'color' => $color
-            );
+            $this->_short_list[$key] = ['channel' => $channel, 'name' => $name, 'color' => $color];
         }
     }
 
     /**
      * Wrap up the listing. This will produce a condensed list of packages in
      * case quiet Output was requested.
-     *
-     * @return void
      */
-    private function _finish()
+    private function _finish(): void
     {
         if (empty($this->_short_list)) {
             return;
         }
-        $channels = array();
-        $names = array();
-        $colors = array();
+        $channels = [];
+        $names = [];
+        $colors = [];
         foreach ($this->_short_list as $key => $element) {
             $channels[] = $element['channel'];
             $names[] = $element['name'];
@@ -262,7 +250,7 @@ class Dependencies
      *
      * @return string Whitespace.
      */
-    private function _listLevel($level)
+    private function _listLevel($level): string
     {
         return \str_repeat('  ', $level);
     }

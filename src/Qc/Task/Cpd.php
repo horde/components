@@ -9,10 +9,11 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Qc\Task;
 
-use SebastianBergmann\PHPCPD;
 use SebastianBergmann\FinderFacade\FinderFacade;
+use SebastianBergmann\PHPCPD;
 
 /**
  * Components_Qc_Task_Cpd:: runs a copy/paste check on the component.
@@ -34,7 +35,7 @@ class Cpd extends Base
      *
      * @return string The task name.
      */
-    public function getName()
+    public function getName(): string
     {
         return 'copy/paste detection';
     }
@@ -60,12 +61,12 @@ class Cpd extends Base
      *
      * @param array &$options Additional options.
      *
-     * @return integer Number of errors.
+     * @return int Number of errors.
      */
-    public function run(array &$options = [])
+    public function run(array &$options = []): int
     {
         $finder = new FinderFacade(
-            array(realpath($this->_config->getPath() . '/lib'))
+            [realpath($this->_config->getPath() . '/lib')]
         );
         $files = $finder->findFiles();
 
@@ -73,7 +74,9 @@ class Cpd extends Base
             new PHPCPD\Detector\Strategy\DefaultStrategy()
         );
         $clones   = $detector->copyPasteDetection(
-            $files, 5, 70
+            $files,
+            5,
+            70
         );
 
         $this->_printResult($clones);
@@ -86,13 +89,13 @@ class Cpd extends Base
      *
      * @param CodeCloneMap    $clones
      */
-    protected function _printResult(PHPCPD\CodeCloneMap $clones)
+    protected function _printResult(PHPCPD\CodeCloneMap $clones): void
     {
-        $numClones = count($clones);
+        $numClones = is_countable($clones) ? count($clones) : 0;
 
         if ($numClones > 0) {
             $buffer = '';
-            $files  = array();
+            $files  = [];
             $lines  = 0;
 
             foreach ($clones as $clone) {
@@ -104,7 +107,7 @@ class Cpd extends Base
                     }
                 }
 
-                $lines  += $clone->getSize() * (count($clone->getFiles()) - 1);
+                $lines  += $clone->getSize() * ((is_countable($clone->getFiles()) ? count($clone->getFiles()) : 0) - 1);
                 $buffer .= "\n  -";
 
                 foreach ($clone->getFiles() as $file) {

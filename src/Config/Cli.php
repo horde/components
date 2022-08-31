@@ -10,8 +10,11 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Config;
+
 use Horde\Components\Constants;
+
 /**
  * Config\Cli:: class provides central options for the command line
  * configuration of the components tool.
@@ -26,137 +29,96 @@ use Horde\Components\Constants;
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class Cli
-extends Base
+class Cli extends Base
 {
-    /**
-     * The command line argument parser.
-     *
-     * @var \Horde_Argv_Parser
-     */
-    private $_parser;
-
     /**
      * Constructor.
      *
      */
     public function __construct(
-        \Horde_Argv_Parser $parser
+        /**
+         * The command line argument parser.
+         */
+        private readonly \Horde_Argv_Parser $_parser
     ) {
-        $this->_parser = $parser;
-
-        $parser->addOption(
+        $_parser->addOption(
             new \Horde_Argv_Option(
                 '-c',
                 '--config',
-                array(
-                    'action' => 'store',
-                    'help'   => sprintf(
-                        'the path to the configuration file for the components script (default : %s).',
-                        Constants::getConfigFile()
-                    ),
-                    'default' => Constants::getConfigFile()
-                )
+                ['action' => 'store', 'help'   => sprintf(
+                    'the path to the configuration file for the components script (default : %s).',
+                    Constants::getConfigFile()
+                ), 'default' => Constants::getConfigFile()]
             )
         );
-        $parser->addOption(
+        $_parser->addOption(
             new \Horde_Argv_Option(
                 '-q',
                 '--quiet',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Reduce output to a minimum'
-                )
+                ['action' => 'store_true', 'help'   => 'Reduce output to a minimum']
             )
         );
-        $parser->addOption(
+        $_parser->addOption(
             new \Horde_Argv_Option(
                 '-v',
                 '--verbose',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Reduce output to a maximum'
-                )
+                ['action' => 'store_true', 'help'   => 'Reduce output to a maximum']
             )
         );
-        $parser->addOption(
+        $_parser->addOption(
             new \Horde_Argv_Option(
                 '-P',
                 '--pretend',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Just pretend and indicate what would be done rather than performing the action.',
-                )
+                ['action' => 'store_true', 'help'   => 'Just pretend and indicate what would be done rather than performing the action.']
             )
         );
-        $parser->addOption(
+        $_parser->addOption(
             new \Horde_Argv_Option(
                 '-N',
                 '--nocolor',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Avoid colors in the output'
-                )
+                ['action' => 'store_true', 'help'   => 'Avoid colors in the output']
             )
         );
-        $parser->addOption(
+        $_parser->addOption(
             new \Horde_Argv_Option(
                 '-t',
                 '--templatedir',
-                array(
-                    'action' => 'store',
-                    'help'   => 'Location of a template directory that contains template definitions (see the data directory of this package to get an impression of which templates are available).'
-                )
+                ['action' => 'store', 'help'   => 'Location of a template directory that contains template definitions (see the data directory of this package to get an impression of which templates are available).']
             )
         );
-        $parser->addOption(
+        $_parser->addOption(
             new \Horde_Argv_Option(
                 '-D',
                 '--destination',
-                array(
-                    'action' => 'store',
-                    'help'   => 'Path to an (existing) destination directory where any output files will be placed.'
-                )
+                ['action' => 'store', 'help'   => 'Path to an (existing) destination directory where any output files will be placed.']
             )
         );
-        $parser->addOption(
+        $_parser->addOption(
             new \Horde_Argv_Option(
                 '-R',
                 '--pearrc',
-                array(
-                    'action' => 'store',
-                    'help'   => 'the path to the configuration of the PEAR installation you want to use for all PEAR based actions (leave empty to use your system default PEAR environment).'
-                )
+                ['action' => 'store', 'help'   => 'the path to the configuration of the PEAR installation you want to use for all PEAR based actions (leave empty to use your system default PEAR environment).']
             )
         );
-        $parser->addOption(
+        $_parser->addOption(
             new \Horde_Argv_Option(
                 '--allow-remote',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'allow horde-components to access the remote https://pear.horde.org for dealing with stable releases. This option is not required in case you work locally in your git checkout and will only work for some actions that are able to operate on stable release packages.'
-                )
+                ['action' => 'store_true', 'help'   => 'allow horde-components to access the remote https://pear.horde.org for dealing with stable releases. This option is not required in case you work locally in your git checkout and will only work for some actions that are able to operate on stable release packages.']
             )
         );
-        $parser->addOption(
+        $_parser->addOption(
             new \Horde_Argv_Option(
                 '-G',
                 '--commit',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Commit any changes during the selected action to git.'
-                )
+                ['action' => 'store_true', 'help'   => 'Commit any changes during the selected action to git.']
             )
         );
-        $parser->addOption(
+        $_parser->addOption(
             new \Horde_Argv_Option(
                 '--horde-root',
-                array(
-                    'action' => 'store',
-                    'help'   => 'The root of the Horde git repository(ies).'
-                )
+                ['action' => 'store', 'help'   => 'The root of the Horde git repository(ies).']
             )
         );
-        list($this->_options, $this->_arguments) = $this->_parser->parseArgs();
+        [$this->_options, $this->_arguments] = $this->_parser->parseArgs();
     }
 }

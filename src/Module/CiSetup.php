@@ -10,7 +10,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Module;
+
 use Horde\Components\Config;
 
 /**
@@ -29,42 +31,29 @@ use Horde\Components\Config;
  */
 class CiSetup extends Base
 {
-    public function getOptionGroupTitle()
+    public function getOptionGroupTitle(): string
     {
         return 'Continuous Integration Setup';
     }
 
-    public function getOptionGroupDescription()
+    public function getOptionGroupDescription(): string
     {
         return 'This module generates the configuration for Hudson based continuous integration of a Horde PEAR package.';
     }
 
-    public function getOptionGroupOptions()
+    public function getOptionGroupOptions(): array
     {
-        return array(
-            new \Horde_Argv_Option(
-                '--cisetup',
-                array(
-                    'action' => 'store',
-                    'help'   => 'generate the basic Hudson project configuration for a Horde PEAR package in CISETUP'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '--ciprebuild',
-                array(
-                    'action' => 'store',
-                    'help'   => 'generate the Hudson build configuration for a Horde PEAR package in CIPREBUILD'
-                )
-            ),
-            new \Horde_Argv_Option(
-                '-T',
-                '--toolsdir',
-                array(
-                    'action' => 'store',
-                    'help'   => 'the path to the PEAR installation holding the required analysis tools'
-                )
-            ),
-        );
+        return [new \Horde_Argv_Option(
+            '--cisetup',
+            ['action' => 'store', 'help'   => 'generate the basic Hudson project configuration for a Horde PEAR package in CISETUP']
+        ), new \Horde_Argv_Option(
+            '--ciprebuild',
+            ['action' => 'store', 'help'   => 'generate the Hudson build configuration for a Horde PEAR package in CIPREBUILD']
+        ), new \Horde_Argv_Option(
+            '-T',
+            '--toolsdir',
+            ['action' => 'store', 'help'   => 'the path to the PEAR installation holding the required analysis tools']
+        )];
     }
 
     /**

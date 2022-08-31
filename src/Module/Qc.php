@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Module;
+
 use Horde\Components\Config;
 
 /**
@@ -27,28 +29,23 @@ use Horde\Components\Config;
  */
 class Qc extends Base
 {
-    public function getOptionGroupTitle()
+    public function getOptionGroupTitle(): string
     {
         return 'Package quality control';
     }
 
-    public function getOptionGroupDescription()
+    public function getOptionGroupDescription(): string
     {
         return 'This module runs a quality control check for the specified package.';
     }
 
-    public function getOptionGroupOptions()
+    public function getOptionGroupOptions(): array
     {
-        return array(
-            new \Horde_Argv_Option(
-                '-Q',
-                '--qc',
-                array(
-                    'action' => 'store_true',
-                    'help'   => 'Check the package quality.'
-                )
-            ),
-        );
+        return [new \Horde_Argv_Option(
+            '-Q',
+            '--qc',
+            ['action' => 'store_true', 'help'   => 'Check the package quality.']
+        )];
     }
 
     /**
@@ -56,7 +53,7 @@ class Qc extends Base
      *
      * @return string The title.
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return 'qc';
     }
@@ -66,7 +63,7 @@ class Qc extends Base
      *
      * @return string The description.
      */
-    public function getUsage()
+    public function getUsage(): string
     {
         return 'Check the package quality.';
     }
@@ -76,9 +73,9 @@ class Qc extends Base
      *
      * @return array A list of supported action arguments.
      */
-    public function getActions()
+    public function getActions(): array
     {
-        return array('qc');
+        return ['qc'];
     }
 
     /**
@@ -88,7 +85,7 @@ class Qc extends Base
      *
      * @return string The help text.
      */
-    public function getHelp($action)
+    public function getHelp($action): string
     {
         return 'Runs quality control checks for the component. This executes a number of automated quality control checks that are similar to the checks you find on ci.horde.org. In the most simple situation it will be sufficient to move to the directory of the component you wish to release and run
 

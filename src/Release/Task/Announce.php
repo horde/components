@@ -10,7 +10,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Release\Task;
+
 use Horde\Components\Exception;
 
 /**
@@ -37,16 +39,16 @@ class Announce extends Base
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
      */
-    public function preValidate($options)
+    public function preValidate($options): array
     {
-        $errors = array();
+        $errors = [];
         if (!$this->getNotes()->hasNotes()) {
             $errors[] = 'No release announcements available! No information will be sent to the mailing lists.';
         }
         if (empty($options['from'])) {
             $errors[] = 'The "from" option has no value. Who is sending the announcements?';
         }
-        if (!class_exists('Horde_Release_MailingList')) {
+        if (!class_exists(\Horde_Release_MailingList::class)) {
             $errors[] = 'The \Horde_Release package is missing (specifically the class \Horde_Release_MailingList)!';
         }
         return $errors;
@@ -56,10 +58,8 @@ class Announce extends Base
      * Run the task.
      *
      * @param array &$options Additional options.
-     *
-     * @return void
      */
-    public function run(&$options)
+    public function run(&$options): void
     {
         if (!$this->getNotes()->hasNotes()) {
             $this->getOutput()->warn(
@@ -78,7 +78,8 @@ class Announce extends Base
             $this->getNotes()->getSecurity()
         );
         $mailer->append($this->getNotes()->getAnnouncement());
-        $mailer->append("\n\n" .
+        $mailer->append(
+            "\n\n" .
             'The full list of changes can be viewed here:' .
             "\n\n" .
             $this->getComponent()->getChangelogLink() .
@@ -91,8 +92,8 @@ class Announce extends Base
         if (!$this->getTasks()->pretend()) {
             try {
                 //@todo: Make configurable again
-                $class = 'Horde_Mail_Transport_Sendmail';
-                $mailer->getMail()->send(new $class(array()));
+                $class = \Horde_Mail_Transport_Sendmail::class;
+                $mailer->getMail()->send(new $class([]));
             } catch (Exception $e) {
                 $this->getOutput()->warn((string)$e);
             }

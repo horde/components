@@ -10,9 +10,11 @@
  * @author   Fabien Potencier <fabien.potencier@symfony-project.org>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Component;
-use Horde\Components\Exception;
+
 use Horde\Components\Config;
+use Horde\Components\Exception;
 use Horde\Components\Pear\Environment as PearEnvironment;
 
 /**
@@ -32,13 +34,6 @@ use Horde\Components\Pear\Environment as PearEnvironment;
 class Archive extends Base
 {
     /**
-     * Path to the archive.
-     *
-     * @var string
-     */
-    private $_archive;
-
-    /**
      * Constructor.
      *
      * @param string                  $directory Path to the source directory.
@@ -50,12 +45,13 @@ class Archive extends Base
      *                                              helpers.
      */
     public function __construct(
-        string $archive,
+        /**
+         * Path to the archive.
+         */
+        private readonly string $_archive,
         Config $config,
         Factory $factory
-    )
-    {
-        $this->_archive = $archive;
+    ) {
         parent::__construct($config, $factory);
     }
 
@@ -69,10 +65,10 @@ class Archive extends Base
      *               archive, optionally [1] an array of error strings, and [2]
      *               PEAR output.
      */
-    public function placeArchive(string $destination, $options = array())
+    public function placeArchive(string $destination, $options = []): array
     {
         copy($this->_archive, $destination . '/' . basename($this->_archive));
-        return array($destination . '/' . basename($this->_archive));
+        return [$destination . '/' . basename($this->_archive)];
     }
 
     /**
@@ -83,23 +79,22 @@ class Archive extends Base
      * @param array                 $options   Install options.
      * @param string                $reason    Optional reason for adding the
      *                                         package.
-     *
-     * @return void
      */
     public function install(
-        PearEnvironment $env, $options = array(), $reason = ''
-    )
-    {
+        PearEnvironment $env,
+        $options = [],
+        $reason = ''
+    ): void {
         $this->installChannel($env, $options);
 
-        $installation_options = array();
+        $installation_options = [];
         $installation_options['force'] = !empty($options['force']);
         $installation_options['nodeps'] = !empty($options['nodeps']);
         $installation_options['offline'] = true;
 
         $env->addComponent(
             $this->getName(),
-            array($this->_archive),
+            [$this->_archive],
             $installation_options,
             ' from the archive ' . $this->_archive,
             $reason
@@ -130,7 +125,7 @@ class Archive extends Base
      *
      * @return string The path to the package.xml file.
      */
-    private function _loadPackageFromArchive()
+    private function _loadPackageFromArchive(): string
     {
         if (!function_exists('gzopen')) {
             $tmpDir = \Horde_Util::createTempDir();

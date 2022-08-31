@@ -10,6 +10,7 @@
  * @author   Jan Schneider <jan@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Release\Task;
 
 /**
@@ -37,9 +38,9 @@ class Website extends Base
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
      */
-    public function preValidate($options)
+    public function preValidate($options): array
     {
-        $errors = array();
+        $errors = [];
         if (empty($options['web_dir'])) {
             $errors[] = 'The "web" option has no value. Where is the local checkout of the horde-web repository?';
         } elseif (!file_exists($options['web_dir'] . '/config/versions.sqlite') ||
@@ -56,7 +57,7 @@ class Website extends Base
      *
      * @param array &$options Additional options.
      */
-    public function run(&$options)
+    public function run(&$options): void
     {
         if (!$this->getComponent()->getReleaseNotesPath()) {
             $this->getOutput()->warn(
@@ -78,10 +79,7 @@ class Website extends Base
             );
         } else {
             $website = new \Horde_Release_Website($this->_db);
-            $website->addNewVersion(array(
-                'application' => $module,
-                'version' => $version,
-            ));
-       }
+            $website->addNewVersion(['application' => $module, 'version' => $version]);
+        }
     }
 }

@@ -11,11 +11,13 @@
  * @author   Jan Schneider <jan@horde.org>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Runner;
+
 use Horde\Components\Config;
-use Horde\Components\Output;
 use Horde\Components\Helper\Commit as HelperCommit;
 use Horde\Components\Helper\Version as HelperVersion;
+use Horde\Components\Output;
 use Horde\Components\Release\Notes as ReleaseNotes;
 
 /**
@@ -30,49 +32,31 @@ use Horde\Components\Release\Notes as ReleaseNotes;
 class Update
 {
     /**
-     * The configuration for the current job.
-     *
-     * @var Config
-     */
-    private $_config;
-
-    /**
-     * The output handler.
-     *
-     * @param Output
-     */
-    private $_output;
-
-    /**
      * Constructor.
      *
-     * @param Config $config  The configuration for the current job.
-     * @param Output $output  The output handler.
+     * @param Config $_config The configuration for the current job.
+     * @param Output $_output The output handler.
      */
     public function __construct(
-        Config $config,
-        Output $output
-    )
-    {
-        $this->_config = $config;
-        $this->_output = $output;
+        private readonly Config $_config,
+        /**
+         * The output handler.
+         *
+         * @param Output
+         */
+        private readonly Output $_output
+    ) {
     }
 
     /**
      * @throws Exception
      * @throws \Horde_Pear_Exception
      */
-    public function run()
+    public function run(): void
     {
         $arguments = $this->_config->getArguments();
         $options = array_merge(
-            array(
-                'new_version' => false,
-                'new_api' => false,
-                'new_state' => false,
-                'new_apistate' => false,
-                'theme' => false,
-            ),
+            ['new_version' => false, 'new_api' => false, 'new_state' => false, 'new_apistate' => false, 'theme' => false],
             $this->_config->getOptions()
         );
 
@@ -87,7 +71,8 @@ class Update
             $options['action'] = $action;
             if (!empty($options['commit'])) {
                 $options['commit'] = new HelperCommit(
-                    $this->_output, $options
+                    $this->_output,
+                    $options
                 );
             }
             /** @var Horde\Components\Component\Source $component */
@@ -124,7 +109,9 @@ class Update
             if (!empty($options['new_state']) ||
                 !empty($options['new_apistate'])) {
                 $result = $component->setState(
-                    $options['new_state'], $options['new_apistate'], $options
+                    $options['new_state'],
+                    $options['new_apistate'],
+                    $options
                 );
                 if ($action != 'print' && $action != 'diff') {
                     $this->_output->ok($result);

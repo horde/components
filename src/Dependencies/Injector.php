@@ -10,20 +10,22 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Dependencies;
+
 use Horde\Components\Component\Factory as ComponentFactory;
 use Horde\Components\Config;
 use Horde\Components\Config\Bootstrap as ConfigBootstrap;
 use Horde\Components\Dependencies;
 use Horde\Components\Output;
-use Horde\Components\Release\Tasks as ReleaseTasks;
 use Horde\Components\Release\Notes as ReleaseNotes;
+use Horde\Components\Release\Tasks as ReleaseTasks;
 use Horde\Components\Runner\Change as RunnerChange;
-use Horde\Components\Runner\Distribute as RunnerDistribute;
 use Horde\Components\Runner\CiPrebuild as RunnerCiPrebuild;
 use Horde\Components\Runner\CiSetup as RunnerCiSetup;
 use Horde\Components\Runner\Composer as RunnerComposer;
 use Horde\Components\Runner\Dependencies as RunnerDependencies;
+use Horde\Components\Runner\Distribute as RunnerDistribute;
 use Horde\Components\Runner\Fetchdocs as RunnerFetchdocs;
 use Horde\Components\Runner\Git as RunnerGit;
 use Horde\Components\Runner\Init as RunnerInit;
@@ -33,6 +35,7 @@ use Horde\Components\Runner\Release as RunnerRelease;
 use Horde\Components\Runner\Snapshot as RunnerSnapshot;
 use Horde\Components\Runner\Update as RunnerUpdate;
 use Horde\Components\Runner\WebDocs as RunnerWebDocs;
+use Horde\Injector\Injector as HordeInjector;
 
 /**
  * The Components_Dependencies_Injector:: class provides the
@@ -48,7 +51,7 @@ use Horde\Components\Runner\WebDocs as RunnerWebDocs;
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class Injector extends \Horde_Injector implements Dependencies
+class Injector extends HordeInjector implements Dependencies
 {
     /**
      * Use a pager for \Horde_Cli?
@@ -59,18 +62,22 @@ class Injector extends \Horde_Injector implements Dependencies
 
     /**
      * Constructor.
-     * 
-     * @param Injector $parentInjector A parent injector, if any 
+     *
+     * @param Injector $parentInjector A parent injector, if any
      */
     public function __construct($parentInjector = null)
     {
-        parent::__construct($parentInjector ?? new \Horde_Injector_TopLevel());
+        parent::__construct($parentInjector ?? new TopLevel());
         $this->setInstance(Dependencies::class, $this);
         $this->bindFactory(
-            \Horde_Cli::class, Dependencies::class, 'createCli'
+            \Horde_Cli::class,
+            Dependencies::class,
+            'createCli'
         );
         $this->bindFactory(
-            Output::class, Dependencies::class, 'createOutput'
+            Output::class,
+            Dependencies::class,
+            'createOutput'
         );
     }
 
@@ -78,10 +85,8 @@ class Injector extends \Horde_Injector implements Dependencies
      * Initial configuration setup.
      *
      * @param Config $config The configuration.
-     *
-     * @return void
      */
-    public function initConfig(Config $config)
+    public function initConfig(Config $config): void
     {
         $this->setInstance(Config::class, $config);
     }
@@ -90,10 +95,8 @@ class Injector extends \Horde_Injector implements Dependencies
      * Set the list of modules.
      *
      * @param \Horde_Cli_Modular $modules The list of modules.
-     *
-     * @return void
      */
-    public function setModules(\Horde_Cli_Modular $modules)
+    public function setModules(\Horde_Cli_Modular $modules): void
     {
         $this->setInstance(\Horde_Cli_Modular::class, $modules);
     }
@@ -112,10 +115,8 @@ class Injector extends \Horde_Injector implements Dependencies
      * Set the CLI parser.
      *
      * @param \Horde_Argv_Parser $parser The parser.
-     *
-     * @return void
      */
-    public function setParser($parser)
+    public function setParser($parser): void
     {
         $this->setInstance(\Horde_Argv_Parser::class, $parser);
     }
@@ -321,10 +322,8 @@ class Injector extends \Horde_Injector implements Dependencies
 
     /**
      * Enables a pager for \Horde_Cli objects.
-     * 
-     * @return void
      */
-    public function useCliPager()
+    public function useCliPager(): void
     {
         $this->_usePager = true;
     }
@@ -334,19 +333,19 @@ class Injector extends \Horde_Injector implements Dependencies
      *
      * @return \Horde_Cli The CLI handler.
      */
-    public function createCli()
+    public function createCli(): \Horde_Cli
     {
-        return \Horde_Cli::init(array('pager' => $this->_usePager));
+        return \Horde_Cli::init(['pager' => $this->_usePager]);
     }
 
     /**
      * Create the Components\Output handler.
      *
      * @param Injector $injector The injector to use
-     * 
+     *
      * @return Output The output handler.
      */
-    public function createOutput($injector)
+    public function createOutput($injector): \Horde\Components\Output
     {
         return new Output(
             $injector->getInstance(\Horde_Cli::class),

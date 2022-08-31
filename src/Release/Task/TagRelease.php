@@ -9,8 +9,11 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Release\Task;
+
 use Horde\Components\Helper\Commit as HelperCommit;
+
 /**
  * Components_Release_Task_TagRelease:: tags the git repository.
  *
@@ -30,10 +33,8 @@ class TagRelease extends Base
      * Run the task.
      *
      * @param array &$options Additional options.
-     *
-     * @return void
      */
-    public function run(&$options)
+    public function run(&$options): void
     {
         $release = 'v' . $this->getComponent()->getVersion();
         $this->getComponent()->tag(

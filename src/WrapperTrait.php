@@ -10,8 +10,11 @@
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components;
+
 use Horde\Components\Wrapper;
+
 /**
  * Trait for the component file wrappers.
  *
@@ -62,7 +65,7 @@ trait WrapperTrait
      */
     public function getFileName()
     {
-        return basename($this->_file);
+        return basename((string) $this->_file);
     }
 
     /**
@@ -78,7 +81,6 @@ trait WrapperTrait
     /**
      * Returns a diff between the saved and the current version of the file.
      *
-     * @param Wrapper $wrapper
      *
      * @return string  File diff.
      */
@@ -90,11 +92,12 @@ trait WrapperTrait
         } elseif ($this->exists()) {
             $old = file($this->getFullPath());
         } else {
-            $old = array();
+            $old = [];
         }
         return $renderer->render(
             new \Horde_Text_Diff(
-                'auto', array($old, explode("\n", rtrim($this, "\n")))
+                'auto',
+                [$old, explode("\n", rtrim((string) $this, "\n"))]
             )
         );
     }
@@ -108,8 +111,8 @@ trait WrapperTrait
         if (!strlen($contents) && !$this->exists()) {
             return;
         }
-        if (!is_dir(dirname($this->_file))) {
-            mkdir(dirname($this->_file), 0777, true);
+        if (!is_dir(dirname((string) $this->_file))) {
+            mkdir(dirname((string) $this->_file), 0777, true);
         }
         file_put_contents($this->_file, $contents);
     }

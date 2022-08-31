@@ -10,8 +10,11 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Test\Unit\Components\Component;
+
 use Horde\Components\Test\TestCase;
+
 /**
  * Test the dependency list.
  *
@@ -58,11 +61,11 @@ class DependencyListTest extends TestCase
             __DIR__ . '/../../../fixture/framework/Install'
         );
         $list = $comp->getDependencyList();
-        $names = array();
+        $names = [];
         foreach ($list as $element) {
             $names[] = $element->getName();
         }
-        $this->assertEquals(array('', 'PEAR', 'Dependency'), $names);
+        $this->assertEquals(['', 'PEAR', 'Dependency'], $names);
     }
 
     public function testAllChannels()
@@ -72,7 +75,7 @@ class DependencyListTest extends TestCase
             __DIR__ . '/../../../fixture/framework/Install'
         );
         $this->assertEquals(
-            array('pear.php.net', 'pear.horde.org'),
+            ['pear.php.net', 'pear.horde.org'],
             $comp->getDependencyList()->listAllChannels()
         );
     }
@@ -88,6 +91,4 @@ class DependencyListTest extends TestCase
             $comp->getDependencyList()->{'pear.horde.org/Dependency'}
         );
     }
-
-
 }

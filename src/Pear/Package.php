@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Pear;
+
 use Horde\Components\Exception;
 use Horde\Components\Output;
 
@@ -28,13 +30,6 @@ use Horde\Components\Output;
  */
 class Package
 {
-    /**
-     * The output handler.
-     *
-     * @param Output
-     */
-    private $_output;
-
     /**
      * The PEAR environment for the package.
      *
@@ -73,11 +68,16 @@ class Package
     /**
      * Constructor.
      *
-     * @param Output $output The output handler.
+     * @param Output $_output The output handler.
      */
-    public function __construct(Output $output)
-    {
-        $this->_output = $output;
+    public function __construct(
+        /**
+         * The output handler.
+         *
+         * @param Output
+         */
+        private readonly Output $_output
+    ) {
     }
 
     /**
@@ -326,5 +326,4 @@ class Package
     {
         return $this->_getPackageFile()->getDeps();
     }
-
 }

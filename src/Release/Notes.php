@@ -10,10 +10,13 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Release;
+
 use Horde\Components\Component;
-use Horde\Components\Output;
 use Horde\Components\Helper\Version as HelperVersion;
+use Horde\Components\Output;
+
 /**
  * This class deals with the information associated to a release.
  *
@@ -29,7 +32,7 @@ class Notes
      *
      * @var array
      */
-    protected $_notes = array();
+    protected $_notes = [];
 
     /**
      * The component that should be released
@@ -39,30 +42,20 @@ class Notes
     protected $_component;
 
     /**
-     * The task output.
-     *
-     * @var Output
-     */
-    protected $_output;
-
-    /**
      * Constructor.
      *
-     * @param Output $output Accepts output.
+     * @param Output $_output Accepts output.
      */
-    public function __construct(Output $output)
+    public function __construct(protected Output $_output)
     {
-        $this->_output = $output;
     }
 
     /**
      * Set the component this task should act upon.
      *
      * @param Component $component The component to be released.
-     *
-     * @return void
      */
-    public function setComponent(Component $component)
+    public function setComponent(Component $component): void
     {
         $this->_component = $component;
         $this->_setReleaseNotes();
@@ -71,8 +64,9 @@ class Notes
     /**
      * Populates the release information for the current component.
      */
-    protected function _setReleaseNotes()
+    protected function _setReleaseNotes(): void
     {
+        $prerelease = null;
         if (!($file = $this->_component->getReleaseNotesPath())) {
             return;
         }
@@ -81,7 +75,7 @@ class Notes
                 $this->_component->getVersion()
             );
             $description = \Horde_String::lower($version->description);
-            if (strpos($description, 'release') === false) {
+            if (!str_contains($description, 'release')) {
                 $description .= ' release';
             }
             $info = $this->_component->getWrapper('HordeYml');
@@ -100,10 +94,10 @@ class Notes
             $this->_notes['security'] = $release['security'];
             if (is_array($release['changes'])) {
                 if (!is_array(reset($release['changes']))) {
-                    $release['changes'] = array($release['changes']);
+                    $release['changes'] = [$release['changes']];
                 }
             } else {
-                $release['changes'] = array();
+                $release['changes'] = [];
             }
             $currentSection = null;
             $changes = '';
@@ -117,27 +111,27 @@ class Notes
                 }
             }
             switch ($version->description) {
-            case 'Final':
-                $prerelease = '';
-                break;
-            case 'Alpha':
-            case 'Beta':
-                $prerelease = '
+                case 'Final':
+                    $prerelease = '';
+                    break;
+                case 'Alpha':
+                case 'Beta':
+                    $prerelease = '
 This is a preview version that should not be used on production systems. This version is considered feature complete but there might still be a few bugs. You should not use this preview version over existing production data.
 
 We encourage widespread testing and feedback via the mailing lists or our bug tracking system. Updated translations are very welcome, though some strings might still change before the final release.
 ';
-                break;
-            case 'Release Candidate':
-                $prerelease = sprintf(
-                    '
+                    break;
+                case 'Release Candidate':
+                    $prerelease = sprintf(
+                        '
 Barring any problems, this code will be released as %s %s.
 Testing is requested and comments are encouraged. Updated translations would also be great.
 ',
-                    $info['name'],
-                    $version->version
-                );
-                break;
+                        $info['name'],
+                        $version->version
+                    );
+                    break;
             }
             $this->_notes['changes'] = sprintf(
                 'The Horde Team is pleased to announce the %s%s of the %s version %s.
@@ -181,11 +175,11 @@ The major changes compared to the %s version %s are:%s',
      *
      * @return string The branch name.
      */
-    public function getBranch()
+    public function getBranch(): string
     {
         if (!empty($this->_notes['branch']) &&
-            $this->_notes['name'] != 'Horde') {
-            return strtr($this->_notes['branch'], array('Horde ' => 'H'));
+            $this->_notes['name'] != \Horde::class) {
+            return strtr($this->_notes['branch'], ['Horde ' => 'H']);
         }
         return '';
     }
@@ -221,7 +215,7 @@ The major changes compared to the %s version %s are:%s',
      *
      * @return boolean  A security release?
      */
-    public function getSecurity()
+    public function getSecurity(): bool
     {
         return !empty($this->_notes['security']);
     }
@@ -244,7 +238,7 @@ The major changes compared to the %s version %s are:%s',
      *
      * @return boolean True if release notes are available.
      */
-    public function hasNotes()
+    public function hasNotes(): bool
     {
         return !empty($this->_notes['changes']);
     }

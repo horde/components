@@ -10,6 +10,7 @@
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components;
 
 /**
@@ -22,7 +23,6 @@ namespace Horde\Components;
  */
 interface Wrapper
 {
-
     /**
      * Returns the full path to the file.
      *
@@ -70,5 +70,5 @@ interface Wrapper
     /**
      * Returns the file contents.
      */
-    public function __toString();
+    public function __toString(): string;
 }

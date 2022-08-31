@@ -9,6 +9,7 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Component;
 
 /**
@@ -24,7 +25,7 @@ namespace Horde\Components\Component;
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class Match
+class Matcher
 {
     /**
      * Does the component match the given selector?
@@ -33,9 +34,9 @@ class Match
      * @param string $c_channel The component channel.
      * @param string $selector  The selector.
      *
-     * @return boolen True if the component matches.
+     * @return bool True if the component matches.
      */
-    public static function matches($c_name, $c_channel, $selector)
+    public static function matches($c_name, $c_channel, $selector): bool
     {
         $selectors = explode(',', $selector);
         if (in_array('ALL', $selectors)) {
@@ -45,8 +46,8 @@ class Match
             if (empty($selector)) {
                 continue;
             }
-            if (strpos($selector, '/') !== false) {
-                list($channel, $name) = explode('/', $selector, 2);
+            if (str_contains($selector, '/')) {
+                [$channel, $name] = explode('/', $selector, 2);
                 if ($c_channel == $channel && $c_name == $name) {
                     return true;
                 }

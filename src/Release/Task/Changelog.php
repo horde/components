@@ -10,7 +10,9 @@
  * @author   Jan Schneider <jan@horde.org>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Release\Task;
+
 use Horde\Components\Exception;
 use Horde\Components\Output;
 
@@ -24,7 +26,7 @@ use Horde\Components\Output;
  */
 class Changelog extends Base
 {
-    private $_wasUpdated = false;
+    private bool $_wasUpdated = false;
 
     /**
      * Validate the preconditions required for this release task.
@@ -34,14 +36,12 @@ class Changelog extends Base
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
      */
-    public function preValidate($options)
+    public function preValidate($options): array
     {
         if (!$this->getComponent()->hasLocalPackageXml()) {
-            return array(
-                'The component lacks a local package.xml!',
-            );
+            return ['The component lacks a local package.xml!'];
         }
-        return array();
+        return [];
     }
 
     /**
@@ -53,28 +53,24 @@ class Changelog extends Base
      * @return array An empty array if all postconditions are met and a list of
      *               error messages otherwise.
      */
-    public function postValidate($options)
+    public function postValidate($options): array
     {
         $diff_options = $options;
         $diff_options['no_timestamp'] = true;
         $diff_options['from_memory'] = !empty($options['pretend']);
         $diff = $this->getComponent()->updatePackage('diff', $diff_options);
         if (!empty($diff)) {
-            return array(
-                "At least one metadata file file is not up-to-date:\n$diff"
-            );
+            return ["At least one metadata file file is not up-to-date:\n$diff"];
         }
-        return array();
+        return [];
     }
 
     /**
      * Run the task.
      *
      * @param array &$options Additional options.
-     *
-     * @return void
      */
-    public function run(&$options)
+    public function run(&$options): void
     {
         $result = $this->getComponent()
             ->sync($options);

@@ -10,9 +10,12 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Unit\Components\Release\Task;
-use Horde\Components\Test\TestCase;
+
 use Horde\Components\Helper\Commit as HelperCommit;
+use Horde\Components\Test\TestCase;
+
 /**
  * Test the current sentinel release task.
  *
@@ -34,7 +37,7 @@ class CurrentSentinelTest extends TestCase
         $tmp_dir = $this->_prepareApplicationDirectory();
         $tasks = $this->getReleaseTasks();
         $package = $this->getComponent($tmp_dir);
-        $tasks->run(array('CurrentSentinel'), $package);
+        $tasks->run(['CurrentSentinel'], $package);
         $this->assertEquals(
             '---------
 v4.0.1RC1
@@ -58,7 +61,7 @@ public $version = \'4.0.1RC1\';
         $tmp_dir = $this->_prepareApplicationDirectory(true);
         $tasks = $this->getReleaseTasks();
         $package = $this->getComponent($tmp_dir);
-        $tasks->run(array('CurrentSentinel'), $package);
+        $tasks->run(['CurrentSentinel'], $package);
         $this->assertEquals(
             '---------
 v4.0.1RC1
@@ -83,18 +86,18 @@ const VERSION = \'4.0.1RC1\';
         $tasks = $this->getReleaseTasks();
         $package = $this->getComponent($tmp_dir);
         $tasks->run(
-            array('CurrentSentinel', 'CommitPreRelease'),
+            ['CurrentSentinel', 'CommitPreRelease'],
             $package,
-            array(
+            [
                 'pretend' => true,
                 'commit' => new HelperCommit(
                     $this->_output,
-                    array('pretend' => true)
+                    ['pretend' => true]
                 )
-            )
+            ]
         );
         $this->assertEquals(
-            array(
+            [
                 'Would set release version "4.0.1RC1" and api version "" in doc/changelog.yml, .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Application.php now.',
                 'Would run "git add doc/changelog.yml" now.',
                 'Would run "git add .horde.yml" now.',
@@ -103,7 +106,7 @@ const VERSION = \'4.0.1RC1\';
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git commit -m "Released Horde-4.0.1RC1"" now.'
-            ),
+            ],
             $this->_output->getOutput()
         );
     }
@@ -114,18 +117,18 @@ const VERSION = \'4.0.1RC1\';
         $tasks = $this->getReleaseTasks();
         $package = $this->getComponent($tmp_dir);
         $tasks->run(
-            array('CurrentSentinel', 'CommitPreRelease'),
+            ['CurrentSentinel', 'CommitPreRelease'],
             $package,
-            array(
+            [
                 'pretend' => true,
                 'commit' => new HelperCommit(
                     $this->_output,
-                    array('pretend' => true)
+                    ['pretend' => true]
                 )
-            )
+            ]
         );
         $this->assertEquals(
-            array(
+            [
                 'Would set release version "4.0.1RC1" and api version "" in doc/changelog.yml, .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Bundle.php now.',
                 'Would run "git add doc/changelog.yml" now.',
                 'Would run "git add .horde.yml" now.',
@@ -134,7 +137,7 @@ const VERSION = \'4.0.1RC1\';
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Bundle.php" now.',
                 'Would run "git commit -m "Released Horde-4.0.1RC1"" now.'
-            ),
+            ],
             $this->_output->getOutput()
         );
     }

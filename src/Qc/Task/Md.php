@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Qc\Task;
+
 use Horde\Components\Constants;
 
 /**
@@ -32,7 +34,7 @@ class Md extends Base
      *
      * @return string The task name.
      */
-    public function getName()
+    public function getName(): string
     {
         return 'mess detection';
     }
@@ -58,9 +60,9 @@ class Md extends Base
      *
      * @param array &$options Additional options.
      *
-     * @return integer Number of errors.
+     * @return int Number of errors.
      */
-    public function run(array &$options = [])
+    public function run(array &$options = []): int
     {
         $lib = realpath($this->_config->getPath() . '/lib');
 
@@ -75,7 +77,7 @@ class Md extends Base
         $phpmd->processFiles(
             $lib,
             Constants::getDataDirectory() . '/qc_standards/phpmd.xml',
-            array($renderer),
+            [$renderer],
             $ruleSetFactory
         );
 

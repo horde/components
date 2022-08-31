@@ -10,12 +10,14 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Unit\Components\Component;
-use Horde\Components\Exception;
-use Horde\Components\Test\TestCase;
-use Horde\Components\Dependencies\Injector;
+
 use Horde\Components\Component\Identify;
+use Horde\Components\Dependencies\Injector;
+use Horde\Components\Exception;
 use Horde\Components\Test\Stub\Config;
+use Horde\Components\Test\TestCase;
 
 /**
  * Test the identification of the selected component.
@@ -43,7 +45,7 @@ class IdentifyTest extends TestCase
     public function testHelp()
     {
         $this->expectException(Exception::class);
-        $this->_initIdentify(array('help'));
+        $this->_initIdentify(['help']);
         $this->config->getComponent();
     }
 
@@ -53,14 +55,14 @@ class IdentifyTest extends TestCase
         $this->oldcwd = getcwd();
         // cwd cannot be inside any component
         chdir('/');
-        $this->_initIdentify(array());
+        $this->_initIdentify([]);
         chdir($this->oldcwd);
     }
 
     public function testWithPackageXml()
     {
         $this->_initIdentify(
-            array(__DIR__ . '/../../../fixture/framework/Install/package.xml')
+            [__DIR__ . '/../../../fixture/framework/Install/package.xml']
         );
         $this->assertInstanceOf(
             'Horde\Components\Component\Source',
@@ -71,7 +73,7 @@ class IdentifyTest extends TestCase
     public function testWithPackageXmlDirectory()
     {
         $this->_initIdentify(
-            array(__DIR__ . '/../../../fixture/framework/Install')
+            [__DIR__ . '/../../../fixture/framework/Install']
         );
         $this->assertInstanceOf(
             'Horde\Components\Component\Source',
@@ -82,7 +84,7 @@ class IdentifyTest extends TestCase
     public function testWithPackageXmlDirectoryAndSlash()
     {
         $this->_initIdentify(
-            array(__DIR__ . '/../../../fixture/framework/Install/')
+            [__DIR__ . '/../../../fixture/framework/Install/']
         );
         $this->assertInstanceOf(
             'Horde\Components\Component\Source',
@@ -94,7 +96,7 @@ class IdentifyTest extends TestCase
     {
         $this->oldcwd = getcwd();
         chdir(__DIR__ . '/../../../fixture/framework/Install');
-        $this->_initIdentify(array('test'));
+        $this->_initIdentify(['test']);
         chdir($this->oldcwd);
         $this->assertInstanceOf(
             'Horde\Components\Component\Source',
@@ -106,7 +108,7 @@ class IdentifyTest extends TestCase
     {
         $this->oldcwd = getcwd();
         chdir(__DIR__ . '/../../../fixture/framework/Install');
-        $this->_initIdentify(array());
+        $this->_initIdentify([]);
         chdir($this->oldcwd);
         $this->assertInstanceOf(
             'Horde\Components\Component\Source',
@@ -118,14 +120,15 @@ class IdentifyTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->_initIdentify(
-            array(__DIR__ . '/../../../fixture/DOESNOTEXIST')
+            [__DIR__ . '/../../../fixture/DOESNOTEXIST']
         );
     }
 
     private function _initIdentify(
-        $arguments, $options = array(), $dependencies = null
-    )
-    {
+        $arguments,
+        $options = [],
+        $dependencies = null
+    ) {
         if ($dependencies === null) {
             $dependencies = new Injector();
         }
@@ -133,13 +136,12 @@ class IdentifyTest extends TestCase
         $dependencies->initConfig($this->config);
         $identify = new Identify(
             $this->config,
-            array(
-                'list' => array('test'),
-                'missing_argument' => array('help')
-            ),
+            [
+                'list' => ['test'],
+                'missing_argument' => ['help']
+            ],
             $dependencies
         );
         $identify->setComponentInConfiguration();
     }
-
 }

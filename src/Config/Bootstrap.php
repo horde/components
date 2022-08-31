@@ -10,7 +10,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Config;
+
 use Horde\Components\Config;
 
 /**
@@ -27,8 +29,7 @@ use Horde\Components\Config;
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class Bootstrap
-extends Base
+class Bootstrap extends Base
 {
     /**
      * Constructor.
@@ -36,14 +37,7 @@ extends Base
      */
     public function __construct()
     {
-        $this->_options = array(
-            'instructions' => array(
-                'ALL' => array('include' => true),
-                'channel:pecl.php.net' => array('exclude' => true),
-            ),
-            'force' => true,
-            'symlink' => true,
-        );
-        $this->_arguments = array();
+        $this->_options = ['instructions' => ['ALL' => ['include' => true], 'channel:pecl.php.net' => ['exclude' => true]], 'force' => true, 'symlink' => true];
+        $this->_arguments = [];
     }
 }

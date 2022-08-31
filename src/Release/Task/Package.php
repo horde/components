@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Release\Task;
+
 use Horde\Components\Exception;
 use Horde\Components\Helper\Version as HelperVersion;
 
@@ -35,7 +37,7 @@ class Package extends Base
      *
      * @return boolean True if it can be skipped.
      */
-    public function skip($options)
+    public function skip($options): bool
     {
         return false;
     }
@@ -47,19 +49,19 @@ class Package extends Base
      *
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
-     * 
+     *
      * @throws Horde\Components\Exception
      */
-    public function preValidate($options)
+    public function preValidate($options): array
     {
-        $errors = array();
+        $errors = [];
         $testpkg = \Horde_Util::getTempFile();
         $archive = new \Archive_Tar($testpkg, 'gz');
         $archive->addString('a', 'a');
         $archive->addString('b', 'b');
         $results = exec('tar tzvf ' . $testpkg . ' 2>&1');
         // MacOS tar doesn't error out, but only returns the first string (ending in 'a');
-        if (strpos($results, 'lone zero block') !== false || substr($results, -1, 1) == 'a') {
+        if (str_contains($results, 'lone zero block') || substr($results, -1, 1) == 'a') {
             $errors[] = 'Broken Archive_Tar, upgrade first.';
         }
 
@@ -116,7 +118,7 @@ class Package extends Base
      *
      * throws Horde\Components\Exception
      */
-    public function run(&$options)
+    public function run(&$options): void
     {
         if (!$this->getTasks()->pretend()) {
             $archive_options = $options;
@@ -128,7 +130,8 @@ class Package extends Base
             }
             if (!empty($result[1])) {
                 $this->getOutput()->fail(
-                    'Generating package failed with:'. "\n\n" . join("\n", $result[1]));
+                    'Generating package failed with:'. "\n\n" . join("\n", $result[1])
+                );
                 return;
             }
             $path = $result[0];
@@ -144,7 +147,7 @@ class Package extends Base
 
         if (!empty($options['upload'])) {
             $this->system('scp ' . $path . ' ' . $options['releaseserver'] . ':~/');
-            $this->system('ssh '. $options['releaseserver'] . ' "umask 0002 && pirum add ' . $options['releasedir'] . ' ~/' . basename($path) . ' && rm ' . basename($path) . '"');
+            $this->system('ssh '. $options['releaseserver'] . ' "umask 0002 && pirum add ' . $options['releasedir'] . ' ~/' . basename((string) $path) . ' && rm ' . basename((string) $path) . '"');
             if (!$this->getTasks()->pretend()) {
                 unlink($path);
             }

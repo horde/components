@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Runner;
+
 use Horde\Components\Config;
 use Horde\Components\Config\Application as ConfigApplication;
 use Horde\Components\Helper\Website as HelperWebsite;
@@ -31,41 +33,21 @@ use Horde\Components\Output;
 class Webdocs
 {
     /**
-     * The configuration for the current job.
-     *
-     * @var Config
-     */
-    private $_config;
-
-    /**
      * The application configuration.
-     *
-     * @var ConfigApplication
      */
-    private $_config_application;
-
-    /**
-     * The website helper.
-     *
-     * @var HelperWebsite
-     */
-    private $_website_helper;
+    private readonly ConfigApplication $_config_application;
 
     /**
      * Constructor.
      *
-     * @param Config         $config The configuration for the current job.
-     * @param HelperWebsite $helper The website helper.
+     * @param Config $_config The configuration for the current job.
+     * @param HelperWebsite $_website_helper The website helper.
      */
-    public function __construct(
-        Config $config,
-        HelperWebsite $helper
-    ) {
-        $this->_config = $config;
-        $this->_website_helper = $helper;
+    public function __construct(private readonly Config $_config, private readonly HelperWebsite $_website_helper)
+    {
     }
 
-    public function run()
+    public function run(): void
     {
         $this->_website_helper->update(
             $this->_config->getComponent(),

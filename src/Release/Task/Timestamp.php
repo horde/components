@@ -10,8 +10,11 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Release\Task;
+
 use Horde\Components\Exception;
+
 /**
  * Components_Release_Task_Timestamp:: timestamps the package right before the
  * release.
@@ -38,14 +41,12 @@ class Timestamp extends Base
      * @throws Exception
      * @throws \Horde_Exception_NotFound
      */
-    public function preValidate($options)
+    public function preValidate($options): array
     {
         if (!$this->getComponent()->getWrapper('ChangelogYml')->exists()) {
-            return array(
-                'The component lacks a changelog.yml!',
-            );
+            return ['The component lacks a changelog.yml!'];
         }
-        return array();
+        return [];
     }
 
     /**
@@ -55,7 +56,7 @@ class Timestamp extends Base
      *
      * @return boolean True if it can be skipped.
      */
-    public function skip($options)
+    public function skip($options): bool
     {
         return false;
     }
@@ -64,10 +65,8 @@ class Timestamp extends Base
      * Run the task.
      *
      * @param array &$options Additional options.
-     *
-     * @return void
      */
-    public function run(&$options)
+    public function run(&$options): void
     {
         $result = $this->getComponent()
             ->timestamp($options);

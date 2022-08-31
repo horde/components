@@ -10,7 +10,9 @@
  * @license   http://www.horde.org/licenses/lgpl21 LGPL 2.1
  * @package   Components
  */
+
 namespace Horde\Components\Module;
+
 use Horde\Components\Config;
 
 /**
@@ -26,21 +28,21 @@ class Composer extends Base
 {
     /**
      */
-    public function getOptionGroupTitle()
+    public function getOptionGroupTitle(): string
     {
         return 'PHP Composer configuration';
     }
 
     /**
      */
-    public function getOptionGroupDescription()
+    public function getOptionGroupDescription(): string
     {
         return 'This module creates a config file for use with PHP Composer.';
     }
 
     /**
      */
-    public function getOptionGroupOptions()
+    public function getOptionGroupOptions(): array
     {
         return [
             new \Horde_Argv_Option(
@@ -66,7 +68,7 @@ class Composer extends Base
      *
      * @return string The title.
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return 'composer';
     }
@@ -76,7 +78,7 @@ class Composer extends Base
      *
      * @return string The description.
      */
-    public function getUsage()
+    public function getUsage(): string
     {
         return 'Create config file for PHP Composer.';
     }
@@ -86,9 +88,9 @@ class Composer extends Base
      *
      * @return array A list of supported action arguments.
      */
-    public function getActions()
+    public function getActions(): array
     {
-        return array('composer');
+        return ['composer'];
     }
 
     /**
@@ -98,7 +100,7 @@ class Composer extends Base
      *
      * @return string The help text.
      */
-    public function getHelp($action)
+    public function getHelp($action): string
     {
         return 'Creates a composer.json config file to be used with PHP Composer. Usage:
 

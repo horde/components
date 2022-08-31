@@ -9,15 +9,18 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Component;
+
 use Horde\Components\Component;
 use Horde\Components\Config;
 use Horde\Components\Exception;
 use Horde\Components\Exception\Pear as PearException;
-use Horde\Components\Helper\Root as HelperRoot;
 use Horde\Components\Helper\Commit as HelperCommit;
+use Horde\Components\Helper\Root as HelperRoot;
 use Horde\Components\Pear\Environment as PearEnvironment;
-
+use Horde\Components\Wrapper\PackageXml as WrapperPackageXml;
+use stdClass;
 
 /**
  * Represents base functionality for a component.
@@ -35,31 +38,15 @@ use Horde\Components\Pear\Environment as PearEnvironment;
 abstract class Base implements Component
 {
     /**
-     * The configuration for the current job.
-     *
-     * @var Config
-     */
-    protected $_config;
-
-    /**
-     * The factory for additional helpers.
-     *
-     * @var Factory
-     */
-    private $_factory;
-
-    /**
-     * Constructor.
-     *
-     * @param Config            $config  The configuration for the
-     *                                              current job.
-     * @param Factory $factory Generator for additional
-     *                                              helpers.
-     */
-    public function __construct(Config $config, Factory $factory)
+    * Constructor.
+    *
+     * @param Config $_config The configuration for the
+                                            current job.
+     * @param Factory $_factory Generator for additional
+                                            helpers.
+    */
+    public function __construct(protected Config $_config, private readonly Factory $_factory)
     {
-        $this->_config  = $config;
-        $this->_factory = $factory;
     }
 
     /**
@@ -68,7 +55,7 @@ abstract class Base implements Component
      * @return string The component name.
      * @throws Exception
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->getPackageXml()->getName();
     }
@@ -79,7 +66,7 @@ abstract class Base implements Component
      * @return string The summary of the component.
      * @throws Exception
      */
-    public function getSummary()
+    public function getSummary(): string
     {
         return $this->getPackageXml()->getSummary();
     }
@@ -90,7 +77,7 @@ abstract class Base implements Component
      * @return string The description of the component.
      * @throws Exception
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->getPackageXml()->getDescription();
     }
@@ -101,7 +88,7 @@ abstract class Base implements Component
      * @return string The component version.
      * @throws Exception
      */
-    public function getVersion()
+    public function getVersion(): string
     {
         return $this->getPackageXml()->getVersion();
     }
@@ -112,7 +99,7 @@ abstract class Base implements Component
      * @return string The previous component version.
      * @throws Exception
      */
-    public function getPreviousVersion()
+    public function getPreviousVersion(): string
     {
         $previousVersion = null;
         $currentVersion = $this->getVersion();
@@ -120,9 +107,7 @@ abstract class Base implements Component
         $versions = $this->getPackageXml()->getVersions();
         usort(
             $versions,
-            function($a, $b) {
-                return version_compare($a['version'], $b['version']);
-            }
+            fn ($a, $b) => version_compare($a['version'], $b['version'])
         );
         foreach ($versions as $version) {
             // If this is a stable version we want the previous stable version,
@@ -145,7 +130,7 @@ abstract class Base implements Component
      * @return string The date.
      * @throws Exception
      */
-    public function getDate()
+    public function getDate(): string
     {
         return $this->getPackageXml()->getDate();
     }
@@ -156,7 +141,7 @@ abstract class Base implements Component
      * @return string The component channel.
      * @throws Exception
      */
-    public function getChannel()
+    public function getChannel(): string
     {
         return $this->getPackageXml()->getChannel();
     }
@@ -167,7 +152,7 @@ abstract class Base implements Component
      * @return array The component dependencies.
      * @throws Exception
      */
-    public function getDependencies()
+    public function getDependencies(): array
     {
         return $this->getPackageXml()->getDependencies();
     }
@@ -180,7 +165,7 @@ abstract class Base implements Component
      * @return string The stability.
      * @throws Exception
      */
-    public function getState($key = 'release')
+    public function getState($key = 'release'): string
     {
         return $this->getPackageXml()->getState($key);
     }
@@ -213,7 +198,7 @@ abstract class Base implements Component
      * @return string The component license URI.
      * @throws Exception
      */
-    public function getLicenseLocation()
+    public function getLicenseLocation(): string
     {
         return $this->getPackageXml()->getLicenseLocation();
     }
@@ -234,7 +219,7 @@ abstract class Base implements Component
      *
      * @return boolean True if a package.xml exists.
      */
-    public function hasLocalPackageXml()
+    public function hasLocalPackageXml(): bool
     {
         return false;
     }
@@ -245,7 +230,7 @@ abstract class Base implements Component
      * @return string The link to the change log.
      * @throws Exception
      */
-    public function getChangelogLink()
+    public function getChangelogLink(): string
     {
         throw new Exception('Not supported!');
     }
@@ -254,10 +239,10 @@ abstract class Base implements Component
      * Return a data array with the most relevant information about this
      * component.
      *
-     * @return \stdClass Information about this component.
+     * @return stdClass Information about this component.
      * @throws Exception
      */
-    public function getData()
+    public function getData(): stdClass
     {
         throw new Exception('Not supported!');
     }
@@ -265,9 +250,9 @@ abstract class Base implements Component
     /**
      * Return the path to the release notes.
      *
-     * @return string|boolean The path to the release notes or false.
+     * @return string|bool The path to the release notes or false.
      */
-    public function getReleaseNotesPath()
+    public function getReleaseNotesPath(): string|bool
     {
         return false;
     }
@@ -287,7 +272,7 @@ abstract class Base implements Component
      *
      * @return string|NULL The path name or NULL if there is no DOCS_ORIGIN file.
      */
-    public function getDocumentOrigin()
+    public function getDocumentOrigin(): ?string
     {
         return null;
     }
@@ -301,7 +286,7 @@ abstract class Base implements Component
      *
      * @throws Exception
      */
-    public function updatePackage($action, $options)
+    public function updatePackage($action, $options): string
     {
         throw new Exception(
             'Updating the package.xml is not supported!'
@@ -317,7 +302,7 @@ abstract class Base implements Component
      * @return string[] Output messages.
      * @throws Exception
      */
-    public function changed($log, $options)
+    public function changed($log, $options): array
     {
         throw new Exception(
             'Updating the change log is not supported!'
@@ -332,7 +317,7 @@ abstract class Base implements Component
      * @return string The success message.
      * @throws Exception
      */
-    public function timestamp($options)
+    public function timestamp($options): string
     {
         throw new Exception(
             'Timestamping is not supported!'
@@ -355,9 +340,8 @@ abstract class Base implements Component
         $initial_note,
         $stability_api = null,
         $stability_release = null,
-        $options = array()
-    )
-    {
+        $options = []
+    ): string {
         throw new Exception(
             'Setting the next version is not supported!'
         );
@@ -373,7 +357,7 @@ abstract class Base implements Component
      * @return string The success message.
      * @throws Exception
      */
-    public function currentSentinel($changes, $app, $options)
+    public function currentSentinel($changes, $app, $options): string
     {
         throw new Exception(
             'Modifying the sentinel is not supported!'
@@ -389,7 +373,7 @@ abstract class Base implements Component
      *
      * @throws Exception
      */
-    public function tag(string $tag, string $message, HelperCommit $commit)
+    public function tag(string $tag, string $message, HelperCommit $commit): string
     {
         throw new Exception(
             'Tagging is not supported!'
@@ -403,7 +387,7 @@ abstract class Base implements Component
      *
      * @throws Exception
      */
-    public function repositoryRoot(HelperRoot $helper)
+    public function repositoryRoot(HelperRoot $helper): string
     {
         throw new Exception(
             'Identifying the repository root is not supported!'
@@ -421,9 +405,9 @@ abstract class Base implements Component
      * @throws PearException
      */
     public function installChannel(
-        PearEnvironment $env, $options = array()
-    )
-    {
+        PearEnvironment $env,
+        $options = []
+    ): void {
         $channel = $this->getChannel();
         if (!empty($channel)) {
             $env->provideChannel(
@@ -472,7 +456,7 @@ abstract class Base implements Component
      * @return \Horde_Pear_Package_Xml The package representation.
      * @throws Exception
      */
-    protected function getPackageXml()
+    protected function getPackageXml(): WrapperPackageXml
     {
         throw new Exception('Not supported!');
     }
@@ -486,7 +470,7 @@ abstract class Base implements Component
      */
     protected function getBaseInstallationOptions($options)
     {
-        $installation_options = array();
+        $installation_options = [];
         $installation_options['force'] = !empty($options['force']);
         $installation_options['nodeps'] = !empty($options['nodeps']);
         return $installation_options;
@@ -503,10 +487,10 @@ abstract class Base implements Component
         if ($this->getChannel() != 'pear.horde.org') {
             return false;
         }
-        $client = new \Horde_Http_Client(array('request.timeout' => 15));
+        $client = new \Horde_Http_Client(['request.timeout' => 15]);
         try {
             $response = $client->get('http://ci.horde.org/job/' . str_replace('Horde_', '', $this->getName() . '/api/json'));
-        } catch (\Horde_Http_Exception $e) {
+        } catch (\Horde_Http_Exception) {
             return false;
         }
         return $response->code != 404;

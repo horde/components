@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Module;
+
 use Horde\Components\Config;
 
 /**
@@ -32,24 +34,24 @@ class Help extends Base
      *
      * @return boolean True if an option group should be added.
      */
-    public function hasOptionGroup()
+    public function hasOptionGroup(): bool
     {
         return false;
     }
 
-    public function getOptionGroupTitle()
+    public function getOptionGroupTitle(): string
     {
         return '';
     }
 
-    public function getOptionGroupDescription()
+    public function getOptionGroupDescription(): string
     {
         return '';
     }
 
-    public function getOptionGroupOptions()
+    public function getOptionGroupOptions(): array
     {
-        return array();
+        return [];
     }
 
     /**
@@ -57,7 +59,7 @@ class Help extends Base
      *
      * @return string The title.
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return 'help ACTION';
     }
@@ -67,7 +69,7 @@ class Help extends Base
      *
      * @return string The description.
      */
-    public function getUsage()
+    public function getUsage(): string
     {
         return 'Provide information about the specified ACTION.';
     }
@@ -77,9 +79,9 @@ class Help extends Base
      *
      * @return array A list of supported action arguments.
      */
-    public function getActions()
+    public function getActions(): array
     {
-        return array('help');
+        return ['help'];
     }
 
     /**
@@ -110,7 +112,10 @@ class Help extends Base
                         . $formatter->highlightHeading($title . "\n" . $sub)
                         . "\n\n";
                     $help .= \Horde_String::wordwrap(
-                        $element->getHelp($action), 75, "\n", true
+                        $element->getHelp($action),
+                        75,
+                        "\n",
+                        true
                     );
                     $options = $element->getContextOptionHelp();
                     if (!empty($options)) {
@@ -124,11 +129,17 @@ class Help extends Base
                             $help .= "\n\n    " . $formatter->highlightOption($formatter->formatOptionStrings($argv_option)) . "\n\n      ";
                             if (empty($help_text)) {
                                 $help .= \Horde_String::wordwrap(
-                                    $argv_option->help, 75, "\n      ", true
+                                    $argv_option->help,
+                                    75,
+                                    "\n      ",
+                                    true
                                 );
                             } else {
                                 $help .= \Horde_String::wordwrap(
-                                    $help_text, 75, "\n      ", true
+                                    $help_text,
+                                    75,
+                                    "\n      ",
+                                    true
                                 );
                             }
                         }

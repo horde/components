@@ -11,12 +11,14 @@
  * @author     Ralf Lang <lang@b1-systems.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Test\Stub;
+
 use Horde\Components\Exception;
 
 class OutputCli extends \Horde_Cli
 {
-    public $messages = array();
+    public $messages = [];
 
     public function message($message, $type = 'cli.message')
     {

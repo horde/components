@@ -10,9 +10,12 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Unit\Components\Helper;
-use Horde\Components\Test\TestCase;
+
 use Horde\Components\Helper\Version as HelperVersion;
+use Horde\Components\Test\TestCase;
+
 /**
  * Test the version helper.
  *
@@ -100,5 +103,4 @@ class VersionDescriptionTest extends TestCase
             HelperVersion::pearToTicketDescription('5.2.0RC2')
         );
     }
-
 }

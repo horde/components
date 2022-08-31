@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Component;
+
 use Horde\Components\Config;
 use Horde\Components\Exception;
 
@@ -29,34 +31,6 @@ use Horde\Components\Exception;
 class Remote extends Base
 {
     /**
-     * The remote handler.
-     *
-     * @var \Horde_Pear_Remote
-     */
-    private $_remote;
-
-    /**
-     * Component name.
-     *
-     * @var string
-     */
-    private $_name;
-
-    /**
-     * Component channel.
-     *
-     * @var string
-     */
-    private $_channel;
-
-    /**
-     * Component stability.
-     *
-     * @var string
-     */
-    private $_stability;
-
-    /**
      * Component version.
      *
      * @var string
@@ -65,54 +39,37 @@ class Remote extends Base
 
     /**
      * Download location for the component.
-     *
-     * @var string
      */
-    private $_uri;
-
-    /**
-     * The HTTP client for remote access.
-     *
-     * @var \Horde_Http_Client
-     */
-    private $_client;
+    private ?string $_uri = null;
 
     /**
      * The package file representing the component.
-     *
-     * @var \Horde_Pear_Package_Xml
      */
-    private $_package;
+    private ?\Horde_Pear_Package_Xml $_package = null;
 
     /**
-     * Constructor.
-     *
-     * @param string                  $name      Component name.
-     * @param string                  $stability Component stability.
-     * @param string                  $channel   Component channel.
-     * @param \Horde_Pear_Remote       $remote    Remote channel handler.
-     * @param \Horde_Http_Client       $client    The HTTP client for remote
-     *                                           access.
-     * @param Config       $config    The configuration for the
-     *                                           current job.
-     * @param Horde\Components\Component\Factory $factory Generator for additional
-     *                                              helpers.
-     */
+    * Constructor.
+    *
+     * @param string $_name Component name.
+     * @param string $_stability Component stability.
+     * @param string $_channel Component channel.
+     * @param \Horde_Pear_Remote $_remote Remote channel handler.
+     * @param \Horde_Http_Client $_client The HTTP client for remote
+                                         access.
+    * @param Config       $config    The configuration for the
+    *                                           current job.
+    * @param Horde\Components\Component\Factory $factory Generator for additional
+    *                                              helpers.
+    */
     public function __construct(
-        $name,
-        $stability,
-        $channel,
-        \Horde_Pear_Remote $remote,
-        \Horde_Http_Client $client,
+        private $_name,
+        private $_stability,
+        private $_channel,
+        private readonly \Horde_Pear_Remote $_remote,
+        private readonly \Horde_Http_Client $_client,
         Config $config,
         Factory $factory
-    )
-    {
-        $this->_name = $name;
-        $this->_stability = $stability;
-        $this->_channel = $channel;
-        $this->_remote = $remote;
-        $this->_client  = $client;
+    ) {
         parent::__construct($config, $factory);
     }
 
@@ -121,7 +78,7 @@ class Remote extends Base
      *
      * @return string The component name.
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->_name;
     }
@@ -131,7 +88,7 @@ class Remote extends Base
      *
      * @return string The component version.
      */
-    public function getVersion()
+    public function getVersion(): string
     {
         if (!isset($this->_version)) {
             $this->_version = $this->_remote->getLatestRelease($this->_name, $this->_stability);
@@ -144,7 +101,7 @@ class Remote extends Base
      *
      * @return string The previous component version.
      */
-    public function getPreviousVersion()
+    public function getPreviousVersion(): string
     {
         $previousVersion = null;
         $currentVersion = $this->getVersion();
@@ -172,7 +129,7 @@ class Remote extends Base
      *
      * @return string The component channel.
      */
-    public function getChannel()
+    public function getChannel(): string
     {
         return $this->_channel;
     }
@@ -182,10 +139,11 @@ class Remote extends Base
      *
      * @return array The component dependencies.
      */
-    public function getDependencies()
+    public function getDependencies(): array
     {
         return $this->_remote->getDependencies(
-            $this->getName(), $this->getVersion()
+            $this->getName(),
+            $this->getVersion()
         );
     }
 
@@ -197,7 +155,7 @@ class Remote extends Base
      */
     public function getData()
     {
-        $data = new \stdClass;
+        $data = new \stdClass();
         $release = $this->_remote->getLatestDetails($this->_name, null);
         $data->name = $this->_name;
         $data->summary = $release->getSummary();
@@ -219,7 +177,7 @@ class Remote extends Base
      *               archive, optionally [1] an array of error strings, and [2]
      *               PEAR output.
      */
-    public function placeArchive($destination, $options = array())
+    public function placeArchive($destination, $options = []): array
     {
         $this->createDestination($destination);
         $this->_client->{'request.timeout'} = 60;
@@ -227,7 +185,7 @@ class Remote extends Base
             $destination . '/' . basename($this->_getDownloadUri()),
             $this->_client->get($this->_getDownloadUri())->getStream()
         );
-        return array($destination . '/' . basename($this->_getDownloadUri()));
+        return [$destination . '/' . basename($this->_getDownloadUri())];
     }
 
     /**
@@ -235,11 +193,12 @@ class Remote extends Base
      *
      * @return string The download URI.
      */
-    private function _getDownloadUri()
+    private function _getDownloadUri(): string
     {
         if (!isset($this->_uri)) {
             $this->_uri = $this->_remote->getLatestDownloadUri(
-                $this->_name, $this->_stability
+                $this->_name,
+                $this->_stability
             );
         }
         return $this->_uri;
@@ -253,13 +212,12 @@ class Remote extends Base
      * @param array                 $options   Install options.
      * @param string                $reason    Optional reason for adding the
      *                                         package.
-     *
-     * @return void
      */
     public function install(
-        Components_Pear_Environment $env, $options = array(), $reason = ''
-    )
-    {
+        Components_Pear_Environment $env,
+        $options = [],
+        $reason = ''
+    ): void {
         if (empty($options['allow_remote'])) {
             throw new Exception(
                 sprintf(
@@ -275,19 +233,15 @@ class Remote extends Base
         $installation_options['channel'] = $this->getChannel();
         $env->addComponent(
             $this->getName(),
-            array(
-                'channel://' . $this->getChannel() . '/' . $this->getName()
-            ),
+            ['channel://' . $this->getChannel() . '/' . $this->getName()],
             $installation_options,
             ' via remote channel ' . $this->getChannel(),
             $reason,
-            array(
-                sprintf(
-                    'Adding component %s/%s via network.',
-                    $this->getChannel(),
-                    $this->getName()
-                )
-            )
+            [sprintf(
+                'Adding component %s/%s via network.',
+                $this->getChannel(),
+                $this->getName()
+            )]
         );
     }
 
@@ -300,7 +254,8 @@ class Remote extends Base
     {
         if (!isset($this->_package)) {
             $this->_package = $this->_remote->getPackageXml(
-                $this->getName(), $this->getVersion()
+                $this->getName(),
+                $this->getVersion()
             );
         }
         return $this->_package;

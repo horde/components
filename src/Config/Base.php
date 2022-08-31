@@ -10,9 +10,11 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Config;
-use Horde\Components\Config;
+
 use Horde\Components\Component;
+use Horde\Components\Config;
 use Horde\Components\Exception;
 
 /**
@@ -29,36 +31,31 @@ use Horde\Components\Exception;
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-abstract class Base
-implements Config
+abstract class Base implements Config
 {
     /**
      * Additional options.
      *
      * @var array
      */
-    protected $_options = array();
+    protected $_options = [];
 
     /**
      * Additional arguments.
      *
      * @var array
      */
-    protected $_arguments = array();
+    protected $_arguments = [];
 
     /**
      * The selected component.
-     *
-     * @var Component
      */
-    private $_component;
+    private ?\Horde\Components\Component $_component = null;
 
     /**
      * The path to component in case the selected one is a source component.
-     *
-     * @var string
      */
-    private $_path;
+    private ?string $_path = null;
 
     /**
      * Set an additional option value.

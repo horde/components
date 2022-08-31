@@ -9,6 +9,7 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components;
 
 /**
@@ -27,48 +28,34 @@ namespace Horde\Components;
 class Output
 {
     /**
-     * The CLI handler.
-     *
-     * @var \Horde_Cli
-     */
-    private $_cli;
-
-    /**
      * Did the user request verbose output?
-     *
-     * @var boolean
      */
-    private $_verbose;
+    private readonly bool $_verbose;
 
     /**
      * Did the user request quiet output?
-     *
-     * @var boolean
      */
-    private $_quiet;
+    private readonly bool $_quiet;
 
     /**
      * Did the user request to avoid colored output?
-     *
-     * @var boolean
      */
-    private $_nocolor;
+    private readonly bool $_nocolor;
 
     /**
      * Constructor.
      *
-     * @param \Horde_Cli $cli     The CLI handler.
+     * @param \Horde_Cli $_cli The CLI handler.
      * @param array     $options The configuration for the current job.
      */
-    public function __construct(\Horde_Cli $cli, $options)
+    public function __construct(private readonly \Horde_Cli $_cli, $options)
     {
-        $this->_cli = $cli;
         $this->_verbose = !empty($options['verbose']);
         $this->_quiet = !empty($options['quiet']);
         $this->_nocolor = !empty($options['nocolor']);
     }
 
-    public function bold($text)
+    public function bold($text): void
     {
         if ($this->_nocolor) {
             $this->_cli->writeln($text);
@@ -77,7 +64,7 @@ class Output
         }
     }
 
-    public function blue($text)
+    public function blue($text): void
     {
         if ($this->_nocolor) {
             $this->_cli->writeln($text);
@@ -86,7 +73,7 @@ class Output
         }
     }
 
-    public function green($text)
+    public function green($text): void
     {
         if ($this->_nocolor) {
             $this->_cli->writeln($text);
@@ -95,7 +82,7 @@ class Output
         }
     }
 
-    public function yellow($text)
+    public function yellow($text): void
     {
         if ($this->_nocolor) {
             $this->_cli->writeln($text);
@@ -104,7 +91,7 @@ class Output
         }
     }
 
-    public function ok($text)
+    public function ok($text): void
     {
         if ($this->_quiet) {
             return;
@@ -115,7 +102,7 @@ class Output
         );
     }
 
-    public function warn($text)
+    public function warn($text): void
     {
         if ($this->_quiet) {
             return;
@@ -126,7 +113,7 @@ class Output
         );
     }
 
-    public function info($text)
+    public function info($text): void
     {
         if ($this->_quiet) {
             return;
@@ -137,27 +124,27 @@ class Output
         );
     }
 
-    public function fail($text)
+    public function fail($text): void
     {
         $this->_cli->fatal($text);
     }
 
-    public function log($status, $text)
+    public function log($status, $text): void
     {
         $this->pear($text);
     }
 
-    public function help($text)
+    public function help($text): void
     {
         $this->plain($text);
     }
 
-    public function plain($text)
+    public function plain($text): void
     {
         $this->_cli->writeln($text);
     }
 
-    public function pear($text)
+    public function pear($text): void
     {
         if (!$this->_verbose) {
             return;
@@ -205,12 +192,12 @@ class Output
         }
     }
 
-    public function isVerbose()
+    public function isVerbose(): bool
     {
         return $this->_verbose;
     }
 
-    public function isQuiet()
+    public function isQuiet(): bool
     {
         return $this->_quiet;
     }

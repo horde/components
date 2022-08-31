@@ -12,10 +12,12 @@
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Unit\Components\Release\Task;
-use Horde\Components\Test\TestCase;
+
 use Horde\Components\Component\Source;
 use Horde\Components\Helper\Commit as HelperCommit;
+use Horde\Components\Test\TestCase;
 
 /**
  * Test the changelog release task.
@@ -40,21 +42,21 @@ class ChangelogTest extends TestCase
     {
         $package = $this->getComponent($this->_fixture);
         $task = $this->getReleaseTask('changelog', $package);
-        $this->assertEquals(array(), $task->preValidate(array()));
+        $this->assertEquals([], $task->preValidate([]));
     }
 
     public function testPreValidateFails()
     {
         $package = $this->getComponent($this->_fixture . '/NO_SUCH_PACKAGE');
         $task = $this->getReleaseTask('changelog', $package);
-        $this->assertFalse($task->preValidate(array()) === array());
+        $this->assertFalse($task->preValidate([]) === []);
     }
 
     public function testPostValidateFails()
     {
         $package = $this->getComponent($this->_fixture);
         $task = $this->getReleaseTask('changelog', $package);
-        $this->assertFalse($task->postValidate(array()) === array());
+        $this->assertFalse($task->postValidate([]) === []);
     }
 
     public function testRunTaskWithoutCommit()
@@ -63,7 +65,7 @@ class ChangelogTest extends TestCase
         $package = $this->_getValidPackage();
         $package->expects($this->once())
             ->method('sync');
-        $tasks->run(array('changelog'), $package);
+        $tasks->run(['changelog'], $package);
     }
 
     public function testPretend()
@@ -72,22 +74,22 @@ class ChangelogTest extends TestCase
         $tasks = $this->getReleaseTasks();
         $package = $this->getComponent($this->_fixture);
         $tasks->run(
-            array('Timestamp', 'CommitPreRelease'),
+            ['Timestamp', 'CommitPreRelease'],
             $package,
-            array(
+            [
                 'pretend' => true,
                 'commit' => new HelperCommit(
                     $this->_output,
-                    array('pretend' => true)
+                    ['pretend' => true]
                 )
-            )
+            ]
         );
         $this->assertEquals(
-            array(
+            [
                 sprintf('Would timestamp "%s" now and synchronize its change log.', realpath($this->_fixture . '/package.xml')),
                 sprintf('Would run "git add %s" now.', realpath($this->_fixture . '/package.xml')),
                 'Would run "git commit -m "Released Fixture-0.0.1"" now.'
-            ),
+            ],
             $this->_output->getOutput()
         );
     }

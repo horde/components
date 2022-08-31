@@ -11,22 +11,23 @@
             "role": "lead"
         }
     ],
-    "version": "0.0.1",
-    "time": "2020-10-17",
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://horde-satis.maintaina.com"
-        }
-    ],
+    "time": "2022-08-25",
+    "repositories": [],
     "require": {
-        "horde/horde-installer-plugin": "dev-master",
+        "horde/horde-installer-plugin": "^2",
         "php": "^5"
     },
+    "require-dev": {},
     "suggest": {},
     "autoload": {
         "psr-0": {
             "Horde_Fixture": "lib/"
+        }
+    },
+    "autoload-dev": [],
+    "config": {
+        "allow-plugins": {
+            "horde/horde-installer-plugin": true
         }
     }
 }

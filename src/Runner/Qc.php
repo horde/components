@@ -9,7 +9,9 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Runner;
+
 use Horde\Components\Config;
 use Horde\Components\Output;
 use Horde\Components\Qc\Tasks as QcTasks;
@@ -30,45 +32,32 @@ use Horde\Components\Qc\Tasks as QcTasks;
 class Qc
 {
     /**
-     * The configuration for the current job.
-     *
-     * @var Config
-     */
-    private $_config;
-
-    /**
-     * The output handler.
-     *
-     * @param Output
-     */
-    private $_output;
-
-    /**
-     * The quality control tasks handler.
-     *
-     * @param QcTasks
-     */
-    private $_qc;
-
-    /**
      * Constructor.
      *
-     * @param Config  $config The configuration for the current job.
-     * @param Output  $output The output handler.
-     * @param QcTasks $qc     The qc handler.
+     * @param Config $_config The configuration for the current job.
+     * @param Output $_output The output handler.
+     * @param QcTasks $_qc The qc handler.
      */
-    public function __construct(Config $config,
-                                Output $output,
-                                QcTasks $qc)
-    {
-        $this->_config = $config;
-        $this->_output = $output;
-        $this->_qc = $qc;
+    public function __construct(
+        private readonly Config $_config,
+        /**
+         * The output handler.
+         *
+         * @param Output
+         */
+        private readonly Output $_output,
+        /**
+         * The quality control tasks handler.
+         *
+         * @param QcTasks
+         */
+        private readonly QcTasks $_qc
+    ) {
     }
 
-    public function run()
+    public function run(): void
     {
-        $sequence = array();
+        $sequence = [];
         if ($this->_doTask('unit')) {
             $sequence[] = 'unit';
         }
@@ -115,7 +104,7 @@ class Qc
      *
      * @return boolean True if the task is active.
      */
-    private function _doTask($task)
+    private function _doTask($task): bool
     {
         $arguments = $this->_config->getArguments();
         if ((count($arguments) == 1 && $arguments[0] == 'qc')

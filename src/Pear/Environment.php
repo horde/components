@@ -9,10 +9,13 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Pear;
+
 use Horde\Components\Exception;
 use Horde\Components\Exception\Pear as ExceptionPear;
 use Horde\Components\Output;
+
 /**
  * Components_Pear_Environment:: handles a specific PEAR environment.
  *
@@ -29,32 +32,19 @@ use Horde\Components\Output;
 class Environment
 {
     /**
-     * The output handler.
-     *
-     * @var Output
-     */
-    private $_output;
-
-    /**
      * The factory for PEAR class instances.
-     *
-     * @var Factory
      */
-    private $_factory;
+    private ?\Horde\Components\Pear\Factory $_factory = null;
 
     /**
      * The base directory for the PEAR install location.
-     *
-     * @var string
      */
-    private $_base_directory;
+    private ?string $_base_directory = null;
 
     /**
      * The path to the configuration file.
-     *
-     * @var string
      */
-    private $_config_file;
+    private ?string $_config_file = null;
 
     /**
      * The directory that contains channel definitions.
@@ -73,10 +63,10 @@ class Environment
     /**
      * Constructor.
      *
-     * @param Output $output The output handler.
+     * @param Output $_output The output handler.
      */
-    public function __construct(Output $output) {
-        $this->_output = $output;
+    public function __construct(private readonly Output $_output)
+    {
     }
 
     /**
@@ -84,7 +74,7 @@ class Environment
      *
      * @param Factory
      */
-    public function setFactory(Factory $factory)
+    public function setFactory(Factory $factory): void
     {
         $this->_factory = $factory;
     }
@@ -98,7 +88,7 @@ class Environment
      *
      * @throws Exception
      */
-    public function setLocation($base_directory, $config_file)
+    public function setLocation($base_directory, $config_file): void
     {
         $this->_base_directory = $base_directory;
         if (!file_exists($this->_base_directory)) {
@@ -119,7 +109,7 @@ class Environment
      *
      * @throws Exception
      */
-    public function setChannelDirectory(&$options)
+    public function setChannelDirectory(&$options): void
     {
         if (empty($options['channelxmlpath'])) {
             $options['channelxmlpath'] = $options['destination']
@@ -156,7 +146,7 @@ class Environment
      *
      * @throws Exception
      */
-    public function setSourceDirectory(&$options)
+    public function setSourceDirectory(&$options): void
     {
         if (empty($options['sourcepath'])) {
             $options['sourcepath'] = $options['destination']
@@ -189,7 +179,7 @@ class Environment
      *
      * @throws Exception
      */
-    public function setResourceDirectories(&$options)
+    public function setResourceDirectories(&$options): void
     {
         $this->setSourceDirectory($options);
         $this->setChannelDirectory($options);
@@ -199,7 +189,7 @@ class Environment
      * @throws Exception
      * @throws ExceptionPear
      */
-    public function createPearConfig()
+    public function createPearConfig(): void
     {
         if (empty($this->_config_file)) {
             throw new Exception(
@@ -284,7 +274,7 @@ class Environment
      * @throws Exception
      * @throws ExceptionPear
      */
-    public function channelExists($channel)
+    public function channelExists($channel): bool
     {
         /** @var \PEAR_ChannelFile[] $registered */
         $registered = $this->getPearConfig()->getRegistry()->getChannels();
@@ -306,7 +296,7 @@ class Environment
      * @throws Exception
      * @throws ExceptionPear
      */
-    public function provideChannel($channel, $options = array(), $reason = '')
+    public function provideChannel($channel, $options = [], $reason = ''): void
     {
         if (!$this->channelExists($channel)) {
             $this->addChannel($channel, $options, $reason);
@@ -316,11 +306,10 @@ class Environment
     /**
      * Provide the PEAR specific installer.
      *
-     * @return \PEAR_Command_Install
      * @throws Exception
      * @throws ExceptionPear
      */
-    private function getInstallationHandler()
+    private function getInstallationHandler(): \PEAR_Command_Install
     {
         $installer = new \PEAR_Command_Install(
             new \PEAR_Frontend_CLI(),
@@ -339,7 +328,7 @@ class Environment
      * @throws Exception
      * @throws ExceptionPear
      */
-    public function linkPackageFromSource($package, $reason = '')
+    public function linkPackageFromSource($package, $reason = ''): void
     {
         $this->_output->ok(
             sprintf(
@@ -350,15 +339,10 @@ class Environment
         );
 
         ob_start();
-        $warnings = array();
+        $warnings = [];
         $pkg = $this->_factory->createPackageForEnvironment($package, $this);
 
-        $destDir = array(
-            'horde' => $this->getPearConfig()->get('horde_dir', 'user', 'pear.horde.org'),
-            'php' => $this->getPearConfig()->get('php_dir'),
-            'data' => $this->getPearConfig()->get('data_dir') . '/' . $pkg->getName(),
-            'script' => $this->getPearConfig()->get('bin_dir'),
-        );
+        $destDir = ['horde' => $this->getPearConfig()->get('horde_dir', 'user', 'pear.horde.org'), 'php' => $this->getPearConfig()->get('php_dir'), 'data' => $this->getPearConfig()->get('data_dir') . '/' . $pkg->getName(), 'script' => $this->getPearConfig()->get('bin_dir')];
 
         $dir = dirname($package);
         foreach ($pkg->getInstallationFilelist() as $file) {
@@ -369,22 +353,22 @@ class Environment
             }
 
             switch ($file['attribs']['role']) {
-            case 'horde':
-            case 'php':
-            case 'data':
-            case 'script':
-                if (isset($file['attribs']['install-as'])) {
-                    $dest = $destDir[$file['attribs']['role']] . '/' . $file['attribs']['install-as'];
-                } elseif (isset($file['attribs']['baseinstalldir'])) {
-                    $dest = $destDir[$file['attribs']['role']] . $file['attribs']['baseinstalldir'] . '/' . $file['attribs']['name'];
-                } else {
-                    $dest = $destDir[$file['attribs']['role']] . '/' . $file['attribs']['name'];
-                }
-                break;
+                case 'horde':
+                case 'php':
+                case 'data':
+                case 'script':
+                    if (isset($file['attribs']['install-as'])) {
+                        $dest = $destDir[$file['attribs']['role']] . '/' . $file['attribs']['install-as'];
+                    } elseif (isset($file['attribs']['baseinstalldir'])) {
+                        $dest = $destDir[$file['attribs']['role']] . $file['attribs']['baseinstalldir'] . '/' . $file['attribs']['name'];
+                    } else {
+                        $dest = $destDir[$file['attribs']['role']] . '/' . $file['attribs']['name'];
+                    }
+                    break;
 
-            default:
-                $dest = null;
-                break;
+                default:
+                    $dest = null;
+                    break;
             }
 
             if (!is_null($dest)) {
@@ -425,7 +409,7 @@ class Environment
      * @throws ExceptionPear
      * @throws Exception
      */
-    public function addChannel($channel, $options = array(), $reason = '')
+    public function addChannel($channel, $options = [], $reason = ''): void
     {
         $static = $this->_channel_directory . '/' . $channel . '.channel.xml';
 
@@ -467,7 +451,7 @@ class Environment
         if (file_exists($static)) {
             ob_start();
             ExceptionPear::catchError(
-                $channel_handler->doAdd('channel-add', array(), array($static))
+                $channel_handler->doAdd('channel-add', [], [$static])
             );
             $this->_output->pear(ob_get_clean());
         } else {
@@ -479,7 +463,7 @@ class Environment
             );
             ob_start();
             ExceptionPear::catchError(
-                $channel_handler->doDiscover('channel-discover', array(), array($channel))
+                $channel_handler->doDiscover('channel-discover', [], [$channel])
             );
             $this->_output->pear(ob_get_clean());
         }
@@ -513,9 +497,8 @@ class Environment
         $options,
         $info,
         $reason = '',
-        $warnings = array()
-    )
-    {
+        $warnings = []
+    ): void {
         $installer = $this->getInstallationHandler();
         $this->_output->ok(
             sprintf(

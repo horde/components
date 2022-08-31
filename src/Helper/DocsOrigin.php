@@ -9,8 +9,11 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Helper;
+
 use Horde\Components\Output;
+
 /**
  * Components_Helper_DocOrigin:: deals with a DOCS_ORIGIN file.
  *
@@ -28,17 +31,8 @@ class DocsOrigin
 {
     /**
      * Path to the DOCS_ORIGIN file.
-     *
-     * @var string
      */
-    private $_docs_origin;
-
-    /**
-     * The HTTP client for remote access.
-     *
-     * @var \Horde_Http_Client
-     */
-    private $_client;
+    private string $_docs_origin;
 
     /**
      * The list of remote documents. Keys represent the local target positions,
@@ -53,21 +47,21 @@ class DocsOrigin
      *
      * @param string|string[] $docs_origin Path to the DOCS_ORIGIN file.
      */
-    public function __construct($docs_origin, \Horde_Http_Client $client)
+    public function __construct($docs_origin, /**
+     * The HTTP client for remote access.
+     */
+    private readonly \Horde_Http_Client $_client)
     {
         if (!is_array($docs_origin)) {
             $docs_origin = [$docs_origin];
         }
         $this->_docs_origin = $docs_origin;
-        $this->_client = $client;
     }
 
     /**
      * Parse the instructions from the file.
-     *
-     * @return void
      */
-    private function _parse()
+    private function _parse(): array
     {
         if ($this->_documents === null) {
             $this->_documents = [];
@@ -75,7 +69,7 @@ class DocsOrigin
             if (\preg_match_all('/^:`([^:]*)`_:(.*)$/m', $rst, $matches)) {
                 foreach ($matches[1] as $match) {
                     if (\preg_match('#^.. _' . $match . ':(.*)$#m', $rst, $url)) {
-                        $this->_documents[$match] = \trim($url[1]);
+                        $this->_documents[$match] = \trim((string) $url[1]);
                     }
                 }
             }
@@ -88,7 +82,7 @@ class DocsOrigin
      *
      * @return array The list of remote documents.
      */
-    public function getDocuments()
+    public function getDocuments(): array
     {
         return $this->_parse();
     }
@@ -97,10 +91,8 @@ class DocsOrigin
      * Fetch the remote documents.
      *
      * @param Output $output The output handler.
-     *
-     * @return void
      */
-    public function fetchDocuments(Output $output)
+    public function fetchDocuments(Output $output): void
     {
         foreach ($this->_parse() as $local => $remote) {
             $this->_fetchDocument($remote, $local, $output);
@@ -114,14 +106,12 @@ class DocsOrigin
      * @param string            $local   The local target path.
      * @param Output $output  The output handler.
      *
-     *
-     * @return void
      */
-    public function _fetchDocument($remote, $local, Output $output)
+    public function _fetchDocument($remote, $local, Output $output): void
     {
         $this->_client->{'request.timeout'} = 60;
         $content = stream_get_contents($this->_client->get($remote)->getStream());
-        $content = preg_replace('#^(\.\. _`([^`]*)`: )((?!http://).*)#m', '\1\2', $content); 
+        $content = preg_replace('#^(\.\. _`([^`]*)`: )((?!http://).*)#m', '\1\2', $content);
         file_put_contents(
             $this->_docs_origin[1] . '/' . $local,
             $content

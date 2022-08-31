@@ -10,11 +10,14 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components;
-use Horde\Components\Dependencies\Injector;
+
+use Horde\Components\Component\Identify;
 use Horde\Components\Config\Cli as ConfigCli;
 use Horde\Components\Config\File as ConfigFile;
-use Horde\Components\Component\Identify;
+use Horde\Components\Dependencies\Injector;
+use Horde\Injector\TopLevel;
 
 /**
  * The Components:: class is the entry point for the various component actions
@@ -32,12 +35,11 @@ use Horde\Components\Component\Identify;
  */
 class Components
 {
+    final public const ERROR_NO_COMPONENT = 'You are neither in a component directory nor specified it as the first argument!';
 
-    const ERROR_NO_COMPONENT = 'You are neither in a component directory nor specified it as the first argument!';
+    final public const ERROR_NO_ACTION = 'You did not specify an action!';
 
-    const ERROR_NO_ACTION = 'You did not specify an action!';
-
-    const ERROR_NO_ACTION_OR_COMPONENT = '"%s" specifies neither an action nor a component directory!';
+    final public const ERROR_NO_ACTION_OR_COMPONENT = '"%s" specifies neither an action nor a component directory!';
 
     /**
      * The main entry point for the application.
@@ -49,7 +51,7 @@ class Components
      *     'class'  - (string) The class name of the parser to use.
      * </pre>
      */
-    public static function main(array $parameters = array())
+    public static function main(array $parameters = []): void
     {
         $dependencies = self::_prepareDependencies($parameters);
         $modular = self::_prepareModular($dependencies, $parameters);
@@ -59,12 +61,14 @@ class Components
         $dependencies->initConfig($config);
 
         /**
-         * Issue: Some commands do not require a component or need the 
+         * Issue: Some commands do not require a component or need the
          * component path to be empty/non-existing, i.e. git clone
          */
         try {
             self::_identifyComponent(
-                $config, self::_getActionArguments($modular), $dependencies
+                $config,
+                self::_getActionArguments($modular),
+                $dependencies
             );
         } catch (Exception $e) {
             $parser->parserError($e->getMessage());
@@ -87,13 +91,11 @@ class Components
     }
 
     protected static function _prepareModular(
-        Dependencies $dependencies, array $parameters = array()
-    ) {
+        Dependencies $dependencies,
+        array $parameters = []
+    ): \Horde_Cli_Modular {
         $modular = new \Horde_Cli_Modular(
-            array(
-                'parser' => array(
-                    'class' => empty($parameters['parser']['class']) ? '\Horde_Argv_Parser' : $parameters['parser']['class'],
-                    'usage' => '[options] [COMPONENT_PATH] [ACTION] [ARGUMENTS]
+            ['parser' => ['class' => empty($parameters['parser']['class']) ? \Horde_Argv_Parser::class : $parameters['parser']['class'], 'usage' => '[options] [COMPONENT_PATH] [ACTION] [ARGUMENTS]
 
 COMPONENT_PATH
 
@@ -105,18 +107,7 @@ Selects the action to perform. Most actions can also be selected with an option 
 
 This is a list of available actions (use "help ACTION" to get additional information on the specified ACTION):
 
-'
-                ),
-                'modules' => array(
-                    'directory' => __DIR__ . '/Module',
-                    'exclude' => 'Base'
-                ),
-                'provider' => array(
-                    'prefix' => 'Horde\Components\Module\\',
-                    'dependencies' => $dependencies
-                ),
-                'cli' => $dependencies->getInstance(\Horde_Cli::class),
-            )
+'], 'modules' => ['directory' => __DIR__ . '/Module', 'exclude' => 'Base'], 'provider' => ['prefix' => 'Horde\Components\Module\\', 'dependencies' => $dependencies], 'cli' => $dependencies->getInstance(\Horde_Cli::class)]
         );
         $dependencies->setModules($modular);
         return $modular;
@@ -135,11 +126,11 @@ This is a list of available actions (use "help ACTION" to get additional informa
             && $parameters['dependencies'] instanceof Dependencies) {
             return $parameters['dependencies'];
         } else {
-            return new Injector();
+            return new Injector(new TopLevel());
         }
     }
 
-    protected static function _prepareConfig(\Horde_Argv_Parser $parser)
+    protected static function _prepareConfig(\Horde_Argv_Parser $parser): \Horde\Components\Configs
     {
         $config = new Configs();
         $config->addConfigurationType(
@@ -159,19 +150,17 @@ This is a list of available actions (use "help ACTION" to get additional informa
      * Provide a list of available action arguments.
      *
      * @param Config $config The active configuration.
-     *
-     * @return void
      */
-    protected static function _getActionArguments(\Horde_Cli_Modular $modular)
+    protected static function _getActionArguments(\Horde_Cli_Modular $modular): array
     {
-        $actions = array();
+        $actions = [];
         foreach ($modular->getModules() as $module) {
             $actions = array_merge(
                 $actions,
                 $modular->getProvider()->getModule($module)->getActions()
             );
         }
-        return array('list' => $actions, 'missing_argument' => array('help'));
+        return ['list' => $actions, 'missing_argument' => ['help']];
     }
 
     /**
@@ -179,16 +168,16 @@ This is a list of available actions (use "help ACTION" to get additional informa
      *
      * @param Config $config  The active configuration.
      * @param array             $actions The list of available actions.
-     *
-     * @return void
      */
     protected static function _identifyComponent(
         Config $config,
         $actions,
         Dependencies $dependencies
-    ) {
+    ): void {
         $identify = new Identify(
-            $config, $actions, $dependencies
+            $config,
+            $actions,
+            $dependencies
         );
         $identify->setComponentInConfiguration();
     }
