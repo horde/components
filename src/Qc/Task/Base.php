@@ -146,5 +146,6 @@ class Base
      */
     public function run(array &$options = []): int
     {
+        return 0;
     }
 }

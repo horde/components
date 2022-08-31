@@ -69,6 +69,7 @@ class Loc extends Base
         $count    = $analyser->countFiles($files, true);
 
         $this->_printResult($count);
+        return 0;
     }
 
     /**

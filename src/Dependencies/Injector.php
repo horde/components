@@ -36,6 +36,7 @@ use Horde\Components\Runner\Snapshot as RunnerSnapshot;
 use Horde\Components\Runner\Update as RunnerUpdate;
 use Horde\Components\Runner\WebDocs as RunnerWebDocs;
 use Horde\Injector\Injector as HordeInjector;
+use Horde\Injector\TopLevel;
 
 /**
  * The Components_Dependencies_Injector:: class provides the

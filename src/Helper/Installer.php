@@ -9,12 +9,16 @@
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Helper;
+
 use Horde\Components\Component;
 use Horde\Components\Component\Archive;
 use Horde\Components\Component\Match;
+use Horde\Components\Component\Matcher;
 use Horde\Components\Component\Remote;
 use Horde\Components\Component\Source;
+use Horde\Components\Exception;
 use Horde\Components\Output;
 use Horde\Components\Pear\Environment as PearEnvironment;
 
@@ -52,14 +56,14 @@ class Installer
      *
      * @var array
      */
-    private $_installed_components = array();
+    private $_installed_components = [];
 
     /**
      * Per component options.
      *
      * @var array
      */
-    private $_per_component_options = array();
+    private $_per_component_options = [];
 
     /**
      * Constructor.
@@ -87,7 +91,7 @@ class Installer
     public function installTree(
         PearEnvironment $environment,
         Component $component,
-        $options = array(),
+        $options = [],
         $reason = ''
     ) {
         $key = $component->getChannel() . '/' . $component->getName();
@@ -95,7 +99,10 @@ class Installer
             $this->_installed_components[] = $key;
             if (empty($options['nodeps'])) {
                 $this->_installDependencies(
-                    $environment, $component, $options, $reason
+                    $environment,
+                    $component,
+                    $options,
+                    $reason
                 );
             }
             $this->_installComponent($environment, $component, $options, $reason);
@@ -118,14 +125,14 @@ class Installer
     private function _installDependencies(
         PearEnvironment $environment,
         Component $component,
-        $options = array(),
+        $options = [],
         $reason = ''
-    )
-    {
+    ) {
         foreach ($component->getDependencyList() as $dependency) {
             if (!$dependency->isPhp() && $dependency->isPackage()) {
                 $c_options = $this->_getPerComponentOptions(
-                    $dependency, $options
+                    $dependency,
+                    $options
                 );
                 if ($dependency->isRequired() ||
                     !empty($c_options['include'])) {
@@ -215,15 +222,15 @@ class Installer
     private function _installComponent(
         PearEnvironment $environment,
         Component $component,
-        $options = array(),
+        $options = [],
         $reason = ''
-    )
-    {
+    ) {
         if (empty($options['pretend'])) {
             $component->install(
                 $environment,
                 $this->_getPerComponentOptions(
-                    $component, $options
+                    $component,
+                    $options
                 ),
                 $reason
             );
@@ -254,22 +261,24 @@ class Installer
         if (!isset($this->_per_component_options[$key])) {
             $this->_per_component_options[$key] = $options;
             if (isset($options['instructions'])) {
-                foreach($options['instructions'] as $id => $c_options) {
-                    if (Match::matches($name, $channel, $id)) {
+                foreach ($options['instructions'] as $id => $c_options) {
+                    if (Matcher::matches($name, $channel, $id)) {
                         $this->_deletePrevious(
-                            $key, $c_options, array('include', 'exclude')
+                            $key,
+                            $c_options,
+                            ['include', 'exclude']
                         );
                         $this->_deletePrevious(
                             $key,
                             $c_options,
-                            array(
+                            [
                                 'git',
                                 'snapshot',
                                 'stable',
                                 'beta',
                                 'alpha',
                                 'devel'
-                            )
+                            ]
                         );
                         $this->_per_component_options[$key] = array_merge(
                             $this->_per_component_options[$key],
@@ -292,5 +301,4 @@ class Installer
             }
         }
     }
-
 }
