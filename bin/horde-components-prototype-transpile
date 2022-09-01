@@ -1,0 +1,76 @@
+<?php
+declare(strict_types=1);
+/**
+ * This is purely a prototype and needs to be integrated into the code base
+ * Supposed to run in a clean room after a change on a branch or after a new version tag has been created.
+ * Implies git has been configured for rw access to the remote
+ */
+if (count($argv) < 5) {
+    die('Need to supply arguments: remoteUri, branch|tag, branchName|tagName, localDir');
+}
+list($bin, $remoteUri, $labelType, $baseVersion, $localDir) = $argv;
+$cloneCmd = sprintf("git clone %s %s", $remoteUri, $localDir);
+`$cloneCmd`;
+chdir($localDir);
+$fetchAllTagsCmd = 'git fetch --all --tags';
+`$fetchAllTagsCmd`;
+// checkout remote tag or branch
+if ($labelType == 'branch') {
+    `git checkout -b $baseVersion -t origin/$baseVersion`;
+} elseif ($labelType == 'tag') {
+    `git checkout $baseVersion`;
+}
+`composer require --dev rector/rector`;
+copy(__DIR__ . '/../data/rector/transpile-81.php', $localDir . '/transpile-81.php');
+copy(__DIR__ . '/../data/rector/transpile-74.php', $localDir . '/transpile-74.php');
+$transpile81Cmd = sprintf('%s/vendor/bin/rector -c %s/transpile-81.php --clear-cache process', $localDir, $localDir);
+`$transpile81Cmd`;
+if ($labelType == 'branch') {
+    $branchName = $baseVersion . '-php8.1';
+    `git branch -d $branchName`;
+    `git push --delete origin $branchName`;
+    `git checkout -b $branchName`;
+    `git checkout composer.json`;
+    `composer require php "^8.1"`;
+    `git add src/ test/ composer.json`;
+    `git commit -m "Transpiling down to php 8.1"`;
+    `git push --set-upstream origin $branchName`;
+} elseif ($labelType == 'tag') {
+    $tagName = $baseVersion . '.php.8.1';
+    `git tag -d $tagName`;
+    `git push --delete origin $tagName`;
+    `git checkout composer.json`;
+    `composer require php "^8.1"`;
+    `git add src/ test/ composer.json`;
+    `git commit -m "Transpiling down to php 8.1"`;
+    `git tag $tagName`;
+    `git push --set-upstream origin $tagName`;
+}
+// TODO: Build a phar and move artifact before resetting everything.
+`git checkout $baseVersion`;
+
+$transpile74Cmd = sprintf('%s/vendor/bin/rector -c %s/transpile-74.php --clear-cache process', $localDir, $localDir);
+`$transpile74Cmd`;
+if ($labelType == 'branch') {
+    $branchName = $baseVersion . '.php7.4';
+    `git branch -d $branchName`;
+    `git push --delete origin $branchName`;
+    `git checkout -b $branchName`;
+    `git checkout composer.json`;
+    `composer require php "^7.4 || ^8"`;
+    `git add src/ test/ composer.json`;
+    `git commit -m "Transpiling down to php 7.4"`;
+    `git push --set-upstream origin FRAMEWORK_6_0-php7.4`;
+} elseif ($labelType == 'tag') {
+    $tagName = $baseVersion . '.php.7.4';
+    `git tag -d $tagName`;
+    `git push --delete origin $tagName`;
+    `git checkout composer.json`;
+    `composer require php "^7.4 || ^8"`;
+    `git add src/ test/ composer.json`;
+    `git commit -m "Transpiling down to php 7.4"`;
+    `git tag $tagName`;
+    `git push --set-upstream origin $tagName`;
+}
+// TODO: Build a phar and move artifact before resetting everything.
+`git checkout $baseVersion`;
