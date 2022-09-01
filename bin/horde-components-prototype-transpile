@@ -22,11 +22,10 @@ if ($labelType == 'branch') {
 }
 `composer require --dev rector/rector`;
 copy(__DIR__ . '/../data/rector/transpile-81.php', $localDir . '/transpile-81.php');
-copy(__DIR__ . '/../data/rector/transpile-74.php', $localDir . '/transpile-74.php');
 $transpile81Cmd = sprintf('%s/vendor/bin/rector -c %s/transpile-81.php --clear-cache process', $localDir, $localDir);
 `$transpile81Cmd`;
 if ($labelType == 'branch') {
-    $branchName = $baseVersion . '-php8.1';
+    $branchName = $baseVersion . '.php.8.1';
     `git branch -d $branchName`;
     `git push --delete origin $branchName`;
     `git checkout -b $branchName`;
@@ -49,10 +48,12 @@ if ($labelType == 'branch') {
 // TODO: Build a phar and move artifact before resetting everything.
 `git checkout $baseVersion`;
 
+`composer require --dev rector/rector`;
+copy(__DIR__ . '/../data/rector/transpile-74.php', $localDir . '/transpile-74.php');
 $transpile74Cmd = sprintf('%s/vendor/bin/rector -c %s/transpile-74.php --clear-cache process', $localDir, $localDir);
 `$transpile74Cmd`;
 if ($labelType == 'branch') {
-    $branchName = $baseVersion . '.php7.4';
+    $branchName = $baseVersion . '.php.7.4';
     `git branch -d $branchName`;
     `git push --delete origin $branchName`;
     `git checkout -b $branchName`;
@@ -60,7 +61,7 @@ if ($labelType == 'branch') {
     `composer require php "^7.4 || ^8"`;
     `git add src/ test/ composer.json`;
     `git commit -m "Transpiling down to php 7.4"`;
-    `git push --set-upstream origin FRAMEWORK_6_0-php7.4`;
+    `git push --set-upstream origin $branchName`;
 } elseif ($labelType == 'tag') {
     $tagName = $baseVersion . '.php.7.4';
     `git tag -d $tagName`;
