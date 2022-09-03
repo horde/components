@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /**
  * Copyright 2011-2020 Horde LLC (http://www.horde.org/)
  *
@@ -25,6 +27,162 @@ use Horde\Components\Exception;
  */
 class Version
 {
+    /**
+     * Flip to true if anything was changed from the original string
+     *
+     * @var bool
+     */
+    private bool $changed = false;
+    // Object methods
+    public function __construct(
+        private string $original,
+        private string $prefix,
+        private int $major, 
+        private int $minor = 0, 
+        private int $patch = 0, 
+        private int $subpatch = 0, 
+        private string $stability = '',
+        private int $stabilityVersion = 0,
+        private string $buildInfo = '',
+        private string $other = ''
+    )
+    {
+
+    }
+
+    // Mark the internal state as changed from the original string
+    private function change(): self
+    {
+        $this->changed = true;
+        return $this;
+    }
+
+    /**
+     * Reveal if the version is still as originally constructed
+     *
+     * @return bool
+     */
+    public function changed(): bool
+    {
+        return $this->changed;
+    }
+
+    /**
+     * Reconstruct a normalized string representation from parts.
+     * 
+     * Always format to major.minor.patch without leading zero.
+     * Only show fourth version part if greater than 0.
+     * Append stability with a hyphen unless it is empty or 'stable'
+     * Append stability version only if it is 2 or higher and stability != stable
+     * Append buildinfo with + if present
+     * 
+     * This will lose any "other" that cannot be parsed to stability and buildinfo
+     * This will lose the prefix
+     * 
+     * @return string
+     */
+    public function normalizeComposerVersion(): string
+    {
+        $versionString = sprintf('%d.%d.%d', $this->major, $this->minor, $this->version);
+        if ($this->subpatch > 0) {
+            $versionString .= '.' . (string) $this->subpatch;
+        }
+        if ($this->stability && $this->stability != 'stable') {
+            $versionString .= '-' . $this->stability;
+            if ($this->stabilityVersion > 1) {
+                $versionString .= $this->stabilityVersion;
+            }
+        }
+        if ($this->buildInfo) {
+            $versionString .= '+' .  $this->buildInfo;
+        }
+        return $versionString;
+    }
+
+    public function getMajor(): int
+    {
+        return $this->major;
+    }
+    public function getMinor(): int
+    {
+        return $this->minor;
+    }
+    public function getPatch(): int
+    {
+        return $this->patch;
+    }
+    public function getSubPatch(): int
+    {
+        return $this->subpatch;
+    }
+
+    public function getStability(): string
+    {
+        return $this->stability;
+    }
+
+    public function getStabilityVersion(): int
+    {
+        return $this->stabilityVersion;
+    }
+
+    public function getBuildInfo(): string
+    {
+        return $this->buildInfo;
+    }
+
+    public function getOther(): string
+    {
+        return $this->other;
+    }
+
+    public function getPrefix(): string
+    {
+        return $this->prefix;
+    }
+
+    public function getOriginal(): string
+    {
+        return $this->original;
+    }
+
+    // Static named constructors
+    public static function fromComposerString(string $version): Version
+    {
+        $res = preg_match('/^(\w+)?(\d+)(\.\d+)?(\.\d+)?(\.\d+)?(-?\w+.*)?$/', $version, $match);
+        if ($res === false || $res === 0) {
+            throw new Exception('Could not parse Composer style version string: ' . $version);
+        }
+
+        list($original, $prefix, $major, $minor, $patch, $subpatch, $other) = array_pad($match, 7, null);
+        $prefix ??= '';
+        $major = (int) $major;
+        $minor = (int) ltrim((string) $minor, '.');
+        $patch = (int) ltrim((string)$patch, '.');
+        $subpatch = (int) ltrim((string)$subpatch, '.');
+        $other ??= '';
+        // Bisect other string into buildinfo and stability
+        $startBuildInfo = stripos($other, '+');
+        if ($startBuildInfo === false) {
+            $buildInfo = '';
+            $stability = $other;
+        } else {
+            $buildInfo = substr($other, $startBuildInfo + 1);
+            $stability = substr($other, 0, $startBuildInfo);
+        }
+        // Parse stability and stability integer, stripping leading hyphen if any
+        ltrim($stability, '-');
+        $res = preg_match('/^(\w+)(\d+)?$/', $stability, $stabilityMatch);
+        $stability = $stabilityMatch[1] ?? '';
+        if ($stability) {
+            $stabilityVersion = $stabilityMatch[2] ?? 1;
+        } else {
+            $stabilityVersion = 0;
+        }
+        return new Version($original, $prefix, $major, $minor, $patch, $subpatch, $stability, $stabilityVersion, $buildInfo, $other);
+    }
+
+    // Old static API
     /**
      * Validates and normalizes a version to be a valid PEAR version.
      *

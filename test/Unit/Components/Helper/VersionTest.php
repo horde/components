@@ -34,6 +34,47 @@ use Horde\Components\Test\TestCase;
  */
 class VersionTest extends TestCase
 {
+    public function testFromComposerString()
+    {
+        $goodComposerVersions = [
+            '1.2.3' => [
+                'prefix' => '',
+                'major' => 1,
+                'minor' => 2,
+                'patch' => 3,
+                'subpatch' => 0,
+                'stability' => '',
+                'stabilityVersion' => 0,
+                'buildInfo' => '',
+            ],
+            'v1.2.3' => [
+                'prefix' => 'v',
+                'major' => 1,
+                'minor' => 2,
+                'patch' => 3,
+                'subpatch' => 0,
+                'stability' => '',
+                'stabilityVersion' => 0,
+                'buildInfo' => '',
+            ],
+
+        ];
+        foreach ($goodComposerVersions as $original => $parts) {
+            $version = HelperVersion::fromComposerString($original);
+            $this->assertInstanceOf(HelperVersion::class, $version);
+            $this->assertFalse($version->changed(), 'A newly created version is not changed');
+            $this->assertEquals($original, $version->getOriginal());
+            $this->assertEquals($parts['prefix'], $version->getPrefix());
+            $this->assertEquals($parts['major'], $version->getMajor());
+            $this->assertEquals($parts['minor'], $version->getMinor());
+            $this->assertEquals($parts['patch'], $version->getPatch());
+            $this->assertEquals($parts['subpatch'], $version->getSubPatch());
+            $this->assertEquals($parts['stability'], $version->getStability());
+            $this->assertEquals($parts['stabilityVersion'], $version->getStabilityVersion());
+            $this->assertEquals($parts['buildInfo'], $version->getBuildInfo());    
+        }
+    }
+
     public function testNextVersion()
     {
         $this->assertEquals(
