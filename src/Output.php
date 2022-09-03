@@ -124,6 +124,11 @@ class Output
         );
     }
 
+    public function error($text): void
+    {
+        $this->_cli->message($text, 'cli.error');
+    }
+
     public function fail($text): void
     {
         $this->_cli->fatal($text);
