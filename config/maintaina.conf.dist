@@ -297,3 +297,16 @@ $conf['pipeline']['release']['maintaina'] = [
     ['name' => 'CommitPostRelease'],
     // ['name' => 'GitPush'],
 ];
+
+$conf['pipeline']['release']['transpile-only'] = [
+    ['name' => 'Transpile'],
+    ['options' => 
+        [
+            'target-platform' => '7.4',
+            // type:value where type is branch: or tag:
+            // tag generates a new composer-compatible tag using the fourth/subpatch digit as PHP version.
+            // branch generates a new branch with -phpX.Y suffix
+            'from-version' => 'branch:FRAMEWORK_6_0'
+        ]
+    ]
+];
