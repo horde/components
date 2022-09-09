@@ -115,6 +115,11 @@ class Version
     {
         return $this->subpatch;
     }
+    public function setSubPatch(int $subpatch): self
+    {
+        $this->subpatch = $subpatch;
+        return $this;
+    }
 
     public function getStability(): string
     {
