@@ -83,7 +83,7 @@ class Version
      */
     public function normalizeComposerVersion(): string
     {
-        $versionString = sprintf('%d.%d.%d', $this->major, $this->minor, $this->version);
+        $versionString = sprintf('%d.%d.%d', $this->major, $this->minor, $this->patch);
         if ($this->subpatch > 0) {
             $versionString .= '.' . (string) $this->subpatch;
         }
