@@ -307,7 +307,13 @@ $conf['pipeline']['release']['transpile-only'] = [
                 // type:value where type is branch: or tag:
                 // tag generates a new composer-compatible tag using the fourth/subpatch digit as PHP version.
                 // branch generates a new branch with -phpX.Y suffix
-                'from_version' => 'branch:FRAMEWORK_6_0'
+                'from_version' => 'branch:FRAMEWORK_6_0',
+                // Should we overwrite existing local tags/branches on repeat transpiles of the same branch or tag?
+                'delete_local_target' => true,
+                // Should we force push so that existing remote tags/branches are overwritten?
+                'force_push' => true,
+                // Which remote to push to? Assuming that remote is configured...
+                'push_remote' => 'origin'
             ]
     ]
 ];
