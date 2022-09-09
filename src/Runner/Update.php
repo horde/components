@@ -19,6 +19,7 @@ use Horde\Components\Helper\Commit as HelperCommit;
 use Horde\Components\Helper\Version as HelperVersion;
 use Horde\Components\Output;
 use Horde\Components\Release\Notes as ReleaseNotes;
+use Horde\Components\Component\Source;
 
 /**
  * Components_Runner_Update updates the package files of a Horde component.
@@ -75,7 +76,7 @@ class Update
                     $options
                 );
             }
-            /** @var Horde\Components\Component\Source $component */
+            /** @var Source $component */
             $component = $this->_config->getComponent();
             if (!empty($options['new_version']) ||
                 !empty($options['new_api'])) {

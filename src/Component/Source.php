@@ -978,7 +978,7 @@ class Source extends Base
      * @param string $app     New version for the Application.php file.
      * @param array $options  Options for the operation.
      *
-     * @return array The success message.
+     * @return array<string>  The list of processed files.
      */
     public function currentSentinel($changes, $app, $options): array
     {

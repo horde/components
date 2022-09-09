@@ -354,10 +354,10 @@ abstract class Base implements Component
      * @param string $app     New version for the Application.php file.
      * @param array $options  Options for the operation.
      *
-     * @return string The success message.
+     * @return array<string>  The list of processed files.
      * @throws Exception
      */
-    public function currentSentinel($changes, $app, $options): string
+    public function currentSentinel($changes, $app, $options): array
     {
         throw new Exception(
             'Modifying the sentinel is not supported!'

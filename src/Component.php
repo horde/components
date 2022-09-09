@@ -216,9 +216,9 @@ interface Component
      * @param string $app     New version for the Application.php file.
      * @param array  $options Options for the operation.
      *
-     * @return string The success message.
+     * @return array<string> The list of processed files.
      */
-    public function currentSentinel($changes, $app, $options): string;
+    public function currentSentinel($changes, $app, $options): array;
 
     /**
      * Tag the component.
