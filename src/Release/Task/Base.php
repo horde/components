@@ -11,7 +11,7 @@
  */
 
 namespace Horde\Components\Release\Task;
-
+use Horde\Components\TaskInterface;
 use Horde\Components\Component\Source as ComponentSource;
 use Horde\Components\Component\Task\Dependencies;
 use Horde\Components\Component\Task\SystemCall;
@@ -33,7 +33,7 @@ use Horde\Components\Release\Tasks as ReleaseTasks;
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class Base
+class Base implements TaskInterface
 {
     use SystemCall;
     use Dependencies;
@@ -98,7 +98,7 @@ class Base
      *
      * @return string The task name.
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->_name;
     }

@@ -63,6 +63,7 @@ if ($labelType == 'branch') {
     `git commit -m "Transpiling down to php 7.4"`;
     `git push --set-upstream origin $branchName`;
 } elseif ($labelType == 'tag') {
+    // Composer does not handle semver properly
     $tagName = $baseVersion . '.php.7.4';
     `git tag -d $tagName`;
     `git push --delete origin $tagName`;

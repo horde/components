@@ -46,7 +46,8 @@
         "horde/yaml": "* || dev-FRAMEWORK_6_0"
     },
     "require-dev": {
-        "horde/test": "^3 || dev-FRAMEWORK_6_0"
+        "horde/test": "^3 || dev-FRAMEWORK_6_0",
+        "composer/composer": "2.5.x-dev"
     },
     "suggest": {
         "horde/test": "^3 || dev-FRAMEWORK_6_0",

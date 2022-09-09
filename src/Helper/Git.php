@@ -432,7 +432,7 @@ class Git
         string $localDir,
         string $branch,
         string $source
-    ): \Horde\Components\Component\Task\SystemCallResult {
+    ): SystemCallResult {
         // git branch -t $branch origin/$branch
         $cmd = sprintf(
             '%s branch %s %s',
@@ -630,7 +630,7 @@ class Git
      *
      * @return SystemCallResult The command output.
      */
-    protected function execInDirectory(string $call, string $targetDir): \Horde\Components\Component\Task\SystemCallResult
+    protected function execInDirectory(string $call, string $targetDir): SystemCallResult
     {
         $oldDir = null;
         if (empty($this->options['pretend'])) {

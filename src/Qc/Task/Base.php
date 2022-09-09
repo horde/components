@@ -38,7 +38,7 @@ class Base
     /**
      * The component that should be checked
      */
-    private ?\Horde\Components\Component $_component = null;
+    private ?Component $_component = null;
 
     /**
      * The task name.

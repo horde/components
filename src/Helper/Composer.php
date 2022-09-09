@@ -53,6 +53,40 @@ class Composer
     protected $_gitRepoBase = '';
 
     /**
+     * Make composer add a dependency, dev dependency or suggestion
+     * 
+     * This will not install the package or check if it works on the development platform
+     * This will not touch the horde metadata file.
+     *
+     * @param string $package
+     * @return void
+     */
+    public function setDependency(string $package, string $versionConstraint = '*', $type = 'require')
+    {
+        if ($type === 'require' || $type === 'requires') {
+            $command = 'require';
+        }
+        elseif ($type === 'suggest' || $type === 'suggests' || $type === 'optional') {
+            $command = 'suggests';
+        } elseif ($type === 'dev' || $type === 'require-dev') {
+            $command = 'require --dev';
+        }
+        `composer $command --ignore-platform-reqs --no-install $package '$versionConstraint'`;
+    }
+
+    /**
+     * Update the lock file and install dependencies
+     * 
+     * Implicitly updates autoloader
+     *
+     * @return void
+     */
+    public function update()
+    {
+        `composer update`;
+    }
+
+    /**
      * Updates the composer.json file.
      *
      * @param WrapperHordeYml $package  The package definition
