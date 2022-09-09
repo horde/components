@@ -105,6 +105,10 @@ class Tasks
             $pipeline = $sequence[1];
             $this->_dependencies->getOutput()->info("Running Pipeline $pipeline");
             foreach ($options['pipeline']['release'][$pipeline] as $task) {
+                if (empty($task['name'])) {
+                    $this->_dependencies->getOutput()->warn('Pipeline contained an empty or unnamed step');
+                    continue;
+                }
                 $taskSequence[] = $this->getTask($task['name'], $component);
                 if (in_array($task['name'], ['CommitPreRelease', 'CommitPostRelease'])) {
                     $options['commit'] = new HelperCommit(
@@ -124,6 +128,7 @@ class Tasks
         }
         $selectedTasks = [];
         foreach ($taskSequence as $index => $task) {
+            // Note: Extra options override global options - which is OK. But they also override CLI options.
             $taskOptions = array_merge($options, $extraOptions[$index]);
             $taskErrors = $task->preValidate($taskOptions);
             if (!empty($taskErrors)) {
@@ -136,7 +141,7 @@ class Tasks
                         )
                     );
                 } else {
-                    $this->_dependencies->getOutput()->fail(
+                    $this->_dependencies->getOutput()->error(
                         sprintf(
                             "Precondition for task \"%s\" failed:\n\n%s",
                             $task->getName(),
