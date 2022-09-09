@@ -101,20 +101,30 @@ class Transpile extends Base
                 'Would try to transpile down to ...'
             );
         }
+        $currentRef = $this->git->getCurrentRefName($componentDir);
+        $componentDir = $this->getComponent()->getComponentDirectory();
         // Get current ref or consume from options
+        $refType = 'auto';
         if (!empty($options['from_version'])) {
             $from_version = $options['from_version'];
             $offset = strpos($from_version, ':');
             if ($offset === false) {
                 $sourceRef = $from_version;
-                $refType = 'auto';
             } else {
                 $sourceRef = substr($from_version, $offset + 1, );
                 $refType = substr($from_version, 0, $offset);
             }
         }
-        $componentDir = $this->getComponent()->getComponentDirectory();
-        $sourceRef = $sourceRef ?? $this->git->getCurrentRefName($componentDir);
+        $sourceRef = $sourceRef ?? $currentRef;
+        if ($refType != 'auto') {
+            // TBD
+        }
+        elseif ($this->git->localBranchExists($componentDir, $sourceRef)) {
+            $refType = 'branch';
+        } elseif ($this->git->localTagExists($componentDir, $sourceRef)) {
+            $refType = 'tag';
+        }
+        $this->getOutput()->info('We are transpiling: ' . $refType);
         // TODO: Make ephemeral branch configurable.
         $ephemeralBranch = 'transpiler-ephemeral';
         if ($this->git->localBranchExists($componentDir, $ephemeralBranch)) {
@@ -123,12 +133,14 @@ class Transpile extends Base
         }
         $this->getOutput()->info('Transpiler stage');
         $this->git->branchFromLocal($componentDir, $ephemeralBranch, $sourceRef);
+        $this->git->checkoutBranch($componentDir, $ephemeralBranch);
         $this->getOutput()->info('Checked out ephemeral branch: ' . $ephemeralBranch);
         $this->composer->setDependency($componentDir, 'rector/rector', '*', 'dev');
-        $this->composer->update();
+        $this->composer->update($componentDir);
         $this->getOutput()->info('Installed Rector Transpiler');
         $transpilerFile = $this->configApplication->getTemplateDirectory() . '/rector/transpile-' . $options['target_platform'] . '.php';
-        $transpileCmd = sprintf('%s/vendor/bin/rector -c %s --clear-cache process', $componentDir, $transpilerFile);
+        copy($transpilerFile, $componentDir . '/rector-transpile.php');
+        $transpileCmd = sprintf('%s/vendor/bin/rector -c %s --clear-cache process', $componentDir, 'rector-transpile.php');
         $this->execInDirectory($transpileCmd, $componentDir);
         // checkout composer.json version from before
         $checkoutCmd = $this->git->detectGitBin() . ' checkout composer.json';
@@ -140,13 +152,16 @@ class Transpile extends Base
         $this->execInDirectory($deleteComposerLock, $componentDir);
         // delete vendor dir
         $this->execInDirectory('rm -rf ./vendor', $componentDir);
+        unlink($componentDir . '/rector-transpile.php');
         // check in changes
         $addChangesCmd = $this->git->detectGitBin() . ' add src/ test/ composer.json';
         $this->execInDirectory($addChangesCmd, $componentDir);
+        $this->git->commit($componentDir, 'Commit transpiled version for php ' . $options['target_platform']);
+        $this->getOutput()->info('Created transpiled version');
         // if target is a branch
         if ($refType == 'branch') {
             // Check if exists
-            $targetBranch = $refType . '-php' . $options['target_platform'];
+            $targetRef = $targetBranch = $sourceRef . '-php' . $options['target_platform'];
             if ($this->git->localBranchExists($componentDir, $targetBranch)) {
                 if (!empty($options['delete_local_target'])) {
                     $this->git->deleteLocalBranch($componentDir, $targetBranch);
@@ -156,13 +171,14 @@ class Transpile extends Base
                 }
             }
             $this->git->branchFromLocal($componentDir, $targetBranch, $ephemeralBranch);
+            $this->getOutput()->info('Created local branch ' . $targetBranch);
         }
         if ($refType == 'tag' || $refType == 'auto') {
             // Check out if the ref reads like a version number
             $platformVersion = Version::fromComposerString($options['target_platform']);
             $platformInteger = $platformVersion->getMajor() * 10000 + $platformVersion->getMinor() * 100;
             $version = Version::fromComposerString($sourceRef);
-            $tag = 'v' . $version->setSubPatch($platformInteger)->normalizeComposerVersion();
+            $targetRef = $tag = 'v' . $version->setSubPatch($platformInteger)->normalizeComposerVersion();
             if ($this->git->localTagExists($componentDir, $tag) && empty($options['delete_local_target'])) {
                 $this->getOutput()->fail('The intended target tag already exists. ' . $tag);
                 return;
@@ -173,13 +189,13 @@ class Transpile extends Base
         if (!empty($options['push_remote'])) {
             $remote = $options['push_remote'];
             $force = (bool) $options['force_push'] ?? false;
-            $this->git->push($componentDir, $remote, $force);
+            $this->git->push($componentDir, $remote, $targetRef, $force);
+            $this->getOutput()->info('Pushed ' . $targetRef . ' to remote ' . $remote );
         }
 
         // checkout original position
         $this->git->checkoutBranch($componentDir, $sourceRef);
         // delete ephemeral branch
         $this->git->deleteLocalBranch($componentDir, $ephemeralBranch);
-        $this->getOutput()->info('Created transpiled version');
     }
 }
