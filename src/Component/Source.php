@@ -980,7 +980,7 @@ class Source extends Base
      *
      * @return array The success message.
      */
-    public function currentSentinel($changes, $app, $options): string
+    public function currentSentinel($changes, $app, $options): array
     {
         /** @var \Horde_Release_Sentinel $sentinel */
         $sentinel = $this->getFactory()->createSentinel($this->_directory);
