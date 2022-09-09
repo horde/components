@@ -108,10 +108,10 @@ class Composer
      *
      * @return void
      */
-    public function update()
+    public function update(string $packageDir, string $constraint = '')
     {
-        $cmd = $this->detectComposerBin() . ' update';
-
+        $cmd = $this->detectComposerBin() . ' update ' . $constraint;
+        $this->execInDirectory($cmd, $packageDir);
     }
 
     /**
@@ -626,5 +626,11 @@ class Composer
                 "horde/horde-installer-plugin" => true,
             ],
         ];
+    }
+
+    // Stub of a pretent method
+    public function pretend(): bool
+    {
+        return false;
     }
 }

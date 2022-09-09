@@ -180,4 +180,9 @@ class Base implements TaskInterface
     public function run(&$options)
     {
     }
+
+    public function pretend(): bool
+    {
+        return $this->getTasks()->pretend();
+    }
 }

@@ -74,7 +74,7 @@ trait SystemCall
      */
     protected function exec($call)
     {
-        if (!$this->getTasks()->pretend()) {
+        if (!$this->pretend()) {
             exec($call, $output, $retval);
             return new SystemCallResult($output, $retval);
         } else {
@@ -94,12 +94,12 @@ trait SystemCall
     protected function execInDirectory($call, $target_dir)
     {
         $old_dir = null;
-        if (!$this->getTasks()->pretend()) {
+        if (!$this->pretend()) {
             $old_dir = getcwd();
             chdir($target_dir);
         }
         $result = $this->exec($call);
-        if (!$this->getTasks()->pretend()) {
+        if (!$this->pretend()) {
             chdir($old_dir);
         }
         return $result;
