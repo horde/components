@@ -15,6 +15,7 @@ namespace Horde\Components\Helper;
 
 use Horde\Components\Exception;
 use Horde\Components\Wrapper\HordeYml as WrapperHordeYml;
+use RuntimeException;
 
 /**
  * @author    Michael Slusarz <slusarz@horde.org>
@@ -53,8 +54,32 @@ class Composer
     protected $_gitRepoBase = '';
 
     /**
+     * Check some well known locations, fallback to which
+     *
+     * @return string Fully qualified location of git command
+     * @throws RuntimeException
+     */
+    public function detectComposerBin(): string
+    {
+        $candidates = [
+            dirname(__FILE__, 3) . '/vendor/bin/composer',
+            '/usr/bin/composer',
+            '/usr/bin/composer2',
+            '/usr/local/bin/composer',
+            '/usr/local/bin/composer2',
+            '/usr/local/bin/composer.phar',
+        ];
+        foreach ($candidates as $candidatePath) {
+            if (file_exists($candidatePath)) {
+                return realpath($candidatePath);
+            }
+        }
+        throw new RuntimeException('Could not detect composer runtime');
+    }
+
+    /**
      * Make composer add a dependency, dev dependency or suggestion
-     * 
+     *
      * This will not install the package or check if it works on the development platform
      * This will not touch the horde metadata file.
      *
@@ -65,8 +90,7 @@ class Composer
     {
         if ($type === 'require' || $type === 'requires') {
             $command = 'require';
-        }
-        elseif ($type === 'suggest' || $type === 'suggests' || $type === 'optional') {
+        } elseif ($type === 'suggest' || $type === 'suggests' || $type === 'optional') {
             $command = 'suggests';
         } elseif ($type === 'dev' || $type === 'require-dev') {
             $command = 'require --dev';
@@ -76,7 +100,7 @@ class Composer
 
     /**
      * Update the lock file and install dependencies
-     * 
+     *
      * Implicitly updates autoloader
      *
      * @return void
