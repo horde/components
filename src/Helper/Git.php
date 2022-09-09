@@ -288,7 +288,7 @@ class Git
         foreach ($candidates as $candidatePath) {
             if (file_exists($candidatePath)) {
                 return realpath($candidatePath);
-            }  
+            }
         }
         throw new RuntimeException('Could not detect git binary');
     }
@@ -334,6 +334,12 @@ class Git
             $this->gitBin . ' rev-parse --abbrev-ref HEAD',
             $localDir
         )->getOutputString();
+    }
+
+    public function deleteLocalBranch(string $localDir, string $branch)
+    {
+        $deleteExistingBranchCmd = $this->detectGitBin() . ' branch -D ' . $branch;
+        $this->execInDirectory($deleteExistingBranchCmd, $localDir);
     }
 
     /**
@@ -402,7 +408,7 @@ class Git
 
     /**
      * List the local git tags in the repository
-     * 
+     *
      * @param string $localDir The path to the repository
      * @return array<string> A list of available tags
      */
@@ -531,9 +537,9 @@ class Git
 
     /**
      * Ensure the git checkout in a dir does not contain uncommitted changes
-     * 
-     * @param string $localDir 
-     * @return bool 
+     *
+     * @param string $localDir
+     * @return bool
      */
     public function checkoutIsClean(string $localDir): bool
     {
@@ -622,7 +628,7 @@ class Git
      * @param string $tag       Tag name.
      * @param string $message   Tag message.
      * @param string $directory The working directory.
-     * @param bool   $force     If the tag already exists, overwrite it.   
+     * @param bool   $force     If the tag already exists, overwrite it.
      */
     public function tag(string $localDir, string $tag, string $message, bool $force = false): void
     {
@@ -636,9 +642,9 @@ class Git
 
     /**
      * Check the git repo's current position for a branch name, tag name or bare position.
-     * 
-     * @param string $localDir 
-     * @return string 
+     *
+     * @param string $localDir
+     * @return string
      */
     public function getCurrentRefName(string $localDir): string
     {
