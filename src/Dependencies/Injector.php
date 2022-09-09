@@ -18,6 +18,7 @@ use Horde\Components\Config;
 use Horde\Components\Config\Bootstrap as ConfigBootstrap;
 use Horde\Components\Dependencies;
 use Horde\Components\Output;
+use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Release\Notes as ReleaseNotes;
 use Horde\Components\Release\Tasks as ReleaseTasks;
 use Horde\Components\Runner\Change as RunnerChange;
@@ -80,6 +81,7 @@ class Injector extends HordeInjector implements Dependencies
             Dependencies::class,
             'createOutput'
         );
+        $this->setInstance(GitHelper::class, new GitHelper());
     }
 
     /**
