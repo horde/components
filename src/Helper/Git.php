@@ -395,6 +395,24 @@ class Git
         return in_array($branch, $this->getLocalBranches($localDir));
     }
 
+    public function localTagExists(string $localDir, string $tag): bool
+    {
+        return in_array($tag, $this->getLocalTags($localDir));
+    }
+
+    /**
+     * List the local git tags in the repository
+     * 
+     * @param string $localDir The path to the repository
+     * @return array<string> A list of available tags
+     */
+    public function getLocalTags(string $localDir): array
+    {
+        $cmd = $this->gitBin . ' tag -l';
+        $res = $this->execInDirectory($cmd, $localDir);
+        return $res->getOutputArray();
+    }
+
     /**
      * Checkout a local branch (primitive)
      *
@@ -602,15 +620,45 @@ class Git
      * @param string $tag       Tag name.
      * @param string $message   Tag message.
      * @param string $directory The working directory.
+     * @param bool   $force     If the tag already exists, overwrite it.   
      */
-    public function tag(string $localDir, string $tag, string $message): void
+    public function tag(string $localDir, string $tag, string $message, bool $force = false): void
     {
+        $forceSwitch = $force ? '--force ' : '';
+        $cmd = $this->gitBin . ' tag ' . $forceSwitch . '-m "' . $message . '" ' . $tag;
         $this->systemInDirectory(
-            'git tag -f -m "' . $message . '" ' . $tag,
+            $cmd,
             $localDir
         );
     }
 
+    /**
+     * Check the git repo's current position for a branch name, tag name or bare position.
+     * 
+     * @param string $localDir 
+     * @return string 
+     */
+    public function getCurrentRefName(string $localDir): string
+    {
+        $cmd = $this->gitBin . ' symbolic-ref --short -q HEAD';
+        $branch = $this->systemInDirectory(
+            $cmd,
+            $localDir
+        );
+        if ($branch) {
+            return $branch;
+        }
+        $cmd = $this->gitBin . ' describe --tags';
+        // TODO: Check if the output is really a tag and if not, get a full ref hash
+        $tag = $this->systemInDirectory(
+            $cmd,
+            $localDir
+        );
+        if ($tag) {
+            return $tag;
+        }
+        return '';
+    }
     /**
      * Run a system call.
      *
