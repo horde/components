@@ -109,7 +109,7 @@ class Transpile extends Base
                 $sourceRef = $from_version;
                 $refType = 'auto';
             } else {
-                $sourceRef = substr($from_version, $offset + 1,);
+                $sourceRef = substr($from_version, $offset + 1, );
                 $refType = substr($from_version, 0, $offset);
             }
         }
@@ -144,15 +144,12 @@ class Transpile extends Base
         $addChangesCmd = $this->git->detectGitBin() . ' add src/ test/ composer.json';
         $this->execInDirectory($addChangesCmd, $componentDir);
         // if target is a branch
-        if ($refType == 'branch')
-        {
+        if ($refType == 'branch') {
             // Check if exists
             $targetBranch = $refType . '-php' . $options['target_platform'];
             if ($this->git->localBranchExists($componentDir, $targetBranch)) {
-                if (!empty($options['delete_local_target']))
-                {
-                    $deleteExistingBranchCmd = $this->git->detectGitBin() . ' branch -D ' . $targetBranch;
-                    $this->execInDirectory($deleteExistingBranchCmd, $componentDir);
+                if (!empty($options['delete_local_target'])) {
+                    $this->git->deleteLocalBranch($componentDir, $targetBranch);
                 } else {
                     $this->getOutput()->fail('The intended target branch already exists. ' . $targetBranch);
                     return;
@@ -160,8 +157,7 @@ class Transpile extends Base
             }
             $this->git->branchFromLocal($componentDir, $targetBranch, $ephemeralBranch);
         }
-        if ($refType == 'tag' || $refType == 'auto')
-        {
+        if ($refType == 'tag' || $refType == 'auto') {
             // Check out if the ref reads like a version number
             $platformVersion = Version::fromComposerString($options['target_platform']);
             $platformInteger = $platformVersion->getMajor() * 10000 + $platformVersion->getMinor() * 100;
@@ -174,11 +170,16 @@ class Transpile extends Base
             $this->git->tag($componentDir, $tag, 'Transpiled release for ' .  $options['target_platform'], true);
         }
         // Check if we should push
+        if (!empty($options['push_remote'])) {
+            $remote = $options['push_remote'];
+            $force = (bool) $options['force_push'] ?? false;
+            $this->git->push($componentDir, $remote, $force);
+        }
 
         // checkout original position
+        $this->git->checkoutBranch($componentDir, $sourceRef);
         // delete ephemeral branch
+        $this->git->deleteLocalBranch($componentDir, $ephemeralBranch);
         $this->getOutput()->info('Created transpiled version');
-
-        
     }
 }
