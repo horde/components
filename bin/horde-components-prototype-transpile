@@ -21,7 +21,7 @@ if ($labelType == 'branch') {
     `git checkout $baseVersion`;
 }
 `composer require --dev rector/rector`;
-copy(__DIR__ . '/../data/rector/transpile-81.php', $localDir . '/transpile-81.php');
+copy(__DIR__ . '/../data/rector/transpile-8.1.php', $localDir . '/transpile-8.1.php');
 $transpile81Cmd = sprintf('%s/vendor/bin/rector -c %s/transpile-81.php --clear-cache process', $localDir, $localDir);
 `$transpile81Cmd`;
 if ($labelType == 'branch') {
@@ -49,7 +49,7 @@ if ($labelType == 'branch') {
 `git checkout $baseVersion`;
 
 `composer require --dev rector/rector`;
-copy(__DIR__ . '/../data/rector/transpile-74.php', $localDir . '/transpile-74.php');
+copy(__DIR__ . '/../data/rector/transpile-7.4.php', $localDir . '/transpile-7.4.php');
 $transpile74Cmd = sprintf('%s/vendor/bin/rector -c %s/transpile-74.php --clear-cache process', $localDir, $localDir);
 `$transpile74Cmd`;
 if ($labelType == 'branch') {
