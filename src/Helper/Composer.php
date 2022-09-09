@@ -16,6 +16,8 @@ namespace Horde\Components\Helper;
 use Horde\Components\Exception;
 use Horde\Components\Wrapper\HordeYml as WrapperHordeYml;
 use RuntimeException;
+use Horde\Components\Component\Task\SystemCallResult;
+use Horde\Components\Component\Task\SystemCall;
 
 /**
  * @author    Michael Slusarz <slusarz@horde.org>
@@ -52,7 +54,7 @@ class Composer
     protected $_vendor = '';
 
     protected $_gitRepoBase = '';
-
+    use SystemCall;
     /**
      * Check some well known locations, fallback to which
      *
@@ -86,7 +88,7 @@ class Composer
      * @param string $package
      * @return void
      */
-    public function setDependency(string $package, string $versionConstraint = '*', $type = 'require')
+    public function setDependency(string $packageDir, string $package, string $versionConstraint = '*', $type = 'require')
     {
         if ($type === 'require' || $type === 'requires') {
             $command = 'require';
@@ -95,7 +97,8 @@ class Composer
         } elseif ($type === 'dev' || $type === 'require-dev') {
             $command = 'require --dev';
         }
-        `composer $command --ignore-platform-reqs --no-install $package '$versionConstraint'`;
+        $cmd = $this->detectComposerBin() . " $command --ignore-platform-reqs --no-install $package '$versionConstraint'";
+        $this->execInDirectory($cmd, $packageDir);
     }
 
     /**
@@ -107,7 +110,8 @@ class Composer
      */
     public function update()
     {
-        `composer update`;
+        $cmd = $this->detectComposerBin() . ' update';
+
     }
 
     /**
