@@ -286,6 +286,43 @@ $conf['pipeline']['release']['maintaina'] = [
     ['name' => 'CommitPreRelease'],
     ['name' => 'TagRelease'],
     ['name' => 'NextVersion'],
+    [
+        'name' => 'Transpile',
+        'options' =>
+            [
+                'target_platform' => '7.4',
+                // type:value where type is branch: or tag:
+                // tag generates a new composer-compatible tag using the fourth/subpatch digit as PHP version.
+                // branch generates a new branch with -phpX.Y suffix
+                // comment out/remove for autodetection from currently checked out tag or branch
+                // 'from_version' => 'branch:FRAMEWORK_6_0',
+                // Should we overwrite existing local tags/branches on repeat transpiles of the same branch or tag?
+                'delete_local_target' => true,
+                // Should we force push so that existing remote tags/branches are overwritten?
+                'force_push' => true,
+                // Which remote to push to? Assuming that remote is configured...
+                'push_remote' => 'origin'
+            ]
+    ],
+    [
+        'name' => 'Transpile',
+        'options' =>
+            [
+                'target_platform' => '8.1',
+                // type:value where type is branch: or tag:
+                // tag generates a new composer-compatible tag using the fourth/subpatch digit as PHP version.
+                // branch generates a new branch with -phpX.Y suffix
+                // comment out/remove for autodetection from currently checked out tag or branch
+                // 'from_version' => 'branch:FRAMEWORK_6_0',
+                // Should we overwrite existing local tags/branches on repeat transpiles of the same branch or tag?
+                'delete_local_target' => true,
+                // Should we force push so that existing remote tags/branches are overwritten?
+                'force_push' => true,
+                // Which remote to push to? Assuming that remote is configured...
+                'push_remote' => 'origin'
+            ]
+    ],
+
     // Allow branch versions in development mode but not for tagged releases
     [
         'name' => 'Composer', 'options' => [
@@ -307,7 +344,26 @@ $conf['pipeline']['release']['transpile-only'] = [
                 // type:value where type is branch: or tag:
                 // tag generates a new composer-compatible tag using the fourth/subpatch digit as PHP version.
                 // branch generates a new branch with -phpX.Y suffix
-                'from_version' => 'branch:FRAMEWORK_6_0',
+                // comment out/remove for autodetection from currently checked out tag or branch
+                // 'from_version' => 'branch:FRAMEWORK_6_0',
+                // Should we overwrite existing local tags/branches on repeat transpiles of the same branch or tag?
+                'delete_local_target' => true,
+                // Should we force push so that existing remote tags/branches are overwritten?
+                'force_push' => true,
+                // Which remote to push to? Assuming that remote is configured...
+                'push_remote' => 'origin'
+            ]
+    ],
+    [
+        'name' => 'Transpile',
+        'options' =>
+            [
+                'target_platform' => '8.1',
+                // type:value where type is branch: or tag:
+                // tag generates a new composer-compatible tag using the fourth/subpatch digit as PHP version.
+                // branch generates a new branch with -phpX.Y suffix
+                // comment out/remove for autodetection from currently checked out tag or branch
+                // 'from_version' => 'branch:FRAMEWORK_6_0',
                 // Should we overwrite existing local tags/branches on repeat transpiles of the same branch or tag?
                 'delete_local_target' => true,
                 // Should we force push so that existing remote tags/branches are overwritten?
