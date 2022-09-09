@@ -17,6 +17,7 @@ namespace Horde\Components\Helper;
 use Horde\Components\Component;
 use Horde\Components\Component\Task\SystemCallResult;
 use Horde\Components\Output;
+use RuntimeException;
 
 /**
  * HordeComponents\Helper\Git:: wraps git operations.
@@ -275,11 +276,21 @@ class Git
      * Check some well known locations, fallback to which
      *
      * @return string Fully qualified location of git command
+     * @throws RuntimeException
      */
     public function detectGitBin(): string
     {
-        // TODO
-        return '/usr/bin/git';
+        $candidates = [
+            '/usr/bin/git',
+            '/usr/local/bin/git',
+            '/bin/git',
+        ];
+        foreach ($candidates as $candidatePath) {
+            if (file_exists($candidatePath)) {
+                return realpath($candidatePath);
+            }  
+        }
+        throw new RuntimeException('Could not detect git binary');
     }
 
     /**
@@ -498,6 +509,41 @@ class Git
     public function pull(): void
     {
         // TODO
+    }
+
+    /**
+     * Ensure the git checkout in a dir does not contain uncommitted changes
+     * 
+     * @param string $localDir 
+     * @return bool 
+     */
+    public function checkoutIsClean(string $localDir): bool
+    {
+        $cmd = $this->gitBin . ' diff --exit-code';
+        $res = $this->systemInDirectory(
+            $cmd,
+            $localDir
+        );
+        if ($res !== '') {
+            return false;
+        }
+        $cmd = $this->gitBin . ' diff --exit-code --cached';
+        $res = $this->systemInDirectory(
+            $cmd,
+            $localDir
+        );
+        if ($res !== '') {
+            return false;
+        }
+        $cmd = $this->gitBin . ' status --untracked-files=no --porcelain';
+        $res = $this->systemInDirectory(
+            $cmd,
+            $localDir
+        );
+        if ($res !== '') {
+            return false;
+        }
+        return true;
     }
 
     /**
