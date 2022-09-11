@@ -101,8 +101,8 @@ class Transpile extends Base
                 'Would try to transpile down to ...'
             );
         }
-        $currentRef = $this->git->getCurrentRefName($componentDir);
         $componentDir = $this->getComponent()->getComponentDirectory();
+        $currentRef = $this->git->getCurrentRefName($componentDir);
         // Get current ref or consume from options
         $refType = 'auto';
         if (!empty($options['from_version'])) {
