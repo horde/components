@@ -81,7 +81,7 @@ class Transpile extends Base
         // Check if the component checkout is clean
         $componentDir = $this->getComponent()->getComponentDirectory();
         if (!$this->git->checkoutIsClean($componentDir)) {
-            $issues[] = 'The target git checkout is not clean.';
+//            $issues[] = 'The target git checkout is not clean.';
         }
         // TODO: Make ephemeral branch configurable.
         $ephemeralBranch = 'transpiler-ephemeral';
@@ -136,6 +136,8 @@ class Transpile extends Base
         $this->git->checkoutBranch($componentDir, $ephemeralBranch);
         $this->getOutput()->info('Checked out ephemeral branch: ' . $ephemeralBranch);
         $this->composer->setDependency($componentDir, 'rector/rector', '*', 'dev');
+        // TODO: Make this configurable
+        $this->composer->setMinimumStability($componentDir, 'dev');
         $this->composer->update($componentDir);
         $this->getOutput()->info('Installed Rector Transpiler');
         $transpilerFile = $this->configApplication->getTemplateDirectory() . '/rector/transpile-' . $options['target_platform'] . '.php';
@@ -189,7 +191,7 @@ class Transpile extends Base
         if (!empty($options['push_remote'])) {
             $remote = $options['push_remote'];
             $force = (bool) $options['force_push'] ?? false;
-            $this->git->push($componentDir, $remote, $targetRef, $force);
+//            $this->git->push($componentDir, $remote, $targetRef, $force);
             $this->getOutput()->info('Pushed ' . $targetRef . ' to remote ' . $remote );
         }
 
