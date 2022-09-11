@@ -101,6 +101,12 @@ class Composer
         $this->execInDirectory($cmd, $packageDir);
     }
 
+    public function setMinimumStability(string $packageDir, string $stability)
+    {
+        $cmd = $this->detectComposerBin() . " config minimum-stability $stability";
+        $this->execInDirectory($cmd, $packageDir);
+    }
+
     /**
      * Update the lock file and install dependencies
      *
