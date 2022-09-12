@@ -22,7 +22,7 @@ namespace Horde\Components\Task;
  *
  * Inspired by PSR-15 MiddlewareInterface
  * Derived from Components_Release_Task_Base by Gunnar Wrobel
- * 
+ *
  * @category Horde
  * @package  Components
  * @author   Ralf Lang <ralf.lang@ralf-lang.de>

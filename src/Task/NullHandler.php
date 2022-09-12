@@ -1,6 +1,6 @@
 <?php
 /**
- * PipelineInterface - Components Task Runner.
+ * A NOOP handler. Useful in places which require a handler argument.
  *
  * PHP Version 8
  *
@@ -30,12 +30,15 @@ namespace Horde\Components\Task;
  * @author   Ralf Lang <ralf.lang@ralf-lang.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-interface HandlerInterface
+class NullHandler implements HandlerInterface
 {
     /**
      * Handles a TaskInput and produces a Result.
      *
      * May call other collaborating code to generate the result.
      */
-    public function handle(InputInterface $input): ResultInterface;
+    public function handle(InputInterface $input): ResultInterface
+    {
+        return new Result();
+    }
 }

@@ -21,7 +21,7 @@ namespace Horde\Components\Task;
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
  *
  * Inspired by PSR-7 ResponseInterface
- * 
+ *
  * @category Horde
  * @package  Components
  * @author   Ralf Lang <ralf.lang@ralf-lang.de>
@@ -34,26 +34,26 @@ interface ResultInterface
      *
      * @return bool
      */
-     public function succeeded(): bool;
+    public function succeeded(): bool;
 
-     /**
-      * Provide a machine-friendly return code
-      *
-      * @return integer
-      */
-     public function getReturnCode(): int;
+    /**
+     * Provide a machine-friendly return code
+     *
+     * @return integer
+     */
+    public function getReturnCode(): int;
 
-     /**
-      * Get a concise human-readable outcome
-      *
-      * @return string
-      */
-     public function getReturnMessage(): string;
+    /**
+     * Get a concise human-readable outcome
+     *
+     * @return string
+     */
+    public function getReturnMessage(): string;
 
-     /**
-      * Offer a list of notable insights to the run.
-      *
-      * @return array
-      */
-     public function getDetails(): array;
+    /**
+     * Offer a list of notable insights to the run.
+     *
+     * @return array<Stringable|string>
+     */
+    public function getDetails(): array;
 }

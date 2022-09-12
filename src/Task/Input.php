@@ -13,6 +13,7 @@
 namespace Horde\Components\Task;
 
 use Horde\Components\Config;
+use ValueError;
 
 /**
  * Task\InputInterface - Necessary state for running a CLI task.
@@ -29,21 +30,40 @@ use Horde\Components\Config;
  * @author   Ralf Lang <ralf.lang@ralf-lang.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-interface InputInterface
+class Input implements InputInterface
 {
+    public function __construct(
+        private Config $config,
+        private bool $pretend = false,
+        private bool $interactive = true,
+        private array $env = [],
+        private array $attributes = []
+    ) {
+        foreach ($attributes as $key => $value) {
+            if (!is_string($key) || strlen($key) < 1) {
+                throw new ValueError('Attribute keys must be non-null strings');
+            }
+        }
+    }
     /**
      * Should the task be dry-run?
      *
      * @return bool
      */
-    public function pretend(): bool;
+    public function pretend(): bool
+    {
+        return $this->pretend;
+    }
 
     /**
      * Can Tasks request further input?
      *
      * @return bool
      */
-    public function isInteractive(): bool;
+    public function isInteractive(): bool
+    {
+        return $this->interactive;
+    }
 
     /**
      * Supposedly read-only access to the application configuration
@@ -60,14 +80,20 @@ interface InputInterface
      *
      * @return Config
      */
-    public function getApplicationConfig(): Config;
+    public function getApplicationConfig(): Config
+    {
+        return $this->config;
+    }
 
     /**
      * Supposedly readonly access to environment variables
      *
      * @return array
      */
-    public function getEnvironment(): array;
+    public function getEnvironment(): array
+    {
+        return $this->env;
+    }
 
     /**
      * Retrieve attributes derived from the request.
@@ -80,7 +106,10 @@ interface InputInterface
      *
      * @return mixed[] Attributes derived from the request.
      */
-    public function getAttributes(): array;
+    public function getAttributes(): array
+    {
+        return array_keys($this->attributes);
+    }
 
     /**
      * Retrieve a single derived request attribute.
@@ -97,7 +126,10 @@ interface InputInterface
      * @param mixed $default Default value to return if the attribute does not exist.
      * @return mixed
      */
-    public function getAttribute(string $name, $default = null);
+    public function getAttribute(string $name, $default = null)
+    {
+        return $this->attributes[$name] ?? $default;
+    }
 
     /**
      * Return an instance with the specified derived request attribute.
@@ -114,7 +146,16 @@ interface InputInterface
      * @param mixed $value The value of the attribute.
      * @return static
      */
-    public function withAttribute(string $name, $value);
+    public function withAttribute(string $name, $value): Input
+    {
+        return new Input(
+            $this->getApplicationConfig(),
+            $this->pretend,
+            $this->isInteractive(),
+            $this->getEnvironment(),
+            ($this->getAttributes())[$name] = $value
+        );
+    }
 
     /**
      * Return an instance that removes the specified derived request attribute.
@@ -130,5 +171,16 @@ interface InputInterface
      * @param string $name The attribute name.
      * @return static
      */
-    public function withoutAttribute(string $name);
+    public function withoutAttribute(string $name): Input
+    {
+        $newAttributes = $this->getAttributes();
+        unset($newAttributes[$name]);
+        return new Input(
+            $this->getApplicationConfig(),
+            $this->pretend,
+            $this->isInteractive(),
+            $this->getEnvironment(),
+            $newAttributes
+        );
+    }
 }
