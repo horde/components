@@ -85,6 +85,20 @@ class Injector extends HordeInjector implements Dependencies
     }
 
     /**
+     * Get builtin or registered Tasks
+     * @return array<TaskInterface>
+     */
+    public function getTasks(): array
+    {
+        return [
+        ];
+    }
+
+    public function registerTask($name, $class)
+    {
+
+    }
+    /**
      * Initial configuration setup.
      *
      * @param Config $config The configuration.
