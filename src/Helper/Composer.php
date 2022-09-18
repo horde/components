@@ -197,6 +197,8 @@ class Composer
         // Replaces ? Only needed for special cases. Default cases are handled implicitly
         // provides? apps can depend on provided APIs rather than other apps
         $this->_setProvides($package, $composerDefinition);
+        // Conflicts - Packages / versions that must not be present
+        $this->_setConflicts($package, $composerDefinition);
 
         // Enforce suggest to be a json object rather than array
         if (empty($composerDefinition->suggest)) {
@@ -231,6 +233,22 @@ class Composer
             $composerDefinition->provide[$impl] = $version;
         }
     }
+    /**
+     * Turn a conflicts: block in yml into a composer.json conflict: block
+     */
+    public function _setConflicts(WrapperHordeYml $package, \stdClass $composerDefinition): void
+    {
+        if (empty($package['conflicts'])) {
+            return;
+        }
+        foreach ($package['conflicts'] as $impl => $version) {
+            if (empty($composerDefinition->provide)) {
+                $composerDefinition->provide = [];
+            }
+            $composerDefinition->conflict[$impl] = $version;
+        }
+    }
+
     /**
      * Build a list of commands which should be exposed to vendor/bin.
      *
