@@ -284,6 +284,7 @@ class Git
             '/usr/bin/git',
             '/usr/local/bin/git',
             '/bin/git',
+            '/Program Files/Git/cmd/git.exe'
         ];
         foreach ($candidates as $candidatePath) {
             if (file_exists($candidatePath)) {
