@@ -34,8 +34,8 @@
         "php": "^7.4 || ^8",
         "horde/autoloader": "* || dev-FRAMEWORK_6_0",
         "horde/argv": "* || dev-FRAMEWORK_6_0",
-        "horde/cli": "^3 || dev-FRAMEWORK_6_0",
-        "horde/cli_modular": "^3 || dev-FRAMEWORK_6_0",
+        "horde/cli": "dev-FRAMEWORK_6_0",
+        "horde/cli_modular": "dev-FRAMEWORK_6_0",
         "horde/http": "* || dev-FRAMEWORK_6_0",
         "horde/pear": "* || dev-FRAMEWORK_6_0",
         "horde/role": "* || dev-FRAMEWORK_6_0",
@@ -43,7 +43,10 @@
         "horde/util": "* || dev-FRAMEWORK_6_0",
         "horde/injector": "* || dev-FRAMEWORK_6_0",
         "horde/release": "^4 || dev-FRAMEWORK_6_0",
-        "horde/yaml": "* || dev-FRAMEWORK_6_0"
+        "horde/yaml": "* || dev-FRAMEWORK_6_0",
+        "horde/cli_application": "dev-FRAMEWORK_6_0",
+        "horde/platform": "dev-FRAMEWORK_6_0",
+        "horde/vcs": "dev-FRAMEWORK_6_0"
     },
     "require-dev": {
         "horde/test": "^3 || dev-FRAMEWORK_6_0",
