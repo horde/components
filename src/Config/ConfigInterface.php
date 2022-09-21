@@ -15,14 +15,14 @@ interface ConfigInterface
 {
     public function has(string $id): bool;
     /**
-     * Configuration values are strings. 
+     * Configuration values are strings.
      */
     public function get(string $id): string;
 
     /**
      * Gets all registered config keys
-     * 
+     *
      * @return string[]
      */
-    public function getKeys(): array
+    public function getKeys(): array;
 }
