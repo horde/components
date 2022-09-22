@@ -16,8 +16,10 @@ namespace Horde\Components;
 use Horde\Components\Component\Identify;
 use Horde\Components\Config\Cli as ConfigCli;
 use Horde\Components\Config\File as ConfigFile;
+use Horde\Components\Config\ComposedConfigInterface;
 use Horde\Components\Dependencies\Injector;
 use Horde\Injector\TopLevel;
+use Horde\Injector\Injector as HordeInjector;
 use Horde\Platform\Environment;
 
 /**
@@ -56,8 +58,21 @@ class Kernel
     // Anything about dependency setup here
     public static function build()
     {
-        $injector = new Injector(new TopLevel);
+        $injector = self::buildInjector();
+        print_r($injector);
         return new Kernel();
+    }
+
+    /**
+     * Setup bindings for this application
+     *
+     * @return Injector
+     */
+    public static function buildInjector(): HordeInjector
+    {
+        $injector = new HordeInjector(new TopLevel);
+        $injector->bindFactory(ComposedConfigInterface::class, ConfigFactory::class, 'create');
+        return $injector;
     }
 
     // Our world is bootstrapped, now decide what to do and run it
@@ -75,7 +90,7 @@ class Kernel
      *     'class'  - (string) The class name of the parser to use.
      * </pre>
      */
-    public static function main(array $parameters = []): void
+ /*   public static function main(array $parameters = []): void
     {
         $dependencies = self::_prepareDependencies($parameters);
         $modular = self::_prepareModular($dependencies, $parameters);
@@ -88,7 +103,7 @@ class Kernel
          * Issue: Some commands do not require a component or need the
          * component path to be empty/non-existing, i.e. git clone
          */
-        try {
+/*        try {
             self::_identifyComponent(
                 $config,
                 self::_getActionArguments($modular),
@@ -144,7 +159,7 @@ This is a list of available actions (use "help ACTION" to get additional informa
      *
      * @return Dependencies The dependency handler.
      */
-    protected static function _prepareDependencies($parameters)
+  /*  protected static function _prepareDependencies($parameters)
     {
         if (isset($parameters['dependencies'])
             && $parameters['dependencies'] instanceof Dependencies) {
@@ -175,7 +190,7 @@ This is a list of available actions (use "help ACTION" to get additional informa
      *
      * @param Config $config The active configuration.
      */
-    protected static function _getActionArguments(\Horde_Cli_Modular $modular): array
+    /*protected static function _getActionArguments(\Horde_Cli_Modular $modular): array
     {
         $actions = [];
         foreach ($modular->getModules() as $module) {
@@ -193,7 +208,7 @@ This is a list of available actions (use "help ACTION" to get additional informa
      * @param Config $config  The active configuration.
      * @param array             $actions The list of available actions.
      */
-    protected static function _identifyComponent(
+    /*protected static function _identifyComponent(
         Config $config,
         $actions,
         Dependencies $dependencies
@@ -204,5 +219,5 @@ This is a list of available actions (use "help ACTION" to get additional informa
             $dependencies
         );
         $identify->setComponentInConfiguration();
-    }
+    }*/
 }

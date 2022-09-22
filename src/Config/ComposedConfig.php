@@ -9,9 +9,10 @@
  * @author   Ralf Lang <ralf.lang@ralf-lang.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-namespace Horde\Components;
+namespace Horde\Components\Config;
 
 use RuntimeException;
+use Exception;
 
 class ComposedConfig extends ComposedConfigInterface
 {
@@ -138,12 +139,12 @@ class ComposedConfig extends ComposedConfigInterface
         }
         $this->configs[$key] = $config;
         $last = array_key_last($this->configOrder);
-        if ($before === '') {
+        if ($after === '') {
             $pos = $last;
         } else {
-            $pos = array_search($before, $this->configOrder, true);
+            $pos = array_search($after, $this->configOrder, true);
             if ($pos === false) {
-                throw new Exception('Referenced Config Layer Key not present: ' . $before);
+                throw new Exception('Referenced Config Layer Key not present: ' . $after);
             }
         }
         $this->configOrder = array_merge(
