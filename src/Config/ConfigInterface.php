@@ -13,16 +13,27 @@ namespace Horde\Components;
 
 interface ConfigInterface
 {
-    public function has(string $id): bool;
     /**
-     * Configuration values are strings.
+     * Check if a certain config key is present.
+     * 
+     * @param string $id The name of the config value
+     * @return bool      True if present
      */
-    public function get(string $id): string;
+    public function has(string $id): bool;
+
+    /**
+     * Retrieve an existing config value
+     * 
+     * Configuration values are strings.
+     *
+     * @param string $id The name of the config value
+     */
+    public function get(string $id);
 
     /**
      * Gets all registered config keys
      *
-     * @return string[]
+     * @return string[] The list of config keys
      */
     public function getKeys(): array;
 }

@@ -38,10 +38,12 @@ class ComposedConfig extends ComposedConfigInterface
     }
     /**
      * Ask the stack of configs by priority
-     * 
+     *
      * By default, circle through the layers by priority
+     * 
+     * @param string $id
      */
-    public function get(string $id, array $layers = []): string
+    public function get(string $id, array $layers = [])
     {
         if (empty($layers)) {
             $layers = $this->configOrder;
@@ -56,6 +58,7 @@ class ComposedConfig extends ComposedConfigInterface
     /**
      * List all config keys available
      * 
+     * @param array<string> Specify which layer(s) to check
      * @return array<string> A config key present in at least one layer
      */
     public function getKeys(array $layers = []): array
@@ -71,7 +74,7 @@ class ComposedConfig extends ComposedConfigInterface
     }
 
     /**
-     * @return array<string> List a set of configuration keys
+     * @return array<string> List the set of configuration layer names
      */
     public function listConfigs(): array
     {
@@ -84,9 +87,14 @@ class ComposedConfig extends ComposedConfigInterface
     }
 
     /**
-     * Add a new config layer to be checked first
+     * Add a new config layer to be checked before others
+     * 
+     * Defaults to top priority
+     * @param ConfigInterface The configuration to add
+     * @param string $key The name of the config layer. Must be unique. Defaults to class name.
+     * @param string $before The config before which to insert the new config. If empty, top priority.
      */
-    public function addPriorityConfig(ConfigInterface $config, string $key = '')
+    public function addConfigBefore(ConfigInterface $config, string $key = '', string $before = '')
     {
         if (empty($key)) {
             $key = $config::class;
@@ -95,13 +103,32 @@ class ComposedConfig extends ComposedConfigInterface
             throw new RuntimeException('Config already present: ' . $key);
         }
         $this->configs[$key] = $config;
-        array_unshift($this->configs, $key);
+        $last = array_key_last($this->configOrder);
+        if ($before === '') {
+            $pos = 0;
+        } else {
+            $pos = array_search($before, $this->configOrder, true);
+            if ($pos === false) {
+                throw new Exception('Referenced Config Layer Key not present: ' . $before);
+            }
+        }
+        $this->configOrder = array_merge(
+            array_slice($this->configOrder, 0, $pos-1),
+            $key,
+            array_slice($this->configOrder, $pos, $last)
+        );
     }
 
     /**
-     * Add a new config layer to be checked last
+     * Add a new config layer to be checked after others
+     * 
+     * Defaults to least priority
+     *
+     * @param ConfigInterface The configuration to add
+     * @param string $key The name of the config layer. Must be unique. Defaults to class name.
+     * @param string $after The config after which to insert the new config. If empty, last priority.
      */
-    public function addFallbackConfig(ConfigInterface $config, string $key = '')
+    public function addConfigAfter(ConfigInterface $config, string $key = '', string $after = '')
     {
         if (empty($key)) {
             $key = $config::class;
@@ -110,6 +137,19 @@ class ComposedConfig extends ComposedConfigInterface
             throw new RuntimeException('Config already present: ' . $key);
         }
         $this->configs[$key] = $config;
-        array_push($this->configs, $key);
+        $last = array_key_last($this->configOrder);
+        if ($before === '') {
+            $pos = $last;
+        } else {
+            $pos = array_search($before, $this->configOrder, true);
+            if ($pos === false) {
+                throw new Exception('Referenced Config Layer Key not present: ' . $before);
+            }
+        }
+        $this->configOrder = array_merge(
+            array_slice($this->configOrder, 0, $pos),
+            $key,
+            array_slice($this->configOrder, $pos + 1, $last)
+        );
     }
 }
