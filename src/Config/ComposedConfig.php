@@ -14,7 +14,7 @@ namespace Horde\Components\Config;
 use RuntimeException;
 use Exception;
 
-class ComposedConfig extends ComposedConfigInterface
+class ComposedConfig implements ComposedConfigInterface
 {
     protected array $configs = [];
     protected array $configOrder = [];
@@ -115,7 +115,7 @@ class ComposedConfig extends ComposedConfigInterface
         }
         $this->configOrder = array_merge(
             array_slice($this->configOrder, 0, $pos-1),
-            $key,
+            [$key],
             array_slice($this->configOrder, $pos, $last)
         );
     }
@@ -149,7 +149,7 @@ class ComposedConfig extends ComposedConfigInterface
         }
         $this->configOrder = array_merge(
             array_slice($this->configOrder, 0, $pos),
-            $key,
+            [$key],
             array_slice($this->configOrder, $pos + 1, $last)
         );
     }
