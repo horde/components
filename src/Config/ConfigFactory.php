@@ -14,7 +14,7 @@ namespace Horde\Components\Config;
 use Horde\Injector\Injector;
 use RuntimeException;
 
-class ComposedConfig extends ComposedConfigInterface
+class ConfigFactory
 {
     public function create(Injector $injector)
     {

@@ -17,6 +17,8 @@ use Horde\Components\Component\Identify;
 use Horde\Components\Config\Cli as ConfigCli;
 use Horde\Components\Config\File as ConfigFile;
 use Horde\Components\Config\ComposedConfigInterface;
+use Horde\Components\Config\ConfigInterface;
+use Horde\Components\Config\ConfigFactory;
 use Horde\Components\Dependencies\Injector;
 use Horde\Injector\TopLevel;
 use Horde\Injector\Injector as HordeInjector;
@@ -38,6 +40,7 @@ use Horde\Platform\Environment;
  */
 class Kernel
 {
+    protected ConfigInterface $config;
     final public const ERROR_NO_COMPONENT = 'You are neither in a component directory nor specified it as the first argument!';
 
     final public const ERROR_NO_ACTION = 'You did not specify an action!';
@@ -45,8 +48,10 @@ class Kernel
     final public const ERROR_NO_ACTION_OR_COMPONENT = '"%s" specifies neither an action nor a component directory!';
 
     public function __construct(
+        ComposedConfigInterface $config
     )
     {
+        $this->config = $config;
 
     }
     public static function buildAndRun()
@@ -59,8 +64,8 @@ class Kernel
     public static function build()
     {
         $injector = self::buildInjector();
-        print_r($injector);
-        return new Kernel();
+        $kernel = $injector->getInstance(self::class);
+        return $kernel;
     }
 
     /**
@@ -72,6 +77,7 @@ class Kernel
     {
         $injector = new HordeInjector(new TopLevel);
         $injector->bindFactory(ComposedConfigInterface::class, ConfigFactory::class, 'create');
+        $injector->has(ComposedConfigInterface::class);
         return $injector;
     }
 

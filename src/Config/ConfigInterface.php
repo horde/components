@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * ConfigInterface
  *
@@ -15,7 +16,7 @@ interface ConfigInterface
 {
     /**
      * Check if a certain config key is present.
-     * 
+     *
      * @param string $id The name of the config value
      * @return bool      True if present
      */
@@ -23,7 +24,7 @@ interface ConfigInterface
 
     /**
      * Retrieve an existing config value
-     * 
+     *
      * Configuration values are strings.
      *
      * @param string $id The name of the config value
@@ -35,5 +36,5 @@ interface ConfigInterface
      *
      * @return string[] The list of config keys
      */
-    public function getKeys(): array
+    public function getKeys(): array;
 }
