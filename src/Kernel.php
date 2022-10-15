@@ -13,6 +13,7 @@
 
 namespace Horde\Components;
 
+use Composer\EventDispatcher\EventDispatcher as EventDispatcherEventDispatcher;
 use Horde\Components\Component\Identify;
 use Horde\Components\Config\Cli as ConfigCli;
 use Horde\Components\Config\File as ConfigFile;
@@ -23,7 +24,12 @@ use Horde\Components\Dependencies\Injector;
 use Horde\Injector\TopLevel;
 use Horde\Injector\Injector as HordeInjector;
 use Horde\Platform\Environment;
-
+use Horde\Components\Git\GitModule;
+use Horde\EventDispatcher\EventDispatcher;
+use Fig\EventDispatcher\AggregateProvider;
+use Horde\Components\ModularCli\DispatchedArgv;
+use Psr\Container\ContainerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 /**
  * The Components:: class is the entry point for the various component actions
  * provided by the package.
@@ -41,6 +47,12 @@ use Horde\Platform\Environment;
 class Kernel
 {
     protected ConfigInterface $config;
+    private array $plugins = [];
+    private array $commands = [];
+    private EventDispatcher $dispatcher;
+    private Injector $injector;
+
+
     final public const ERROR_NO_COMPONENT = 'You are neither in a component directory nor specified it as the first argument!';
 
     final public const ERROR_NO_ACTION = 'You did not specify an action!';
@@ -48,10 +60,12 @@ class Kernel
     final public const ERROR_NO_ACTION_OR_COMPONENT = '"%s" specifies neither an action nor a component directory!';
 
     public function __construct(
-        ComposedConfigInterface $config
+        ComposedConfigInterface $config,
+        Injector $injector
     )
     {
         $this->config = $config;
+        $this->injector = $injector;
 
     }
     public static function buildAndRun()
@@ -76,16 +90,35 @@ class Kernel
     public static function buildInjector(): HordeInjector
     {
         $injector = new HordeInjector(new TopLevel);
-        $injector->bindFactory(ComposedConfigInterface::class, ConfigFactory::class, 'create');
-        $injector->has(ComposedConfigInterface::class);
+        $injector->setInstance(ContainerInterface::class, $injector);
+        $injector->bindFactory(ComposedConfigInterface::class, ConfigFactory::class, 'create');      
         return $injector;
     }
 
     // Our world is bootstrapped, now decide what to do and run it
     public function run()
     {
-
+        // Register all builtin plugins and commands
+        $this->registerBuiltinPlugins();
+        // Load builtin, and env config, apply config file(s)
+        // Register additional plugins and commands - depends in config
+        // emit the DispatchedArgv event. At least all Command event listeners should watch this.
+        $this->dispatcher->dispatch(new DispatchedArgv($GLOBALS['argv']));
     }
+
+    /**
+     * Setup all event handlers exposed by the builtin module plugins
+     *
+     * @return void
+     */
+    public function registerBuiltinPlugins()
+    {
+        $modules = new AggregateProvider;
+        $this->dispatcher = new EventDispatcher($modules);
+        $this->injector->setInstance(EventDispatcherInterface::class, $this->dispatcher);
+        $modules->addProvider(new GitModule($this->injector));
+    }
+
     /**
      * The main entry point for the application.
      *
