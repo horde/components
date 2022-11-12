@@ -34,7 +34,7 @@ class WebBootstrap
         // The RequestBuilder could easily be autowired by a DI container.
         $requestBuilder = new RequestBuilder($requestFactory, $streamFactory, $uriFactory);
         $request = $requestBuilder->withGlobalVariables()->build();
-        $injector = new TopLevel();
+        $injector = Kernel::buildInjector();
         $middlewares = [];
 
         $handler = new RampageRequestHandler($responseFactory, $streamFactory, $middlewares);
