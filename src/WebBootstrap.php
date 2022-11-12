@@ -1,6 +1,6 @@
 <?php
 
-namespace Horde\Core;
+namespace Horde\Components;
 
 use Horde\Core\Middleware\AppFinder;
 use Horde\Core\Middleware\AppRouter;
@@ -13,7 +13,6 @@ use Horde\Http\Server\ResponseWriterWeb;
 use Horde\Http\Server\Runner;
 use Horde\Http\Server\Middleware\Responder;
 use Horde\Http\StreamFactory;
-use Horde\Core\Middleware\HordeCore as HordeCoreMiddleware;
 use Horde\Injector\Injector;
 use Horde\Injector\TopLevel;
 
@@ -35,7 +34,8 @@ class WebBootstrap
         // The RequestBuilder could easily be autowired by a DI container.
         $requestBuilder = new RequestBuilder($requestFactory, $streamFactory, $uriFactory);
         $request = $requestBuilder->withGlobalVariables()->build();
-        $injector = new Horde\Injector\TopLevel();
+        $injector = new TopLevel();
+        $middlewares = [];
 
         $handler = new RampageRequestHandler($responseFactory, $streamFactory, $middlewares);
         $runner = new Runner($handler, new ResponseWriterWeb());
