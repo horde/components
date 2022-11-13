@@ -18,12 +18,12 @@ trait ConfigTrait
     protected array $settings = [];
 
     public function has(string $id): bool
-    {        
+    {
         return array_key_exists($id, $this->settings);
     }
     /**
      * Configuration values are strings.
-     * 
+     *
      */
     public function get(string $id): string
     {
@@ -35,7 +35,7 @@ trait ConfigTrait
 
     /**
      * Gets all registered config keys
-     * 
+     *
      * @return string[]
      */
     public function getKeys(): array

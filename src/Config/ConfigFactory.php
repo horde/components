@@ -21,7 +21,12 @@ class ConfigFactory
         $config = new ComposedConfig();
         $config->addConfigAfter($injector->get(BuiltinDefaultConfig::class), 'builtin');
         $config->addConfigBefore($injector->get(EnvironmentConfig::class), 'environment', 'builtin');
-//        $config->addConfigBefore($injector->get(EnvironmentConfig::class), 'environment', 'builtin');      
+        $configDir = $config->get('config_dir');
+        $defaultConfigFile = $configDir . '/conf.php';
+        if (is_readable($defaultConfigFile)) {
+            $config->addConfigBefore(new ArrayBackedPhpConfigFile($defaultConfigFile, 'conf'), $defaultConfigFile, 'builtin');
+        }
         return $config;
     }
+
 }

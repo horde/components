@@ -17,7 +17,8 @@ class BuiltinDefaultConfig implements ConfigInterface
 
     public function __construct()
     {
-        $this->settings['data_dir'] = dirname(__FILE__, 2) . '/data';
+        $this->settings['data_dir'] = dirname(__FILE__, 3) . '/data';
+        $this->settings['config_dir'] = dirname(__FILE__, 3) . '/config';
         $this->settings['verbosity'] = '0';
     }
 }

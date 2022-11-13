@@ -15,6 +15,7 @@ use Horde\Http\Server\Middleware\Responder;
 use Horde\Http\StreamFactory;
 use Horde\Injector\Injector;
 use Horde\Injector\TopLevel;
+use Horde\Components\Config\ComposedConfigInterface;
 
 /**
  * Bootstrap the Components HTTP endpoint
@@ -35,8 +36,13 @@ class WebBootstrap
         $requestBuilder = new RequestBuilder($requestFactory, $streamFactory, $uriFactory);
         $request = $requestBuilder->withGlobalVariables()->build();
         $injector = Kernel::buildInjector();
-        $middlewares = [];
-
+        $config = $injector->get(ComposedConfigInterface::class);
+        $middlewares = [
+            // Check authentication credential
+            // Reject access on bad credential
+            // Identify Route handler
+            // Dispatch Route handler
+        ];
         $handler = new RampageRequestHandler($responseFactory, $streamFactory, $middlewares);
         $runner = new Runner($handler, new ResponseWriterWeb());
         $runner->run($request);

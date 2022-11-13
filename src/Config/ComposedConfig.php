@@ -41,7 +41,7 @@ class ComposedConfig implements ComposedConfigInterface
      * Ask the stack of configs by priority
      *
      * By default, circle through the layers by priority
-     * 
+     *
      * @param string $id
      */
     public function get(string $id, array $layers = [])
@@ -89,7 +89,7 @@ class ComposedConfig implements ComposedConfigInterface
 
     /**
      * Add a new config layer to be checked before others
-     * 
+     *
      * Defaults to top priority
      * @param ConfigInterface The configuration to add
      * @param string $key The name of the config layer. Must be unique. Defaults to class name.
@@ -113,8 +113,13 @@ class ComposedConfig implements ComposedConfigInterface
                 throw new Exception('Referenced Config Layer Key not present: ' . $before);
             }
         }
+        // Trivial case
+        if ($pos == 0) {
+            array_unshift($this->configOrder, $key);
+            return;
+        }
         $this->configOrder = array_merge(
-            array_slice($this->configOrder, 0, $pos-1),
+            array_slice($this->configOrder, 0, $pos - 1 ),
             [$key],
             array_slice($this->configOrder, $pos, $last)
         );
@@ -122,7 +127,7 @@ class ComposedConfig implements ComposedConfigInterface
 
     /**
      * Add a new config layer to be checked after others
-     * 
+     *
      * Defaults to least priority
      *
      * @param ConfigInterface The configuration to add
