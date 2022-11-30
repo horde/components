@@ -29,7 +29,7 @@ class AuthCheckMiddleware implements MiddlewareInterface
     {
         // Check if request HAS an auth header
         if (!$request->hasHeader('Authorization')) {
-            $request = $request->withAttribute('NO_AUTH_HEADER', $this->registry->getAuth());
+            $request = $request->withAttribute('NO_AUTH_HEADER', true);
             return $handler->handle($request);
         }
         $headerValues = $request->getHeader('Authorization');

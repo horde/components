@@ -20,5 +20,9 @@ class BuiltinDefaultConfig implements ConfigInterface
         $this->settings['data_dir'] = dirname(__FILE__, 3) . '/data';
         $this->settings['config_dir'] = dirname(__FILE__, 3) . '/config';
         $this->settings['verbosity'] = '0';
+        $this->settings['api_auth_schema'] = 'bearer';
+        // Ensure the API is effectively blocked unless configured
+        $this->settings['api_auth_key'] = bin2hex(random_bytes(64));
+        
     }
 }
