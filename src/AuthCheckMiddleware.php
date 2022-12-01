@@ -32,14 +32,29 @@ class AuthCheckMiddleware implements MiddlewareInterface
             $request = $request->withAttribute('NO_AUTH_HEADER', true);
             return $handler->handle($request);
         }
+        $config = $request->getAttribute('Horde\Components\ComposedConfig');
+        if (empty($config)) {
+            throw new Exception('Cannot run AuthCheckMiddleware without a Horde\Components\ComposedConfig attribute');
+        }
+
+        return $handler->handle($this->checkAuthentication($config, $request));
+    }
+
+    public function checkAuthentication($config, ServerRequestInterface $request): ServerRequestInterface
+    {
+        // Move this part to a subroutine
+        $configuredScheme = ucfirst(strtolower($config->get('api_auth_schema')));
+        $configuredValue = $config->get('api_auth_key');
         $headerValues = $request->getHeader('Authorization');
         foreach ($headerValues as $headerValue) {
             // Split Auth Scheme from actual value
-            if (true) {
+            [$receivedScheme, $receivedValue] = explode(' ', $headerValue);
+            if (($configuredScheme === $receivedScheme) && ($configuredValue === $receivedValue)) {
                 $request = $request->withAttribute('CI_AUTHENTICATION_PASSED', true);
-                return $handler->handle($request);
+                $request = $request->withAttribute('CI_AUTHENTICATION_SCHEMA', $receivedScheme);
+                return $request;
             }
         }
-        return $handler->handle($request);
+        return $request;
     }
 }
