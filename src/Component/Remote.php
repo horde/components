@@ -14,6 +14,9 @@ namespace Horde\Components\Component;
 
 use Horde\Components\Config;
 use Horde\Components\Exception;
+use stdClass;
+use Horde\Components\Wrapper\PackageXml;
+use Horde\Components\Pear\Environment;
 
 /**
  * Represents a remote component.
@@ -153,7 +156,7 @@ class Remote extends Base
      *
      * @return array Information about this component.
      */
-    public function getData()
+    public function getData(): stdClass
     {
         $data = new \stdClass();
         $release = $this->_remote->getLatestDetails($this->_name, null);
@@ -214,7 +217,7 @@ class Remote extends Base
      *                                         package.
      */
     public function install(
-        Components_Pear_Environment $env,
+        Environment $env,
         $options = [],
         $reason = ''
     ): void {
@@ -250,7 +253,7 @@ class Remote extends Base
      *
      * @return \Horde_Pear_Package_Xml The package representation.
      */
-    protected function getPackageXml()
+    protected function getPackageXml(): PackageXml
     {
         if (!isset($this->_package)) {
             $this->_package = $this->_remote->getPackageXml(
