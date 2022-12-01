@@ -17,7 +17,7 @@ use Horde\Components\Exception;
 use stdClass;
 use Horde\Components\Wrapper\PackageXml;
 use Horde\Components\Pear\Environment;
-
+use Horde\Components\Component\Factory as ComponentFactory;
 /**
  * Represents a remote component.
  *
@@ -61,7 +61,7 @@ class Remote extends Base
                                          access.
     * @param Config       $config    The configuration for the
     *                                           current job.
-    * @param Horde\Components\Component\Factory $factory Generator for additional
+    * @param ComponentFactory $factory Generator for additional
     *                                              helpers.
     */
     public function __construct(
@@ -71,7 +71,7 @@ class Remote extends Base
         private readonly \Horde_Pear_Remote $_remote,
         private readonly \Horde_Http_Client $_client,
         Config $config,
-        Factory $factory
+        ComponentFactory $factory
     ) {
         parent::__construct($config, $factory);
     }
@@ -210,7 +210,7 @@ class Remote extends Base
     /**
      * Install a component.
      *
-     * @param Components_Pear_Environment $env The environment to install
+     * @param Environment $env The Pear environment to install
      *                                         into.
      * @param array                 $options   Install options.
      * @param string                $reason    Optional reason for adding the
