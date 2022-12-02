@@ -16,11 +16,32 @@
             <directory>test</directory>
         </testsuite>
     </testsuites>
+    <logging>
+        <testdoxHtml outputFile=".phpunit.results.cache/testdox.html"/>
+        <testdoxXml outputFile=".phpunit.results.cache/testdox.xml"/>
+        <text outputFile=".phpunit.results.cache/logfile.txt"/>
+    </logging>
 
     <coverage cacheDirectory=".phpunit.cache/code-coverage"
-              processUncoveredFiles="true">
+          includeUncoveredFiles="true"
+          processUncoveredFiles="true"
+          pathCoverage="false"
+          ignoreDeprecatedCodeUnits="true"
+          disableCodeCoverageIgnore="true"
+          >
         <include>
             <directory suffix=".php">src</directory>
+            <directory suffix=".php">lib</directory>
+            <directory suffix=".php">app</directory>
         </include>
+    <report>
+        <clover outputFile=".phpunit.results.cache/clover.xml"/>
+        <cobertura outputFile=".phpunit.results.cache/cobertura.xml"/>
+        <crap4j outputFile=".phpunit.results.cache/crap4j.xml" threshold="50"/>
+        <html outputDirectory=".phpunit.results.cache/html-coverage" lowUpperBound="50" highLowerBound="90"/>
+        <php outputFile=".phpunit.results.cache/coverage.php"/>
+        <text outputFile=".phpunit.results.cache/coverage.txt" showUncoveredFiles="false" showOnlySummary="true"/>
+        <xml outputDirectory=".phpunit.results.cache/xml-coverage"/>
+        </report>
     </coverage>
 </phpunit>
