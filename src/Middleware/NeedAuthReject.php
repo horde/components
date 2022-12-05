@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Horde\Components;
+namespace Horde\Components\Middleware;
 
 use Exception;
 use Psr\Http\Message\ServerRequestInterface;

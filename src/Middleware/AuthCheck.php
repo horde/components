@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Horde\Components;
+namespace Horde\Components\Middleware;
 
 use Exception;
 use Psr\Http\Message\ServerRequestInterface;
@@ -22,7 +22,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  * - CI_AUTHENTICATION_PASSED
  *
  */
-class AuthCheckMiddleware implements MiddlewareInterface
+class AuthCheck implements MiddlewareInterface
 {
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface

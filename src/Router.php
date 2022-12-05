@@ -2,6 +2,10 @@
 namespace Horde\Components;
 use Horde_Routes_Mapper;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Horde\Components\Middleware\NeedAuthReject;
+use Horde\Components\Middleware\AuthCheck;
+use Horde\Components\Middleware\UnitTestCoverageUpload;
 
 class Router
 {
@@ -9,12 +13,32 @@ class Router
     public function __construct(Horde_Routes_Mapper $mapper)
     {
         $mapper->connect(
-            '/ci/phpunit/coverage/:vendor/:package/:branch',
+            '/ci/phpunit/:vendor/:package/:branch/:php',
             [
                 'stack' => [
-                    AuthCheckMiddleware::class,
-                    NeedAuthRejectMiddleware::class,
-                    Quality\UnitTestCoverageUpload::class
+                    AuthCheck::class,
+                    NeedAuthReject::class,
+                    UnitTestCoverageUpload::class
+                ]
+            ]
+        );
+        $mapper->connect(
+            '/ci/phpdoc/:vendor/:package/:branch',
+            [
+                'stack' => [
+                    AuthCheck::class,
+                    NeedAuthReject::class,
+                    PhpdocUpload::class
+                ]
+            ]
+        );
+        $mapper->connect(
+            '/ci/help',
+            [
+                'stack' => [
+                    AuthCheck::class,
+                    NeedAuthReject::class,
+                    UnitTestCoverageUpload::class
                 ]
             ]
         );
@@ -23,9 +47,9 @@ class Router
             '/help',
             [
                 'stack' => [
-                    AuthCheckMiddleware::class,
-                    NeedAuthRejectMiddleware::class,
-                    Quality\UnitTestCoverageUpload::class
+                    AuthCheck::class,
+                    NeedAuthReject::class,
+                    UnitTestCoverageUpload::class
                 ]
             ]
         );
