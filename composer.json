@@ -19,39 +19,33 @@
     "version": "1.0.0",
     "time": "2020-03-15",
     "repositories": [
-        {
-            "type": "pear",
-            "url": "https://pear.horde.org"
-        }
     ],
     "require": {
         "php": "^5.4 || ^7",
-        "pear-pear.horde.org/Horde_Autoloader": "*",
-        "pear-pear.horde.org/Horde_Argv": "*",
-        "pear-pear.horde.org/Horde_Cli": "^2.3",
-        "pear-pear.horde.org/Horde_Cli_Modular": "^2.1",
-        "pear-pear.horde.org/Horde_Http": "*",
-        "pear-pear.horde.org/Horde_Pear": "*",
-        "pear-pear.horde.org/Horde_Role": "*",
-        "pear-pear.horde.org/Horde_Text_Diff": "*",
-        "pear-pear.horde.org/Horde_Util": "*",
-        "pear-pear.horde.org/Horde_Injector": "*",
-        "pear-pear.horde.org/Horde_Release": "*",
-        "pear-pear.horde.org/Horde_Yaml": "*"
+        "horde/autoloader": "*",
+        "horde/argv": "*",
+        "horde/cli": "^2.3",
+        "horde/cli_Modular": "^2.1",
+        "horde/http": "*",
+        "horde/pear": "*",
+        "horde/role": "*",
+        "horde/text_diff": "*",
+        "horde/util": "*",
+        "horde/injector": "*",
+        "horde/release": "*",
+        "horde/yaml": "*"
     },
     "suggest": {
-        "pear-pear.horde.org/Horde_Test": "*",
-        "pear-pear.php.net/Archive_Tar": "*",
-        "pear-pear.php.net/PHP_CodeSniffer": "*",
-        "pear-pear.phpunit.de/PHPUnit": "*",
-        "pear-pear.phpunit.de/phpcpd": "*",
-        "pear-pear.phpunit.de/phpdcd": "*",
-        "pear-pear.phpunit.de/phploc": "*",
-        "pear-pear.phpmd.org/PHP_PMD": "*"
+        "horde/Test": "*",
+        "pear/archive_tar": "*",
+        "pear/php_codeSniffer": "*",
+        "phpunit/phpunit": "*",
+        "phpunit/phpcpd": "*",
+        "phpunit/phpdcd": "*",
+        "phploc/phploc": "*",
+        "phpmd/php_pmd": "*"
     },
     "replace": {
-        "pear-pear.horde.org/components": "1.*",
-        "pear-horde/components": "1.*"
     },
     "autoload": {
         "psr-0": {
