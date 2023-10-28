@@ -21,25 +21,19 @@
     ],
     "require": {
         "php": ">=5.2.1",
-        "pear-pear.horde.org/Horde_Autoloader": "*",
-        "pear-pear.horde.org/Horde_Argv": "*",
-        "pear-pear.horde.org/Horde_Cli": "*",
-        "pear-pear.horde.org/Horde_Cli_Modular": "*",
-        "pear-pear.horde.org/Horde_Http": "*",
-        "pear-pear.horde.org/Horde_Pear": "*",
-        "pear-pear.horde.org/Horde_Role": "*",
-        "pear-pear.horde.org/Horde_Text_Diff": "*",
-        "pear-pear.horde.org/Horde_Util": "*",
-        "pear-pear.horde.org/Horde_Injector": "*",
-        "pear-pear.horde.org/Horde_Release": "*"
+        "horde/autoloader": "*",
+        "horde/argv": "*",
+        "horde/cli": "*",
+        "horde/cli_modular": "*",
+        "horde/http": "*",
+        "horde/pear": "*",
+        "horde/role": "*",
+        "horde/text_diff": "*",
+        "horde/util": "*",
+        "horde/injector": "*",
+        "horde/release": "*"
     },
-    "suggest": {
-        "pear-pear.horde.org/Horde_Test": "*",
-        "pear-pear.php.net/PHP_CodeSniffer": "*",
-        "pear-pear.phpunit.de/PHPUnit": "*",
-        "pear-pear.phpunit.de/phpcpd": "*",
-        "pear-pear.phpunit.de/phpdcd": "*",
-        "pear-pear.phpunit.de/phploc": "*",
-        "pear-pear.phpmd.org/PHP_PMD": "*"
+    "require-dev": {
+        "horde/test": "*",
     }
 }
