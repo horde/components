@@ -34,6 +34,6 @@
         "horde/release": "*"
     },
     "require-dev": {
-        "horde/test": "*",
+        "horde/test": "*"
     }
 }
