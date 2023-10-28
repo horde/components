@@ -24,10 +24,6 @@
     ],
     "time": "2022-04-19",
     "repositories": [
-        {
-            "type": "composer",
-            "url": "https://horde-satis.maintaina.com"
-        }
     ],
     "require": {
         "horde/horde-installer-plugin": "dev-FRAMEWORK_6_0 || ^2",
@@ -47,7 +43,7 @@
     },
     "require-dev": {
         "horde/test": "^3 || dev-FRAMEWORK_6_0",
-        "composer/composer": "2.5.x-dev"
+        "composer/composer": "^2.4"
     },
     "suggest": {
         "horde/test": "^3 || dev-FRAMEWORK_6_0",
