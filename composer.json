@@ -16,7 +16,7 @@
             "role": "lead"
         }
     ],
-    "version": "1.0.0",
+    "version": "0.99.9999",
     "time": "2020-03-15",
     "repositories": [
     ],
@@ -25,7 +25,7 @@
         "horde/autoloader": "*",
         "horde/argv": "*",
         "horde/cli": "^2.3",
-        "horde/cli_Modular": "^2.1",
+        "horde/cli_modular": "^2.1",
         "horde/http": "*",
         "horde/pear": "*",
         "horde/role": "*",
@@ -36,9 +36,9 @@
         "horde/yaml": "*"
     },
     "suggest": {
-        "horde/Test": "*",
+        "horde/test": "*",
         "pear/archive_tar": "*",
-        "pear/php_codeSniffer": "*",
+        "pear/php_codesniffer": "*",
         "phpunit/phpunit": "*",
         "phpunit/phpcpd": "*",
         "phpunit/phpdcd": "*",
