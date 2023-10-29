@@ -2,7 +2,13 @@
 v1.0.0alpha5
 ------------
 
-
+[rla][Breaking] Drop PHP 7.4 support due to used builtins.
+[rla] Removed PHPCPD as it is abandoned by maintainers.
+[rla] Support PHPMD 2.14.
+[rla] Unbundled all external tools. They should be either optional or directly
+      managed via composer.
+[rla][breaking] Removed PHPDCD - the dead code detector is dead code now
+|+
 
 
 ------------
