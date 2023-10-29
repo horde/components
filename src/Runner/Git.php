@@ -38,6 +38,11 @@ class Git
     private readonly string $gitRepoBase;
 
     /**
+     * Where do we store local checkouts.
+     */
+    private readonly string $localCheckoutDir;
+
+    /**
      * Constructor.
      *
      * @param Config    $config  The configuration for the current job.
@@ -47,9 +52,9 @@ class Git
     public function __construct(
         private readonly Config $config,
         private readonly Output $output,
-        GitHelper $git
+        private GitHelper $gitHelper
     ) {
-        $this->gitHelper = $git;
+//        $this->gitHelper = $git;
         $options = $this->config->getOptions();
         $this->gitRepoBase = $options['git_repo_base'] ??
         'https://github.com/horde/';
