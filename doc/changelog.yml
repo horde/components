@@ -1,4 +1,15 @@
 ---
+1.0.0alpha6:
+  api: 1.0.0alpha1
+  state:
+    release: alpha
+    api: alpha
+  date: 2023-10-29
+  license:
+    identifier: LGPL-2.1
+    uri: http://www.horde.org/licenses/lgpl21
+  notes: |+
+    
 1.0.0alpha5:
   api: 1.0.0alpha1
   state:
