@@ -56,8 +56,6 @@ dependencies:
       horde/test: ^3
       squizlabs/php_codesniffer: ^3.5
       pear/archive_tar: ^1.4
-      sebastian/phpcpd: ^6
-      sebastian/phpdcd: ^1
       phploc/phploc: ^7
       phpmd/phpmd: ^2.9
       phpunit/phpunit: ^9

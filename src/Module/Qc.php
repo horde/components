@@ -98,10 +98,8 @@ The available checks are:
  - unit: Runs the PHPUnit unit test suite of the component.
  - md  : Runs the PHP mess detector on the code of the component.
  - cs  : Runs a checkstyle analysis of the component.
- - cpd : Checks for copied segments within the component.
  - lint: Runs a lint check of the source code.
  - loc : Measure the size and analyze the structure of the component.
- - dcd : Dead code detection
 
 The following example would solely run the PHPUnit test for the package:
 

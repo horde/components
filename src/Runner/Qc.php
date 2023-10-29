@@ -70,20 +70,12 @@ class Qc
             $sequence[] = 'cs';
         }
 
-        if ($this->_doTask('cpd')) {
-            $sequence[] = 'cpd';
-        }
-
         if ($this->_doTask('lint')) {
             $sequence[] = 'lint';
         }
 
         if ($this->_doTask('loc')) {
             $sequence[] = 'loc';
-        }
-
-        if ($this->_doTask('dcd')) {
-            $sequence[] = 'dcd';
         }
 
         if (!empty($sequence)) {

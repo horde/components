@@ -8,8 +8,12 @@
   license:
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |+
-    
+  notes: |
+    [rla] Removed PHPCPD as it is abandoned by maintainers.
+    [rla] Support PHPMD 2.14.
+    [rla] Unbundled all external tools. They should be either optional or directly managed via composer.
+    [rla][breaking] Removed PHPDCD - the dead code detector is dead code now
+    |+
 1.0.0alpha4:
   api: 1.0.0alpha1
   state:

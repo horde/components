@@ -13,6 +13,12 @@
 namespace Horde\Components\Qc\Task;
 
 use Horde\Components\Constants;
+use PHPMD\Renderer\TextRenderer as PHPMDRendererTextRenderer;
+use PHPMD\Writer\StreamWriter as PHPMDWriterStreamWriter;
+use PHPMD\RuleSetFactory as PHPMDRuleSetFactory;
+use PHPMD\PHPMD;
+use PHPMD\AbstractRule as PHPMDAbstractRule;
+use PHPMD\Report as PHPMDReport;
 
 /**
  * Components_Qc_Task_Md:: runs a mess detection check on the component.
@@ -64,21 +70,22 @@ class Md extends Base
      */
     public function run(array &$options = []): int
     {
-        $lib = realpath($this->_config->getPath() . '/lib');
+        $src = realpath($this->_config->getPath() . '/src');
 
-        $renderer = new PHPMD\Renderer\TextRenderer();
-        $renderer->setWriter(new PHPMD\Writer\StreamWriter(\STDOUT));
+        $renderer = new PHPMDRendererTextRenderer();
+        $renderer->setWriter(new PHPMDWriterStreamWriter(\STDOUT));
 
-        $ruleSetFactory = new PHPMD\RuleSetFactory();
-        $ruleSetFactory->setMinimumPriority(PHPMD\AbstractRule::LOWEST_PRIORITY);
+        $ruleSetFactory = new PHPMDRuleSetFactory();
+        $ruleSetFactory->setMinimumPriority(PHPMDAbstractRule::LOWEST_PRIORITY);
 
-        $phpmd = new PHPMD\PHPMD();
+        $phpmd = new PHPMD();
 
         $phpmd->processFiles(
-            $lib,
-            Constants::getDataDirectory() . '/qc_standards/phpmd.xml',
+            $src,
+            [],
             [$renderer],
-            $ruleSetFactory
+            $ruleSetFactory->createRuleSets(Constants::getDataDirectory() . '/qc_standards/phpmd.xml'),
+            new PHPMDReport
         );
 
         return $phpmd->hasViolations();
