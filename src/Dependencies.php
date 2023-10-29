@@ -164,6 +164,13 @@ interface Dependencies
     public function getRunnerFetchdocs();
 
     /**
+     * Returns the dependencies handler for a package.
+     *
+     * @return RunnerDependencies The fetch handler.
+     */
+    public function getRunnerDependencies();
+
+    /**
      * Returns the installer for a package.
      *
      * @return RunnerInstaller The installer.

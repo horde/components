@@ -132,6 +132,6 @@ class Fetchdocs extends Base
             $this->_dependencies->getRunnerFetchdocs()->run();
             return true;
         }
-        return false
+        return false;
     }
 }
