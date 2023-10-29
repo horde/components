@@ -32,10 +32,6 @@ use Horde\Components\Output;
  */
 class Webdocs
 {
-    /**
-     * The application configuration.
-     */
-    private readonly ConfigApplication $_config_application;
 
     /**
      * Constructor.
