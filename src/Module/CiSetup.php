@@ -64,7 +64,7 @@ class CiSetup extends Base
      *
      * @return boolean True if the module performed some action.
      */
-    public function handle(Config $config)
+    public function handle(Config $config): bool
     {
         $options = $config->getOptions();
         //@todo Split into two different runners here
@@ -76,5 +76,6 @@ class CiSetup extends Base
             $this->_dependencies->getRunnerCiPrebuild()->run();
             return true;
         }
+        return false;
     }
 }

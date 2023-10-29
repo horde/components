@@ -124,7 +124,7 @@ to just update package.xml and doc/CHANGES:
      *
      * @return boolean True if the module performed some action.
      */
-    public function handle(Config $config)
+    public function handle(Config $config): bool
     {
         $options = $config->getOptions();
         $arguments = $config->getArguments();
@@ -133,5 +133,6 @@ to just update package.xml and doc/CHANGES:
             $this->_dependencies->getRunnerChange()->run();
             return true;
         }
+        return false;
     }
 }
