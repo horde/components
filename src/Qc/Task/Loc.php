@@ -62,8 +62,21 @@ class Loc extends Base
      */
     public function run(array &$options = []): int
     {
-        $finder = new FinderFacade([realpath($this->_config->getPath())]);
-        $files = $finder->findFiles();
+        $files = [];
+        // We should probably factor out the component php file finder and reuse it.
+        $componentDir = realpath($this->_config->getPath());
+        $vendorDir = $componentDir . DIRECTORY_SEPARATOR . 'vendor';
+        $recursion = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($componentDir)
+        );
+        $errors = 0;
+        foreach ($recursion as $file) {
+            if ($file->isFile() && preg_match('/.php$/', (string) $file->getFilename()) &&
+            !str_starts_with((string) $file->getPathname(), $vendorDir)
+            ) {
+                $files[] = $file->getPathname();
+            }
+        }
 
         $analyser = new PHPLOC\Analyser();
         $count    = $analyser->countFiles($files, true);
