@@ -16,6 +16,7 @@ namespace Horde\Components\Release;
 use Horde\Components\Component;
 use Horde\Components\Helper\Version as HelperVersion;
 use Horde\Components\Output;
+use Horde\Components\Exception;
 
 /**
  * This class deals with the information associated to a release.
