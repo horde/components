@@ -17,6 +17,7 @@ use Horde\Components\Helper\Commit as HelperCommit;
 use Horde\Components\Output;
 use Horde\Components\Qc\Tasks as QcTasks;
 use Horde\Components\Release\Tasks as ReleaseTasks;
+use Horde\Components\Exception;
 
 /**
  * Components_Runner_Release:: releases a new version for a package.
