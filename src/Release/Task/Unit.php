@@ -14,6 +14,7 @@
  */
 
 namespace Horde\Components\Release\Task;
+use Horde\Components\Qc\Tasks as QcTasks;
 
 /**
  * Components_Release_Task_Unit:: Run Quality Checks and Unit Tests
@@ -102,6 +103,6 @@ class Unit extends Base
      */
     public function askDependencies(): array
     {
-        return ['qc' => 'Qc\Tasks'];
+        return ['qc' => QcTasks::class];
     }
 }
