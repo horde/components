@@ -37,7 +37,8 @@ license:
   uri: http://www.horde.org/licenses/lgpl21
 dependencies:
   required:
-    php: ^7.4 || ^8
+    ## We use str_contains / str_begins_with
+    php: ^8
     composer:
       horde/autoloader: '*'
       horde/argv: '*'
