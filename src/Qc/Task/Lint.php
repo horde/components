@@ -52,7 +52,9 @@ class Lint extends Base
         );
         $errors = 0;
         foreach ($recursion as $file) {
-            if ($file->isFile() && preg_match('/.php$/', (string) $file->getFilename())) {
+            if ($file->isFile() && preg_match('/.php$/', (string) $file->getFilename()) &&
+            !str_starts_with((string) $file->getPathname(), $lib . DIRECTORY_SEPARATOR . 'vendor')
+            ) {
                 $errors += $this->_lint($file->getPathname());
             }
         }
@@ -66,7 +68,6 @@ class Lint extends Base
         if (\DIRECTORY_SEPARATOR == '\\') {
             $command = '"' . $command . '"';
         }
-
         $output = shell_exec($command);
         if (str_contains($output, 'Errors parsing')) {
             $this->getOutput()->plain($output);
