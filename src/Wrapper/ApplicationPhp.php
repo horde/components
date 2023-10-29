@@ -84,10 +84,10 @@ class ApplicationPhp implements Wrapper, \Stringable
      *
      * @return string  The current version.
      */
-    public function getVersion()
+    public function getVersion(): string
     {
         if (!$this->exists()) {
-            return;
+            return '';
         }
         if ($this->isBundle()) {
             if (preg_match(self::BUNDLE_REGEXP, $this->_contents, $match)) {
@@ -98,6 +98,7 @@ class ApplicationPhp implements Wrapper, \Stringable
                 return $match[1];
             }
         }
+        return '';
     }
 
     /**
