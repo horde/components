@@ -77,5 +77,6 @@ class Unit extends Base
         if ($result) {
             return $result->errorCount() + $result->failureCount();
         }
+        return 0;
     }
 }
