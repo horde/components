@@ -75,7 +75,7 @@ class Configs extends Base
      *
      * @param Module[] $modules A list of modules.
      */
-    public function handleModules(array|iterable $modules): void
+    public function handleModules(iterable $modules): void
     {
         foreach ($this->_configs as $config) {
             $config->handleModules($modules);

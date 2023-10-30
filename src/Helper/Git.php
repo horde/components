@@ -682,14 +682,15 @@ class Git
      *
      * @return string The command output.
      */
-    protected function system(string $call): string|void
+    protected function system(string $call): string|null
     {
         if (empty($this->options['pretend'])) {
             //@todo Error handling
             return \system($call);
         } else {
             $this->output->info(\sprintf('Would run "%s" now.', $call));
-        }
+	}
+	return null;
     }
 
     /**
