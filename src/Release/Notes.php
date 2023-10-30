@@ -214,7 +214,7 @@ The major changes compared to the %s version %s are:%s',
     /**
      * Returns whether the release is a security release.
      *
-     * @return boolean  A security release?
+     * @return bool  A security release?
      */
     public function getSecurity(): bool
     {
@@ -237,7 +237,7 @@ The major changes compared to the %s version %s are:%s',
     /**
      * Does the current component come with release notes?
      *
-     * @return boolean True if release notes are available.
+     * @return bool True if release notes are available.
      */
     public function hasNotes(): bool
     {

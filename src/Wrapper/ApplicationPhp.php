@@ -72,7 +72,7 @@ class ApplicationPhp implements Wrapper, \Stringable
     /**
      * Returns whether this is a wrapper around a lib/Bundle.php.
      *
-     * @return boolean  True if this is a Bundle.php wrapper.
+     * @return bool  True if this is a Bundle.php wrapper.
      */
     public function isBundle(): bool
     {

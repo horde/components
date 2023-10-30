@@ -70,7 +70,7 @@ class GitPush extends Base
     /**
      * This task may not be skipped
      *
-     * @return boolean Always false, this task may not be skipped
+     * @return bool Always false, this task may not be skipped
      */
     public function skip($options): bool
     {

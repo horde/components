@@ -187,7 +187,7 @@ class Release
      *
      * @param string $task The task name.
      *
-     * @return boolean True if the task is active.
+     * @return bool True if the task is active.
      */
     private function _doTask($task): bool
     {

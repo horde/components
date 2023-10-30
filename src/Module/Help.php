@@ -32,7 +32,7 @@ class Help extends Base
     /**
      * Indicate if the module provides an option group.
      *
-     * @return boolean True if an option group should be added.
+     * @return bool True if an option group should be added.
      */
     public function hasOptionGroup(): bool
     {
@@ -90,9 +90,9 @@ class Help extends Base
      *
      * @param Config $config The configuration.
      *
-     * @return boolean True if the module performed some action.
+     * @return bool True if the module performed some action.
      */
-    public function handle(Config $config)
+    public function handle(Config $config): bool
     {
         $arguments = $config->getArguments();
         if (isset($arguments[0]) && $arguments[0] == 'help') {
@@ -153,5 +153,6 @@ class Help extends Base
             }
             return false;
         }
+        return false;
     }
 }

@@ -14,6 +14,9 @@ namespace Horde\Components\Component;
 
 use Horde\Components\Config;
 use Horde\Components\Exception;
+use stdClass;
+use Horde\Components\Pear\Environment as PearEnvironment;
+use Horde\Components\Wrapper\PackageXml;
 
 /**
  * Represents a remote component.
@@ -151,9 +154,9 @@ class Remote extends Base
      * Return a data array with the most relevant information about this
      * component.
      *
-     * @return array Information about this component.
+     * @return stdClass Information about this component.
      */
-    public function getData()
+    public function getData(): stdClass
     {
         $data = new \stdClass();
         $release = $this->_remote->getLatestDetails($this->_name, null);
@@ -177,7 +180,7 @@ class Remote extends Base
      *               archive, optionally [1] an array of error strings, and [2]
      *               PEAR output.
      */
-    public function placeArchive($destination, $options = []): array
+    public function placeArchive(string $destination, $options = []): array
     {
         $this->createDestination($destination);
         $this->_client->{'request.timeout'} = 60;
@@ -207,14 +210,14 @@ class Remote extends Base
     /**
      * Install a component.
      *
-     * @param Components_Pear_Environment $env The environment to install
+     * @param PearEnvironment $env The environment to install
      *                                         into.
      * @param array                 $options   Install options.
      * @param string                $reason    Optional reason for adding the
      *                                         package.
      */
     public function install(
-        Components_Pear_Environment $env,
+        PearEnvironment $env,
         $options = [],
         $reason = ''
     ): void {
@@ -248,9 +251,9 @@ class Remote extends Base
     /**
      * Return a PEAR package representation for the component.
      *
-     * @return \Horde_Pear_Package_Xml The package representation.
+     * @return PackageXml The package representation.
      */
-    protected function getPackageXml()
+    protected function getPackageXml(): PackageXml
     {
         if (!isset($this->_package)) {
             $this->_package = $this->_remote->getPackageXml(

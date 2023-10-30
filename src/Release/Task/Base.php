@@ -139,7 +139,7 @@ class Base implements TaskInterface
      *
      * @param array $options Additional options.
      *
-     * @return boolean True if it can be skipped.
+     * @return bool True if it can be skipped.
      */
     public function skip($options)
     {

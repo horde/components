@@ -36,7 +36,7 @@ use Horde\Components\Runner\Qc as RunnerQc;
 use Horde\Components\Runner\Release as RunnerRelease;
 use Horde\Components\Runner\Snapshot as RunnerSnapshot;
 use Horde\Components\Runner\Update as RunnerUpdate;
-use Horde\Components\Runner\WebDocs as RunnerWebDocs;
+use Horde\Components\Runner\Webdocs as RunnerWebDocs;
 
 /**
  * The Components_Dependencies_Bootstrap:: class provides the Components

@@ -112,9 +112,9 @@ The following example would solely run the PHPUnit test for the package:
      *
      * @param Config $config The configuration.
      *
-     * @return boolean True if the module performed some action.
+     * @return bool True if the module performed some action.
      */
-    public function handle(Config $config)
+    public function handle(Config $config): bool
     {
         $options = $config->getOptions();
         $arguments = $config->getArguments();
@@ -123,5 +123,6 @@ The following example would solely run the PHPUnit test for the package:
             $this->_dependencies->getRunnerQc()->run();
             return true;
         }
+        return false;
     }
 }

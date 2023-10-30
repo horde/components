@@ -33,7 +33,7 @@ class Commit
     /**
      * Modified paths.
      */
-    private array $_added = [];
+    private array $added = [];
 
     /**
      * Constructor.
@@ -64,7 +64,7 @@ class Commit
         if ($path instanceof Wrapper) {
             $path = $path->getLocalPath($directory);
         }
-        $this->_added[$path] = $directory;
+        $this->added[$path] = $directory;
     }
 
     /**
@@ -74,14 +74,14 @@ class Commit
      */
     public function commit($log): void
     {
-        if (empty($this->_added)) {
+        if (empty($this->added)) {
             return;
         }
-        foreach ($this->_added as $path => $wd) {
+        foreach ($this->added as $path => $wd) {
             $this->systemInDirectory('git add ' . $path, $wd);
         }
         $this->systemInDirectory('git commit -m "' . $log . '"', $wd);
-        $this->_added = [];
+        $this->added = [];
     }
 
     /**

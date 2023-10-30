@@ -16,6 +16,8 @@ namespace Horde\Components\Component;
 use Horde\Components\Config;
 use Horde\Components\Exception;
 use Horde\Components\Pear\Environment as PearEnvironment;
+use Horde\Components\Wrapper\PackageXml;
+use Horde_Pear_Package_Xml;
 
 /**
  * Represents a component archive.
@@ -33,6 +35,7 @@ use Horde\Components\Pear\Environment as PearEnvironment;
  */
 class Archive extends Base
 {
+    protected Horde_Pear_Package_Xml|null $package = null;
     /**
      * Constructor.
      *
@@ -106,14 +109,14 @@ class Archive extends Base
      *
      * @return \Horde_Pear_Package_Xml The package representation.
      */
-    protected function getPackageXml()
+    protected function getPackageXml(): PackageXml
     {
-        if (!isset($this->_package)) {
-            $this->_package = $this->getFactory()->createPackageXml(
+        if (!isset($this->package)) {
+            $this->package = $this->getFactory()->createPackageXml(
                 $this->_loadPackageFromArchive()
             );
         }
-        return $this->_package;
+        return $this->package;
     }
 
     /**

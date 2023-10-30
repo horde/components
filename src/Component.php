@@ -122,7 +122,7 @@ interface Component
     /**
      * Indicate if the component has a local package.xml.
      *
-     * @return boolean True if a package.xml exists.
+     * @return bool True if a package.xml exists.
      */
     public function hasLocalPackageXml(): bool;
 
@@ -239,7 +239,7 @@ interface Component
      *               archive, optionally [1] an array of error strings, and [2]
      *               PEAR output.
      */
-    public function placeArchive($destination, $options = []): array;
+    public function placeArchive(string $destination, $options = []): array;
 
     /**
      * Identify the repository root.

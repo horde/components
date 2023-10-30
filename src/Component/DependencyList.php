@@ -108,17 +108,18 @@ class DependencyList implements Iterator
         if (isset($dependencies[$key])) {
             return $dependencies[$key];
         }
+        return null;
     }
 
     /**
      * Implementation of the Iterator rewind() method. Rewinds the dependency list.
      *
-     * @return Dependency|null
+     * @return void
      */
-    public function rewind(): Dependency|null
+    public function rewind(): void
     {
         $this->_getDependencies();
-        return reset($this->_dependencies);
+        reset($this->_dependencies);
     }
 
     /**
@@ -144,22 +145,21 @@ class DependencyList implements Iterator
     /**
      * Implementation of the Iterator next() method. Returns the next dependency.
      *
-     * @return Dependency|null The next
+     * @return void The next
      * dependency or null if there are no more dependencies.
      */
-    public function next(): Dependency|null
+    public function next(): void
     {
         $res = next($this->_dependencies);
         if ($res === false) {
             return null;
         }
-        return $res;
     }
 
     /**
      * Implementation of the Iterator valid() method. Indicates if the current element is a valid element.
      *
-     * @return boolean Whether the current element is valid
+     * @return bool Whether the current element is valid
      */
     public function valid(): bool
     {

@@ -147,7 +147,7 @@ class GitBranch extends Base
      *
      * @param array $options Not used, signature only
      *
-     * @return boolean Always false, this task may not be skipped
+     * @return bool Always false, this task may not be skipped
      */
     public function skip($options = []): bool
     {
@@ -227,7 +227,7 @@ class GitBranch extends Base
      *
      * @param string $branch The branch to check
      *
-     * @return boolean  True if the branch exists
+     * @return bool  True if the branch exists
      */
     protected function _branchExists(string $branch): bool
     {

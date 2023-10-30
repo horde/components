@@ -133,7 +133,7 @@ class Dependencies
      * @param string               $parent    Name of the parent element.
      * @param array                $options   Options for generating the list.
      *
-     * @return boolean True in case listing should continue.
+     * @return bool True in case listing should continue.
      */
     private function _listComponent(
         Component $component,

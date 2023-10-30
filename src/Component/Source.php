@@ -266,7 +266,7 @@ class Source extends Base
     /**
      * Indicate if the component has a local package.xml.
      *
-     * @return boolean True if a package.xml exists.
+     * @return bool True if a package.xml exists.
      * @throws Exception
      */
     public function hasLocalPackageXml(): bool
@@ -1034,7 +1034,7 @@ class Source extends Base
      *               PEAR output.
      * @throws Exception
      */
-    public function placeArchive($destination, $options = []): array
+    public function placeArchive(string $destination, $options = []): array
     {
         if (!$this->getPackageXml()->exists()) {
             throw new Exception(

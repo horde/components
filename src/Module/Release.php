@@ -174,10 +174,10 @@ The following example would generate the package and add the release tag to git 
      *
      * @param Config $config The configuration.
      *
-     * @return boolean True if the module performed some action.
+     * @return bool True if the module performed some action.
      * @throws Exception
      */
-    public function handle(Config $config)
+    public function handle(Config $config): bool
     {
         $options = $config->getOptions();
         if (!empty($options['dump'])) {
@@ -189,5 +189,6 @@ The following example would generate the package and add the release tag to git 
             $this->_dependencies->getRunnerRelease()->run();
             return true;
         }
+        return false;
     }
 }

@@ -43,6 +43,10 @@ use RuntimeException;
 class Git
 {
     /**
+     * @var string[] Files that need to be committed
+     */
+    private array $added;
+    /**
      * @var string Path to git binary
      */
     protected string $gitBin;
@@ -52,12 +56,16 @@ class Git
     protected string $cwd;
 
     /**
+     * A variable potentially holding the output tool
+     */
+    public Output|null $output;
+    /**
      * Constructor
      *
      * @param string $gitBin  Path to git binary. Empty string to autodetect.
      * @param array  $options Any options this helper consumes. None yet.
      */
-    public function __construct(string $gitBin = '', array $options = [])
+    public function __construct(string $gitBin = '', protected array $options = [])
     {
         if (empty($gitBin)) {
             $this->gitBin = $this->detectGitBin();
@@ -601,7 +609,7 @@ class Git
      */
     public function add(string $item): void
     {
-        $this->_added[$item] = $item;
+        $this->added[$item] = $item;
     }
 
     /**
@@ -612,14 +620,14 @@ class Git
     public function commit(string $localDir, string $log): void
     {
         $wd = null;
-        if (empty($this->_added)) {
+        if (empty($this->added)) {
             return;
         }
-        foreach ($this->_added as $path => $wd) {
+        foreach ($this->added as $path => $wd) {
             $this->systemInDirectory('git add ' . $path, $localDir);
         }
         $this->systemInDirectory('git commit -m "' . $log . '"', $wd);
-        $this->_added = [];
+        $this->added = [];
     }
 
     /**
@@ -674,7 +682,7 @@ class Git
      *
      * @return string The command output.
      */
-    protected function system(string $call): string
+    protected function system(string $call): string|void
     {
         if (empty($this->options['pretend'])) {
             //@todo Error handling

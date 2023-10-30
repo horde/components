@@ -1,6 +1,6 @@
 <?php
 /**
- * Components_Pear_Environment:: handles a specific PEAR environment.
+ * PearEnvironment:: handles a specific PEAR environment.
  *
  * PHP Version 7
  *
@@ -17,7 +17,7 @@ use Horde\Components\Exception\Pear as ExceptionPear;
 use Horde\Components\Output;
 
 /**
- * Components_Pear_Environment:: handles a specific PEAR environment.
+ * PearEnvironment:: handles a specific PEAR environment.
  *
  * Copyright 2010-2020 Horde LLC (http://www.horde.org/)
  *
@@ -270,7 +270,7 @@ class Environment
      *
      * @param string $channel The channel name.
      *
-     * @return boolean True if the channel exists.
+     * @return bool True if the channel exists.
      * @throws Exception
      * @throws ExceptionPear
      */

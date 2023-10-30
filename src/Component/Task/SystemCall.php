@@ -42,6 +42,7 @@ trait SystemCall
         } else {
             $this->getOutput()->info(sprintf('Would run "%s" now.', $call));
         }
+        return '';
     }
 
     /**

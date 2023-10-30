@@ -89,9 +89,9 @@ class Pipeline extends Base
      *
      * @param Config $config The configuration.
      *
-     * @return boolean True if the module performed some action.
+     * @return bool True if the module performed some action.
      */
-    public function handle(Config $config)
+    public function handle(Config $config): bool
     {
         $options = $config->getOptions();
         $arguments = $config->getArguments();

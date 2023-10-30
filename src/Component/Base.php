@@ -217,7 +217,7 @@ abstract class Base implements Component
     /**
      * Indicate if the component has a local package.xml.
      *
-     * @return boolean True if a package.xml exists.
+     * @return bool True if a package.xml exists.
      */
     public function hasLocalPackageXml(): bool
     {
@@ -479,7 +479,7 @@ abstract class Base implements Component
     /**
      * Check if the library has a CI job.
      *
-     * @return boolean True if a CI job is defined.
+     * @return bool True if a CI job is defined.
      * @throws Exception
      */
     protected function _hasCi()

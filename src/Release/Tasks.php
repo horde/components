@@ -179,7 +179,7 @@ class Tasks
     /**
      * Is the current run operating in "pretend" mode?
      *
-     * @return boolean True in case we should be pretending.
+     * @return bool True in case we should be pretending.
      */
     public function pretend(): bool
     {
@@ -191,7 +191,7 @@ class Tasks
      *
      * @param string $task The task name.
      *
-     * @return boolean True in case the task is active.
+     * @return bool True in case the task is active.
      */
     public function isTaskActive($task): bool
     {

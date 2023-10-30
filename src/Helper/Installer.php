@@ -144,7 +144,7 @@ class Installer
                             throw new Exception(
                                 sprintf(
                                     'Cannot add component "%s". Remote access has been disabled (activate with --allow-remote)!',
-                                    $channel
+                                    $component->getName()
                                 )
                             );
                         }

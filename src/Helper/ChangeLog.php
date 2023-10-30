@@ -58,10 +58,10 @@ class ChangeLog
      *
      * @return string  Path to the updated changelog.yml file.
      */
-    public function changelogYml($log, $options)
+    public function changelogYml($log, $options): string
     {
         if (!strlen($log)) {
-            return;
+            return '';
         }
 
         if ($changelog = $this->changelogFileExists()) {
@@ -70,6 +70,7 @@ class ChangeLog
             }
             return $changelog;
         }
+        return '';
     }
 
     /**
@@ -262,12 +263,13 @@ class ChangeLog
      *
      * @return string  Path to the updated package.xml file.
      */
-    public function packageXml($log, $xml)
+    public function packageXml($log, $xml): string
     {
         if ($xml->exists()) {
             $xml->addNote($log);
             return $xml->getFullPath();
         }
+        return '';
     }
 
     /**

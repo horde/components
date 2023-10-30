@@ -75,7 +75,7 @@ abstract class Base implements Module, \Horde_Cli_Modular_ModuleUsage
     /**
      * Indicate if the module provides an option group.
      *
-     * @return boolean True if an option group should be added.
+     * @return bool True if an option group should be added.
      */
     public function hasOptionGroup(): bool
     {

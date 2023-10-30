@@ -171,7 +171,7 @@ class Factory
      */
     public function getPackageFileFromTgz(
         $package_tgz_path,
-        Components_Pear_Environment $environment
+        PearEnvironment $environment
     ): \PEAR_PackageFile {
         $pkg = new \PEAR_PackageFile($environment->getPearConfig());
         return ExceptionPear::catchError(

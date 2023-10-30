@@ -170,7 +170,7 @@ class Identify
      *
      * @param string $path The path to the directory.
      *
-     * @return boolean True if it is a directory
+     * @return bool True if it is a directory
      */
     private function _isDirectory($path)
     {
@@ -182,7 +182,7 @@ class Identify
      *
      * @param string $path The path to the directory.
      *
-     * @return boolean True if the directory contains a package.xml file.
+     * @return bool True if the directory contains a package.xml file.
      */
     private function _containsPackageXml($path)
     {
@@ -194,7 +194,7 @@ class Identify
      *
      * @param string $path The path.
      *
-     * @return boolean True if the provided file name points to a package.xml
+     * @return bool True if the provided file name points to a package.xml
      *                 file.
      */
     private function _isPackageXml($path)
@@ -210,7 +210,7 @@ class Identify
      *
      * @param string $path The path.
      *
-     * @return boolean True if the provided file name points to a .horde.yml
+     * @return bool True if the provided file name points to a .horde.yml
      *                 file.
      */
     private function _isHordeYml($path)
@@ -226,7 +226,7 @@ class Identify
      *
      * @param string $path The path to the directory.
      *
-     * @return boolean True if the directory contains the file.
+     * @return bool True if the directory contains the file.
      */
     private function _containsHordeYml($path)
     {

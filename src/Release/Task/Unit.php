@@ -56,7 +56,7 @@ class Unit extends Base
      *
      * @param array $options Additional options. (Ignored)
      *
-     * @return boolean Always True, can be skipped.
+     * @return bool Always True, can be skipped.
      */
     public function skip($options): bool
     {

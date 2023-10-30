@@ -71,7 +71,7 @@ trait WrapperTrait
     /**
      * Returns whether the file exists.
      *
-     * @return boolean  True if the file exists.
+     * @return bool  True if the file exists.
      */
     public function exists()
     {

@@ -138,6 +138,14 @@ class Base
     }
 
     /**
+     * Formally needed because the system call trait supports pretend mode.
+     */
+    public function pretend(): bool
+    {
+        return false;
+    }
+
+    /**
      * Run the task.
      *
      * @param array &$options Additional options.

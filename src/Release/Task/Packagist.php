@@ -165,7 +165,7 @@ class Packagist extends Base
      * @param array                     $options Additional options.
      * @param Horde\Components\Component\Base $package The package to check
      *
-     * @return boolean True if the package exists
+     * @return bool True if the package exists
      */
     protected function _verifyPackageExists($options, $package): bool
     {
