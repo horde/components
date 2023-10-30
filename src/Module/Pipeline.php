@@ -1,4 +1,5 @@
 <?php
+
 namespace Horde\Components\Module;
 
 use Horde\Components\Config;
@@ -23,7 +24,7 @@ class Pipeline extends Base
         return [new \Horde_Argv_Option(
             '',
             '--clean-room-dir',
-            ['action' => 'store', 'help'   => 'Where to put the auto-deleted dir?', 
+            ['action' => 'store', 'help'   => 'Where to put the auto-deleted dir?',
             'default' => dirname(__FILE__, 3) . '/tmp'
             ]
         )];

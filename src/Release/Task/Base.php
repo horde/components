@@ -11,6 +11,7 @@
  */
 
 namespace Horde\Components\Release\Task;
+
 use Horde\Components\TaskInterface;
 use Horde\Components\Component\Source as ComponentSource;
 use Horde\Components\Component\Task\Dependencies;

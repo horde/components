@@ -31,7 +31,7 @@ class DocsOrigin
 {
     /**
      * Path to the DOCS_ORIGIN file.
-     * 
+     *
      * @var string[]
      */
     private array $_docs_origin;
@@ -52,7 +52,7 @@ class DocsOrigin
     public function __construct($docs_origin, /**
      * The HTTP client for remote access.
      */
-    private readonly \Horde_Http_Client $_client)
+        private readonly \Horde_Http_Client $_client)
     {
         if (!is_array($docs_origin)) {
             $docs_origin = [$docs_origin];

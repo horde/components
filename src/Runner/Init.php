@@ -84,7 +84,7 @@ class Init
         $yaml['description'] = $description;
         $yaml['list'] = $list;
         $yaml['type'] = $type;
-        $yaml['homepage'] = $homepage;
+        $yaml['homepage'] = $homepage ?? '';
         $yaml['authors'] = $authors;
         $yaml['version'] = $version;
         $yaml['state'] = $state;

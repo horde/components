@@ -29,6 +29,7 @@ use Horde\Components\Component\Task\SystemCall;
  */
 class Composer
 {
+    use SystemCall;
     /**
      * @var array A list of repositories to add as sources for dependencies
      */
@@ -54,7 +55,6 @@ class Composer
     protected $_vendor = '';
 
     protected $_gitRepoBase = '';
-    use SystemCall;
     /**
      * Check some well known locations, fallback to which
      *
@@ -205,7 +205,7 @@ class Composer
         if (empty($composerDefinition->{'require-dev'})) {
             $composerDefinition->{'require-dev'} = new \stdClass();
         }
-        $jsonDefinition = json_encode($composerDefinition, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
+        $jsonDefinition = json_encode($composerDefinition, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         file_put_contents($filename, $jsonDefinition);
 
         if (isset($options['logger'])) {

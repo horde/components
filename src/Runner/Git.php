@@ -54,7 +54,7 @@ class Git
         private readonly Output $output,
         private GitHelper $gitHelper
     ) {
-//        $this->gitHelper = $git;
+        //        $this->gitHelper = $git;
         $options = $this->config->getOptions();
         $this->gitRepoBase = $options['git_repo_base'] ??
         'https://github.com/horde/';

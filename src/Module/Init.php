@@ -141,7 +141,7 @@ or
                     $this->_dependencies->getRunnerInit()->run();
                     return true;
                 default:
-                return false;
+                    return false;
             }
         }
     }

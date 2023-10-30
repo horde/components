@@ -37,16 +37,15 @@ class Version
     public function __construct(
         private string $original,
         private string $prefix,
-        private int $major, 
-        private int $minor = 0, 
-        private int $patch = 0, 
-        private int $subpatch = 0, 
+        private int $major,
+        private int $minor = 0,
+        private int $patch = 0,
+        private int $subpatch = 0,
         private string $stability = '',
         private int $stabilityVersion = 0,
         private string $buildInfo = '',
         private string $other = ''
-    )
-    {
+    ) {
 
     }
 
@@ -69,16 +68,16 @@ class Version
 
     /**
      * Reconstruct a normalized string representation from parts.
-     * 
+     *
      * Always format to major.minor.patch without leading zero.
      * Only show fourth version part if greater than 0.
      * Append stability with a hyphen unless it is empty or 'stable'
      * Append stability version only if it is 2 or higher and stability != stable
      * Append buildinfo with + if present
-     * 
+     *
      * This will lose any "other" that cannot be parsed to stability and buildinfo
      * This will lose the prefix
-     * 
+     *
      * @return string
      */
     public function normalizeComposerVersion(): string

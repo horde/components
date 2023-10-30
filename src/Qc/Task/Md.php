@@ -85,7 +85,7 @@ class Md extends Base
             [],
             [$renderer],
             $ruleSetFactory->createRuleSets(Constants::getDataDirectory() . '/qc_standards/phpmd.xml'),
-            new PHPMDReport
+            new PHPMDReport()
         );
 
         return $phpmd->hasViolations();

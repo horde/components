@@ -47,7 +47,7 @@ class Release
         /**
          * The output handler.
          *
-         * @param Output
+         * @param Output $_output
          */
         private readonly Output $_output,
         /**

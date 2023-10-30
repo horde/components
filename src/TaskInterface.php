@@ -11,6 +11,7 @@
  */
 
 namespace Horde\Components;
+
 use Horde\Components\Component\Source as ComponentSource;
 use Horde\Components\Component\Task\Dependencies;
 use Horde\Components\Component\Task\SystemCall;
@@ -36,7 +37,7 @@ interface TaskInterface
 {
     /**
      * Change the component this task should act upon.
-     * 
+     *
      * This might be needed if the component is not present before the task runs
      *
      * @param ComponentSource $component The component to be released.

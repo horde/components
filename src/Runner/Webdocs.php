@@ -32,7 +32,6 @@ use Horde\Components\Output;
  */
 class Webdocs
 {
-
     /**
      * Constructor.
      *

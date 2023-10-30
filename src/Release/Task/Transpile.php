@@ -81,7 +81,7 @@ class Transpile extends Base
         // Check if the component checkout is clean
         $componentDir = $this->getComponent()->getComponentDirectory();
         if (!$this->git->checkoutIsClean($componentDir)) {
-//            $issues[] = 'The target git checkout is not clean.';
+            //            $issues[] = 'The target git checkout is not clean.';
         }
         // TODO: Make ephemeral branch configurable.
         $ephemeralBranch = 'transpiler-ephemeral';
@@ -118,8 +118,7 @@ class Transpile extends Base
         $sourceRef = $sourceRef ?? $currentRef;
         if ($refType != 'auto') {
             // TBD
-        }
-        elseif ($this->git->localBranchExists($componentDir, $sourceRef)) {
+        } elseif ($this->git->localBranchExists($componentDir, $sourceRef)) {
             $refType = 'branch';
         } elseif ($this->git->localTagExists($componentDir, $sourceRef)) {
             $refType = 'tag';
@@ -191,8 +190,8 @@ class Transpile extends Base
         if (!empty($options['push_remote'])) {
             $remote = $options['push_remote'];
             $force = (bool) $options['force_push'] ?? false;
-//            $this->git->push($componentDir, $remote, $targetRef, $force);
-            $this->getOutput()->info('Pushed ' . $targetRef . ' to remote ' . $remote );
+            //            $this->git->push($componentDir, $remote, $targetRef, $force);
+            $this->getOutput()->info('Pushed ' . $targetRef . ' to remote ' . $remote);
         }
 
         // checkout original position

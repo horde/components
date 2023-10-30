@@ -14,6 +14,7 @@
  */
 
 namespace Horde\Components\Release\Task;
+
 use Horde\Components\Qc\Tasks as QcTasks;
 
 /**
