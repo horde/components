@@ -104,6 +104,8 @@ class Components
         Dependencies\Injector::registerAppDependencies($injector);
         // Identify if we are in a component dir or have provided one with variable
         $modular = self::_prepareModular($injector, $parameters);
+        // If we don't do this, help introspection is broken.
+        $injector->setInstance(ModularCli::class, $modular);
         // This is handled in prepareModular
         $parser = $injector->getInstance(Horde_Argv_Parser::class);
         // TODO: Get rid of this "config"
