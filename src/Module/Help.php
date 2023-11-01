@@ -11,8 +11,8 @@
  */
 
 namespace Horde\Components\Module;
-
 use Horde\Components\Config;
+use Horde\Cli\Modular\ModularCli;
 
 /**
  * Components_Module_Help:: provides information for a single action.
@@ -102,9 +102,9 @@ class Help extends Base
                 $action = '';
             }
             $formatter = new \Horde_Argv_IndentedHelpFormatter();
-            $modules = $this->_dependencies->getModules();
-            foreach ($modules->getModules()->listModules() as $module) {
-                $element = $modules->getProvider()->getModule($module);
+            $modules = $this->_dependencies->get(ModularCli::class)->getModules();
+            foreach ($modules as $module) {
+                $element = $module;
                 if (in_array($action, $element->getActions())) {
                     $title = "ACTION \"" . $action . "\"";
                     $sub = str_repeat('-', strlen($title));

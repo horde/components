@@ -16,6 +16,7 @@
 namespace Horde\Components\Module;
 
 use Horde\Components\Config;
+use Horde\Components\Runner\Git as RunnerGit;
 
 /**
  * Horde\Components\Module\Git:: Useful git command wrappers for CI
@@ -144,7 +145,7 @@ class Git extends Base
         $arguments = $config->getArguments();
         if (!empty($options['git'])
             || (isset($arguments[0]) && $arguments[0] == 'git')) {
-            $this->_dependencies->getRunnerGit()->run();
+            $this->_dependencies->getInstance(RunnerGit::class)->run();
             return true;
         }
         return false;

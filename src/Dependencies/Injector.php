@@ -84,6 +84,21 @@ class Injector extends HordeInjector implements Dependencies
         $this->setInstance(GitHelper::class, new GitHelper());
     }
 
+    public static function registerAppDependencies(HordeInjector $injector)
+    {
+        $injector->bindFactory(
+            \Horde_Cli::class,
+            Dependencies::class,
+            'createCli'
+        );
+        $injector->bindFactory(
+            Output::class,
+            Dependencies::class,
+            'createOutput'
+        );
+        $injector->setInstance(GitHelper::class, new GitHelper());
+    }
+
     /**
      * Initial configuration setup.
      *
@@ -348,7 +363,7 @@ class Injector extends HordeInjector implements Dependencies
      *
      * @return Output The output handler.
      */
-    public function createOutput($injector): \Horde\Components\Output
+    public function createOutput(Injector $injector): \Horde\Components\Output
     {
         return new Output(
             $injector->getInstance(\Horde_Cli::class),

@@ -12,6 +12,7 @@
 
 namespace Horde\Components;
 
+use Horde\Cli\Modular\Module as ModuleInterface;
 /**
  * Components_Module:: represents a task for a Horde component.
  *
@@ -25,7 +26,7 @@ namespace Horde\Components;
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-interface Module extends \Horde_Cli_Modular_Module
+interface Module extends ModuleInterface
 {
     /**
      * Return the action arguments supported by this module.
