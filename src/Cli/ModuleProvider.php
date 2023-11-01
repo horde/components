@@ -6,6 +6,7 @@ use Horde\Injector\Injector;
 use Psr\Container\ContainerInterface;
 use Horde\Components\Module\Help;
 use Horde\Components\Module\Git;
+use Horde\Components\Module\Config as ConfigModule;
 use Horde\Cli\Modular\ModuleProvider as CliModuleProvider;
 use Horde\Cli\Modular\Module;
 use Horde\Cli\Modular\Modules;
@@ -36,6 +37,7 @@ class ModuleProvider implements CliModuleProvider
     public function getModules(): Modules
     {
         return new Modules([
+            $this->injector->get(ConfigModule::class),
             $this->injector->get(Git::class),
             $this->injector->get(Help::class)
         ]);

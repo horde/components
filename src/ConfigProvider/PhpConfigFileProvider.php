@@ -5,9 +5,9 @@ namespace Horde\Components\ConfigProvider;
 class PhpConfigFileProvider implements ConfigProvider
 {
 
-    private array $settings;
+    private array $settings = [];
 
-    public function __construct(string $location)
+    public function __construct(private string $location)
     {
         $path = dirname($location);
         $file = basename($location);
@@ -15,7 +15,7 @@ class PhpConfigFileProvider implements ConfigProvider
             mkdir($path, 0700, true);
         }
         if (!file_exists($location)) {
-            file_put_contents($location, "<?php\n//Horde Components Config File\n\$conf = [];");
+            $this->writeToDisk($location);
         }
         if (is_readable($location)) {
             $conf = [];
@@ -35,5 +35,21 @@ class PhpConfigFileProvider implements ConfigProvider
             // Throw exception
         }
         return $this->settings[$id];
+    }
+
+    /**
+     * Currently only supports strings
+     */
+    public function setSetting(string $key, string $value) {
+        $this->settings[$key] = $value;
+    }
+
+    public function writeToDisk()
+    {
+        $fileContent = '<?php'  . PHP_EOL . '//Horde Components Config File' .  PHP_EOL. '$conf = [];' .  PHP_EOL;
+        foreach ($this->settings as $id => $value) {
+            $fileContent .= '$conf["' . $id . '"] = "' . $value . '";' . PHP_EOL;
+        }
+        file_put_contents($this->location, $fileContent);
     }
 }

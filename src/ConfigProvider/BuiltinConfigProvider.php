@@ -28,4 +28,9 @@ class BuiltinConfigProvider implements ConfigProvider
         }
         return $this->settings[$id];
     }
+
+    public function dumpSettings(): array
+    {
+        return $this->settings;
+    }
 }
