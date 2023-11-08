@@ -1,6 +1,6 @@
 <?php
 /**
- * Components_Module_Dependencies:: generates a dependency listing for the
+ * Components_Moduledependencies:: generates a dependency listing for the
  * specified package.
  *
  * PHP Version 7
@@ -16,7 +16,7 @@ namespace Horde\Components\Module;
 use Horde\Components\Config;
 
 /**
- * Components_Module_Dependencies:: generates a dependency listing for the
+ * Components_Moduledependencies:: generates a dependency listing for the
  * specified package.
  *
  * Copyright 2010-2020 Horde LLC (http://www.horde.org/)
@@ -140,7 +140,7 @@ class Dependencies extends Base
         $arguments = $config->getArguments();
         if (!empty($options['list_deps'])
             || (isset($arguments[0]) && $arguments[0] == 'deps')) {
-            $this->_dependencies->getRunnerDependencies()->run();
+            $this->dependencies->getRunnerDependencies()->run();
             return true;
         }
         return false;

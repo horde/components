@@ -129,7 +129,7 @@ class Fetchdocs extends Base
         $arguments = $config->getArguments();
         if (!empty($options['fetchdocs'])
             || (isset($arguments[0]) && $arguments[0] == 'fetchdocs')) {
-            $this->_dependencies->getRunnerFetchdocs()->run();
+            $this->dependencies->getRunnerFetchdocs()->run();
             return true;
         }
         return false;

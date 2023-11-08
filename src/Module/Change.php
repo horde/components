@@ -13,6 +13,7 @@
 namespace Horde\Components\Module;
 
 use Horde\Components\Config;
+use Horde\Components\Dependencies;
 
 /**
  * Components_Module_Change:: records a change log entry.
@@ -29,6 +30,14 @@ use Horde\Components\Config;
  */
 class Change extends Base
 {
+
+    public function __construct(Dependencies $dependencies)
+    {
+        parent::__construct($dependencies);
+
+    }
+
+
     public function getOptionGroupTitle(): string
     {
         return 'Change log';
@@ -130,7 +139,7 @@ to just update package.xml and doc/CHANGES:
         $arguments = $config->getArguments();
         if (!empty($options['changed']) ||
             (isset($arguments[0]) && $arguments[0] == 'changed')) {
-            $this->_dependencies->getRunnerChange()->run();
+            $this->dependencies->getRunnerChange()->run();
             return true;
         }
         return false;

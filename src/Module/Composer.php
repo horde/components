@@ -121,7 +121,7 @@ class Composer extends Base
         $arguments = $config->getArguments();
         if (!empty($options['composer'])
             || (isset($arguments[0]) && $arguments[0] == 'composer')) {
-            $this->_dependencies->getRunnerComposer()->run();
+            $this->dependencies->getRunnerComposer()->run();
             return true;
         }
         return false;

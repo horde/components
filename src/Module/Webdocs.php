@@ -133,7 +133,7 @@ class Webdocs extends Base
         $arguments = $config->getArguments();
         if (!empty($options['webdocs'])
             || (isset($arguments[0]) && $arguments[0] == 'webdocs')) {
-            $this->_dependencies->getRunnerWebdocs()->run();
+            $this->dependencies->getRunnerWebdocs()->run();
             return true;
         }
         return false;

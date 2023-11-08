@@ -119,7 +119,7 @@ class Help extends Base
                     );
                     $options = $element->getContextOptionHelp();
                     if (!empty($options)) {
-                        $parser = $this->_dependencies->getParser();
+                        $parser = $this->dependencies->getParser();
                         $title = "OPTIONS for \"" . $action . "\"";
                         $sub = str_repeat('-', strlen($title));
                         $help .= "\n\n\n"
@@ -145,7 +145,7 @@ class Help extends Base
                         }
                     }
                     $help .= "\n";
-                    $this->_dependencies->getOutput()->help(
+                    $this->dependencies->getOutput()->help(
                         $help
                     );
                     return true;

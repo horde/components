@@ -172,7 +172,7 @@ class Installer extends Base
         $arguments = $config->getArguments();
         if (!empty($options['install'])
             || (isset($arguments[0]) && $arguments[0] == 'install')) {
-            $this->_dependencies->getRunnerInstaller()->run();
+            $this->dependencies->getRunnerInstaller()->run();
             return true;
         }
         return false;

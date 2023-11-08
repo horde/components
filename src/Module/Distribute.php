@@ -130,7 +130,7 @@ class Distribute extends Base
         $arguments = $config->getArguments();
         if (!empty($options['distribute'])
             || (isset($arguments[0]) && $arguments[0] == 'distribute')) {
-            $this->_dependencies->getRunnerDistribute()->run();
+            $this->dependencies->getRunnerDistribute()->run();
             return true;
         }
         return false;

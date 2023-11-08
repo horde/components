@@ -134,7 +134,7 @@ class Snapshot extends Base
         $arguments = $config->getArguments();
         if (!empty($options['snapshot'])
             || (isset($arguments[0]) && $arguments[0] == 'snapshot')) {
-            $this->_dependencies->getRunnerSnapshot()->run();
+            $this->dependencies->getRunnerSnapshot()->run();
             return true;
         }
         return false;

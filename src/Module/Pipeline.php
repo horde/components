@@ -97,7 +97,7 @@ class Pipeline extends Base
         $arguments = $config->getArguments();
         if (!empty($arguments[0]) && $arguments[0] == 'pipeline') {
 
-            $this->_dependencies->get(PipelineRunner::class)->run();
+            $this->dependencies->get(PipelineRunner::class)->run();
             return true;
         }
         return false;

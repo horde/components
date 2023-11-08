@@ -141,7 +141,7 @@ class Update extends Base
         $arguments = $config->getArguments();
         if (!empty($options['updatexml'])
             || (isset($arguments[0]) && $arguments[0] == 'update')) {
-            $this->_dependencies->getRunnerUpdate()->run();
+            $this->dependencies->getRunnerUpdate()->run();
             return true;
         }
         return false;

@@ -69,11 +69,11 @@ class CiSetup extends Base
         $options = $config->getOptions();
         //@todo Split into two different runners here
         if (!empty($options['cisetup'])) {
-            $this->_dependencies->getRunnerCiSetup()->run();
+            $this->dependencies->getRunnerCiSetup()->run();
             return true;
         }
         if (!empty($options['ciprebuild'])) {
-            $this->_dependencies->getRunnerCiPrebuild()->run();
+            $this->dependencies->getRunnerCiPrebuild()->run();
             return true;
         }
         return false;

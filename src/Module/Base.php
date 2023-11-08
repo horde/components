@@ -38,9 +38,9 @@ abstract class Base implements Module, \Horde_Cli_Modular_ModuleUsage
      *
      * TODO: Refactor: We want to have individual constructor signatures injecting what is needed (or proxies thereof) rather than injector propagation hell.
      *
-     * @param Injector $_dependencies The dependency provider.
+     * @param Injector $dependencies The dependency provider.
      */
-    public function __construct(protected Injector $_dependencies)
+    public function __construct(protected Injector $dependencies)
     {
 
     }

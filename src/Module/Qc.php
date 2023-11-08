@@ -120,7 +120,7 @@ The following example would solely run the PHPUnit test for the package:
         $arguments = $config->getArguments();
         if (!empty($options['qc'])
             || (isset($arguments[0]) && $arguments[0] == 'qc')) {
-            $this->_dependencies->getRunnerQc()->run();
+            $this->dependencies->getRunnerQc()->run();
             return true;
         }
         return false;

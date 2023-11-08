@@ -134,11 +134,11 @@ or
         if (!empty($arguments[0]) && $arguments[0] == 'init') {
             switch ($arguments[1]) {
                 case 'application':
-                    $this->_dependencies->getRunnerInit()->run();
+                    $this->dependencies->getRunnerInit()->run();
                     return true;
 
                 case 'library':
-                    $this->_dependencies->getRunnerInit()->run();
+                    $this->dependencies->getRunnerInit()->run();
                     return true;
                 default:
                     return false;
