@@ -152,7 +152,7 @@ class DependencyList implements Iterator
     {
         $res = next($this->_dependencies);
         if ($res === false) {
-            return null;
+            return;
         }
     }
 
