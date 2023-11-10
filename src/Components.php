@@ -13,11 +13,26 @@
 
 namespace Horde\Components;
 
+use Horde\Cli\Modular\ModularCli;
 use Horde\Components\Component\Identify;
 use Horde\Components\Config\Cli as ConfigCli;
 use Horde\Components\Config\File as ConfigFile;
-use Horde\Components\Dependencies\Injector;
+use Horde\Components\ConfigProvider\BuiltinConfigProvider;
+use Horde\Components\ConfigProvider\EnvironmentConfigProvider;
+use Horde\Components\ConfigProvider\PhpConfigFileProvider;
+//use Horde\Components\Dependencies\Injector;
 use Horde\Injector\TopLevel;
+use Horde\Injector\Injector;
+use Horde\EventDispatcher\EventDispatcher;
+use Horde\EventDispatcher\SimpleListenerProvider;
+use Psr\Container\ContainerInterface;
+use Psr\EventDispatcher\EventdispatcherInterface;
+use Psr\EventDispatcher\ListenerProviderInterface;
+use Horde\Components\Cli\ModuleProvider;
+use Horde\Cli\Cli;
+use Horde\Cli\Modular\Modules;
+use Horde\Cli\Modular\ParserProvider;
+use Horde_Argv_Parser;
 
 /**
  * The Components:: class is the entry point for the various component actions
@@ -53,32 +68,57 @@ class Components
      */
     public static function main(array $parameters = []): void
     {
-        $dependencies = self::_prepareDependencies($parameters);
-        $modular = self::_prepareModular($dependencies, $parameters);
-        $parser = $modular->createParser();
-        $dependencies->setParser($parser);
+        // Setup the event system
+        $provider = new SimpleListenerProvider();
+        $dispatcher = new EventDispatcher($provider);
+        // Setup the DI system and feed the container - whatever needs the event system will get it
+        $injector = new Dependencies\Injector(new TopLevel);
+        $injector->setInstance(EventDispatcherInterface::class, $dispatcher);
+        $injector->setInstance(ListenerProviderInterface::class, $provider);
+        $injector->setInstance(ArgvWrapper::class, ArgvWrapper::fromGlobal());
+        $app = new Components($injector, $parameters);
+    }
+
+    public function __construct(Injector $injector, $parameters)
+    {
+        /**
+         * Early init
+         * - Save the environment,
+         * - Find the config file, if any
+         * - Find out if we know the component by env, cwd or first argument
+         */
+        $environmentConfig = new EnvironmentConfigProvider(getenv());
+        $injector->setInstance(EnvironmentConfigProvider::class, $environmentConfig);
+        $injector->setInstance(BuiltinConfigProvider::class, new BuiltinConfigProvider(
+            [
+                'checkout.dir' => $environmentConfig->hasSetting('HOME') ? $environmentConfig->getSetting('HOME') . '/git/horde' : '/srv/git/horde',
+                'repo.org' => 'horde',
+                'scm.domain' => 'https://github.com',
+                'scm.type' => 'github',
+            ]
+        ));
+        $finder = $injector->get(ConfigFileFinder::class);
+        $configFileLocation = $finder->find();
+        $phpConfig = new PhpConfigFileProvider($configFileLocation);
+        $injector->setInstance(PhpConfigFileProvider::class, $phpConfig);
+        Dependencies\Injector::registerAppDependencies($injector);
+        // Identify if we are in a component dir or have provided one with variable
+        $modular = self::_prepareModular($injector, $parameters);
+        // If we don't do this, help introspection is broken.
+        $injector->setInstance(ModularCli::class, $modular);
+        // This is handled in prepareModular
+        $parser = $injector->getInstance(Horde_Argv_Parser::class);
+        // TODO: Get rid of this "config"
         $config = self::_prepareConfig($parser);
-        $dependencies->initConfig($config);
+        $injector->setInstance(Config::class, $config);
 
         /**
-         * Issue: Some commands do not require a component or need the
-         * component path to be empty/non-existing, i.e. git clone
+         * By this point the modular CLI is setup to cycle through "handle"
          */
-        try {
-            self::_identifyComponent(
-                $config,
-                self::_getActionArguments($modular),
-                $dependencies
-            );
-        } catch (Exception $e) {
-            $parser->parserError($e->getMessage());
-            return;
-        }
-
         try {
             $ran = false;
             foreach (clone $modular->getModules() as $module) {
-                $ran |= $modular->getProvider()->getModule($module)->handle($config);
+                $ran |= $module->handle($config);
             }
         } catch (Exception $e) {
             $dependencies->getOutput()->fail($e);
@@ -90,10 +130,39 @@ class Components
         }
     }
 
+
     protected static function _prepareModular(
-        Dependencies $dependencies,
+        Dependencies|Injector $injector,
         array $parameters = []
-    ): \Horde_Cli_Modular {
+    ): ModularCli {
+        // TODO: Externalize to avoid non-code in a code file and to remove indention
+        $usage = '[options] [COMPONENT_PATH] [ACTION] [ARGUMENTS]
+
+COMPONENT_PATH
+
+Specifies the path to the component you want to work with. This argument is optional in case your current working directory is the base directory of a component and contains a package.xml file.
+
+ACTION
+
+Selects the action to perform. Most actions can also be selected with an option switch.
+
+This is a list of available actions (use "help ACTION" to get additional information on the specified ACTION):
+
+';
+
+
+        $cli = new Cli();
+        $moduleProvider = new ModuleProvider($injector);
+        $modules = $moduleProvider->getModules();
+        $parserProvider = new ParserProvider();
+        $injector->setInstance(ParserProvider::class, $parserProvider);
+        // Do we really want this here?
+        $modularCli = new ModularCli($cli, $modules, $parserProvider, $usage);
+        $parser = $modularCli->getParser();
+        $injector->setInstance(Horde_Argv_Parser::class, $parser);
+        return $modularCli;
+
+        /*
         $modular = new \Horde_Cli_Modular(
             ['parser' => ['class' => empty($parameters['parser']['class']) ? \Horde_Argv_Parser::class : $parameters['parser']['class'], 'usage' => '[options] [COMPONENT_PATH] [ACTION] [ARGUMENTS]
 
@@ -107,10 +176,10 @@ Selects the action to perform. Most actions can also be selected with an option 
 
 This is a list of available actions (use "help ACTION" to get additional information on the specified ACTION):
 
-'], 'modules' => ['directory' => __DIR__ . '/Module', 'exclude' => 'Base'], 'provider' => ['prefix' => 'Horde\Components\Module\\', 'dependencies' => $dependencies], 'cli' => $dependencies->getInstance(\Horde_Cli::class)]
+'], 'modules' => ['directory' => __DIR__ . '/Module', 'exclude' => 'Base'], 'provider' => ['prefix' => 'Horde\Components\Module\\', 'dependencies' => $injector], 'cli' => $injector->getInstance(\Horde_Cli::class)]
         );
-        $dependencies->setModules($modular);
-        return $modular;
+        $injector->setInstance(\Horde_Cli_Modular::class, $modular);
+        return $modular;*/
     }
 
     /**
@@ -172,7 +241,7 @@ This is a list of available actions (use "help ACTION" to get additional informa
     protected static function _identifyComponent(
         Config $config,
         $actions,
-        Dependencies $dependencies
+        Injector $dependencies
     ): void {
         $identify = new Identify(
             $config,

@@ -66,6 +66,7 @@ class Git
         $arguments = $this->config->getArguments();
         if (count($arguments) == 1) {
             $this->output->help('For usage help, run: horde-components help git');
+            $this->config->unshiftArgument('help');
             return;
         }
         if ($arguments[1] == 'clone' && count($arguments) > 1) {

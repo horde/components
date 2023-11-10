@@ -14,6 +14,7 @@
 namespace Horde\Components\Module;
 
 use Horde\Components\Dependencies;
+use Horde\Injector\Injector;
 use Horde\Components\Module;
 
 /**
@@ -35,10 +36,13 @@ abstract class Base implements Module, \Horde_Cli_Modular_ModuleUsage
     /**
      * Constructor.
      *
-     * @param Dependencies $_dependencies The dependency provider.
+     * TODO: Refactor: We want to have individual constructor signatures injecting what is needed (or proxies thereof) rather than injector propagation hell.
+     *
+     * @param Injector $_dependencies The dependency provider.
      */
-    public function __construct(protected Dependencies $_dependencies)
+    public function __construct(protected Injector $_dependencies)
     {
+
     }
 
     /**

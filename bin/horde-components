@@ -1,16 +1,5 @@
 #!/usr/bin/env php
 <?php
-if (strpos('@php_dir@', '@php_dir') === 0) {
-    set_include_path(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'lib' . PATH_SEPARATOR . get_include_path());
-}
-
-/* We are heavily relying on the PEAR libraries which are not clean with regard
- * to E_STRICT. */
-if (defined('E_DEPRECATED')) {
-    error_reporting(E_ALL & ~E_STRICT & ~E_DEPRECATED);
-} else {
-    error_reporting(E_ALL & ~E_STRICT);
-}
 // horde-components standalone run in composer setups
 $autoloaders = [
     __DIR__ . '/../config/autoload.php', // custom autoload config
@@ -23,8 +12,15 @@ $autoloaders = [
 foreach ($autoloaders as $autoloader) {
     if (file_exists($autoloader)) {
         require_once $autoloader;
+        $configured = true;
         break;
     }
 }
+
+if (!class_exists('Horde\Components\Components')) {
+    echo "You need to run 'composer install' first\n";
+    exit;
+}
+
 // in case of calling components via git-tools, this file plays no role
 Horde\Components\Components::main();

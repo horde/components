@@ -51,6 +51,7 @@ dependencies:
       horde/injector: '*'
       horde/release: ^4
       horde/yaml: '*'
+      horde/eventdispatcher: '*'
   optional:
     composer:
       horde/test: ^3
