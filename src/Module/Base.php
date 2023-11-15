@@ -42,7 +42,6 @@ abstract class Base implements Module, \Horde_Cli_Modular_ModuleUsage
      */
     public function __construct(protected Injector $dependencies)
     {
-
     }
 
     /**

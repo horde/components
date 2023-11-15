@@ -30,11 +30,9 @@ use Horde\Components\Dependencies;
  */
 class Change extends Base
 {
-
     public function __construct(Dependencies $dependencies)
     {
         parent::__construct($dependencies);
-
     }
 
 

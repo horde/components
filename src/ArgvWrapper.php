@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components;
 
 use InvalidArgumentException;
@@ -36,8 +38,7 @@ class ArgvWrapper implements IteratorAggregate
 
     public static function fromGlobal()
     {
-        if (empty($GLOBALS['argv']))
-        {
+        if (empty($GLOBALS['argv'])) {
             // Argv always contains at least the binary's name so this indicates a severe error
             throw new RuntimeException("Argv Global is not available or in invalid state");
         }

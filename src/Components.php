@@ -33,6 +33,16 @@ use Horde\Cli\Cli;
 use Horde\Cli\Modular\Modules;
 use Horde\Cli\Modular\ParserProvider;
 use Horde_Argv_Parser;
+// For Github API Client
+use Horde\Http\Client\Options;
+use Horde\Http\Client\Curl as CurlClient;
+use Horde\Http\StreamFactory;
+use Horde\Http\RequestFactory;
+use Horde\Http\ResponseFactory;
+use Horde\GithubApiClient\GithubApiClient;
+use Horde\GithubApiClient\GithubApiConfig;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 
 /**
  * The Components:: class is the entry point for the various component actions
@@ -72,7 +82,7 @@ class Components
         $provider = new SimpleListenerProvider();
         $dispatcher = new EventDispatcher($provider);
         // Setup the DI system and feed the container - whatever needs the event system will get it
-        $injector = new Dependencies\Injector(new TopLevel);
+        $injector = new Dependencies\Injector(new TopLevel());
         $injector->setInstance(EventDispatcherInterface::class, $dispatcher);
         $injector->setInstance(ListenerProviderInterface::class, $provider);
         $injector->setInstance(ArgvWrapper::class, ArgvWrapper::fromGlobal());
@@ -160,6 +170,10 @@ This is a list of available actions (use "help ACTION" to get additional informa
         $modularCli = new ModularCli($cli, $modules, $parserProvider, $usage);
         $parser = $modularCli->getParser();
         $injector->setInstance(Horde_Argv_Parser::class, $parser);
+        $injector->setInstance(ClientInterface::class, new CurlClient(new ResponseFactory(), new StreamFactory(), new Options()));
+        $injector->setInstance(RequestFactoryInterface::class, new RequestFactory());
+        $strGithubApiToken = (string) getenv('GITHUB_TOKEN') ?? '';
+        $injector->setInstance(GithubApiConfig::class, new GithubApiConfig(accessToken: $strGithubApiToken));
         return $modularCli;
 
         /*

@@ -13,6 +13,7 @@
 namespace Horde\Components;
 
 use Horde\Cli\Modular\Module as ModuleInterface;
+
 /**
  * Components_Module:: represents a task for a Horde component.
  *

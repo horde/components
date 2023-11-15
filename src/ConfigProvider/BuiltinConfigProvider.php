@@ -1,18 +1,19 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components\ConfigProvider;
+
 /**
  * Readonly defaults builtin as last resort
  */
 class BuiltinConfigProvider implements ConfigProvider
 {
-
     public function __construct(private array $settings =
     [
 
     ])
     {
-
     }
 
 

@@ -1,15 +1,16 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components\ConfigProvider;
+
 /**
  * A config provider based on environment
  */
 class EnvironmentConfigProvider implements ConfigProvider
 {
-
     public function __construct(private array $settings)
     {
-
     }
 
 

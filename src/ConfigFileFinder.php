@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components;
 
 use Horde\Components\ConfigProvider\EnvironmentConfigProvider;
@@ -8,7 +10,6 @@ class ConfigFileFinder
 {
     public function __construct(private EnvironmentConfigProvider $env)
     {
-
     }
 
     public function find(): string

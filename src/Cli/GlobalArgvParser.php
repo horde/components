@@ -1,6 +1,9 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components\Cli;
+
 use Horde\Components\ArgvWrapper;
 use Horde_Argv_Option;
 use Horde\Components\Constants;
@@ -13,7 +16,6 @@ use Horde_Argv_Values;
  */
 class GlobalArgvParser
 {
-
     private array $arguments;
     private Horde_Argv_Values $options;
     public function __construct(
@@ -104,21 +106,21 @@ class GlobalArgvParser
         $this->parse($this->argv);
     }
 
-    function parse(ArgvWrapper $wrapper)
+    public function parse(ArgvWrapper $wrapper)
     {
         [$this->options, $this->arguments] = $this->parser->parseArgs(iterator_to_array($this->argv));
     }
 
-    function parserError(string $error)
+    public function parserError(string $error)
     {
         $this->parser->parserError($error);
     }
-    function getArguments(): array
+    public function getArguments(): array
     {
         return $this->arguments;
     }
 
-    function getOptions(): Horde_Argv_Values
+    public function getOptions(): Horde_Argv_Values
     {
         return $this->options;
     }

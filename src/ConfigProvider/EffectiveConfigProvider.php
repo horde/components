@@ -1,6 +1,9 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components\ConfigProvider;
+
 /**
  * A top layer wins strategy for looking up config settings
  */

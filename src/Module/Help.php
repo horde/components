@@ -11,6 +11,7 @@
  */
 
 namespace Horde\Components\Module;
+
 use Horde\Components\Config;
 use Horde\Cli\Modular\ModularCli;
 
@@ -98,7 +99,7 @@ class Help extends Base
         if (isset($arguments[0]) && $arguments[0] == 'help') {
             if (isset($arguments[1])) {
                 $action = $arguments[1];
-                    } else {
+            } else {
                 $action = '';
             }
             $formatter = new \Horde_Argv_IndentedHelpFormatter();

@@ -27,6 +27,7 @@ use Horde\Components\Runner\Snapshot as RunnerSnapshot;
 use Horde\Components\Runner\Update as RunnerUpdate;
 use Horde\Components\Runner\Webdocs as RunnerWebdocs;
 use Psr\Container\ContainerInterface;
+
 /**
  * The Components_Dependencies:: interface is a central broker for
  * providing the dependencies to the different application parts.

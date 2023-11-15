@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components\Application;
 
 use Countable;
@@ -24,7 +26,7 @@ class ShellEnvironment implements IteratorAggregate, Countable
         $this->shellEnv = [];
         // Sanity check environment: Keys must be strings, values must be strings. No exceptions.
         foreach ($env as $varName => $varValue) {
-            if (!is_string($varName) || !is_string ($varValue)) {
+            if (!is_string($varName) || !is_string($varValue)) {
                 throw new InvalidArgumentException('Shell Environment must only have string keys and values');
             }
             $this->shellEnv[$varName] = $varValue;

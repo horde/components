@@ -46,7 +46,6 @@ class Version
         private string $buildInfo = '',
         private string $other = ''
     ) {
-
     }
 
     // Mark the internal state as changed from the original string

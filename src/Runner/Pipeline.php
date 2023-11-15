@@ -63,7 +63,7 @@ class Pipeline
             $pipelineConfigPath = [$pipelineName];
         }
         $pipelineNames = [];
-        foreach($options['pipeline'] as $L1Key => $pipelineL2) {
+        foreach ($options['pipeline'] as $L1Key => $pipelineL2) {
             if (!empty($pipelineL2) && is_string(array_keys($pipelineL2)[0])) {
                 foreach ($pipelineL2  as $L2Key => $L3) {
                     $pipelineNames[] = "$L1Key:$L2Key";

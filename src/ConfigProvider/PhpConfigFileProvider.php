@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components\ConfigProvider;
 
 class PhpConfigFileProvider implements ConfigProvider
 {
-
     private array $settings = [];
 
     public function __construct(private string $location)
@@ -40,7 +41,8 @@ class PhpConfigFileProvider implements ConfigProvider
     /**
      * Currently only supports strings
      */
-    public function setSetting(string $key, string $value) {
+    public function setSetting(string $key, string $value)
+    {
         $this->settings[$key] = $value;
     }
 

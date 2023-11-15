@@ -125,7 +125,8 @@ For writing a config file value
         return false;
     }
 
-    private function _handle(array $arguments) {
+    private function _handle(array $arguments)
+    {
         $builtin = $this->_dependencies->get(BuiltinConfigProvider::class);
         $phpFile = $this->_dependencies->get(PhpConfigFileProvider::class);
         $cli = $this->_dependencies->get(Cli::class);

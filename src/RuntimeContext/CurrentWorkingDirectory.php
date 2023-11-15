@@ -1,11 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Horde\Components\RuntimeContext;
 
 class CurrentWorkingDirectory
 {
-
     private readonly string $cwd;
     public function __construct()
     {

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components\Cli;
 
 use Horde\Injector\Injector;
@@ -23,12 +25,11 @@ class ModuleProvider implements CliModuleProvider
     public function __construct(private ContainerInterface $injector)
     {
         // Modules we will always load unconditionally
-
     }
 
     public function getModule(string $module): Module
     {
-        if ($module == 'help'){
+        if ($module == 'help') {
             $this->modules['help'] = $this->injector->get(Help::class);
         }
         return $this->modules[$module];
