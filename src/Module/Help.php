@@ -103,7 +103,7 @@ class Help extends Base
                 $action = '';
             }
             $formatter = new \Horde_Argv_IndentedHelpFormatter();
-            $modules = $this->_dependencies->get(ModularCli::class)->getModules();
+            $modules = $this->dependencies->get(ModularCli::class)->getModules();
             foreach ($modules as $module) {
                 $element = $module;
                 if (in_array($action, $element->getActions())) {

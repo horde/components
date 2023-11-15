@@ -149,6 +149,11 @@ class Git extends Base
             $this->dependencies->get(RunnerGithub::class)->run();
             return true;
         }
+        if (!empty($options['git'])
+            || (isset($arguments[0]) && $arguments[0] == 'git')) {
+            $this->dependencies->get(RunnerGit::class)->run();
+            return true;
+        }
         return false;
     }
 }
