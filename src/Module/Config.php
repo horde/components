@@ -127,9 +127,9 @@ For writing a config file value
 
     private function _handle(array $arguments)
     {
-        $builtin = $this->_dependencies->get(BuiltinConfigProvider::class);
-        $phpFile = $this->_dependencies->get(PhpConfigFileProvider::class);
-        $cli = $this->_dependencies->get(Cli::class);
+        $builtin = $this->dependencies->get(BuiltinConfigProvider::class);
+        $phpFile = $this->dependencies->get(PhpConfigFileProvider::class);
+        $cli = $this->dependencies->get(Cli::class);
         if (isset($arguments[1]) && $arguments[1] == 'init') {
             foreach ($builtin->dumpSettings() as $id => $value) {
                 $phpFile->setSetting($id, $value);
