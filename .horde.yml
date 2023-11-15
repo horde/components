@@ -52,6 +52,7 @@ dependencies:
       horde/release: ^4
       horde/yaml: '*'
       horde/eventdispatcher: '*'
+      horde/githubapiclient: '*'
   optional:
     composer:
       horde/test: ^3

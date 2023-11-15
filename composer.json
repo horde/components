@@ -39,7 +39,8 @@
         "horde/injector": "*",
         "horde/release": "^4",
         "horde/yaml": "*",
-        "horde/eventdispatcher": "dev-FRAMEWORK_6_0"
+        "horde/eventdispatcher": "dev-FRAMEWORK_6_0",
+        "horde/githubapiclient": "dev-FRAMEWORK_6_0"
     },
     "require-dev": {
         "horde/test": "dev-FRAMEWORK_6_0 || ^3"
