@@ -108,17 +108,26 @@ class Git extends Base
     {
         return 'Run Git Actions
 
-        clone [component] [branch]
-          Clone a component from an online repo
-        fetch [component]
-          Fetch metadata from all remotes, including tags
-        checkout [component] [branch]
-          Locally checkout a branch
-        branch [component] [branch] [source branch]
-          Update a branch from another branch
-        tag [component] [branch] [tag] [comment]
-          write a tag to a branch
-        push [component] [remote]
+For checking out all repositories from an organization
+    horde-components github-clone-org
+
+Clone a component from an online repo
+    horde-components git clone [component] [branch]
+
+Fetch metadata from all remotes, including tags
+    horde-components git fetch [component]
+
+Locally checkout a branch
+    horde-components git checkout [component] [branch]
+
+Update a branch from another branch
+    horde-components git branch [component] [branch] [source branch]
+
+Write a tag to a branch
+    horde-components git tag [component] [branch] [tag] [comment]
+
+Push a component to a remote
+    horde-components git push [component] [remote]
         ';
     }
 
