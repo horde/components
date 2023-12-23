@@ -131,7 +131,7 @@ class Components
                 $ran |= $module->handle($config);
             }
         } catch (Exception $e) {
-            $dependencies->getOutput()->fail($e);
+            $injector->getInstance(Output::class)->fail($e);
             return;
         }
 
