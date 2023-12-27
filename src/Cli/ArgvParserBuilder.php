@@ -27,7 +27,11 @@ class ArgvParserBuilder
 
     public function reset(): self
     {
-        $this->parser = new Parser;
+        $this->parser = new Parser(
+            [
+                'allowUnknownArgs' => true,
+                'ignoreUnknownArgs' => true,
+        ]);
         return $this;
     }
 
@@ -86,6 +90,8 @@ class ArgvParserBuilder
         $group = new OptionGroup($this->parser, $module->getOptionGroupTitle(), $module->getOptionGroupDescription());
         $group->addOptions($module->getOptionGroupOptions());
         $this->parser->addOptionGroup($group);
+        $this->parser->allowUnknownArgs = true;
+        $this->parser->ignoreUnknownArgs = true;
         return $this;
     }
 

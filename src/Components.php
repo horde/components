@@ -167,6 +167,8 @@ This is a list of available actions (use "help ACTION" to get additional informa
         // Do we really want this here?
         $modularCli = new ModularCli($cli, $modules, $parserProvider, $usage);
         $parser = $modularCli->getParser();
+        $parser->ignoreUnknownArgs = true;
+        $parser->allowUnknownArgs = true;
         $injector->setInstance(Horde_Argv_Parser::class, $parser);
         $injector->setInstance(ClientInterface::class, new CurlClient(new ResponseFactory(), new StreamFactory(), new Options()));
         $injector->setInstance(RequestFactoryInterface::class, new RequestFactory());
