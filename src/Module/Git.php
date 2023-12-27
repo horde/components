@@ -63,7 +63,7 @@ class Git extends Base
     {
         return [new \Horde\Argv\Option(
             '--git-bin',
-            ['action' => 'store_true', 'help'   => 'Path to git binary.']
+            ['action' => 'store', 'help'   => 'Path to git binary.']
         )];
     }
 
