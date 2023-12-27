@@ -17,6 +17,7 @@ use Horde\Components\Module;
  */
 class ArgvParserBuilder
 {
+    private Parser $parser;
     public function __construct(
         /**
          * The command line argument parser.
