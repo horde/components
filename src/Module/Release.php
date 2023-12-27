@@ -42,46 +42,46 @@ class Release extends Base
 
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde_Argv_Option(
+        return [new \Horde\Argv\Option(
             '-r',
             '--release',
             ['action' => 'store_true', 'help'   => 'Release the next version of the package.']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '-M',
             '--releaseserver',
             ['action' => 'store', 'help'   => 'The remote server SSH connection string. The release package will be copied here via "scp".']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '-U',
             '--releasedir',
             ['action' => 'store', 'help'   => 'PEAR server target directory on the remote machine.']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--next-version',
             ['action' => 'store', 'help'   => 'The version number planned for the next release of the component.']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--version-part',
             ['action' => 'store', 'help'   => 'Select the version part that should be incremented if no version is specified. Either "minor" or "patch" (default)']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--next-note',
             ['action' => 'store', 'default' => '', 'help'   => 'Initial change log note for the next version of the component [default: empty entry].']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--next-apistate',
             ['action' => 'store', 'help'   => 'The next API stability [default: no change].']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--next-relstate',
             ['action' => 'store', 'help'   => 'The next release stability [default: no change].']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--from',
             ['action' => 'store', 'help'   => 'The sender address for mailing list announcements.']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--horde-user',
             ['action' => 'store', 'help'   => 'The username for accessing bugs.horde.org.']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--horde-pass',
             ['action' => 'store', 'help'   => 'The password for accessing bugs.horde.org.']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--web-dir',
             ['action' => 'store', 'help'   => 'The directory of a horde-web checkout.']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--dump',
             ['action' => 'store_true', 'help'   => 'Prints the release notes only.']
         )];

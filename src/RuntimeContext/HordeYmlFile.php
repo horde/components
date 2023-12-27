@@ -54,7 +54,7 @@ class HordeYmlFile
     public function checkFirstArg($filename)
     {
         $args = $this->argv->getArguments();
-        return 'ff';
+        return '';
     }
 
     /**

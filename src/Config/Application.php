@@ -41,6 +41,7 @@ class Application
      */
     public function __construct(private readonly Config $_config)
     {
+
     }
 
     /**

@@ -12,8 +12,12 @@
 
 namespace Horde\Components\Module;
 
+use Horde\Argv\IndentedHelpFormatter;
 use Horde\Components\Config;
+use Horde\Components\Components;
 use Horde\Cli\Modular\ModularCli;
+use Horde\Components\Cli\ArgvParserBuilder;
+use Horde\Util\HordeString;
 
 /**
  * Components_Module_Help:: provides information for a single action.
@@ -98,62 +102,50 @@ class Help extends Base
         $arguments = $config->getArguments();
         if (isset($arguments[0]) && $arguments[0] == 'help') {
             if (isset($arguments[1])) {
-                $action = $arguments[1];
-            } else {
-                $action = '';
+                return $this->handleWithAction($arguments[1]);
             }
-            $formatter = new \Horde_Argv_IndentedHelpFormatter();
-            $modules = $this->dependencies->get(ModularCli::class)->getModules();
-            foreach ($modules as $module) {
-                $element = $module;
-                if (in_array($action, $element->getActions())) {
-                    $title = "ACTION \"" . $action . "\"";
-                    $sub = str_repeat('-', strlen($title));
-                    $help = "\n"
-                        . $formatter->highlightHeading($title . "\n" . $sub)
-                        . "\n\n";
-                    $help .= \Horde_String::wordwrap(
-                        $element->getHelp($action),
-                        75,
-                        "\n",
-                        true
-                    );
-                    $options = $element->getContextOptionHelp();
-                    if (!empty($options)) {
-                        $parser = $this->dependencies->getParser();
-                        $title = "OPTIONS for \"" . $action . "\"";
-                        $sub = str_repeat('-', strlen($title));
-                        $help .= "\n\n\n"
-                            . $formatter->highlightHeading($title . "\n" . $sub);
-                        foreach ($options as $option => $help_text) {
-                            $argv_option = $parser->getOption($option);
-                            $help .= "\n\n    " . $formatter->highlightOption($formatter->formatOptionStrings($argv_option)) . "\n\n      ";
-                            if (empty($help_text)) {
-                                $help .= \Horde_String::wordwrap(
-                                    $argv_option->help,
-                                    75,
-                                    "\n      ",
-                                    true
-                                );
-                            } else {
-                                $help .= \Horde_String::wordwrap(
-                                    $help_text,
-                                    75,
-                                    "\n      ",
-                                    true
-                                );
-                            }
-                        }
-                    }
-                    $help .= "\n";
-                    $this->dependencies->getOutput()->help(
-                        $help
-                    );
-                    return true;
-                }
-            }
-            return false;
+            return $this->handleWithoutAction();
         }
         return false;
+    }
+
+    function handleWithAction(string $action)
+    {
+        $formatter = new IndentedHelpFormatter();
+        $modular = $this->dependencies->get(ModularCli::class);
+        foreach ($modular->getModules() as $module) {
+            $element = $module;
+            if (in_array($action, $element->getActions())) {
+                $title = "ACTION \"" . $action . "\"";
+                $sub = str_repeat('-', strlen($title));
+                $help = "\n"
+                    . $formatter->highlightHeading($title . "\n" . $sub)
+                    . "\n\n";
+                $help .= HordeString::wordwrap(
+                    $element->getHelp($action),
+                    75,
+                    "\n",
+                    true
+                );
+                break;
+            }
+        }
+        $parser = (new ArgvParserBuilder())->withGlobalOptions()->withModuleOptions($module)->build();
+        $output = $this->dependencies->getOutput();
+        $output->help($help);
+        foreach ($parser->optionGroups as $group) {
+            foreach ($group->optionList as $option) {
+                $output->help((string) $option);
+                $output->help($parser->formatter->formatOption($option));
+            }
+        }
+        return true;
+    }
+
+    public function handleWithoutAction(): bool
+    {
+        $modular = $this->dependencies->get(ModularCli::class);
+        $modular->getParser()->printUsage();
+        return true;
     }
 }

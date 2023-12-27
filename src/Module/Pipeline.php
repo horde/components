@@ -21,7 +21,7 @@ class Pipeline extends Base
 
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde_Argv_Option(
+        return [new \Horde\Argv\Option(
             '',
             '--clean-room-dir',
             ['action' => 'store', 'help'   => 'Where to put the auto-deleted dir?',

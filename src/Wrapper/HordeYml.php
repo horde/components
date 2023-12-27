@@ -37,7 +37,7 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
      */
     public function __construct($baseDir)
     {
-        $this->_file = $baseDir . '/.horde.yml';
+        $this->_file = (string) $baseDir . '/.horde.yml';
         if ($this->exists()) {
             try {
                 $horde = \Horde_Yaml::loadFile($this->_file);

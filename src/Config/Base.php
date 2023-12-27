@@ -127,6 +127,7 @@ abstract class Base implements Config
     /**
      * Set the path to the component directory.
      *
+     * @deprecated
      * @param Component $component The path to the component directory.
      */
     public function setComponent(Component $component)
@@ -137,6 +138,7 @@ abstract class Base implements Config
     /**
      * Return the selected component.
      *
+     * @deprecated
      * @return Component The selected component.
      * @throws Exception
      */
@@ -153,6 +155,7 @@ abstract class Base implements Config
     /**
      * Set the path to the directory of the selected source component.
      *
+     * @deprecated
      * @param string $path The path to the component directory.
      */
     public function setPath($path)
@@ -164,6 +167,7 @@ abstract class Base implements Config
      * Get the path to the directory of the selected component (in case it was a
      * source component).
      *
+     * @deprecated
      * @return string The path to the component directory.
      */
     public function getPath()

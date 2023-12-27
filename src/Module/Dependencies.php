@@ -58,17 +58,17 @@ class Dependencies extends Base
      */
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde_Argv_Option(
+        return [new \Horde\Argv\Option(
             '-L',
             '--list-deps',
             ['action' => 'store_true', 'help'   => 'generate a dependency listing']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--short',
             ['action' => 'store_true', 'help'   => 'Generate a brief dependency list.']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--alldeps',
             ['action' => 'store_true', 'help'   => 'Include all optional dependencies into the dependency list.']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--no-tree',
             ['action' => 'store_true', 'help'   => 'Just print the dependencies of this package (YAML format) rather than generating a complete tree.']
         )];

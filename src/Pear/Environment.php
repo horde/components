@@ -39,7 +39,7 @@ class Environment
     /**
      * The base directory for the PEAR install location.
      */
-    private ?string $_base_directory = null;
+    private ?string $_basedirectory = null;
 
     /**
      * The path to the configuration file.
@@ -51,14 +51,14 @@ class Environment
      *
      * @var string
      */
-    private $_channel_directory;
+    private $_channeldirectory;
 
     /**
      * The directory that contains package sources.
      *
      * @var string
      */
-    private $_source_directory;
+    private $_sourcedirectory;
 
     /**
      * Constructor.
@@ -82,20 +82,20 @@ class Environment
     /**
      * Set the path to the install location.
      *
-     * @param string $base_directory The base directory for the PEAR install
+     * @param string $basedirectory The base directory for the PEAR install
      *                               location.
      * @param string $config_file    The name of the configuration file.
      *
      * @throws Exception
      */
-    public function setLocation($base_directory, $config_file): void
+    public function setLocation($basedirectory, $config_file): void
     {
-        $this->_base_directory = $base_directory;
-        if (!file_exists($this->_base_directory)) {
+        $this->_basedirectory = $basedirectory;
+        if (!file_exists($this->_basedirectory)) {
             throw new Exception(
                 sprintf(
                     'The path to the install location (%s) does not exist! Create it first.',
-                    $this->_base_directory
+                    $this->_basedirectory
                 )
             );
         }
@@ -123,8 +123,8 @@ class Environment
             }
         }
         if (empty($options['channelxmlpath']) &&
-            !empty($this->_source_directory)) {
-            $options['channelxmlpath'] = $this->_source_directory;
+            !empty($this->_sourcedirectory)) {
+            $options['channelxmlpath'] = $this->_sourcedirectory;
         }
         if (!empty($options['channelxmlpath'])) {
             if (!file_exists($options['channelxmlpath'])) {
@@ -135,7 +135,7 @@ class Environment
                     )
                 );
             }
-            $this->_channel_directory = $options['channelxmlpath'];
+            $this->_channeldirectory = $options['channelxmlpath'];
         }
     }
 
@@ -168,7 +168,7 @@ class Environment
                     )
                 );
             }
-            $this->_source_directory = $options['sourcepath'];
+            $this->_sourcedirectory = $options['sourcepath'];
         }
     }
 
@@ -411,7 +411,7 @@ class Environment
      */
     public function addChannel($channel, $options = [], $reason = ''): void
     {
-        $static = $this->_channel_directory . '/' . $channel . '.channel.xml';
+        $static = $this->_channeldirectory . '/' . $channel . '.channel.xml';
 
         if (!file_exists($static)) {
             if (empty($options['allow_remote'])) {
@@ -422,7 +422,7 @@ class Environment
                     )
                 );
             }
-            if (!empty($this->_channel_directory)) {
+            if (!empty($this->_channeldirectory)) {
                 $remote = new \Horde_Pear_Remote($channel);
                 file_put_contents($static, $remote->getChannel());
                 $this->_output->warn(

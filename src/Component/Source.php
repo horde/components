@@ -44,12 +44,6 @@ use stdClass;
  */
 class Source extends Base
 {
-    /**
-     * Path to the source directory.
-     *
-     * @var string
-     */
-    protected $_directory;
 
     /**
      * The PEAR package file representing the component.
@@ -77,12 +71,11 @@ class Source extends Base
      *                                              helpers.
      */
     public function __construct(
-        $directory,
+        protected ComponentDirectory $directory,
         Config $config,
         protected ReleaseNotes $_notes,
         Factory $factory
     ) {
-        $this->_directory = realpath($directory);
         parent::__construct($config, $factory);
     }
 
@@ -287,7 +280,7 @@ class Source extends Base
             preg_replace(
                 '#^' . $base . '#',
                 '',
-                $this->_directory
+                $this->directory
             )
         );
     }
@@ -301,7 +294,7 @@ class Source extends Base
     {
         foreach (['release.yml', 'RELEASE_NOTES'] as $file) {
             foreach (['docs', 'doc'] as $directory) {
-                $path = $this->_directory . '/' . $directory . '/' . $file;
+                $path = $this->directory . '/' . $directory . '/' . $file;
                 if (file_exists($path)) {
                     return $path;
                 }
@@ -320,14 +313,14 @@ class Source extends Base
     public function getDocumentOrigin(): ?string
     {
         foreach (['doc', 'docs'] as $doc_dir) {
-            $path = $this->_directory . '/' . $doc_dir;
+            $path = $this->directory . '/' . $doc_dir;
             if (!is_dir($path)) {
                 continue;
             }
             foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path)) as $file) {
                 if ($file->isFile() &&
                     $file->getFilename() == 'DOCS_ORIGIN') {
-                    return [$file->getPathname(), $this->_directory];
+                    return [$file->getPathname(), $this->directory];
                 }
             }
         }
@@ -350,9 +343,9 @@ class Source extends Base
     {
         if (!$this->getPackageXml()->exists()) {
             if (!empty($options['theme'])) {
-                $this->getFactory()->createThemePackageFile($this->_directory);
+                $this->getFactory()->createThemePackageFile($this->directory);
             } else {
-                $this->getFactory()->createPackageFile($this->_directory);
+                $this->getFactory()->createPackageFile($this->directory);
             }
             unset($this->_wrappers['PackageXml']);
         }
@@ -364,8 +357,8 @@ class Source extends Base
         if (!$package_xml->findNode('/p:package/p:providesextension')) {
             $package_xml->updateContents(
                 !empty($options['theme'])
-                    ? $this->getFactory()->createThemeContentList($this->_directory)
-                    : $this->getFactory()->createContentList($this->_directory),
+                    ? $this->getFactory()->createThemeContentList($this->directory)
+                    : $this->getFactory()->createContentList($this->directory),
                 $options
             );
             $this->updateComposerFromHordeYml();
@@ -380,7 +373,7 @@ class Source extends Base
                 foreach ($this->_wrappers as $wrapper) {
                     $wrapper->save();
                     if (!empty($options['commit'])) {
-                        $options['commit']->add($wrapper, $this->_directory);
+                        $options['commit']->add($wrapper, $this->directory);
                     }
                 }
                 return '';
@@ -425,7 +418,7 @@ class Source extends Base
                 throw new Exception(sprintf(
                     'Version %s not found in %s',
                     $yaml['version']['release'],
-                    $changelogYml->getLocalPath($this->_directory)
+                    $changelogYml->getLocalPath($this->directory)
                 ));
             }
             $xml->replaceTextNode(
@@ -633,7 +626,7 @@ class Source extends Base
                 );
             }
             if (!empty($options['commit'])) {
-                $options['commit']->add($file, $this->_directory);
+                $options['commit']->add($file, $this->directory);
             }
         }
 
@@ -657,7 +650,7 @@ class Source extends Base
             if (!empty($options['commit'])) {
                 $options['commit']->add(
                     $helper->changelogFileExists(),
-                    $this->_directory
+                    $this->directory
                 );
             }
             $result = sprintf(
@@ -693,7 +686,7 @@ class Source extends Base
         if (empty($options['pretend'])) {
             $xml->save();
             if (!empty($options['commit'])) {
-                $options['commit']->add($xml, $this->_directory);
+                $options['commit']->add($xml, $this->directory);
             }
             $result = sprintf(
                 'Synchronized %s with %s.',
@@ -703,7 +696,7 @@ class Source extends Base
             if ($path = $helper->updateChanges()) {
                 $changes->save();
                 if (!empty($options['commit'])) {
-                    $options['commit']->add($changes, $this->_directory);
+                    $options['commit']->add($changes, $this->directory);
                 }
                 $result .= "\n" . sprintf(
                     'Synchronized %s with %s.',
@@ -759,7 +752,7 @@ class Source extends Base
 
         if (!empty($options['commit'])) {
             foreach ($updated as $wrapper) {
-                $options['commit']->add($wrapper, $this->_directory);
+                $options['commit']->add($wrapper, $this->directory);
             }
         }
         $list = $this->_getWrapperNames($updated);
@@ -864,7 +857,7 @@ class Source extends Base
         if (empty($options['pretend'])) {
             $hordeYml->save();
             if (!empty($options['commit'])) {
-                $options['commit']->add($package, $this->_directory);
+                $options['commit']->add($package, $this->directory);
             }
             $result = sprintf(
                 'Set release state "%s" and api state "%s" in %s.',
@@ -938,7 +931,7 @@ class Source extends Base
 
         if (!empty($options['commit'])) {
             foreach ($updated as $wrapper) {
-                $options['commit']->add($wrapper, $this->_directory);
+                $options['commit']->add($wrapper, $this->directory);
             }
         }
 
@@ -983,7 +976,7 @@ class Source extends Base
     public function currentSentinel($changes, $app, $options): array
     {
         /** @var \Horde_Release_Sentinel $sentinel */
-        $sentinel = $this->getFactory()->createSentinel($this->_directory);
+        $sentinel = $this->getFactory()->createSentinel($this->directory);
         if (empty($options['pretend'])) {
             $sentinel->replaceChanges($changes);
             $sentinel->updateApplication($app);
@@ -998,7 +991,7 @@ class Source extends Base
                 continue;
             }
             if (!empty($options['commit'])) {
-                $options['commit']->add($file, $this->_directory);
+                $options['commit']->add($file, $this->directory);
             }
             $version = ($key == 'changes') ? $changes : $app;
             $result[] = sprintf(
@@ -1020,7 +1013,7 @@ class Source extends Base
      */
     public function tag($tag, $message, $commit): string
     {
-        return $commit->tag($tag, $message, $this->_directory) ?? '';
+        return $commit->tag($tag, $message, $this->directory) ?? '';
     }
 
     /**
@@ -1102,10 +1095,10 @@ class Source extends Base
      */
     public function repositoryRoot(HelperRoot $helper): string
     {
-        if (($result = $helper->traverseHierarchy($this->_directory)) === false) {
+        if (($result = $helper->traverseHierarchy($this->directory)) === false) {
             throw new Exception(sprintf(
                 'Unable to determine Horde repository root from component path "%s"!',
-                $this->_directory
+                $this->directory
             ));
         }
         return $result ?? '';
@@ -1211,12 +1204,12 @@ class Source extends Base
      */
     public function getDocDirectory(): string
     {
-        if (is_dir($this->_directory . '/doc')) {
-            $dir = $this->_directory . '/doc';
-        } elseif (is_dir($this->_directory . '/docs')) {
-            $dir = $this->_directory . '/docs';
+        if (is_dir($this->directory . '/doc')) {
+            $dir = $this->directory . '/doc';
+        } elseif (is_dir($this->directory . '/docs')) {
+            $dir = $this->directory . '/docs';
         } else {
-            $dir = $this->_directory . '/doc';
+            $dir = $this->directory . '/doc';
         }
         try {
             $info = $this->getHordeYml();
@@ -1237,7 +1230,7 @@ class Source extends Base
      */
     public function getComponentDirectory(): string
     {
-        return $this->_directory;
+        return $this->directory;
     }
 
     /**
@@ -1259,7 +1252,7 @@ class Source extends Base
             switch ($file) {
                 case 'HordeYml':
                     $this->_wrappers[$file] = new WrapperHordeYml(
-                        $this->_directory
+                        $this->directory
                     );
                     if (!$this->_wrappers[$file]->exists()) {
                         throw new \Horde_Exception_NotFound(
@@ -1269,12 +1262,12 @@ class Source extends Base
                     break;
                 case 'ComposerJson':
                     $this->_wrappers[$file] = new WrapperComposerJson(
-                        $this->_directory
+                        $this->directory
                     );
                     break;
                 case 'PackageXml':
                     $this->_wrappers[$file] = new WrapperPackageXml(
-                        $this->_directory
+                        $this->directory
                     );
                     break;
                 case 'ChangelogYml':
@@ -1289,7 +1282,7 @@ class Source extends Base
                     break;
                 case 'ApplicationPhp':
                     $this->_wrappers[$file] = new WrapperApplicationPhp(
-                        $this->_directory
+                        $this->directory
                     );
                     break;
                 default:
@@ -1359,7 +1352,7 @@ class Source extends Base
         return implode(
             ', ',
             array_map(
-                fn (Wrapper $wrapper) => $wrapper->getLocalPath($this->_directory),
+                fn (Wrapper $wrapper) => $wrapper->getLocalPath($this->directory),
                 $wrappers
             )
         );
@@ -1372,7 +1365,7 @@ class Source extends Base
     {
         $diff = $wrapper->diff($oldWrapper);
         if (!empty($diff)) {
-            $path = $wrapper->getLocalPath($this->_directory);
+            $path = $wrapper->getLocalPath($this->directory);
             return '--- a/' . $path . "\n"
                 . '--- b/' . $path . "\n"
                 . $diff;

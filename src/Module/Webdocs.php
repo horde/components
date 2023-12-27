@@ -56,11 +56,11 @@ class Webdocs extends Base
      */
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde_Argv_Option(
+        return [new \Horde\Argv\Option(
             '-W',
             '--webdocs',
             ['action' => 'store_true', 'help'   => 'Generate the documentation for the component in the specified DESTINATION or WEBSOURCE location.']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--html-generator',
             ['action' => 'store', 'help'   => 'Path to the Python docutils HTML generator script.']
         )];

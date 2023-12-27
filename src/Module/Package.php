@@ -1,33 +1,32 @@
 <?php
 /**
- * Components_Module_Fetchdocs:: fetches remote documentation files.
- *
- * PHP Version 7
+ * Horde\Components\Module\Package:: Frontend to check various aspects of the package under test
  *
  * @category Horde
  * @package  Components
- * @author   Gunnar Wrobel <wrobel@pardus.de>
+ * @author   Ralf Lang <ralf.lang@ralf-lang.de>
  * @license  http://www.fsf.org/copyleft/lgpl.html LGPL
  */
 
 namespace Horde\Components\Module;
 
 use Horde\Components\Config;
+use Horde\Cli\Cli;
 
 /**
- * Components_Module_Fetchdocs:: fetches remote documentation files.
+ * Horde\Components\Module\Package:: Frontend to check various aspects of the package under test
  *
- * Copyright 2010-2020 Horde LLC (http://www.horde.org/)
+ * Copyright 2023-2024 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.fsf.org/copyleft/lgpl.html.
  *
  * @category Horde
  * @package  Components
- * @author   Gunnar Wrobel <wrobel@pardus.de>
+ * @author   Ralf Lang <ralf.lang@ralf-lang.de>
  * @license  http://www.fsf.org/copyleft/lgpl.html LGPL
  */
-class Fetchdocs extends Base
+class Package extends Base
 {
     /**
      * Return the title for the option group representing this module.
@@ -36,7 +35,7 @@ class Fetchdocs extends Base
      */
     public function getOptionGroupTitle(): string
     {
-        return 'Fetch Documentation';
+        return 'Package Info';
     }
 
     /**
@@ -46,7 +45,7 @@ class Fetchdocs extends Base
      */
     public function getOptionGroupDescription(): string
     {
-        return 'This module fetches remote documentation files.';
+        return 'Check package info';
     }
 
     /**
@@ -56,11 +55,7 @@ class Fetchdocs extends Base
      */
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde\Argv\Option(
-            '-F',
-            '--fetchdocs',
-            ['action' => 'store_true', 'help'   => 'Fetches documentation files from remote locations. The files to fetch and their target location will be determined by a DOCS_ORIGIN file in the "doc" or "docs" folder of the selected component.']
-        )];
+        return [];
     }
 
     /**
@@ -70,7 +65,7 @@ class Fetchdocs extends Base
      */
     public function getTitle(): string
     {
-        return 'fetchdocs';
+        return 'package';
     }
 
     /**
@@ -80,7 +75,7 @@ class Fetchdocs extends Base
      */
     public function getUsage(): string
     {
-        return 'Fetch remote documentation.';
+        return 'Check Package Info';
     }
 
     /**
@@ -90,7 +85,7 @@ class Fetchdocs extends Base
      */
     public function getActions(): array
     {
-        return ['fetchdocs'];
+        return ['package'];
     }
 
     /**
@@ -102,7 +97,14 @@ class Fetchdocs extends Base
      */
     public function getHelp($action): string
     {
-        return 'This module fetches documentation files from remote locations. The files to fetch and their target location will be determined by a DOCS_ORIGIN file in the "doc" or "docs" folder of the selected component.';
+        return 'Run Package
+
+For checking the current working directory
+    horde-components Package
+
+For checking a specific directory
+    horde-components Package
+';
     }
 
     /**
@@ -112,7 +114,6 @@ class Fetchdocs extends Base
      */
     public function getContextOptionHelp(): array
     {
-        return ['--pretend' => ''];
     }
 
     /**
@@ -127,9 +128,9 @@ class Fetchdocs extends Base
     {
         $options = $config->getOptions();
         $arguments = $config->getArguments();
-        if (!empty($options['fetchdocs'])
-            || (isset($arguments[0]) && $arguments[0] == 'fetchdocs')) {
-            $this->dependencies->getRunnerFetchdocs()->run();
+        if ((isset($arguments[0]) && $arguments[0] == 'package')) {
+            $cli = $this->dependencies->get(Cli::class);
+            $cli->writeln(print_r($options,1));
             return true;
         }
         return false;

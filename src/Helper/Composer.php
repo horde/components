@@ -23,7 +23,7 @@ use Horde\Components\Component\Task\SystemCall;
  * @author    Michael Slusarz <slusarz@horde.org>
  * @author    Ralf Lang <lang@horde.org>
  * @category  Horde
- * @copyright 2013-2019 Horde LLC
+ * @copyright 2013-2023 Horde LLC
  * @license   http://www.horde.org/licenses/lgpl21 LGPL 2.1
  * @package   Components
  */

@@ -58,25 +58,25 @@ class Installer extends Base
      */
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde_Argv_Option(
+        return [new \Horde\Argv\Option(
             '-i',
             '--install',
             ['action' => 'store_true', 'help'   => 'Install the selected element into the PEAR environment indicated with the --destination option.']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--nodeps',
             ['action' => 'store_true', 'help'   => 'Ignore package dependencies and just install the specified package.']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '-S',
             '--sourcepath',
             ['action' => 'store', 'help'   => 'Location of downloaded PEAR packages. Specifying this path allows you to avoid accessing the network for installing new packages.']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '-X',
             '--channelxmlpath',
             ['action' => 'store', 'help'   => 'Location of static channel XML descriptions. These files need to be named CHANNEL.channel.xml (e.g. pear.php.net.channel.xml). Specifying this path allows you to avoid accessing the network for installing new channels. If this is not specified but SOURCEPATH is given then SOURCEPATH will be checked for such channel XML files.']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--build-distribution',
             ['action' => 'store_true', 'help'   => 'Download all elements required for installation to SOURCEPATH and CHANNELXMLPATH. If those paths have been left undefined they will be created automatically at DESTINATION/distribution if you activate this flag.']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--instructions',
             ['action' => 'store', 'help'   => 'Points to a file that contains per-package installation instructions. This is a plain text file that holds a package identifier per line. You can either specify packages by name (e.g. PEAR), by a combination of channel and name (e.g. pear.php.net/PEAR), a channel name (e.g. channel:pear.php.net), or all packages by the special keyword ALL. The package identifier is followed by a set of options that can be any keyword of the following: include,exclude,symlink,git,snapshot,stable,beta,alpha,devel,force,nodeps.
 
@@ -99,7 +99,7 @@ class Installer extends Base
        ALL: symlink
        \Horde_Test: exclude
 ']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '-H',
             '--horde-dir',
             ['action' => 'store', 'help'   => 'The location of the horde installation directory. The default will be the DESTINATION/horde directory']

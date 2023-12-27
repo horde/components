@@ -1,6 +1,6 @@
 <?php
 /**
- * Components_Helper_Templates_Directory:: converts template files from a
+ * Components_Helper_Templatesdirectory:: converts template files from a
  * directory into files in a target directory.
  *
  * PHP Version 7
@@ -17,7 +17,7 @@ use Horde\Components\Exception;
 use Horde\Components\Helper\Templates;
 
 /**
- * Components_Helper_Templates_Directory:: converts template files from a
+ * Components_Helper_Templatesdirectory:: converts template files from a
  * directory into files in a target directory.
  *
  * Copyright 2011-2020 Horde LLC (http://www.horde.org/)

@@ -71,18 +71,6 @@ class Configs extends Base
     }
 
     /**
-     * Provide each configuration handler with the list of supported modules.
-     *
-     * @param Module[] $modules A list of modules.
-     */
-    public function handleModules(iterable $modules): void
-    {
-        foreach ($this->_configs as $config) {
-            $config->handleModules($modules);
-        }
-    }
-
-    /**
      * Return the options provided by the configuration handlers.
      *
      * @return array An array of options.

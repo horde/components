@@ -58,11 +58,11 @@ class Snapshot extends Base
      */
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde_Argv_Option(
+        return [new \Horde\Argv\Option(
             '-z',
             '--snapshot',
             ['action' => 'store_true', 'help'   => 'Generate a development snapshot']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '--keep-version',
             ['action' => 'store_true', 'help'   => 'Keep the package version as it is. Usually it will get appended with "devYYYYMMDD".']
         )];

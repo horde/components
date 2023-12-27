@@ -15,11 +15,12 @@ namespace Horde\Components;
 
 use Horde\Cli\Modular\ModularCli;
 use Horde\Components\Component\Identify;
-use Horde\Components\Config\Cli as ConfigCli;
+use Horde\Components\Config\CliConfig;
 use Horde\Components\Config\File as ConfigFile;
 use Horde\Components\ConfigProvider\BuiltinConfigProvider;
 use Horde\Components\ConfigProvider\EnvironmentConfigProvider;
 use Horde\Components\ConfigProvider\PhpConfigFileProvider;
+use Horde\Components\Module;
 //use Horde\Components\Dependencies\Injector;
 use Horde\Injector\TopLevel;
 use Horde\Injector\Injector;
@@ -116,10 +117,9 @@ class Components
         $modular = self::_prepareModular($injector, $parameters);
         // If we don't do this, help introspection is broken.
         $injector->setInstance(ModularCli::class, $modular);
-        // This is handled in prepareModular
-        $parser = $injector->getInstance(Horde_Argv_Parser::class);
-        // TODO: Get rid of this "config"
-        $config = self::_prepareConfig($parser);
+        // TODO: Get rid of this "config" here.
+        $argv = $injector->get(ArgvWrapper::class);
+        $config = self::_prepareConfig($argv);
         $injector->setInstance(Config::class, $config);
 
         /**
@@ -128,6 +128,8 @@ class Components
         try {
             $ran = false;
             foreach (clone $modular->getModules() as $module) {
+                // Re-initialize the config for each module to avoid spill
+                $config = self::_prepareConfig($argv, $module);
                 $ran |= $module->handle($config);
             }
         } catch (Exception $e) {
@@ -136,7 +138,7 @@ class Components
         }
 
         if (!$ran) {
-            $parser->parserError(self::ERROR_NO_ACTION);
+            $modular->getParser()->parserError(self::ERROR_NO_ACTION);
         }
     }
 
@@ -146,11 +148,7 @@ class Components
         array $parameters = []
     ): ModularCli {
         // TODO: Externalize to avoid non-code in a code file and to remove indention
-        $usage = '[options] [COMPONENT_PATH] [ACTION] [ARGUMENTS]
-
-COMPONENT_PATH
-
-Specifies the path to the component you want to work with. This argument is optional in case your current working directory is the base directory of a component and contains a package.xml file.
+        $usage = '[options] [ACTION] [ARGUMENTS]
 
 ACTION
 
@@ -175,25 +173,6 @@ This is a list of available actions (use "help ACTION" to get additional informa
         $strGithubApiToken = (string) getenv('GITHUB_TOKEN') ?? '';
         $injector->setInstance(GithubApiConfig::class, new GithubApiConfig(accessToken: $strGithubApiToken));
         return $modularCli;
-
-        /*
-        $modular = new \Horde_Cli_Modular(
-            ['parser' => ['class' => empty($parameters['parser']['class']) ? \Horde_Argv_Parser::class : $parameters['parser']['class'], 'usage' => '[options] [COMPONENT_PATH] [ACTION] [ARGUMENTS]
-
-COMPONENT_PATH
-
-Specifies the path to the component you want to work with. This argument is optional in case your current working directory is the base directory of a component and contains a package.xml file.
-
-ACTION
-
-Selects the action to perform. Most actions can also be selected with an option switch.
-
-This is a list of available actions (use "help ACTION" to get additional information on the specified ACTION):
-
-'], 'modules' => ['directory' => __DIR__ . '/Module', 'exclude' => 'Base'], 'provider' => ['prefix' => 'Horde\Components\Module\\', 'dependencies' => $injector], 'cli' => $injector->getInstance(\Horde_Cli::class)]
-        );
-        $injector->setInstance(\Horde_Cli_Modular::class, $modular);
-        return $modular;*/
     }
 
     /**
@@ -213,12 +192,13 @@ This is a list of available actions (use "help ACTION" to get additional informa
         }
     }
 
-    protected static function _prepareConfig(\Horde_Argv_Parser $parser): \Horde\Components\Configs
+    protected static function _prepareConfig(ArgvWrapper $argv, Module|null $module = null): \Horde\Components\Configs
     {
         $config = new Configs();
         $config->addConfigurationType(
-            new ConfigCli(
-                $parser
+            new CliConfig(
+                $argv,
+                $module
             )
         );
         $config->unshiftConfigurationType(

@@ -35,7 +35,7 @@ class ChangeLog
      *
      * @var string
      */
-    protected $_directory;
+    protected $directory;
 
     /**
      * Constructor.
@@ -45,7 +45,7 @@ class ChangeLog
      */
     public function __construct(Config $config, protected Component $_component)
     {
-        $this->_directory = $config->getPath();
+        $this->directory = $config->getPath();
     }
 
     /* changelog.yml methods */
@@ -319,7 +319,7 @@ class ChangeLog
             $blob = trim(
                 $this->_systemInDirectory(
                     'git log --format="%H" HEAD^..HEAD',
-                    $this->_directory
+                    $this->directory
                 )
             );
 
@@ -329,7 +329,7 @@ class ChangeLog
             // generation.
             $id = $hordeInfo['id'] == 'horde' ? 'base' : $hordeInfo['id'];
 
-            $changes = preg_replace('#^' . $this->_directory . '#', '', $changes);
+            $changes = preg_replace('#^' . $this->directory . '#', '', $changes);
 
             return 'https://github.com/horde/' . $id . '/blob/'
                 . $blob . $changes;

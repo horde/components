@@ -41,7 +41,7 @@ class Qc extends Base
 
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde_Argv_Option(
+        return [new \Horde\Argv\Option(
             '-Q',
             '--qc',
             ['action' => 'store_true', 'help'   => 'Check the package quality.']

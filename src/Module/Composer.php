@@ -13,7 +13,12 @@
 
 namespace Horde\Components\Module;
 
+use Horde\Argv\Option;
+use Horde\Components\Component\ComponentDirectory;
+use Horde\Components\Component\Source as SourceComponent;
 use Horde\Components\Config;
+use Horde\Components\Runner\Composer as RunnerComposer;
+use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
 
 /**
  * Creates a config file for use with PHP Composer.
@@ -45,14 +50,14 @@ class Composer extends Base
     public function getOptionGroupOptions(): array
     {
         return [
-            new \Horde_Argv_Option(
+            new Option(
                 '--composer-version',
                 [
                     'action' => 'store',
                     'help' => 'A fixed version or branch expression to append after the version from yaml'
                 ],
             ),
-            new \Horde_Argv_Option(
+            new Option(
                 '--minimum-stability',
                 [
                     'action' => 'store',
@@ -119,9 +124,14 @@ class Composer extends Base
     {
         $options = $config->getOptions();
         $arguments = $config->getArguments();
+        $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory);
+        $component = $this->dependencies
+        ->getComponentFactory()
+        ->createSource($componentDirectory);
+        $config->setComponent($component);
         if (!empty($options['composer'])
             || (isset($arguments[0]) && $arguments[0] == 'composer')) {
-            $this->dependencies->getRunnerComposer()->run();
+            $this->dependencies->get(RunnerComposer::class)->run($config);
             return true;
         }
         return false;

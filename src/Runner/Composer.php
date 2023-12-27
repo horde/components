@@ -35,18 +35,20 @@ class Composer
                                  job.
      * @param Output $_output The output handler.
     */
-    public function __construct(private readonly Config $_config, private readonly Output $_output)
+    public function __construct(private readonly Output $_output)
     {
+
     }
 
-    public function run(): void
+    public function run(Config $config): void
     {
         $composer = new HelperComposer();
-        $options = $this->_config->getOptions();
-        $options['logger'] = $this->_output;
+        $options = $config->getOptions();
 
+        $options['logger'] = $this->_output;
+        // We need to set the component first
         $composer->generateComposerJson(
-            $this->_config->getComponent()->getHordeYml(),
+            $config->getComponent()->getHordeYml(),
             $options
         );
     }

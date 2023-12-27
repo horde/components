@@ -43,15 +43,15 @@ class Init extends Base
 
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde_Argv_Option(
+        return [new \Horde\Argv\Option(
             '',
             '--author',
             ['action' => 'store', 'help'   => 'First author\'s name']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '',
             '--email',
             ['action' => 'store', 'help'   => 'Author\'s email']
-        ), new \Horde_Argv_Option(
+        ), new \Horde\Argv\Option(
             '',
             '--license',
             ['action' => 'store', 'help'   => 'License']

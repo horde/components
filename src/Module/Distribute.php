@@ -58,7 +58,7 @@ class Distribute extends Base
      */
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde_Argv_Option(
+        return [new \Horde\Argv\Option(
             '--distribute',
             ['action' => 'store_true', 'help'   => 'Prepare the package definition for the component in the specified DISTRIBUTE location']
         )];

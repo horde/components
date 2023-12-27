@@ -61,7 +61,7 @@ class Git extends Base
      */
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde_Argv_Option(
+        return [new \Horde\Argv\Option(
             '--git-bin',
             ['action' => 'store_true', 'help'   => 'Path to git binary.']
         )];
