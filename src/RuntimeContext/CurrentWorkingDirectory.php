@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Horde\Components\RuntimeContext;
 
-class CurrentWorkingDirectory
+use Stringable;
+
+class CurrentWorkingDirectory implements Stringable
 {
     private readonly string $cwd;
     public function __construct()
@@ -25,6 +27,11 @@ class CurrentWorkingDirectory
      */
     public function get(): string
     {
-        return $this->cwd;
+        return $this->__toString();
+    }
+
+    public function __toString(): string
+    {
+        return (string) realpath($this->cwd);
     }
 }
