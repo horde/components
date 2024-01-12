@@ -11,12 +11,12 @@ cd /srv/git/$component
 ## TODO: Edit .horde.yml require: versions to +1.0.0alpha1
 /srv/www/horde/web/components/bin/horde-components composer
 ## This breaks for pear/pear!
-sed -i 's/pear:/composer:/g' .horde.yml 
-sed -i 's|pear.horde.org/Horde_|horde/|g' .horde.yml 
-sed -i 's|php: .*|php: ^7|g' .horde.yml 
+sed -i 's/pear:/composer:/g' .horde.yml
+sed -i 's|pear.horde.org/Horde_|horde/|g' .horde.yml
+sed -i 's|php: .*|php: ^7|g' .horde.yml
 ## visually check for differences
 #exit;
 ## If all is green, run release
 
-/srv/www/horde/web/components/bin/horde-components /srv/git/$component release for h6-maintaina
+/srv/www/horde/web/components/bin/horde-components /srv/git/horde/$component release for h6-maintaina
 

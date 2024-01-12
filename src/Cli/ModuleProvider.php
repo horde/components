@@ -16,6 +16,7 @@ use Horde\Components\Module\Composer;
 use Horde\Components\Module\Change;
 use Horde\Components\Module\Package;
 use Horde\Components\Module\Release;
+use Horde\Components\Module\Status;
 
 /**
  * Components tool specific, context aware module provider
@@ -49,6 +50,7 @@ class ModuleProvider implements CliModuleProvider
             $this->injector->get(Help::class),
             $this->injector->get(Package::class),
             $this->injector->get(Release::class),
+            $this->injector->get(Status::class),
         ]);
     }
 }

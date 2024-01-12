@@ -31,6 +31,9 @@ $conf['from'] = 'Full name <user@horde.org>';
 /* Path to a checkout of the horde-web repository. */
 $conf['web_dir'] = '/var/www/horde-web';
 
+// Target directory for a developer installation. The webroot will be the ./web dir under that install dir
+$conf['install_base'] = '/var/www/horde-dev';
+
 /**
  * Vendor: Used by the composer, packagist, satis and git-related tasks
  * Defaults to 'horde' if unset

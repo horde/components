@@ -62,7 +62,7 @@ class Github
         $options = $this->config->getOptions();
         $this->gitRepoBase = $options['git_repo_base'] ??
         'https://github.com/horde/';
-        $this->localCheckoutDir = $options['checkout_dir'] ?? '/srv/git/';
+        $this->localCheckoutDir = $options['checkout_dir'] ?? '/srv/git/horde';
     }
 
     public function run()
