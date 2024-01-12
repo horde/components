@@ -68,10 +68,10 @@ class Release
     /**
      * @throws Exception
      */
-    public function run(): void
+    public function run(Config $config): void
     {
-        $component = $this->_config->getComponent();
-        $options = $this->_config->getOptions();
+        $component = $config->getComponent();
+        $options = $config->getOptions();
 
         $sequence = [];
 
@@ -79,9 +79,8 @@ class Release
 
         /**
          * Catch predefined release pipelines
-         * Otherwise, revert to traditional behaviour
          */
-        $arguments = $this->_config->getArguments();
+        $arguments = $config->getArguments();
         if ((count($arguments) == 3) &&
             $arguments[0] == 'release' &&
             $arguments[1] == 'for') {
@@ -97,7 +96,9 @@ class Release
             );
             return;
         }
-
+        // We no longer support fine grained selection of steps.
+        // TODO: Run a default pipeline if no arguments are provided.
+/*
         if ($this->_doTask('unittest')) {
             $sequence[] = 'Unit';
             $pre_commit = true;
@@ -179,7 +180,9 @@ class Release
             );
         } else {
             $this->_output->warn('Huh?! No tasks selected... All done!');
-        }
+        } */
+        $this->_output->warn('Run "horde-components release for <pipeline>"');
+        $this->_output->info("Available pipelines from your configuration: \n" . implode("\n", array_keys($options['pipeline']['release'] ?? [])));
     }
 
     /**

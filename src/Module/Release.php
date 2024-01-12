@@ -14,6 +14,9 @@ namespace Horde\Components\Module;
 
 use Horde\Components\Config;
 use Horde\Components\Exception;
+use Horde\Argv\Option;
+use Horde\Components\Component\ComponentDirectory;
+use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
 
 /**
  * Components_Module_Release:: generates a release.
@@ -42,46 +45,46 @@ class Release extends Base
 
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde\Argv\Option(
+        return [new Option(
             '-r',
             '--release',
             ['action' => 'store_true', 'help'   => 'Release the next version of the package.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '-M',
             '--releaseserver',
             ['action' => 'store', 'help'   => 'The remote server SSH connection string. The release package will be copied here via "scp".']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '-U',
             '--releasedir',
             ['action' => 'store', 'help'   => 'PEAR server target directory on the remote machine.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--next-version',
             ['action' => 'store', 'help'   => 'The version number planned for the next release of the component.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--version-part',
             ['action' => 'store', 'help'   => 'Select the version part that should be incremented if no version is specified. Either "minor" or "patch" (default)']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--next-note',
             ['action' => 'store', 'default' => '', 'help'   => 'Initial change log note for the next version of the component [default: empty entry].']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--next-apistate',
             ['action' => 'store', 'help'   => 'The next API stability [default: no change].']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--next-relstate',
             ['action' => 'store', 'help'   => 'The next release stability [default: no change].']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--from',
             ['action' => 'store', 'help'   => 'The sender address for mailing list announcements.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--horde-user',
             ['action' => 'store', 'help'   => 'The username for accessing bugs.horde.org.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--horde-pass',
             ['action' => 'store', 'help'   => 'The password for accessing bugs.horde.org.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--web-dir',
             ['action' => 'store', 'help'   => 'The directory of a horde-web checkout.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--dump',
             ['action' => 'store_true', 'help'   => 'Prints the release notes only.']
         )];
@@ -186,7 +189,12 @@ The following example would generate the package and add the release tag to git 
         $arguments = $config->getArguments();
         if (!empty($options['release']) ||
             (isset($arguments[0]) && $arguments[0] == 'release')) {
-            $this->dependencies->getRunnerRelease()->run();
+            $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory);
+            $component = $this->dependencies
+            ->getComponentFactory()
+            ->createSource($componentDirectory);
+            $config->setComponent($component);
+            $this->dependencies->getRunnerRelease()->run($config);
             return true;
         }
         return false;

@@ -15,6 +15,7 @@ use Horde\Cli\Modular\Modules;
 use Horde\Components\Module\Composer;
 use Horde\Components\Module\Change;
 use Horde\Components\Module\Package;
+use Horde\Components\Module\Release;
 
 /**
  * Components tool specific, context aware module provider
@@ -46,7 +47,8 @@ class ModuleProvider implements CliModuleProvider
             $this->injector->get(Composer::class),
             $this->injector->get(Git::class),
             $this->injector->get(Help::class),
-            $this->injector->get(Package::class)
+            $this->injector->get(Package::class),
+            $this->injector->get(Release::class),
         ]);
     }
 }
