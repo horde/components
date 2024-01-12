@@ -14,6 +14,8 @@ namespace Horde\Components\Module;
 
 use Horde\Components\Config;
 use Horde\Components\Dependencies;
+use Horde\Components\Component\ComponentDirectory;
+use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
 
 /**
  * Components_Module_Change:: records a change log entry.
@@ -135,9 +137,16 @@ to just update package.xml and doc/CHANGES:
     {
         $options = $config->getOptions();
         $arguments = $config->getArguments();
+
         if (!empty($options['changed']) ||
             (isset($arguments[0]) && $arguments[0] == 'changed')) {
-            $this->dependencies->getRunnerChange()->run();
+            $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory);
+            $component = $this->dependencies
+            ->getComponentFactory()
+            ->createSource($componentDirectory);
+            $config->setComponent($component);
+
+            $this->dependencies->getRunnerChange()->run($config);
             return true;
         }
         return false;

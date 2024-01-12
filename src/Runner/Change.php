@@ -48,7 +48,7 @@ class Change
     ) {
     }
 
-    public function run(): void
+    public function run(Config $config): void
     {
         $options = $this->_config->getOptions();
         $arguments = $this->_config->getArguments();
@@ -65,7 +65,7 @@ class Change
                 $options
             );
         }
-        $output = $this->_config->getComponent()->changed($log, $options);
+        $output = $config->getComponent()->changed($log, $options);
         if ($log && !empty($options['commit'])) {
             $options['commit']->commit($log);
         }

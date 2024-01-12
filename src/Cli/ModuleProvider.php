@@ -13,6 +13,7 @@ use Horde\Cli\Modular\ModuleProvider as CliModuleProvider;
 use Horde\Cli\Modular\Module;
 use Horde\Cli\Modular\Modules;
 use Horde\Components\Module\Composer;
+use Horde\Components\Module\Change;
 use Horde\Components\Module\Package;
 
 /**
@@ -40,6 +41,7 @@ class ModuleProvider implements CliModuleProvider
     public function getModules(): Modules
     {
         return new Modules([
+            $this->injector->get(Change::class),
             $this->injector->get(ConfigModule::class),
             $this->injector->get(Composer::class),
             $this->injector->get(Git::class),
