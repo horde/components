@@ -18,6 +18,7 @@ use Horde\Components\Wrapper\HordeYml as WrapperHordeYml;
 use RuntimeException;
 use Horde\Components\Component\Task\SystemCallResult;
 use Horde\Components\Component\Task\SystemCall;
+use stdClass;
 
 /**
  * @author    Michael Slusarz <slusarz@horde.org>
@@ -397,6 +398,8 @@ class Composer
                 $composerDefinition->{'autoload-dev'}['psr-4']  = [$Psr4Name  => 'test/'];
             }
         }
+        // If still empty, make sure we use an object instead.
+        $composerDefinition->{'autoload-dev'} = new stdClass;
     }
 
     /**
