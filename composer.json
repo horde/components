@@ -1,5 +1,4 @@
 {
-    "minimum-stability": "dev",
     "name": "horde/components",
     "description": "Developer tool for managing Horde components",
     "type": "horde-application",
@@ -22,7 +21,7 @@
             "role": "contributor"
         }
     ],
-    "time": "2023-10-29",
+    "time": "2024-01-12",
     "repositories": [],
     "require": {
         "horde/horde-installer-plugin": "^2",
@@ -30,7 +29,7 @@
         "horde/autoloader": "*",
         "horde/argv": "*",
         "horde/cli": "^3",
-        "horde/cli_modular": "dev-FRAMEWORK_6_0",
+        "horde/cli_modular": "^3",
         "horde/http": "*",
         "horde/pear": "*",
         "horde/role": "*",
@@ -39,11 +38,11 @@
         "horde/injector": "*",
         "horde/release": "^4",
         "horde/yaml": "*",
-        "horde/eventdispatcher": "dev-FRAMEWORK_6_0",
-        "horde/githubapiclient": "dev-FRAMEWORK_6_0"
+        "horde/eventdispatcher": "*",
+        "horde/githubapiclient": "*"
     },
     "require-dev": {
-        "horde/test": "dev-FRAMEWORK_6_0 || ^3"
+        "horde/test": "^3"
     },
     "suggest": {
         "horde/test": "^3",
