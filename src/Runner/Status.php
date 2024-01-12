@@ -16,6 +16,7 @@ use Horde\Components\Config;
 use Horde\Components\Exception;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Output;
+use Horde\Components\Composer\InstallationDirectory;
 
 /**
  * Horde\Components\Runner\Status:: runner for status output.
@@ -79,11 +80,12 @@ class Status
         } else {
             $this->output->warn("Git Tree dir does not exist or is not readable.");
         };
-        $installDir = $this->config->getOptions()['install_base'];
+        $installDir = new InstallationDirectory($this->config->getOptions()['install_base']);
         $this->output->info("Install Base path: $installDir");
-        if (is_readable($installDir)) {
+
+        if ($installDir->exists()) {
             $this->output->ok("Install dir exists.");
-            if (is_readable($installDir . '/composer.json')) {
+            if ($installDir->hasComposerJson()) {
                 $this->output->ok("Root composer.json file exists.");
             }
         } else {
