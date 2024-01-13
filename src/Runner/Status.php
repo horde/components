@@ -17,6 +17,7 @@ use Horde\Components\Exception;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Output;
 use Horde\Components\Composer\InstallationDirectory;
+use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 
 /**
  * Horde\Components\Runner\Status:: runner for status output.
@@ -39,11 +40,6 @@ class Status
     private readonly string $gitRepoBase;
 
     /**
-     * Where do we store local checkouts.
-     */
-    private readonly string $localCheckoutDir;
-
-    /**
      * Constructor.
      *
      * @param Config    $config  The configuration for the current job.
@@ -53,13 +49,12 @@ class Status
     public function __construct(
         private readonly Config $config,
         private readonly Output $output,
-        private GitHelper $gitHelper
+        private readonly GitCheckoutDirectory $localCheckoutDir
     ) {
         //        $this->gitHelper = $git;
         $options = $this->config->getOptions();
         $this->gitRepoBase = $options['git_repo_base'] ??
         'https://github.com/horde/';
-        $this->localCheckoutDir = $options['checkout_dir'] ?? '/srv/git/horde';
     }
 
     public function run()
@@ -75,8 +70,17 @@ class Status
         };
         $this->output->info("Git Tree root path: $this->localCheckoutDir");
         if (is_readable($this->localCheckoutDir)) {
-            $componentsCount = count(glob($this->localCheckoutDir . '/*', GLOB_ONLYDIR));
-            $this->output->ok("Git Tree dir exists and has $componentsCount repos checked out");
+            $componentsCount = count($this->localCheckoutDir->getHordeYmlDirs());
+            $gitCount = count($this->localCheckoutDir->getGitDirs());
+            if ($gitCount) {
+                $this->output->ok("Git Tree dir exists and has $gitCount repos checked out ($componentsCount components)");
+                // TODO Verbose:
+                /*foreach ($this->localCheckoutDir->getGitDirs() as $dir) {
+                    $this->output->plain(get_class($dir);
+                }*/
+            } else {
+                $this->output->warn("Git Tree dir exists but no components are checked out\nRun:    horde-components github-clone-org");
+            }
         } else {
             $this->output->warn("Git Tree dir does not exist or is not readable.");
         };

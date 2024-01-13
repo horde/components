@@ -9,9 +9,10 @@ use Traversable;
 
 class RepositoryList implements IteratorAggregate
 {
-    public function __construct(private RepositoryDefinition ...$repositories)
+    private array $repositories;
+    public function __construct(RepositoryDefinition ...$repositories)
     {
-
+        $this->repositories = $repositories;
     }
 
     public function getIterator(): Traversable

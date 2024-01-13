@@ -1,12 +1,12 @@
 <?php
 /**
- * Components_Module_Change:: records a change log entry.
+ * InstallModule:: Setup a horde installation from a git checkout
  *
  * PHP Version 7
  *
  * @category Horde
  * @package  Components
- * @author   Gunnar Wrobel <wrobel@pardus.de>
+ * @author   Ralf Lang <ralf.lang@ralf-lang.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
@@ -15,34 +15,33 @@ namespace Horde\Components\Module;
 use Horde\Components\Config;
 use Horde\Components\Dependencies;
 use Horde\Components\Component\ComponentDirectory;
-use Horde\Components\Dependencies\GitCheckoutDirectoryFactory;
+use Horde\Components\Runner\InstallRunner;
 use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
-use Horde\Components\Runner\Status as RunnerStatus;
 
 /**
- * Components_Module_Change:: records a change log entry.
+ * InstallModule:: Setup a horde installation from a git checkout
  *
- * Copyright 2011-2020 Horde LLC (http://www.horde.org/)
+ * Copyright 2023-2024 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
  *
  * @category Horde
  * @package  Components
- * @author   Gunnar Wrobel <wrobel@pardus.de>
+ * @author   Ralf Lang <ralf.lang@ralf-lang.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class Status extends Base
+class InstallModule extends Base
 {
 
     public function getOptionGroupTitle(): string
     {
-        return 'status';
+        return 'install';
     }
 
     public function getOptionGroupDescription(): string
     {
-        return 'This module prints out status';
+        return 'Install a git checkout into a web tree';
     }
 
     public function getOptionGroupOptions(): array
@@ -57,7 +56,7 @@ class Status extends Base
      */
     public function getTitle(): string
     {
-        return 'status';
+        return 'install';
     }
 
     /**
@@ -67,7 +66,7 @@ class Status extends Base
      */
     public function getUsage(): string
     {
-        return 'Show status';
+        return 'install';
     }
 
     /**
@@ -77,7 +76,7 @@ class Status extends Base
      */
     public function getActions(): array
     {
-        return ['changed'];
+        return ['install'];
     }
 
     /**
@@ -89,7 +88,7 @@ class Status extends Base
      */
     public function getHelp($action): string
     {
-        return 'horde-components status';
+        return 'horde-components install';
     }
 
     /**
@@ -115,14 +114,14 @@ class Status extends Base
         $options = $config->getOptions();
         $arguments = $config->getArguments();
 
-        if (!empty($options['status']) ||
-            (isset($arguments[0]) && $arguments[0] == 'status')) {
+        if (!empty($options['install']) ||
+            (isset($arguments[0]) && $arguments[0] == 'install')) {
             $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory);
             $component = $this->dependencies
             ->getComponentFactory()
             ->createSource($componentDirectory);
             $config->setComponent($component);
-            $this->dependencies->get(RunnerStatus::class)->run($config);
+            $this->dependencies->get(InstallRunner::class)->run($config);
             return true;
         }
         return false;

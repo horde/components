@@ -37,6 +37,7 @@ use Horde\Components\Runner\Release as RunnerRelease;
 use Horde\Components\Runner\Snapshot as RunnerSnapshot;
 use Horde\Components\Runner\Update as RunnerUpdate;
 use Horde\Components\Runner\Webdocs as RunnerWebdocs;
+use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 use Horde\Injector\Injector as HordeInjector;
 use Horde\Injector\TopLevel;
 
@@ -44,7 +45,7 @@ use Horde\Injector\TopLevel;
  * The Components_Dependencies_Injector:: class provides the
  * Components dependencies based on the Horde injector.
  *
- * Copyright 2010-2020 Horde LLC (http://www.horde.org/)
+ * Copyright 2010-2024 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -76,6 +77,11 @@ class Injector extends HordeInjector implements Dependencies
             \Horde_Cli::class,
             Dependencies::class,
             'createCli'
+        );
+        $this->bindFactory(
+            GitCheckoutDirectory::class,
+            GitCheckoutDirectoryFactory::class,
+            '__invoke'
         );
         $this->bindFactory(
             Output::class,
