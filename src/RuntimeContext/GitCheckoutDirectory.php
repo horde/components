@@ -15,7 +15,7 @@ class GitCheckoutDirectory implements Stringable
 
     public function exists()
     {
-        return is_readable((string) $this->path);
+        return is_readable((string) $this->path) && is_dir((string) $this->path);
     }
 
     public function __toString()
