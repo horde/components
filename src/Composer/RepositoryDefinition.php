@@ -3,10 +3,9 @@ namespace Horde\Components\Composer;
 
 use stdClass;
 
-class RepositoryDefinition
+interface RepositoryDefinition
 {
-    public function __construct(stdClass $definition)
-    {
+    public function getType(): string;
 
-    }
+    public function dumpStdClass();
 }

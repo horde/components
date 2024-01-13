@@ -19,7 +19,8 @@ class RootComposerJsonFile
         } else {
             $this->content = $data;
         }
-        $this->repositories = new RepositoryList($this->content?->repositories);
+        $repositoriesStd = $this->content->repositories ?? [];
+        $this->repositories = RepositoryList::fromStdClasses(...$repositoriesStd);
     }
 
     public function getRepositoryList(): RepositoryList
@@ -38,8 +39,11 @@ class RootComposerJsonFile
 
     public function render(): string
     {
-        // $this->content->repositories =
-        return (string) json_encode($this->content);
+        $this->content->repositories = [];
+        foreach ($this->repositories as  $id => $repository) {
+            $this->content->repositories[$id] = $repository->dumpStdClass();
+        }
+        return (string) json_encode($this->content, JSON_PRETTY_PRINT);
     }
 
     public function writeFile(string $path)
