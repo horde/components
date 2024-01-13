@@ -7,6 +7,7 @@ use Horde\Components\Composer\PathRepositoryDefinition;
 use Horde\Components\Config;
 use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 use Horde\Components\Output;
+use Horde\Components\Wrapper\HordeYml;
 use stdClass;
 
 class InstallRunner
@@ -58,8 +59,12 @@ class InstallRunner
         // Inject all horde apps as local sources.
         $composerJson = $this->installationDirectory->getComposerJson();
         foreach ($this->gitCheckoutDirectory->getHordeYmlDirs() as $hordeYmlDir) {
+            // Load HordeYml to get the ComponentVersion
+            $hordeYml = new HordeYml($hordeYmlDir);
+
             $composerJson->getRepositoryList()->ensurePresent(new PathRepositoryDefinition($hordeYmlDir));
         }
         $composerJson->writeFile($this->installationDirectory->getComposerJsonPath());
+        //
     }
 }

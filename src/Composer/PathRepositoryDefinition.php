@@ -7,12 +7,12 @@ use Stringable;
 
 class PathRepositoryDefinition implements RepositoryDefinition
 {
-    public readonly string $path;
+    public readonly string $url;
 
-    public function __construct(string|Stringable $path, public readonly stdClass $repositoryOptions = new stdClass)
+    public function __construct(string|Stringable $url, public readonly stdClass $repositoryOptions = new stdClass)
     {
         // Cast to string once rather than everywhere.
-        $this->path = (string) $path;
+        $this->url = (string) $url;
     }
 
     public function getType(): string
@@ -22,7 +22,7 @@ class PathRepositoryDefinition implements RepositoryDefinition
 
     public function getUrl(): string
     {
-        return $this->path;
+        return $this->url;
     }
 
     public function dumpStdClass()
@@ -30,7 +30,7 @@ class PathRepositoryDefinition implements RepositoryDefinition
         return (object) [
             'type' => 'path',
             'options' => $this->repositoryOptions,
-            'url' => $this->path
+            'url' => $this->url
         ];
     }
 }
