@@ -15,7 +15,7 @@ namespace Horde\Components\Helper;
 /**
  * Components_Helper_Template:: converts a template into a target file.
  *
- * Copyright 2011-2020 Horde LLC (http://www.horde.org/)
+ * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.

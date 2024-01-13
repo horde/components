@@ -21,7 +21,7 @@ use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
 /**
  * Components_Module_Release:: generates a release.
  *
- * Copyright 2011-2021 Horde LLC (http://www.horde.org/)
+ * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.

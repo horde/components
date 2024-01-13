@@ -22,7 +22,7 @@ use Horde\Components\Runner\Github as RunnerGithub;
 /**
  * Horde\Components\Module\Git:: Useful git command wrappers for CI
  *
- * Copyright 2020-2021 Horde LLC (http://www.horde.org/)
+ * Copyright 2020-2024 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.fsf.org/copyleft/lgpl.html.

@@ -21,7 +21,7 @@ namespace Horde\Components\Release\Task;
 /**
  * Components_Release_Task_Packagist:: Notify Packagist of update
  *
- * Copyright 2011-2019 Horde LLC (http://www.horde.org/)
+ * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.

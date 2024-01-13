@@ -18,7 +18,7 @@ use Horde\Components\Component\Task\SystemCallResult;
 /**
  * Components_Release_Task_GitPush:: Push any changes to a remote server
  *
- * Copyright 2011-2019 Horde LLC (http://www.horde.org/)
+ * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
