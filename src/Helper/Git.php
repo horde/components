@@ -7,7 +7,7 @@
  *
  * @category Horde
  * @package  Components
- * @author   Ralf Lang <lang@b1-systems.de>
+ * @author   Ralf Lang <ralf.lang@ralf-lang.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 declare(strict_types=1);
@@ -37,7 +37,7 @@ use RuntimeException;
  *
  * @category Horde
  * @package  Components
- * @author   Ralf Lang <lang@b1-systems.de>
+ * @author   Ralf Lang <ralf.lang@ralf-lang.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 class Git

@@ -9,7 +9,7 @@
  *
  * @category Horde
  * @package  Components
- * @author   Ralf Lang <lang@b1-systems.de>
+ * @author   Ralf Lang <ralf.lang@ralf-lang.de>
  * @license  http://www.fsf.org/copyleft/lgpl.html LGPL
  */
 
@@ -29,7 +29,7 @@ use Horde\Components\Runner\Github as RunnerGithub;
  *
  * @category Horde
  * @package  Components
- * @author   Ralf Lang <lang@b1-systems.de>
+ * @author   Ralf Lang <ralf.lang@ralf-lang.de>
  * @license  http://www.fsf.org/copyleft/lgpl.html LGPL
  */
 class Git extends Base
