@@ -14,6 +14,7 @@
 namespace Horde\Components\Dependencies;
 
 use Horde\Components\Component\Factory as ComponentFactory;
+use Horde\Components\Composer\InstallationDirectory;
 use Horde\Components\Config;
 use Horde\Components\Config\Bootstrap as ConfigBootstrap;
 use Horde\Components\Dependencies;
@@ -81,6 +82,11 @@ class Injector extends HordeInjector implements Dependencies
         $this->bindFactory(
             GitCheckoutDirectory::class,
             GitCheckoutDirectoryFactory::class,
+            '__invoke'
+        );
+        $this->bindFactory(
+            InstallationDirectory::class,
+            InstallationDirectoryFactory::class,
             '__invoke'
         );
         $this->bindFactory(

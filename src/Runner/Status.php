@@ -49,7 +49,8 @@ class Status
     public function __construct(
         private readonly Config $config,
         private readonly Output $output,
-        private readonly GitCheckoutDirectory $localCheckoutDir
+        private readonly GitCheckoutDirectory $localCheckoutDir,
+        private readonly InstallationDirectory $installDir,
     ) {
         //        $this->gitHelper = $git;
         $options = $this->config->getOptions();
@@ -76,7 +77,7 @@ class Status
                 $this->output->ok("Git Tree dir exists and has $gitCount repos checked out ($componentsCount components)");
                 // TODO Verbose:
                 /*foreach ($this->localCheckoutDir->getGitDirs() as $dir) {
-                    $this->output->plain(get_class($dir);
+                    $this->output->plain($dir);
                 }*/
             } else {
                 $this->output->warn("Git Tree dir exists but no components are checked out\nRun:    horde-components github-clone-org");
@@ -84,7 +85,7 @@ class Status
         } else {
             $this->output->warn("Git Tree dir does not exist or is not readable.");
         };
-        $installDir = new InstallationDirectory($this->config->getOptions()['install_base']);
+        $installDir = $this->installDir;
         $this->output->info("Install Base path: $installDir");
 
         if ($installDir->exists()) {
