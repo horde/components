@@ -21,31 +21,31 @@
             "role": "contributor"
         }
     ],
-    "time": "2024-01-12",
+    "time": "2024-01-15",
     "repositories": [],
     "require": {
-        "horde/horde-installer-plugin": "dev-FRAMEWORK_6_0 || ^2",
+        "horde/horde-installer-plugin": "^2",
         "php": "^8",
-        "horde/autoloader": "* || dev-FRAMEWORK_6_0",
-        "horde/argv": "* || dev-FRAMEWORK_6_0",
-        "horde/cli": "^3 || dev-FRAMEWORK_6_0",
-        "horde/cli_modular": "^3 || dev-FRAMEWORK_6_0",
-        "horde/http": "* || dev-FRAMEWORK_6_0",
-        "horde/pear": "* || dev-FRAMEWORK_6_0",
-        "horde/role": "* || dev-FRAMEWORK_6_0",
-        "horde/text_diff": "* || dev-FRAMEWORK_6_0",
-        "horde/util": "* || dev-FRAMEWORK_6_0",
-        "horde/injector": "* || dev-FRAMEWORK_6_0",
-        "horde/release": "^4 || dev-FRAMEWORK_6_0",
-        "horde/yaml": "* || dev-FRAMEWORK_6_0",
-        "horde/eventdispatcher": "* || dev-FRAMEWORK_6_0",
-        "horde/githubapiclient": "* || dev-FRAMEWORK_6_0"
+        "horde/autoloader": "*",
+        "horde/argv": "*",
+        "horde/cli": "^3",
+        "horde/cli_modular": "^3",
+        "horde/http": "*",
+        "horde/pear": "*",
+        "horde/role": "*",
+        "horde/text_diff": "*",
+        "horde/util": "*",
+        "horde/injector": "*",
+        "horde/release": "^4",
+        "horde/yaml": "*",
+        "horde/eventdispatcher": "*",
+        "horde/githubapiclient": "*"
     },
     "require-dev": {
-        "horde/test": "^3 || dev-FRAMEWORK_6_0"
+        "horde/test": "^3"
     },
     "suggest": {
-        "horde/test": "^3 || dev-FRAMEWORK_6_0",
+        "horde/test": "^3",
         "squizlabs/php_codesniffer": "^3.5",
         "pear/archive_tar": "^1.4",
         "phploc/phploc": "^7",

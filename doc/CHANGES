@@ -2,7 +2,9 @@
 v1.0.0alpha7
 ------------
 
-
+[rla] Fix Bug: Composer file contained array instead of object for empty
+      autoload-dev section.
+|+
 
 
 ------------
