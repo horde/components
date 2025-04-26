@@ -17,6 +17,8 @@ namespace Horde\Components\Helper;
 use Horde\Components\Component;
 use Horde\Components\Component\Task\SystemCallResult;
 use Horde\Components\Output;
+use Horde\Components\GitCommit;
+use Horde\Components\GitCommitLog;
 use RuntimeException;
 
 /**
@@ -72,7 +74,52 @@ class Git
         }
     }
 
+    public function getGitLog(string $localDir, int $limit=5): GitCommitLog
+    {
+        // Naive JSON formatting with --pretty=format breaks on unexpected ' or "
+        // Properly calling into libgit2 with FFI or git extension is overkill for now
+        // For our purposes, we can explicitly ask for the fields we need and form the structured record ourselves
+        // Let's use insane delimiters we won't see in commits ┌─≈Horde≈─┐
 
+        $cmd = $this->gitBin . ' log --decorate=full --pretty=format:\'┌─≈commit:%H≈─┐┌─≈abbreviated_commit:%h≈─┐┌─≈tree:%T≈─┐┌─≈abbreviated_tree:%t≈─┐┌─≈parent:%P≈─┐┌─≈abbreviated_parent:%p≈─┐┌─≈refs:%D≈─┐┌─≈encoding:%e≈─┐┌─≈subject:%s≈─┐┌─≈sanitized_subject_line:%f≈─┐┌─≈body:%b≈─┐┌─≈commit_notes:%N≈─┐┌─≈verification_flag:%G?≈─┐┌─≈signer:%GS≈─┐┌─≈signer_key:%GK≈─┐┌─≈author_name:%aN≈─┐┌─≈author_email:%aE≈─┐┌─≈author_date:%at≈─┐┌─≈committer_name:%cN≈─┐┌─≈committer_email:%cE≈─┐┌─≈committer_date:%ct≈─┐┌─≈raw_body:%ct≈─┐┌─≈trailers:%(trailers)≈─┐┌─≈RECORD_END≈─┐\'';
+        $callResult = $this->execInDirectory($cmd, $localDir);
+        $separator = '┌─≈RECORD_END≈─┐';
+        $records = explode($separator, substr($callResult->getOutputString(), 0, -strlen($separator)));
+        $regex_fields = '/┌─≈commit:(.*)≈─┐┌─≈abbreviated_commit:(.*)≈─┐┌─≈tree:(.*)≈─┐┌─≈abbreviated_tree:(.*)≈─┐┌─≈parent:(.*)≈─┐┌─≈abbreviated_parent:(.*)≈─┐┌─≈refs:(.*)≈─┐┌─≈encoding:(.*)≈─┐┌─≈subject:(.*)≈─┐┌─≈sanitized_subject_line:(.*)≈─┐┌─≈body:(.*)≈─┐┌─≈commit_notes:(.*)≈─┐┌─≈verification_flag:(.*)≈─┐┌─≈signer:(.*)≈─┐┌─≈signer_key:(.*)≈─┐┌─≈author_name:(.*)≈─┐┌─≈author_email:(.*)≈─┐┌─≈author_date:(.*)≈─┐┌─≈committer_name:(.*)≈─┐┌─≈committer_email:(.*)≈─┐┌─≈committer_date:(.*)≈─┐┌─≈raw_body:(.*)≈─┐┌─≈trailers:(.*)≈─┐/ms';
+        $commits = [];
+        foreach ($records as $record) {
+            preg_match($regex_fields, $record, $matches);
+            if (count($matches) > 0) {
+                $commit = new GitCommit(
+                    commit: $matches[1],
+                    abbreviated_commit: $matches[2],
+                    tree: $matches[3],
+                    abbreviated_tree: $matches[4],
+                    parent_commit: $matches[5],
+                    abbreviated_parent_commit: $matches[6],
+                    refs: $matches[7],
+                    encoding: $matches[8],
+                    subject: $matches[9],
+                    sanitized_subject: $matches[10],
+                    body: $matches[11],
+                    commit_notes: $matches[12],
+                    verification_flag: $matches[13],
+                    signer: $matches[14],
+                    signer_key: $matches[15],
+                    author_name: $matches[16],
+                    author_email: $matches[17],
+                    author_date: $matches[18],
+                    committer_name: $matches[19],
+                    committer_email: $matches[20],
+                    committer_date: $matches[21],
+                    raw_body: $matches[22],
+                    trailers: $matches[23]
+                );
+            }
+            $commits[] = $commit;
+        }
+        return new GitCommitLog(...$commits);
+    }
     /**
      * Workflow: Clone a component
      *
