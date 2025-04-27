@@ -2,11 +2,11 @@
 namespace Horde\Components;
 class ConventionalCommit extends GitCommit
 {
-    public bool readonly $breaking;
-    public string readonly $severity;
-    public string readonly $description;
-    public string readonly $scope;
-    public string readonly $type;
+    public readonly bool   $breaking;
+    public readonly string $severity;
+    public readonly string $description;
+    public readonly string $scope;
+    public readonly string $type;
 
     public function __construct(
         string $commit = '',
@@ -32,8 +32,31 @@ class ConventionalCommit extends GitCommit
         string $committer_email='',
         string $committer_date='',
         string $trailers='',
-        array $matches=[],
+        array $conventionalAttributes=[],
     ) {
+        parent::__construct(
+            commit: $commit,
+            abbreviated_commit: $abbreviated_commit,
+            tree: $tree,
+            abbreviated_tree: $abbreviated_tree,
+            parent_commit: $parent_commit,
+            abbreviated_parent_commit: $abbreviated_parent_commit,
+            refs: $refs,
+            encoding: $encoding,
+            subject: $subject,
+            sanitized_subject: $sanitized_subject,
+            body: $body,
+            raw_body: $raw_body,
+            commit_notes: $commit_notes,
+            verification_flag: $verification_flag,
+            signer: $signer,
+            signer_key: $signer_key,
+            author_name: $author_name,
+            author_email: $author_email,
+            author_date: $author_date,
+            committer_name: $committer_name,
+            committer_email: $committer_email,
+        );
         $breaking = false;
         $lookupSeverity = [
             'build' => 'patch',
@@ -46,33 +69,36 @@ class ConventionalCommit extends GitCommit
             'refactor' => 'patch',
             'revert' => 'patch',
             'style' => 'subpatch',
-            'test' => 'subpatch'
+            'test' => 'subpatch',
             'major' => 'major',
             'breaking' => 'major',
         ];
-        if ($match['breaking'] === '!') {
-            $breaking = true;
+        $severity = $lookupSeverity[$conventionalAttributes['type']];
+        // If it's a breaking change, set severity to major
+        if ($conventionalAttributes['breaking'] === '!') {
+            $severity = 'major';
         }
-        $this->severity= $lookupSeverity[$match['type']];
-        if ($this->severity === 'major') {
+        // If the severity is major, a breaking change is implied
+        if ($severity === 'major') {
             $breaking = true;
         }
         $this->breaking = $breaking;
-        $this->scope = rtrim(ltrim((string)($match['scope'] ?? ''), "("));
+        $this->severity = $severity;
+        $this->scope = rtrim(ltrim((string)($conventionalAttributes['scope'] ?? ''), "("), ")");
         // TODO: Handle unknown types
-        $this->type = (string)$match['type'] ?? '';
-        $this->description = (string)$match['description'] ?? '';
+        $this->type = (string)$conventionalAttributes['type'] ?? '';
+        $this->description = (string)$conventionalAttributes['description'] ?? '';
     }
 
     public static function fromGitCommit(GitCommit $commit): ConventionalCommit|null
     {
         $regex =  '/^(?P<type>build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(?P<scope>\([\w\-\.]+\))?(?P<breaking>!)?: (?P<description>.*)\s*/u';
         $res = preg_match($regex, $commit->subject, $matches);
-        if ($res ==== false){
+        if ($res == 0){
            return null;
         }
         return new ConventionalCommit(
-            matches: $matches,
+            conventionalAttributes: $matches,
             commit: $commit->commit,
             abbreviated_commit: $commit->abbreviated_commit,
             tree: $commit->tree,

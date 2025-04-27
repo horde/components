@@ -28,6 +28,7 @@ final class ConventionalCommitReader
         foreach ($log as $commit) {
             $conventionalCommit = ConventionalCommit::fromGitCommit($commit);
             if ($conventionalCommit) {
+                $this->setTopSeverity($conventionalCommit->severity);
                 $conventionalCommits[] = $conventionalCommit;
             }
         }
@@ -35,17 +36,17 @@ final class ConventionalCommitReader
         // Save only conventional commits
         $this->log = new GitCommitLog(...$conventionalCommits);
     }
-    private function setTopSeverity(array $match): void
+    private function setTopSeverity(string $severity): void
     {
-        $severityValue = [
+        $severityValues = [
             'subpatch' => 1,
             'patch' => 2,
             'minor' => 3,
             'major' => 4,
         ];
         // TODO: Croak on unknown severity
-        $severity = $lookupSeverity[$match['type']];
-        if ($severityValue[$severity] > $severityValue[$this->topSeverity]) {
+        $severityValue = $severityValues[$severity];
+        if ($severityValues[$severity] > $severityValues[$this->topSeverity]) {
             $this->topSeverity = $severity;
         }
     }
