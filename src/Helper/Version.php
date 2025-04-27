@@ -181,6 +181,9 @@ class Version
                 return $nextVersion;
             }
             switch ($severity) {
+                case 'subpatch':
+                    $nextVersion->subpatch += 1;
+                    break;
                 case 'patch':
                     $nextVersion->patch += 1;
                     $nextVersion->subpatch = 0;
@@ -198,9 +201,8 @@ class Version
                     break;
                 default:
                     throw new Exception('Invalid severity: ' . $severity);
-                }
+            }
         }
-
         return $nextVersion;
     }
 
