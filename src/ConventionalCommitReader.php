@@ -17,7 +17,7 @@ final class ConventionalCommitReader
         $this->readConventionalCommits();
     }
 
-    private string $regex=  '/^(?P<type>build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(?P<scope>\([\w\-\.]+\))?(!)?: ([\w ])+([\s\S]*)/';
+    private string $regex=  '/^(?P<type>build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(?P<scope>\([\w\-\.]+\))?(?P<breaking>!)?: ([\w ])+([\s\S]*)/';
 
     public function readConventionalCommits(): array
     {
