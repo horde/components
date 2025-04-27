@@ -1,9 +1,12 @@
 <?php
+
 namespace Horde\Components;
+
 use IteratorAggregate;
 use ArrayIterator;
 use Countable;
 use Traversable;
+
 /**
  * Horde\Components\GitCommitLog: Holds a collection of GitCommit objects
  *
@@ -20,7 +23,7 @@ class GitCommitLog implements IteratorAggregate, Countable
     {
         $this->commits = $commits;
     }
-    
+
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->commits);
@@ -43,13 +46,13 @@ class GitCommitLog implements IteratorAggregate, Countable
 
     /**
      * Get a new log from newest to excluding the given commit.
-     * 
+     *
      * If the commit is not found, return the whole log.
      *
      * @return GitCommitLog
      */
     public function getLogSince(GitCommit $reference): GitCommitLog
-    {  
+    {
         $newCommits = [];
         foreach ($this->commits as $commit) {
             if ($commit->commit === $reference->commit) {

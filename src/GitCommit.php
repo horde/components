@@ -1,5 +1,7 @@
 <?php
+
 namespace Horde\Components;
+
 class GitCommit
 {
     public readonly string $commit;
@@ -35,33 +37,32 @@ class GitCommit
         }
         return false;
     }
-    
+
     public function __construct(
         string $commit = '',
-        string $abbreviated_commit='',
-        string $tree='',
-        string $abbreviated_tree='',
-        string $parent_commit='',
-        string $abbreviated_parent_commit='',
-        string|iterable $refs=[],
-        string $encoding='',
-        string $subject='',
-        string $sanitized_subject='',
-        string $body='',
-        string $raw_body='',
-        string $commit_notes='',
-        string $verification_flag='',
-        string $signer='',
-        string $signer_key='',
-        string $author_name='',
-        string $author_email='',
-        string $author_date='',
-        string $committer_name='',
-        string $committer_email='',
-        string $committer_date='',
-        string $trailers=''
-    )
-    {
+        string $abbreviated_commit = '',
+        string $tree = '',
+        string $abbreviated_tree = '',
+        string $parent_commit = '',
+        string $abbreviated_parent_commit = '',
+        string|iterable $refs = [],
+        string $encoding = '',
+        string $subject = '',
+        string $sanitized_subject = '',
+        string $body = '',
+        string $raw_body = '',
+        string $commit_notes = '',
+        string $verification_flag = '',
+        string $signer = '',
+        string $signer_key = '',
+        string $author_name = '',
+        string $author_email = '',
+        string $author_date = '',
+        string $committer_name = '',
+        string $committer_email = '',
+        string $committer_date = '',
+        string $trailers = ''
+    ) {
         $this->commit = $commit;
         // TODO: Derive from commit if empty
         $this->abbreviated_commit = $abbreviated_commit;
@@ -104,7 +105,7 @@ class GitCommit
         $this->committer_name = $committer_name;
         $this->committer_email = $committer_email;
         $this->committer_date = $committer_date;
-        $this->trailers = $trailers;        
+        $this->trailers = $trailers;
     }
     public function isTagged(): bool
     {

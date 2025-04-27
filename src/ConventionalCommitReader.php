@@ -1,5 +1,7 @@
 <?php
+
 namespace Horde\Components;
+
 /**
  * See https://www.conventionalcommits.org/en/v1.0.0/
  *
@@ -11,25 +13,48 @@ namespace Horde\Components;
  */
 final class ConventionalCommitReader
 {
+    private GitCommitLog $log;
+    private string $topSeverity = 'subpatch';
     public function __construct(
-        private GitCommitLog $log,
+        GitCommitLog $log,
     ) {
-        $this->readConventionalCommits();
+        $this->readConventionalCommits($log);
     }
 
-    private string $regex=  '/^(?P<type>build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(?P<scope>\([\w\-\.]+\))?(?P<breaking>!)?: ([\w ])+([\s\S]*)/';
 
-    public function readConventionalCommits(): array
+    private function readConventionalCommits(GitCommitLog $log): void
     {
         $conventionalCommits = [];
-        
-        foreach ($this->log as $commit) {
-            if (preg_match($this->regex, $commit->subject, $matches)) {
-                $conventionalCommits[] = $commit;
-                print_r($matches);
+        foreach ($log as $commit) {
+            $conventionalCommit = ConventionalCommit::fromGitCommit($commit);
+            if ($conventionalCommit) {
+                $conventionalCommits[] = $conventionalCommit;
             }
         }
-
-        return $conventionalCommits;
+        // TODO: Handle trailers
+        // Save only conventional commits
+        $this->log = new GitCommitLog(...$conventionalCommits);
+    }
+    private function setTopSeverity(array $match): void
+    {
+        $severityValue = [
+            'subpatch' => 1,
+            'patch' => 2,
+            'minor' => 3,
+            'major' => 4,
+        ];
+        // TODO: Croak on unknown severity
+        $severity = $lookupSeverity[$match['type']];
+        if ($severityValue[$severity] > $severityValue[$this->topSeverity]) {
+            $this->topSeverity = $severity;
+        }
+    }
+    public function getTopSeverity(): string
+    {
+        return $this->topSeverity;
+    }
+    public function getLog(): GitCommitLog
+    {
+        return $this->log;
     }
 }

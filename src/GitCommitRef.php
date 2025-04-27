@@ -1,6 +1,9 @@
 <?php
+
 namespace Horde\Components;
+
 use Stringable;
+
 class GitCommitRef implements \Stringable
 {
     public function __construct(
