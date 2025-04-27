@@ -33,6 +33,8 @@ class Version
      * @var bool
      */
     private bool $changed = false;
+    protected array $supportedStabilities = ['stable' => 5 , '' => 5, 'RC' => 4 , 'beta' => 3 , 'alpha' => 2, 'dev' => 1];
+
     // Object methods
     public function __construct(
         private string $original,
@@ -147,6 +149,110 @@ class Version
     public function getOriginal(): string
     {
         return $this->original;
+    }
+
+    public function nextVersionObject(string $severity='patch', string $stability='unchanged'): Version
+    {
+        $nextVersion = clone $this;
+        $newStability = $this->normalizeStability($stability);
+        $stabilityChangeDirection = $this->stabilityChangeDirection($newStability);
+        // unstable target versions
+        if (self::isUnstable($newStability)) {
+        // For non-stable and unchanged state
+            if (self::isUp($stabilityChangeDirection)) {
+                $nextVersion->stability = $newStability;
+                $nextVersion->stabilityVersion = 1;
+            } elseif (self::isDown($stabilityChangeDirection)) {
+                // Downgrading stability might result in a version that already exists
+                // Should we decide to bump feature/major depending on severity?
+                $nextVersion->patch += 1;
+                $nextVersion->stability = $newStability;
+                $nextVersion->stabilityVersion = 1;
+            }    else {
+                // No change in stability
+                $nextVersion->stabilityVersion += 1;
+            }
+            return $nextVersion;
+        } else {
+            // previous version was unstable, just make stable
+            if (self::isUnstable($this->stability)) {
+                $nextVersion->stability = '';
+                $nextVersion->stabilityVersion = 0;
+                return $nextVersion;
+            }
+            switch ($severity) {
+                case 'patch':
+                    $nextVersion->patch += 1;
+                    $nextVersion->subpatch = 0;
+                    break;
+                case 'minor':
+                    $nextVersion->minor += 1;
+                    $nextVersion->patch = 0;
+                    $nextVersion->subpatch = 0;
+                    break;
+                case 'major':
+                    $nextVersion->major += 1;
+                    $nextVersion->minor = 0;
+                    $nextVersion->patch = 0;
+                    $nextVersion->subpatch = 0;
+                    break;
+                default:
+                    throw new Exception('Invalid severity: ' . $severity);
+                }
+        }
+
+        return $nextVersion;
+    }
+
+    public static function isUnstable(): bool
+    {
+        return $stability !== 'stable' && $stability !== '';
+    }
+    public static function isStable(): bool
+    {
+        return $this->stability === 'stable' || $this->stability === '';
+    }
+
+    public static function isUp(string $stabilityChangeDirection): bool
+    {
+        return $stabilityChangeDirection > 0;
+    }
+    public static function isDown(string $stabilityChangeDirection): bool
+    {
+        return $stabilityChangeDirection < 0;
+    }
+
+    public function normalizeStability(string $stability): string
+    {
+        if ($stability === 'unchanged') {
+            $stability = $this->stability;
+        }
+        // Stable is the default with no qualifier
+        if ($stability === 'stable') {
+            $stability = '';
+        } elseif ($stability === 'unstable') {
+            $stability = 'alpha';
+        } elseif ($newStability === 'devel') {
+            $stability = 'dev';
+        }
+        return $stability;
+    }
+    /**
+     * Determine if stability changed and in which direction
+     * 
+     * -1 down
+     * 0 unchanged
+     * 1 up
+     */
+    public function stabilityChangeDirection(string $newStability): int
+    {
+        if ($newStability == "unchanged") {
+            return 0;
+        }
+        if (!array_key_exists($newStability, $this->supportedStabilities)) {
+            throw new Exception(sprintf('Invalid stability: %s, Supported: (%s)', $newStability, implode(', ', array_keys($this->supportedStabilities))));
+        }
+        return $this->supportedStabilities[$newStability] <=> $this->supportedStabilities[$this->stability];
     }
 
     // Static named constructors
@@ -449,11 +555,30 @@ class Version
      */
     public static function nextMinorVersion($version): string
     {
-        if (!preg_match('/^(\d+\.)(\d+)\.(\d+)(alpha|beta|RC|dev)?(\d*)$/', $version, $match)) {
+        if (!preg_match('/^(\d+)\.(\d+)\.(\d+)(alpha|beta|RC|dev)?(\d*)$/', $version, $match)) {
             throw new Exception('Invalid version number ' . $version);
         }
 
         return $match[1] . ++$match[2] . '.0';
+    }
+
+    public static function nextPatchVersion($version): string
+    {
+        if (!preg_match('/^(\d+\.)(\d+)\.(\d+)(alpha|beta|RC|dev)?(\d*)$/', $version, $match)) {
+            throw new Exception('Invalid version number ' . $version);
+        }
+        return sprintf('%s.%s.%s', $match[1], $match[2], ++$match[3]);
+    }
+
+    public static function nextStableVersion($version): string
+    {
+        if (!preg_match('/^(\d+\.)(\d+)\.(\d+)(alpha|beta|RC|dev)?(\d*)$/', $version, $match)) {
+            throw new Exception('Invalid version number ' . $version);
+        }
+        if (empty($match[4])) {
+            throw new Exception('Version ' . $version . ' is already a stable version.');
+        }
+        return sprintf('%s.%s.%s', $match[1], $match[2], $match[3]);
     }
 
     /**
