@@ -95,94 +95,30 @@ class Release
                 $options
             );
             return;
+        } elseif ((count($arguments) == 2) &&
+        $arguments[0] == 'release' &&
+        $arguments[1] == 'h6')
+        {
+            $this->_output->warn('H6 Release Pipeline');
+            /*
+            - Check if we are on release branch
+            - Read ConventionalCommits & expected next version
+            - write .horde.yml versions
+            - write changelog.yml
+            - write composer.json from changelog
+            - Composer validate
+            - remove any package.xml if exists
+            - write application.php Sentinel
+            - commit
+            - tag & push
+            - Post Tasks, trigger packagist and horde infra apis
+            */
+            
         }
-        // We no longer support fine grained selection of steps.
-        // TODO: Run a default pipeline if no arguments are provided.
-/*
-        if ($this->_doTask('unittest')) {
-            $sequence[] = 'Unit';
-            $pre_commit = true;
+        else {
+            $this->_output->warn('Run "horde-components release for <pipeline>"');
+            $this->_output->info("Available pipelines from your configuration: \n" . implode("\n", array_keys($options['pipeline']['release'] ?? [])));    
         }
-
-        if ($this->_doTask('changelog')) {
-            $sequence[] = 'Changelog';
-            $pre_commit = true;
-        }
-
-        if ($this->_doTask('timestamp')) {
-            $sequence[] = 'Timestamp';
-            $pre_commit = true;
-        }
-
-        if ($this->_doTask('sentinel')) {
-            $sequence[] = 'CurrentSentinel';
-            $pre_commit = true;
-        }
-
-        $sequence[] = 'Diff';
-
-        if ($this->_doTask('package')) {
-            $sequence[] = 'Package';
-            if ($this->_doTask('upload')) {
-                $options['upload'] = true;
-            } else {
-                $this->_output->warn('Are you certain you don\'t want to upload the package? Add the "upload" option in case you want to correct your selection. Waiting 5 seconds ...');
-                sleep(5);
-            }
-        } elseif ($this->_doTask('upload')) {
-            throw new Exception('Selecting "upload" without "package" is not possible! Please add the "package" task if you want to upload the package!');
-        }
-
-        if ($this->_doTask('commit') && $pre_commit) {
-            $sequence[] = 'CommitPreRelease';
-        }
-
-        if ($this->_doTask('tag')) {
-            $sequence[] = 'TagRelease';
-        }
-
-        if ($this->_doTask('announce')) {
-            $sequence[] = 'Announce';
-        }
-
-        if ($this->_doTask('website')) {
-            $sequence[] = 'Website';
-        }
-
-        if ($this->_doTask('bugs')) {
-            $sequence[] = 'Bugs';
-        }
-
-        if ($this->_doTask('next')) {
-            $sequence[] = 'NextVersion';
-            if ($this->_doTask('commit')) {
-                $sequence[] = 'CommitPostRelease';
-            }
-        }
-
-        $sequence[] = 'Diff';
-
-        if (in_array('CommitPreRelease', $sequence) ||
-            in_array('CommitPostRelease', $sequence)) {
-            $options['commit'] = new HelperCommit(
-                $this->_output,
-                $options
-            );
-        }
-
-        $options['skip_invalid'] = $this->_doTask('release');
-
-        if (!empty($sequence)) {
-            $this->_release->run(
-                $sequence,
-                $component,
-                $options
-            );
-        } else {
-            $this->_output->warn('Huh?! No tasks selected... All done!');
-        } */
-        $this->_output->warn('Run "horde-components release for <pipeline>"');
-        $this->_output->info("Available pipelines from your configuration: \n" . implode("\n", array_keys($options['pipeline']['release'] ?? [])));
     }
 
     /**
