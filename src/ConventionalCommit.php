@@ -7,6 +7,7 @@ class ConventionalCommit extends GitCommit
     public readonly string $description;
     public readonly string $scope;
     public readonly string $type;
+    public readonly string $stability;
 
     public function __construct(
         string $commit = '',
@@ -33,6 +34,7 @@ class ConventionalCommit extends GitCommit
         string $committer_date='',
         string $trailers='',
         array $conventionalAttributes=[],
+        string $stability = 'unchanged'
     ) {
         parent::__construct(
             commit: $commit,
@@ -82,6 +84,11 @@ class ConventionalCommit extends GitCommit
         if ($severity === 'major') {
             $breaking = true;
         }
+        // Prefer stability from explicit parameter unless it's "unchanged" and conventionalAttributes disagrees.
+        if (array_key_exists('stability', $conventionalAttributes) && $stability === 'unchanged') {
+            $stability = $conventionalAttributes['stability'];
+        }
+        $this->stability = $stability;
         $this->breaking = $breaking;
         $this->severity = $severity;
         $this->scope = rtrim(ltrim((string)($conventionalAttributes['scope'] ?? ''), "("), ")");
@@ -94,9 +101,31 @@ class ConventionalCommit extends GitCommit
     {
         $regex =  '/^(?P<type>build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(?P<scope>\([\w\-\.]+\))?(?P<breaking>!)?: (?P<description>.*)\s*/u';
         $res = preg_match($regex, $commit->subject, $matches);
-        if ($res == 0){
+        if ($res == 0) {
            return null;
         }
+        // Handle BREAKING CHANGE: Description (from ConventionalCommit) and INCOMPATBLE: Description (from AutoSemVer)
+        $breakingFooterRegex = '/^\s*(?P<breaking>BREAKING\s+CHANGE|INCOMPATIBLE):\s+(?P<breaking_description>.+)/u';
+        $bodyLines = explode("\n", $commit->body);
+        foreach ($bodyLines as $line) {
+            $res = preg_match($breakingFooterRegex, $line, $breakingMatches);
+            if (!empty($breakingMatches['breaking'])) {
+                $matches['breaking'] = '!';
+                $matches['breaking_description'] = $breakingMatches['breaking_description'];
+                break;
+            }
+        }
+        // Handle AutoSemver inspired stability footer
+        $stabilityFooterRegex = '/^\s*(?P<stability>STABILITY|STABILITY\s+CHANGE):\s+(?P<new_stability>.+)/u';
+        $bodyLines = explode("\n", $commit->body);
+        foreach ($bodyLines as $line) {
+            $res = preg_match($stabilityFooterRegex, $line, $stabilityMatches);
+            if (!empty($stabilityMatches['new_stability'])) {
+                $matches['stability'] = $stabilityMatches['new_stability'];
+                break;
+            }
+        }
+
         return new ConventionalCommit(
             conventionalAttributes: $matches,
             commit: $commit->commit,
