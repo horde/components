@@ -158,6 +158,10 @@ Push a component to a remote
             $this->dependencies->get(RunnerGithub::class)->run();
             return true;
         }
+        if (isset($arguments[0]) && $arguments[0] == 'github') {
+            $this->dependencies->get(RunnerGithub::class)->run();
+            return true;
+        }
         if (!empty($options['git'])
             || (isset($arguments[0]) && $arguments[0] == 'git')) {
             $this->dependencies->get(RunnerGit::class)->run();

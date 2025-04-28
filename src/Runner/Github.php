@@ -68,6 +68,7 @@ class Github
     public function run()
     {
         $arguments = $this->config->getArguments();
+        
         if (count($arguments) == 1 && $arguments[0] == 'github-clone-org') {
             $this->output->ok('About the clone a complete github org.');
             $this->output->plain('Trying to get the catalog');
