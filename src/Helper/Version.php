@@ -154,6 +154,7 @@ class Version
     public function nextVersionObject(string $severity='patch', string $stability='unchanged'): Version
     {
         $nextVersion = clone $this;
+        $nextVersion->original = '';
         $newStability = $this->normalizeStability($stability);
         $stabilityChangeDirection = $this->stabilityChangeDirection($newStability);
         // unstable target versions
@@ -206,22 +207,39 @@ class Version
         return $nextVersion;
     }
 
-    public static function isUnstable(): bool
+    public static function isUnstable(string $stability): bool
     {
         return $stability !== 'stable' && $stability !== '';
     }
-    public static function isStable(): bool
+    public static function isStable(string $stability): bool
     {
-        return $this->stability === 'stable' || $this->stability === '';
+        return $tability === 'stable' || $stability === '';
     }
 
-    public static function isUp(string $stabilityChangeDirection): bool
+    public static function isUp(int $stabilityChangeDirection): bool
     {
         return $stabilityChangeDirection > 0;
     }
-    public static function isDown(string $stabilityChangeDirection): bool
+    public static function isDown(int $stabilityChangeDirection): bool
     {
         return $stabilityChangeDirection < 0;
+    }
+
+    public function toHordeTag(): string
+    {        
+        $version =  'v' . $this->getMajor() . '.' . $this->getMinor() . '.' . $this->getPatch();
+        $subpatch = $this->getSubPatch();
+        if ((int)$subpatch > 0) {
+            $version .= '.' . $subpatch;
+        } 
+        $stability = $this->getStability();
+        if ($stability)  {
+            $version .= '-' . $stability . $this->getStabilityVersion();
+        }
+        if  ($this->getBuildInfo()) {
+            '+' . $this->getBuildInfo(); 
+        }
+        return $version;
     }
 
     public function normalizeStability(string $stability): string
@@ -234,7 +252,7 @@ class Version
             $stability = '';
         } elseif ($stability === 'unstable') {
             $stability = 'alpha';
-        } elseif ($newStability === 'devel') {
+        } elseif ($stability === 'devel') {
             $stability = 'dev';
         }
         return $stability;
@@ -283,10 +301,10 @@ class Version
         }
         // Parse stability and stability integer, stripping leading hyphen if any
         ltrim($stability, '-');
-        $res = preg_match('/^(\w+)(\d+)?$/', $stability, $stabilityMatch);
+        $res = preg_match('/^([A-Za-z]+)(\d+)?$/', $stability, $stabilityMatch);
         $stability = $stabilityMatch[1] ?? '';
         if ($stability) {
-            $stabilityVersion = $stabilityMatch[2] ?? 1;
+            $stabilityVersion = (int)$stabilityMatch[2] ?? 1;
         } else {
             $stabilityVersion = 0;
         }
