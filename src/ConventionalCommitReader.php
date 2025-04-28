@@ -15,6 +15,7 @@ final class ConventionalCommitReader
 {
     private GitCommitLog $log;
     private string $topSeverity = 'subpatch';
+    private string $stability = 'unchanged';
     public function __construct(
         GitCommitLog $log,
     ) {
@@ -31,6 +32,13 @@ final class ConventionalCommitReader
                 $this->setTopSeverity($conventionalCommit->severity);
                 $conventionalCommits[] = $conventionalCommit;
             }
+        }
+        // Get the latest stability-changing commit
+        foreach ($conventionalCommits as $commit) {
+            if ($commit->stability !== 'unchanged') {
+                $this->stability = $commit->stability;
+            }
+            break;
         }
         // TODO: Handle trailers
         // Save only conventional commits
@@ -53,6 +61,10 @@ final class ConventionalCommitReader
     public function getTopSeverity(): string
     {
         return $this->topSeverity;
+    }
+    public function getLatestStabilityChange(): string
+    {
+        return $this->stability;
     }
     public function getLog(): GitCommitLog
     {

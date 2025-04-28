@@ -72,21 +72,24 @@ class ConventionalCommit
         $versionHelper = VersionHelper::fromComposerString($originalTagString);
         $this->lastVersion = $versionHelper;
         $conventional = new ConventionalCommitReader($gitLog);
-        $this->nextVersion = $this->lastVersion->nextVersionObject($conventional->getTopSeverity());
+        $this->nextVersion = $this->lastVersion->nextVersionObject($conventional->getTopSeverity(), stability: $conventional->getLatestStabilityChange());
         return $conventional;
     }
     public function runShow(): void
     {
         $conventional = $this->loadCommitReader();
-        $this->nextVersion = $this->lastVersion->nextVersionObject($conventional->getTopSeverity());
         $gitLog = $conventional->getLog();
         $this->_output->plain(sprintf("Found %d commits in Conventional Commits format since the last tag %s", count($gitLog), $this->lastVersion->toHordeTag()));
         $this->_output->plain("see https://www.conventionalcommits.org/");
         $this->_output->plain(sprintf("Highest severity: %s\n", $conventional->getTopSeverity()));
         $this->_output->plain("Anticipated next version tag: " . $this->nextVersion->toHordeTag());
+        $this->_output->plain("Stability: " .  $conventional->getLatestStabilityChange());
         foreach ($gitLog as $commit) {
             $this->_output->plain(str_repeat("-", 79));
-            $this->_output->plain(sprintf("%8s %8s %8s: %s\n", $commit->type, $commit->scope, $commit->severity, $commit->description));
+            $this->_output->plain(sprintf("%8s %8s %8s: %s", $commit->type, $commit->scope, $commit->severity, $commit->description));
+            if ($commit->stability !== 'unchanged') {
+                $this->_output->plain("Stability: " . $commit->stability);
+            }
         }
     }
 
