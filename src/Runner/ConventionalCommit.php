@@ -75,7 +75,6 @@ class ConventionalCommit
         $this->nextVersion = $this->lastVersion->nextVersionObject($conventional->getTopSeverity(), stability: $conventional->getLatestStabilityChange());
         return $conventional;
     }
-
     public function runShow(): void
     {
         $conventional = $this->loadCommitReader();
