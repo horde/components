@@ -234,7 +234,7 @@ class Version
         } 
         $stability = $this->getStability();
         if ($stability)  {
-            $version .= '-' . $stability . $this->getStabilityVersion();
+            $version .= $stability . $this->getStabilityVersion();
         }
         if  ($this->getBuildInfo()) {
             '+' . $this->getBuildInfo(); 
