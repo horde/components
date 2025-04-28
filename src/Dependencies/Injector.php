@@ -23,6 +23,7 @@ use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Release\Notes as ReleaseNotes;
 use Horde\Components\Release\Tasks as ReleaseTasks;
 use Horde\Components\Runner\Change as RunnerChange;
+use Horde\Components\Runner\ConventionalCommit as RunnerConventionalCommit;
 use Horde\Components\Runner\CiPrebuild as RunnerCiPrebuild;
 use Horde\Components\Runner\CiSetup as RunnerCiSetup;
 use Horde\Components\Runner\Composer as RunnerComposer;
@@ -250,6 +251,10 @@ class Injector extends HordeInjector implements Dependencies
     public function getRunnerChange()
     {
         return $this->getInstance(RunnerChange::class);
+    }
+    public function getRunnerConventionalCommit()
+    {
+        return $this->getInstance(RunnerConventionalCommit::class);
     }
 
     /**
