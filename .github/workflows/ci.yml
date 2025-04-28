@@ -49,7 +49,7 @@ jobs:
       run: |
 
         COMPOSER_ROOT_VERSION=dev-FRAMEWORK_6_0 composer config minimum-stability dev
-        COMPOSER_ROOT_VERSION=dev-FRAMEWORK_6_0 composer install --prefer-stable --no-progress
+        COMPOSER_ROOT_VERSION=dev-FRAMEWORK_6_0 composer install --no-progress
         COMPOSER_ROOT_VERSION=dev-FRAMEWORK_6_0 composer require --prefer-stable --dev horde/test dev-FRAMEWORK_6_0 horde/log ^3
     - name: install horde/test ^3
       run: composer require horde/test ^3
