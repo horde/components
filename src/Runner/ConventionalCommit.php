@@ -80,7 +80,7 @@ class ConventionalCommit
         $conventional = $this->loadCommitReader();
         $this->nextVersion = $this->lastVersion->nextVersionObject($conventional->getTopSeverity());
         $gitLog = $conventional->getLog();
-        $this->_output->plain(sprintf("Found %d commits in Conventional Commits format since the last tag %s", count($gitLog), $originalTagString));
+        $this->_output->plain(sprintf("Found %d commits in Conventional Commits format since the last tag %s", count($gitLog), $this->lastVersion->toHordeTag()));
         $this->_output->plain("see https://www.conventionalcommits.org/");
         $this->_output->plain(sprintf("Highest severity: %s\n", $conventional->getTopSeverity()));
         $this->_output->plain("Anticipated next version tag: " . $this->nextVersion->toHordeTag());
