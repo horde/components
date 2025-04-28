@@ -5,9 +5,9 @@ name: Update Satis
 # Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
-  push:
-    branches:
-      - FRAMEWORK_6_0
+  #push:
+  #    branches:
+  #      - FRAMEWORK_6_0
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
