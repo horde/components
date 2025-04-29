@@ -9,6 +9,7 @@
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
   notes: |
+    feat: push & tag
     feat: Conventional Release helper (partial implementation). Run horde-components release h6.
     fix(ci): Remove unnecessary steps
     fix: install does not understand prefer-stable
