@@ -1,6 +1,7 @@
 <?php
 namespace Horde\Components\Helper;
 use Horde\Components\GitCommitLog;
+use Horde\Components\ConventionalCommitReader;
 /**
  * Read git commits since last tag and determine
  * - Conventional commits
@@ -26,7 +27,7 @@ class ConventionalCommitHelper
             }
         }
         // Guard against tags that don't look like a version
-        $versionHelper = VersionHelper::fromComposerString($originalTagString);
+        $versionHelper = Version::fromComposerString($originalTagString);
         $this->lastVersion = $versionHelper;
         $conventional = new ConventionalCommitReader($gitLog);
         $this->nextVersion = $this->lastVersion->nextVersionObject(severity: $conventional->getTopSeverity(), stability: $conventional->getLatestStabilityChange());

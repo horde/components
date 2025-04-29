@@ -242,6 +242,47 @@ class Version
         return $version;
     }
 
+    /**
+     * Semantic Version V2 M.m.p Core format
+     * 
+     * SemVer neither supports version prefixes nor subpatch but pre-releases and builds
+     * 
+     * https://semver.org/
+     * 
+     */
+    public function toSemVerV2VersionCore(): string
+    {
+        // SemVer does not support prefixes
+        return sprintf("%s.%s.%s",
+            $this->major ?? '0',
+            $this->minor ?? '0',
+            $this->patch ?? '0'
+        );
+    }
+
+    /**
+     * Semantic Version V2 M.m.p Full Format
+     * 
+     * SemVer neither supports version prefixes nor subpatch but pre-releases and builds
+     * 
+     * https://semver.org/
+     * 
+     */
+    public function toFullSemVerV2(): string
+    {
+        $base = $this->toSemVerV2VersionCore();
+        if ($this->stability) {
+            $base .= '-' . $this->stability;
+            if ((int)$this->stabilityVersion) {
+                $base .= (string) $this->stabilityVersion;
+            }
+        }
+        if ($this->buildInfo) {
+            $base .= '+' .  $this->buildInfo;
+        }
+        return $base;
+    }
+
     public function normalizeStability(string $stability): string
     {
         if ($stability === 'unchanged') {
@@ -290,25 +331,31 @@ class Version
         $patch = (int) ltrim((string)$patch, '.');
         $subpatch = (int) ltrim((string)$subpatch, '.');
         $other ??= '';
+        // If it's SemVerV2-ish, anything after patch must begin with a - (prerelease) or a + (buildinfo)        
         // Bisect other string into buildinfo and stability
         $startBuildInfo = stripos($other, '+');
         if ($startBuildInfo === false) {
             $buildInfo = '';
-            $stability = $other;
+            $prerelease = $other;
         } else {
             $buildInfo = substr($other, $startBuildInfo + 1);
-            $stability = substr($other, 0, $startBuildInfo);
+            $prerelease = substr($other, 0, $startBuildInfo);
         }
+        $prereleaseVersion = 0;
         // Parse stability and stability integer, stripping leading hyphen if any
-        ltrim($stability, '-');
-        $res = preg_match('/^([A-Za-z]+)(\d+)?$/', $stability, $stabilityMatch);
-        $stability = $stabilityMatch[1] ?? '';
-        if ($stability) {
-            $stabilityVersion = (int)$stabilityMatch[2] ?? 1;
-        } else {
-            $stabilityVersion = 0;
+        if ($prerelease) {
+            $prerelease = ltrim($prerelease, '-');
+            $res = preg_match('/^([A-Za-z]+)(\d+)?$/', $prerelease, $prereleaseMatch);
+            $prerelease = $prereleaseMatch[1] ?? '';
+            if ($prerelease) {
+                $prereleaseVersion = (int)$prereleaseMatch[2] ?? 1;
+            } else {
+                $prereleaseVersion = 0;
+            }
+            // TODO: If we have a recognized stability, clear "other". 
+            // If we don't recognize the prerelease info as a stability, clear it and use "other"
         }
-        return new Version($original, $prefix, $major, $minor, $patch, $subpatch, $stability, $stabilityVersion, $buildInfo, $other);
+        return new Version($original, $prefix, $major, $minor, $patch, $subpatch, $prerelease, (int) $prereleaseVersion, $buildInfo, $other);
     }
 
     // Old static API

@@ -7,6 +7,10 @@ use Horde\Components\Wrapper\ChangelogYml;
 use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\Exception;
 use Horde\Components\Wrapper\ComposerJson;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
+use Horde\Components\ChangelogEntry;
 /** 
  * Horde 6 Release pipeline
  * 
@@ -52,45 +56,52 @@ class HordeRelease
             throw new Exception('Not on release branch. Please switch to the release branch before running this script.');
         }
         // Read ConventionalCommits & expected next version
-        $history = new ConventionalCommitHelper($gitHelper);
+        $history = new ConventionalCommitHelper($this->gitHelper);
         // Bail out on inappropriate, i.e. no conventional commits included
         if (count($history->commitReader->getLog()) == 0) {
             throw new Exception('No conventional commits found since last tag. Please ensure you have made commits in the correct format.');
         }
         // write .horde.yml versions and stabilities
         $hordeYml = new HordeYml($this->directory);
-        $hordeYml->setComponentVersionAndStability($history->getNextVersion());
+        $hordeYml->setReleaseVersionAndStability($history->nextVersion);
         // TODO: Logic on when to set API version and stability
         // $hordeYml->setApiVersionAndStability($history->getNextVersion());
         $hordeYml->save();
         // While apps used to have changelog.yml in doc/, libs had it in doc/long/lib/name - simplify this
         // write changelog.yml
         $splFileInfo = self::findFile((string) $this->directory . '/doc', 'changelog.yml');
-        if ($splFileInfo) {
+        if ($splFileInfo && ($splFileInfo->getPathname() !== $this->directory . '/doc/changelog.yml')) 
+        {
             $this->gitHelper->moveFile($splFileInfo->getPathname(), $this->directory . '/doc/changelog.yml');
         }
 
         $changelog = new ChangelogYml($this->directory . '/doc');
+        $logNotes = '';
         foreach ($history->commitReader->getLog() as $commit) {
             // TODO: Nice Format
             $logNotes .= $commit->subject . "\n";
         }
         $entry = new ChangelogEntry(
-            releaseVersion: $hordeYml->getComponentVersion(),
-            apiVersion: $hordeYml->getComponentStability(),
+            releaseVersion: $hordeYml->getReleaseVersion(),
+            apiVersion: $hordeYml->getApiVersion(),
             // Date defaults to today
             license: $hordeYml->getLicense(),
-            notes: $logNotes            
+            notes: $logNotes
         );
+        $changelog->addChangelogEntry($entry);
+        $changelog->save();
         // write composer.json from changelog and horde.yml
 
         // Remove CHANGES file if present
         $splFileInfo = self::findFile((string) $this->directory . '/doc', 'CHANGES');
-        if ($splFileInfo) {
+        if ($splFileInfo && ($splFileInfo->getPathname() !== (string)$this->directory . '/doc')) {
             $this->gitHelper->deleteFile($splFileInfo->getPathname());
         }
         // Remove package.xml file if present
-        $gitHelper->removeFile($this->directory . '/package.xml');
+        $packagePath = (string)$this->directory . '/package.xml';
+        if (file_exists($packagePath)){
+            $this->gitHelper->deleteFile();
+        }
         // TODO: Composer validate
         // TODO: write application.php Sentinel
         // TODO: Run any document pulls from Wiki or other sources

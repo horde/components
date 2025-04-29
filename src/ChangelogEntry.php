@@ -10,7 +10,7 @@ class ChangelogEntry
     public function __construct(
         public readonly Version $releaseVersion, 
         public readonly Version $apiVersion, 
-        public readonly DateTimeImmutable $date = new DateTimeImmutable('now', new DateTimeZone('UTC'))
+        public readonly DateTimeImmutable $date = new DateTimeImmutable('now', new DateTimeZone('UTC')),
         public readonly License $license = new License('LGPL-2.1-or-later', 'https://spdx.org/licenses/LGPL-2.1-or-later.html'),
         public readonly string $notes = ''
     )
@@ -21,11 +21,11 @@ class ChangelogEntry
      */
     public function toChangelogEntryArray(bool $withTopLevelVersion = false): array
     {
-        $versionTag = $this->releaseVersion->toHordeTag();
+        $versionTag = $this->releaseVersion->toFullSemVerV2();
         $log = [
-            'api' => $this->apiVersion->toHordeTag(),
+            'api' => $this->apiVersion->toFullSemVerV2(),
             'state' => [
-                'release' => $this->releaseVersion->getStability() || 'stable'
+                'release' => $this->releaseVersion->getStability() || 'stable',
                 'api' => $this->apiVersion->getStability() || 'stable',
             ],
             'date' => $this->date->format('Y-m-d'),

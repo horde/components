@@ -17,6 +17,8 @@ use Horde\Components\Exception;
 use Horde\Components\Wrapper;
 use Horde\Components\WrapperTrait;
 use Horde\Components\Component\ComponentDirectory;
+use Horde\Components\License;
+
 /**
  * Wrapper for the .horde.yml file.
  *
@@ -61,12 +63,25 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
         return new License($this['license']['identifier'] ?? '', $this['license']['uri'] ?? '');
     }
 
+    public function getReleaseVersion(): Version
+    {
+        return Version::fromComposerString($this['version']['release']);
+    }
+    public function getApiVersion(): Version
+    {
+        return Version::fromComposerString($this['version']['api']);
+    }
+
+    public function getComponentStability(): string
+    {
+        return (string) $this['state']['release'];
+    }
     public function setReleaseVersionAndStability(Version $version)
     {
-        if (empty($this->['version']) || empty($this['version']['release'])) {
-            $this['version'] = ['release' => $version->toHordeTag()];
+        if (empty($this['version']) || empty($this['version']['release'])) {
+            $this['version'] = ['release' => $version->toFullSemVerV2()];
         }
-        $this['version']['release'] = $version->toHordeTag()
+        $this['version']['release'] = $version->toFullSemVerV2();
         // Ensure API version exists
         if (empty($this['version']['api'])) {
             $this->setApiVersionAndStability($version);
@@ -76,10 +91,10 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
 
     public function setApiVersionAndStability(Version $version)
     {
-        if (empty($this->['version']) || empty($this['version']['api'])) {
-            $this['version'] = ['api' => $version->toHordeTag()];
+        if (empty($this['version']) || empty($this['version']['api'])) {
+            $this['version'] = ['api' => $version->toFullSemVerV2()];
         }
-        $this['version']['api'] = $version->toHordeTag()
+        $this['version']['api'] = $version->toFullSemVerV2();
         // Ensure release version exists
         if (empty($this['version']['release'])) {
             $this->setReleaseVersionAndStability($version);
