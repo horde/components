@@ -13,13 +13,13 @@
 namespace Horde\Components\Runner;
 
 use Horde\Components\Config;
-use Horde\Components\Helper\Commit as HelperCommit;
 use Horde\Components\Output;
 use Horde\Components\Qc\Tasks as QcTasks;
 use Horde\Components\Release\Tasks as ReleaseTasks;
 use Horde\Components\Exception;
 use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\Helper\Git as GitHelper;
+use Horde\Components\Helper\Composer as ComposerHelper;
 use Horde\Components\Release\HordeRelease;
 
 /**
@@ -105,7 +105,9 @@ class Release
             $this->_output->warn('H6 Release Pipeline');
             $path = new ComponentDirectory($component->getComponentDirectory());
             $gitHelper = new GitHelper();
+            $composerHelper = new ComposerHelper();
             $release = new HordeRelease(
+                $composerHelper,
                 $gitHelper,
                 $path
             );

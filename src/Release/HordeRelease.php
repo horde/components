@@ -1,6 +1,7 @@
 <?php
 namespace Horde\Components\Release;
 use Horde\Components\Helper\Git as GitHelper;
+use Horde\Components\Helper\Composer as ComposerHelper;
 use Horde\Components\Helper\ConventionalCommitHelper;
 use Horde\Components\Wrapper\HordeYml;
 use Horde\Components\Wrapper\ChangelogYml;
@@ -40,6 +41,7 @@ use Horde\Components\ChangelogEntry;
 class HordeRelease
 {
     public function __construct(
+        private ComposerHelper $composerHelper,
         private GitHelper $gitHelper,         
         private ComponentDirectory $directory,
     ) {
@@ -91,6 +93,7 @@ class HordeRelease
         $changelog->addChangelogEntry($entry);
         $changelog->save();
         // write composer.json from changelog and horde.yml
+        $this->composerHelper->generateComposerJson($hordeYml);
 
         // Remove CHANGES file if present
         $splFileInfo = self::findFile((string) $this->directory . '/doc', 'CHANGES');
