@@ -62,7 +62,7 @@ class Github
     ) {
         //        $this->gitHelper = $git;
         $this->environmentConfig ??= new EnvironmentConfigProvider(getenv());
-        $defaultLocalCheckoutDir = $this->environmentConfig->hasSetting('HOME') ? $this->environmentConfig->getSetting('HOME') . '/git/horde' : '/srv/git/horde';
+        $defaultLocalCheckoutDir = $this->environmentConfig->hasSetting('HOME') ? $this->environmentConfig->getSetting('HOME') . '/git' : '/srv/git/horde';
         $options = $this->config->getOptions();
         $this->gitRepoBase = $options['git_repo_base'] ??
         'https://github.com/horde/';

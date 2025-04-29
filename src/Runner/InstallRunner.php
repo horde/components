@@ -22,7 +22,7 @@ class InstallRunner
 
     public function run(Config $config)
     {
-        if (!$this->gitCheckoutDirectory->exists() || count($this->gitCheckoutDirectory->getGitDirs()) == 0)   {
+        if (!$this->gitCheckoutDirectory->exists() || $this->gitCheckoutDirectory->getGitDirs()->count() == 0)   {
             $this->output->warn("The developer checkout directory is missing or empty: " . $this->gitCheckoutDirectory);
             $this->output->help("Run horde-components github-clone-org");
             return;
@@ -41,7 +41,7 @@ class InstallRunner
             $targetVersion = 'dev-FRAMEWORK_6_0';
             // TODO: Turn this into a proper class
             $repository = new stdClass();
-            $repository->url = $this->gitCheckoutDirectory . DIRECTORY_SEPARATOR . 'bundle';
+            $repository->url = $this->gitCheckoutDirectory . DIRECTORY_SEPARATOR . 'horde/bundle';
             $repository->type = 'path';
             $repository->options = new stdClass;
             $repository->options->symlink = false;

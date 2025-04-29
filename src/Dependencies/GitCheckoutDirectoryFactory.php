@@ -9,7 +9,7 @@ class GitCheckoutDirectoryFactory
 {
     public function __construct(
         private readonly Config $config,
-        private EnvironmentConfigProvider $environmentConfigProvider
+        private EnvironmentConfigProvider $environmentConfig
     )
     {
 
@@ -18,7 +18,7 @@ class GitCheckoutDirectoryFactory
     public function __invoke(): GitCheckoutDirectory
     {
         $options = $this->config->getOptions();
-        $defaultLocalCheckoutDir = $this->environmentConfig->hasSetting('HOME') ? $this->environmentConfig->getSetting('HOME') . '/git/horde' : '/srv/git/horde';
+        $defaultLocalCheckoutDir = $this->environmentConfig->hasSetting('HOME') ? $this->environmentConfig->getSetting('HOME') . '/git' : '/srv/git/horde';
         return new GitCheckoutDirectory($options['checkout_dir'] ?? $defaultLocalCheckoutDir);
     }
 }
