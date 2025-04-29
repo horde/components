@@ -49,6 +49,19 @@ class ChangelogYml extends \ArrayObject implements Wrapper, \Stringable
         parent::__construct($changelog);
     }
 
+
+    public function hasVersion(Version $version)
+    {
+        return isset($this[$version->toHordeTag()]);
+    }
+    /**
+     * Add a new changelog entry or update an existing one.
+     */
+    public function addChangelogEntry(ChangelogEntry $entry)
+    {
+        $this[$entry->getVersion()->toHordeTag()][] = $entry->toArray();
+    }
+
     /**
      * Returns the file contents.
      */

@@ -533,6 +533,27 @@ class Git
         return $this->execInDirectory($cmd, $localDir);
     }
 
+    public function moveFile(string $source, string $target)
+    {
+        $cmd = sprintf(
+            '%s mv %s %s',
+            $this->gitBin,
+            $source,
+            $target
+        );
+        return $this->exec($cmd);
+    }
+
+    public function deleteFile(string $filename)
+    {
+        $cmd = sprintf(
+            '%s rm %s',
+            $this->gitBin,
+            $filename
+        );
+        return $this->exec($cmd);
+    }
+
     /**
      * Create a local branch from a remote of same name
      *

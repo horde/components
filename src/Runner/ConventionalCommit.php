@@ -72,7 +72,7 @@ class ConventionalCommit
         $versionHelper = VersionHelper::fromComposerString($originalTagString);
         $this->lastVersion = $versionHelper;
         $conventional = new ConventionalCommitReader($gitLog);
-        $this->nextVersion = $this->lastVersion->nextVersionObject($conventional->getTopSeverity(), stability: $conventional->getLatestStabilityChange());
+        $this->nextVersion = $this->lastVersion->nextVersionObject(severity: $conventional->getTopSeverity(), stability: $conventional->getLatestStabilityChange());
         return $conventional;
     }
 

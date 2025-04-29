@@ -12,11 +12,11 @@
  */
 
 namespace Horde\Components\Wrapper;
-
+use Horde\Components\Helper\Version;
 use Horde\Components\Exception;
 use Horde\Components\Wrapper;
 use Horde\Components\WrapperTrait;
-
+use Horde\Components\Component\ComponentDirectory;
 /**
  * Wrapper for the .horde.yml file.
  *
@@ -35,7 +35,7 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
      * @param string $baseDir Directory with .horde.yml.
      * @throws Exception
      */
-    public function __construct($baseDir)
+    public function __construct(ComponentDirectory|string $baseDir)
     {
         $this->_file = (string) $baseDir . '/.horde.yml';
         if ($this->exists()) {
@@ -48,6 +48,43 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
             $horde = [];
         }
         parent::__construct($horde);
+    }
+    
+    public function setLicense(License $license)
+    {
+        $this['license'] = $license->toArray();
+    }
+
+    public function getLicense(): License
+    {
+        // TODO: If missing?
+        return new License($this['license']['identifier'] ?? '', $this['license']['uri'] ?? '');
+    }
+
+    public function setReleaseVersionAndStability(Version $version)
+    {
+        if (empty($this->['version']) || empty($this['version']['release'])) {
+            $this['version'] = ['release' => $version->toHordeTag()];
+        }
+        $this['version']['release'] = $version->toHordeTag()
+        // Ensure API version exists
+        if (empty($this['version']['api'])) {
+            $this->setApiVersionAndStability($version);
+        }
+        return $this;
+    }
+
+    public function setApiVersionAndStability(Version $version)
+    {
+        if (empty($this->['version']) || empty($this['version']['api'])) {
+            $this['version'] = ['api' => $version->toHordeTag()];
+        }
+        $this['version']['api'] = $version->toHordeTag()
+        // Ensure release version exists
+        if (empty($this['version']['release'])) {
+            $this->setReleaseVersionAndStability($version);
+        }
+        return $this;
     }
 
     /**
