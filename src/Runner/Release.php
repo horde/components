@@ -18,6 +18,9 @@ use Horde\Components\Output;
 use Horde\Components\Qc\Tasks as QcTasks;
 use Horde\Components\Release\Tasks as ReleaseTasks;
 use Horde\Components\Exception;
+use Horde\Components\Component\ComponentDirectory;
+use Horde\Components\Helper\Git as GitHelper;
+use Horde\Components\Release\HordeRelease;
 
 /**
  * Components_Runner_Release:: releases a new version for a package.
@@ -100,20 +103,14 @@ class Release
         $arguments[1] == 'h6')
         {
             $this->_output->warn('H6 Release Pipeline');
-            /*
-            - Check if we are on release branch
-            - Read ConventionalCommits & expected next version
-            - write .horde.yml versions
-            - write changelog.yml
-            - write composer.json from changelog
-            - Composer validate
-            - remove any package.xml if exists
-            - write application.php Sentinel
-            - commit
-            - tag & push
-            - Post Tasks, trigger packagist and horde infra apis
-            */
-            
+            $path = new ComponentDirectory($component->getComponentDirectory());
+            $gitHelper = new GitHelper();
+            $release = new HordeRelease(
+                $gitHelper,
+                $path
+            );
+            $release->run();
+            return;
         }
         else {
             $this->_output->warn('Run "horde-components release for <pipeline>"');

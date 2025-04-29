@@ -847,6 +847,7 @@ class Source extends Base
     ): string {
         $package = $this->getPackageXml();
         $package->setState($rel_state, $api_state);
+        // Externalize this to the HordeYml Helper
         $hordeYml = $this->getHordeYml();
         if ($rel_state) {
             $hordeYml['state']['release'] = $rel_state;
