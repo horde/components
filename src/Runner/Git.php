@@ -150,6 +150,7 @@ class Git
             if (count($arguments) != 3) {
                 $this->output->help('push currently only supports a fixed format');
                 $this->output->help('push component');
+                exit();
             }
             [$git, $action, $component] = $arguments;
             $componentDir = $this->localCheckoutDir . $component . '/';
