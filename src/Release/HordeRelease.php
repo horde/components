@@ -106,6 +106,12 @@ class HordeRelease
         // TODO: write application.php Sentinel
         // TODO: Run any document pulls from Wiki or other sources
         // TODO: commit for release
+        $this->gitHelper->add((string) $this->directory . '/doc/changelog.yml');
+        $this->gitHelper->add((string) $this->directory . '/.horde.yml');
+        $this->gitHelper->add((string) $this->directory . '/composer.json');
+        $this->gitHelper->commit(
+            (string) $this->directory, 
+            'Release ' . $hordeYml->getReleaseVersion()->toFullSemverV2() . '  (API Version: ' . $hordeYml->getApiVersion()->toFullSemverV2() . ") \n\n" . $logNotes);
         // TODO: tag & push
         // TODO: Post Tasks, trigger packagist and horde infra apis
         // Post release commit if needed.           

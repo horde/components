@@ -63,8 +63,7 @@ class ChangelogYml extends \ArrayObject implements Wrapper, \Stringable
      */
     public function addChangelogEntry(ChangelogEntry $entry)
     {
-        // TODO: Cleanup/merge legacy formats
-        print_r($entry->releaseVersion);
+        // Constructor already took care of legacy formats so we will never have duplicate versions
         $this[$entry->releaseVersion->toFullSemVerV2()] = $entry->toChangelogEntryArray();
     }
 

@@ -687,14 +687,14 @@ class Git
      */
     public function commit(string $localDir, string $log): void
     {
-        $wd = null;
         if (empty($this->added)) {
             return;
         }
-        foreach ($this->added as $path => $wd) {
+        foreach ($this->added as $path) {
             $this->systemInDirectory('git add ' . $path, $localDir);
         }
-        $this->systemInDirectory('git commit -m "' . $log . '"', $wd);
+        // TODO: Use a message file instead. Command line escaping might be brittle
+        $this->systemInDirectory('git commit -m "' . $log . '"', $localDir);
         $this->added = [];
     }
 
