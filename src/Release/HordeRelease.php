@@ -109,10 +109,23 @@ class HordeRelease
         $this->gitHelper->add((string) $this->directory . '/doc/changelog.yml');
         $this->gitHelper->add((string) $this->directory . '/.horde.yml');
         $this->gitHelper->add((string) $this->directory . '/composer.json');
+        $releaseMessage = 'Release ' . $hordeYml->getReleaseVersion()->toFullSemverV2() . '  (API Version: ' . $hordeYml->getApiVersion()->toFullSemverV2() . ") \n\n" . $logNotes;
         $this->gitHelper->commit(
             (string) $this->directory, 
-            'Release ' . $hordeYml->getReleaseVersion()->toFullSemverV2() . '  (API Version: ' . $hordeYml->getApiVersion()->toFullSemverV2() . ") \n\n" . $logNotes);
+            $releaseMessage
+            );
         // TODO: tag & push
+        $this->gitHelper->tag(
+            (string) $this->directory,
+            $hordeYml->getReleaseVersion()->toHordeTag(),
+            $releaseMessage        
+        );
+        $this->gitHelper->push(
+            (string) $this->directory,
+            'origin',
+            $currentBranch,
+            $hordeYml->getReleaseVersion()->toHordeTag()
+        );
         // TODO: Post Tasks, trigger packagist and horde infra apis
         // Post release commit if needed.           
     }

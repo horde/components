@@ -650,12 +650,14 @@ class Git
      * @param string $localDir The checkout dir of the component
      * @param string $remote   Optional remote, defaults to origin
      */
-    public function push(string $localDir, $remote = 'origin', ?string $ref = null, bool $force = false): void
+    public function push(string $localDir, $remote = 'origin', ?string $ref = null, bool $force = false, bool $tags = false): void
     {
         $forceCmd = $force ? '--force' : '';
+        $tagsCmd = $tags ? '--tags' : '';
         $cmd = sprintf(
-            'git push %s --set-upstream %s %s --follow-tags',
+            'git push %s %s --set-upstream %s %s --follow-tags',
             $forceCmd,
+            $tagsCmd,
             $remote,
             $ref ?? $this->getCurrentBranch($localDir)
         );
