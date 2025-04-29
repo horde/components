@@ -17,6 +17,7 @@ use Horde\Components\Component\Factory as ComponentFactory;
 use Horde\Components\Composer\InstallationDirectory;
 use Horde\Components\Config;
 use Horde\Components\Config\Bootstrap as ConfigBootstrap;
+use Horde\Components\ConfigProvider\EnvironmentConfigProvider;
 use Horde\Components\Dependencies;
 use Horde\Components\Output;
 use Horde\Components\Helper\Git as GitHelper;
@@ -75,6 +76,7 @@ class Injector extends HordeInjector implements Dependencies
     {
         parent::__construct($parentInjector ?? new TopLevel());
         $this->setInstance(Dependencies::class, $this);
+        $this->setInstance(EnvironmentConfigProvider::class, new EnvironmentConfigProvider(getenv()));
         $this->bindFactory(
             \Horde_Cli::class,
             Dependencies::class,
