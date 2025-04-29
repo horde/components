@@ -19,6 +19,7 @@ use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Output;
 use Horde\GithubApiClient\GithubApiClient;
 use Horde\GithubApiClient\GithubOrganizationId;
+use Horde\Components\ConfigProvider\EnvironmentConfigProvider;
 
 /**
  * Horde\Components\Runner\Github:: runner for git operations.
@@ -56,19 +57,22 @@ class Github
         private readonly Config $config,
         private readonly Output $output,
         private GitHelper $gitHelper,
-        private GithubApiClient $client
+        private GithubApiClient $client,
+        private ?EnvironmentConfigProvider $environmentConfig = null
     ) {
         //        $this->gitHelper = $git;
+        $this->environmentConfig ??= new EnvironmentConfigProvider(getenv());
+        $defaultLocalCheckoutDir = $this->environmentConfig->hasSetting('HOME') ? $this->environmentConfig->getSetting('HOME') : '/srv/git/horde';
         $options = $this->config->getOptions();
         $this->gitRepoBase = $options['git_repo_base'] ??
         'https://github.com/horde/';
-        $this->localCheckoutDir = $options['checkout_dir'] ?? '/srv/git/horde';
+        $this->localCheckoutDir = $options['checkout_dir'] ?? $defaultLocalCheckoutDir;
     }
 
     public function run()
     {
         $arguments = $this->config->getArguments();
-        
+
         if (count($arguments) == 1 && $arguments[0] == 'github-clone-org') {
             $this->output->ok('About the clone a complete github org.');
             $this->output->plain('Trying to get the catalog');
