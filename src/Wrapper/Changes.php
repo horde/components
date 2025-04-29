@@ -45,7 +45,7 @@ class Changes implements \IteratorAggregate, Wrapper, \Stringable
         $this->_file = $docDir . '/CHANGES';
         if ($this->exists()) {
             $this->_changes = file($this->getFullPath());
-            $discontinued = 'CHANGES FILE DISCONTINUED: Use changelog.yml'
+            $discontinued = 'CHANGES FILE DISCONTINUED: Use changelog.yml';
             if ($this->_changes[1] != $discontinued) {
                 array_unshift($this->_changes, str_repeat('-', strlen($discontinued)));
                 array_unshift($this->_changes, $discontinued);
