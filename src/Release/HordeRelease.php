@@ -103,7 +103,7 @@ class HordeRelease
         // Remove package.xml file if present
         $packagePath = (string)$this->directory . '/package.xml';
         if (file_exists($packagePath)){
-            $this->gitHelper->deleteFile();
+            $this->gitHelper->deleteFile($packagePath);
         }
         // TODO: Composer validate
         // TODO: write application.php Sentinel
