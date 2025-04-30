@@ -29,6 +29,6 @@
   "git-version": "package_version",
   "intercept": true,
   "main": "bin/horde-components",
-  "output": "horde-components.phar",
+  "output": "~/horde-components.phar",
   "stub": true
 }
