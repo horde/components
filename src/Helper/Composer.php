@@ -399,7 +399,9 @@ class Composer
             }
         }
         // If still empty, make sure we use an object instead.
-        $composerDefinition->{'autoload-dev'} = new stdClass;
+        if (empty($composerDefinition->{'autoload-dev'})) {
+            $composerDefinition->{'autoload-dev'} = new stdClass;
+        }
     }
 
     /**
