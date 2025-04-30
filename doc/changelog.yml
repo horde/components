@@ -1,4 +1,17 @@
 ---
+1.0.0-alpha10:
+  api: 1.0.0-alpha1
+  state:
+    release: true
+    api: true
+  date: 2025-04-30
+  license:
+    identifier: LGPL-2.1-only
+    uri: http://www.horde.org/licenses/lgpl21
+  notes: |
+    fix: Installer command paths
+    fix(syntax): ChangesWrapper
+    fix: Stop trying to run git push if parameter is missing
 1.0.0-alpha9:
   api: 1.0.0-alpha1
   state:
