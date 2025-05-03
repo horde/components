@@ -102,7 +102,7 @@ class GitBranch extends Base
         } else {
             $git = $this->_whichGit();
         }
-        if (empty($git)) {
+        if ($git->getReturnValue() != 0) {
             $issues[] = 'Could not detect installed git binary';
             return $issues;
         }

@@ -60,7 +60,7 @@ interface Wrapper
      *
      * @return string  File diff.
      */
-    public function diff(self $wrapper = null);
+    public function diff(?self $wrapper = null);
 
     /**
      * Saves this object to the file.

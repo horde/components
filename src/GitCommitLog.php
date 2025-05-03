@@ -61,7 +61,7 @@ class GitCommitLog implements IteratorAggregate, Countable
                 $newCommits[] = $commit;
             }
         }
-        return new GitCommitLog($newCommits[]);
+        return new GitCommitLog($newCommits);
     }
 
     public function getCommitByTag(string $tag): ?GitCommit

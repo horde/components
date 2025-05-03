@@ -213,7 +213,7 @@ class Version
     }
     public static function isStable(string $stability): bool
     {
-        return $tability === 'stable' || $stability === '';
+        return $stability === 'stable' || $stability === '';
     }
 
     public static function isUp(int $stabilityChangeDirection): bool

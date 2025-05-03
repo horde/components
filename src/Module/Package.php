@@ -114,6 +114,7 @@ For checking a specific directory
      */
     public function getContextOptionHelp(): array
     {
+        return [];
     }
 
     /**

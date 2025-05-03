@@ -84,7 +84,7 @@ trait WrapperTrait
      *
      * @return string  File diff.
      */
-    public function diff(Wrapper $wrapper = null)
+    public function diff(?Wrapper $wrapper = null)
     {
         $renderer = new \Horde_Text_Diff_Renderer_Unified();
         if ($wrapper) {
