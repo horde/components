@@ -21,7 +21,7 @@
             "role": "contributor"
         }
     ],
-    "time": "2025-04-30",
+    "time": "2025-05-03",
     "repositories": [],
     "require": {
         "horde/horde-installer-plugin": "^2",
@@ -60,7 +60,11 @@
             "Horde\\Components\\": "src/"
         }
     },
-    "autoload-dev": {},
+    "autoload-dev": {
+        "psr-4": {
+            "Horde\\Components\\Test\\": "test/"
+        }
+    },
     "bin": [
         "bin/horde-components",
         "bin/horde-components-prototype-transpile"

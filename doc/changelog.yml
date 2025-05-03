@@ -1,4 +1,17 @@
 ---
+1.0.0-alpha11:
+  api: 1.0.0-alpha1
+  state:
+    release: true
+    api: true
+  date: 2025-05-03
+  license:
+    identifier: LGPL-2.1-only
+    uri: http://www.horde.org/licenses/lgpl21
+  notes: |
+    fix: Various phpstan level 1 issues
+    fix: Autoload-dev autosensing and .horde.yml files no longer ignored
+    fix: Missing parameter when deleting package.xml
 1.0.0-alpha10:
   api: 1.0.0-alpha1
   state:
