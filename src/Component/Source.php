@@ -1362,7 +1362,7 @@ class Source extends Base
     /**
      * @param Wrapper|null $oldWrapper
      */
-    protected function _createDiff(Wrapper $wrapper, Wrapper $oldWrapper = null): string
+    protected function _createDiff(Wrapper $wrapper, ?Wrapper $oldWrapper = null): string
     {
         $diff = $wrapper->diff($oldWrapper);
         if (!empty($diff)) {
