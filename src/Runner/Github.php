@@ -20,6 +20,7 @@ use Horde\Components\Output;
 use Horde\GithubApiClient\GithubApiClient;
 use Horde\GithubApiClient\GithubOrganizationId;
 use Horde\Components\ConfigProvider\EnvironmentConfigProvider;
+use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 
 /**
  * Horde\Components\Runner\Github:: runner for git operations.
@@ -58,15 +59,15 @@ class Github
         private readonly Output $output,
         private GitHelper $gitHelper,
         private GithubApiClient $client,
+        private GitCheckoutDirectory $gitCheckoutDirectory,
         private ?EnvironmentConfigProvider $environmentConfig = null
     ) {
         //        $this->gitHelper = $git;
         $this->environmentConfig ??= new EnvironmentConfigProvider(getenv());
-        $defaultLocalCheckoutDir = $this->environmentConfig->hasSetting('HOME') ? $this->environmentConfig->getSetting('HOME') . '/git' : '/srv/git/horde';
         $options = $this->config->getOptions();
         $this->gitRepoBase = $options['git_repo_base'] ??
         'https://github.com/horde/';
-        $this->localCheckoutDir = $options['checkout_dir'] ?? $defaultLocalCheckoutDir;
+        $this->localCheckoutDir = $options['checkout_dir'] ?? $gitCheckoutDirectory;
     }
 
     public function run()
@@ -84,13 +85,13 @@ class Github
             }
             if (!is_dir($this->localCheckoutDir)) {
                 $this->output->plain('Local checkout directory missing and could not be created: ' . $this->localCheckoutDir);
-                throw new RuntimeException('Local checkout directory missing and could not be created');
+                    throw new RuntimeException('Local checkout directory missing and could not be created');
             }
             if (!is_writable($this->localCheckoutDir)) {
                 $this->output->plain('Local checkout directory is not writable: ' . $this->localCheckoutDir);
                 throw new RuntimeException('Local checkout directory is not writable');
             }
-
+            $catalog = [];
             foreach ($repoMeta as $repo)
             {
                 // TODO: Build a helper object for checking if repo dir exists and another for creating if not
@@ -104,6 +105,7 @@ class Github
                     $this->gitHelper->workflowClone($this->output, $repo->getCloneUrl(), $repoDir);
                 }
             }
+            file_put_contents($this->localCheckoutDir . '/repos.json', json_encode($catalog, JSON_PRETTY_PRINT));
             return;
         } elseif (count($arguments) == 1) {
             $this->output->help('For usage help, run: horde-components help git');
