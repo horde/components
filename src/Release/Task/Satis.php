@@ -71,7 +71,7 @@ class Satis extends Base
      *
      * @param array $options Additional options by reference.
      *
-     * @return void;
+     * @return void
      */
     public function run(&$options): void
     {
@@ -180,7 +180,7 @@ class Satis extends Base
         $options['satis_bin'] ??= $found;
         $options['satis_json'] ??= '';
         $options['satis_outdir'] ??= '';
-        $options['satis_push'] = (bool) $options['satis_push'] ?? false;
+        $options['satis_push'] = (bool) $options['satis_push'];
         $options['vendor'] ??= 'horde';
         $options['git_repo_base'] ??= 'https://github.com/' . $options['vendor'] . '/';
         return $options;
