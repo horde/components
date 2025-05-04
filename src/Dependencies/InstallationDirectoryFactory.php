@@ -18,7 +18,11 @@ class InstallationDirectoryFactory
     public function __invoke(): InstallationDirectory
     {
         $options = $this->config->getOptions();
-        $defaultInstallationDir = $this->environmentConfig->hasSetting('HOME') ? $this->environmentConfig->getSetting('HOME') . '/www/horde-dev' : '/srv/www/horde-dev';
+        // TODO: Check for explicit config file setting first
+        $defaultInstallationDir = $this->environmentConfig->hasSetting('HORDE_INSTALL_DIR') ? $this->environmentConfig->getSetting('HORDE_INSTALL_DIR')  : '';
+        if (empty($defaultInstallationDir)) {
+            $defaultInstallationDir = $this->environmentConfig->hasSetting('HOME') ? $this->environmentConfig->getSetting('HOME') . '/www/horde-dev' : '/srv/www/horde-dev';
+        }
         return new InstallationDirectory($options['install_base'] ?? $defaultInstallationDir);
     }
 }
