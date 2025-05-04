@@ -102,6 +102,13 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
         return $this;
     }
 
+    public function getComposerName(): string
+    {
+        $vendor = $this['vendor'] ?? 'horde';
+        $package = $this['name'] ?? $this['id'];
+        return mb_strtolower($vendor . '/' . $package);
+    }
+
     /**
      * Returns the file contents.
      */
