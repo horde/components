@@ -21,7 +21,7 @@
             "role": "contributor"
         }
     ],
-    "time": "2025-05-03",
+    "time": "2025-05-04",
     "repositories": [],
     "require": {
         "horde/horde-installer-plugin": "^2",
@@ -42,7 +42,8 @@
         "horde/githubapiclient": "*"
     },
     "require-dev": {
-        "horde/test": "^3"
+        "horde/test": "^3",
+        "phpunit/phpunit": "^12 || ^11 || ^10 || ^9"
     },
     "suggest": {
         "horde/test": "^3",

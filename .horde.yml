@@ -27,7 +27,7 @@ authors:
     active: true
     role: contributor
 version:
-  release: 1.0.0-alpha11
+  release: 1.0.0-alpha12
   api: 1.0.0alpha1
 state:
   release: alpha
@@ -64,5 +64,6 @@ dependencies:
   dev:
     composer:
       horde/test: ^3
+      phpunit/phpunit: ^12 || ^11 || ^10 || ^9
 nocommands:
   - bin/horde-bootstrap
