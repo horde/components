@@ -75,6 +75,8 @@ class Github
         $arguments = $this->config->getArguments();
 
         if (count($arguments) == 1 && $arguments[0] == 'github-clone-org') {
+            // TODO: Configure this
+            $headBranch = 'FRAMEWORK_6_0';
             $this->output->ok('About the clone a complete github org.');
             $this->output->plain('Trying to get the catalog');
             $repoMeta = $this->client->listRepositoriesInOrganization(new GithubOrganizationId('horde'));
@@ -99,11 +101,15 @@ class Github
                 $repoDir = $this->localCheckoutDir . DIRECTORY_SEPARATOR  . $repo->getFullName();
                 if (is_dir($repoDir . DIRECTORY_SEPARATOR . '.git')) {
                     $this->output->plain('Repo seems to be checked out already: ' . $repo->getFullName());
+                    // Update the local component
+                    $this->gitHelper->fetch($repoDir);
+                    $this->gitHelper->workflowUpdate($this->output, $repoDir, branch: $headBranch, source: $headBranch);
                 } else {
                     $this->output->plain('Repo needs to be cloned: ' . $repo->getFullName());
                     $res = mkdir(directory: $repoDir, recursive: true);
                     $this->gitHelper->workflowClone($this->output, $repo->getCloneUrl(), $repoDir);
                 }
+                $catalog[$repo->getFullName()] = ['path' => $this->localCheckoutDir];
             }
             file_put_contents($this->localCheckoutDir . '/repos.json', json_encode($catalog, JSON_PRETTY_PRINT));
             return;

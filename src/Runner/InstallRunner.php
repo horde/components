@@ -73,14 +73,16 @@ class InstallRunner
             */
 
         }
-        new RecursiveCopy(
+        // TODO: If the root bundle component from the git dir was already "installed" in situ, it might contain symlink garbage under /var or /web mixed with genuine package content
+        $copyHelper = new RecursiveCopy(
             (string)$baseComponentGitDir,
             (string)$this->installationDirectory,
             filter: [
                     'vendor',
                     'composer.lock',
             ],
-        )->copy();
+        );
+        $copyHelper->copy();
         // Inject all horde apps as local sources.
         try {
             $composerJson = $this->installationDirectory->getComposerJson();
