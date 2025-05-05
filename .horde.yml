@@ -67,3 +67,4 @@ dependencies:
       phpunit/phpunit: ^12 || ^11 || ^10 || ^9
 nocommands:
   - bin/horde-bootstrap
+  - bin/horde-components-prototype-transpile
