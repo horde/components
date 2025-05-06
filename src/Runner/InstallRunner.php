@@ -99,6 +99,7 @@ class InstallRunner
         $composerJson->setPreferStable()->setMinimumStability('dev');
         $composerJson->writeFile($this->installationDirectory->getComposerJsonPath());
         $this->output->OK("Packages from git dir are set as local repositories. Only foreign packages are installed via packagist.");
-        //
+        // composer install
+        // Place a default horde config file in the installation directory
     }
 }
