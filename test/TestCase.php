@@ -134,8 +134,8 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
     private function _callUnstrict(array $parameters)
     {
-        $old_errorreporting = error_reporting(E_ALL & ~(E_STRICT | E_DEPRECATED));
-        error_reporting(E_ALL & ~(E_STRICT | E_DEPRECATED));
+        $old_errorreporting = error_reporting(E_ALL & ~(E_DEPRECATED));
+        error_reporting(E_ALL & ~ (E_DEPRECATED));
         $this->_callStrict($parameters);
         error_reporting($old_errorreporting);
     }
@@ -178,7 +178,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
     protected function lessStrict()
     {
-        $this->old_errorreporting = error_reporting(E_ALL & ~(E_STRICT | E_DEPRECATED));
+        $this->old_errorreporting = error_reporting(E_ALL & ~(E_DEPRECATED));
     }
 
     public function tearDown(): void
