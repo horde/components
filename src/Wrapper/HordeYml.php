@@ -109,6 +109,21 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
         return mb_strtolower($vendor . '/' . $package);
     }
 
+    public function getAllowedPlugins(): array
+    {
+        $allowedPlugins = [];
+        if (!empty($this['allow-plugins'])) {
+            if ($this['allow-plugins'] === true) {
+                $allowedPlugins = ['all' => true];
+            } else {
+                $allowedPlugins = $this['allow-plugins'];
+            }
+        }
+        if (in_array($this['type'], ['component', 'application'])) {
+            $allowedPlugins['horde/horde-installer-plugin'] = true;
+        }
+        return $allowedPlugins;
+    }
     /**
      * Returns the file contents.
      */

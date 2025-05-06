@@ -632,11 +632,14 @@ class Composer
 
     protected function _setConfig(WrapperHordeYml $package, \stdClass $composerDefinition): void
     {
-        $composerDefinition->config = [
-            'allow-plugins' => [
-                "horde/horde-installer-plugin" => true,
-            ],
-        ];
+        $plugins = $package->getAllowedPlugins();
+        if (!empty($plugins['all'])) {
+            $composerDefinition->config = ['allow-plugins' => true];
+        } else {
+            $composerDefinition->config = [
+                'allow-plugins' => $plugins
+            ];    
+        }
     }
 
     // Stub of a pretent method
