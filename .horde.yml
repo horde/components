@@ -53,6 +53,7 @@ dependencies:
       horde/yaml: '*'
       horde/eventdispatcher: '*'
       horde/githubapiclient: '*'
+      horde/phpconfigfile: '^0.0.1-alpha4'
   optional:
     composer:
       horde/test: ^3
@@ -65,6 +66,7 @@ dependencies:
     composer:
       horde/test: ^3
       phpunit/phpunit: ^12 || ^11 || ^10 || ^9
+
 nocommands:
   - bin/horde-bootstrap
   - bin/horde-components-prototype-transpile

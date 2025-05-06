@@ -39,7 +39,8 @@
         "horde/release": "^4",
         "horde/yaml": "*",
         "horde/eventdispatcher": "*",
-        "horde/githubapiclient": "*"
+        "horde/githubapiclient": "*",
+        "horde/phpconfigfile": "^0.0.1-alpha4"
     },
     "require-dev": {
         "horde/test": "^3",
@@ -74,5 +75,6 @@
         "allow-plugins": {
             "horde/horde-installer-plugin": true
         }
-    }
+    },
+    "minimum-stability": "dev"
 }
