@@ -21,10 +21,10 @@
             "role": "contributor"
         }
     ],
-    "time": "2025-05-04",
+    "time": "2025-05-06",
     "repositories": [],
     "require": {
-        "horde/horde-installer-plugin": "^2",
+        "horde/horde-installer-plugin": "^2.6",
         "php": "^8",
         "horde/autoloader": "*",
         "horde/argv": "*",
@@ -68,13 +68,14 @@
         }
     },
     "bin": [
-        "bin/horde-components",
-        "bin/horde-components-prototype-transpile"
+        "bin/horde-components"
     ],
     "config": {
         "allow-plugins": {
+            "0": {
+                "horde/horde-installer-plugin": true
+            },
             "horde/horde-installer-plugin": true
         }
-    },
-    "minimum-stability": "dev"
+    }
 }
