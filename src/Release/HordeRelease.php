@@ -93,8 +93,8 @@ class HordeRelease
         $changelog->addChangelogEntry($entry);
         $changelog->save();
         // write composer.json from changelog and horde.yml
-        $this->composerHelper->generateComposerJson($hordeYml);
-
+        $this->composerHelper->generateComposerJson($hordeYml, ['composer_version' => $currentBranch]);
+        
         // Remove CHANGES file if present
         $splFileInfo = self::findFile((string) $this->directory . '/doc', 'CHANGES');
         if ($splFileInfo && ($splFileInfo->getPathname() !== (string)$this->directory . '/doc')) {
