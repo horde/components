@@ -74,4 +74,3 @@ nocommands:
   - bin/horde-components-prototype-transpile
 
 allow-plugins:
-  - horde/horde-installer-plugin: true

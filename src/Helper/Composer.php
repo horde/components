@@ -633,12 +633,12 @@ class Composer
     protected function _setConfig(WrapperHordeYml $package, \stdClass $composerDefinition): void
     {
         $plugins = $package->getAllowedPlugins();
-        if (!empty($plugins['all'])) {
+        if (!empty($plugins->all)) {
             $composerDefinition->config = ['allow-plugins' => true];
         } else {
             $composerDefinition->config = [
                 'allow-plugins' => $plugins
-            ];    
+            ];
         }
     }
 

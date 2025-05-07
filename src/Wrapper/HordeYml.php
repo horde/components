@@ -109,20 +109,27 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
         return mb_strtolower($vendor . '/' . $package);
     }
 
-    public function getAllowedPlugins(): array
+    public function getAllowedPlugins(): array|object
     {
         $allowedPlugins = [];
         if (!empty($this['allow-plugins'])) {
             if ($this['allow-plugins'] === true) {
                 $allowedPlugins = ['all' => true];
             } else {
-                $allowedPlugins = $this['allow-plugins'];
+                foreach ($this['allow-plugins'] as $plugin => $bool) {
+                    print_r($plugin);
+                    if (is_string($plugin)) {
+                        $allowedPlugins[$plugin] = (bool) $bool;
+                    }
+                }
             }
         }
         if (in_array($this['type'], ['component', 'application'])) {
-            $allowedPlugins['horde/horde-installer-plugin'] = true;
+            if (!array_key_exists('horde/horde-installer-plugin', $allowedPlugins)) {
+                $allowedPlugins['horde/horde-installer-plugin'] = true;
+            }
         }
-        return $allowedPlugins;
+        return (object)$allowedPlugins;
     }
     /**
      * Returns the file contents.
