@@ -21,7 +21,7 @@
             "role": "contributor"
         }
     ],
-    "time": "2025-05-06",
+    "time": "2025-05-07",
     "repositories": [],
     "require": {
         "horde/horde-installer-plugin": "^2.6",
@@ -72,9 +72,6 @@
     ],
     "config": {
         "allow-plugins": {
-            "0": {
-                "horde/horde-installer-plugin": true
-            },
             "horde/horde-installer-plugin": true
         }
     }

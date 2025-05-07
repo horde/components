@@ -7,7 +7,6 @@ description: >-
   release for Horde. It also includes quality control checks.
 list: horde
 type: component
-
 authors:
   -
     name: Jan Schneider
@@ -28,7 +27,7 @@ authors:
     active: true
     role: contributor
 version:
-  release: 1.0.0-alpha12
+  release: 1.0.0-alpha13
   api: 1.0.0alpha1
 state:
   release: alpha
@@ -54,8 +53,8 @@ dependencies:
       horde/yaml: '*'
       horde/eventdispatcher: '*'
       horde/githubapiclient: '*'
-      horde/phpconfigfile: '^0.0.1-alpha4'
-      horde/horde-installer-plugin: '^2.6'
+      horde/phpconfigfile: ^0.0.1-alpha4
+      horde/horde-installer-plugin: ^2.6
   optional:
     composer:
       horde/test: ^3
@@ -68,9 +67,7 @@ dependencies:
     composer:
       horde/test: ^3
       phpunit/phpunit: ^12 || ^11 || ^10 || ^9
-
 nocommands:
   - bin/horde-bootstrap
   - bin/horde-components-prototype-transpile
-
-allow-plugins:
+allow-plugins: ~
