@@ -107,8 +107,14 @@ class HordeRelease
         }
         // TODO: Composer validate
         // TODO: write application.php Sentinel
+        if ($hordeYml['type'] == 'application') {
+            $applicationPhp = new ApplicationPhp($this->directory);
+            $applicationPhp->setVersion($hordeYml->getReleaseVersion()->toFullSemverV2());
+            $applicationPhp->save();
+        }
         // TODO: Run any document pulls from Wiki or other sources
         // TODO: commit for release
+        $this->gitHelper->add((string) $this->directory . '/lib/Application.php');
         $this->gitHelper->add((string) $this->directory . '/doc/changelog.yml');
         $this->gitHelper->add((string) $this->directory . '/.horde.yml');
         $this->gitHelper->add((string) $this->directory . '/composer.json');
