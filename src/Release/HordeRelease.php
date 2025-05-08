@@ -11,6 +11,7 @@ use Horde\Components\Wrapper\ComposerJson;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
+use Horde\Components\Wrapper\ApplicationPhp;
 use Horde\Components\ChangelogEntry;
 /** 
  * Horde 6 Release pipeline
@@ -93,7 +94,7 @@ class HordeRelease
         $changelog->addChangelogEntry($entry);
         $changelog->save();
         // write composer.json from changelog and horde.yml
-        $this->composerHelper->generateComposerJson($hordeYml, ['composer_version' => $currentBranch]);
+        $this->composerHelper->generateComposerJson($hordeYml, ['composer_version' => 'dev-' . $currentBranch]);
         
         // Remove CHANGES file if present
         $splFileInfo = self::findFile((string) $this->directory . '/doc', 'CHANGES');
