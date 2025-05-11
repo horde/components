@@ -348,7 +348,7 @@ class Version
             $res = preg_match('/^([A-Za-z]+)(\d+)?$/', $prerelease, $prereleaseMatch);
             $prerelease = $prereleaseMatch[1] ?? '';
             if ($prerelease) {
-                $prereleaseVersion = (int)$prereleaseMatch[2] ?? 1;
+                $prereleaseVersion = (int)($prereleaseMatch[2] ?? 1);
             } else {
                 $prereleaseVersion = 0;
             }
