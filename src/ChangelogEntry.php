@@ -22,16 +22,18 @@ class ChangelogEntry
     public function toChangelogEntryArray(bool $withTopLevelVersion = false): array
     {
         $versionTag = $this->releaseVersion->toFullSemVerV2();
-        $log = [
+	$releaseStability = strlen($this->releaseVersion->getStability()) ? $this->releaseVersion()->getStability() : 'stable';
+	$apiStability = strlen($this->apiVersion->getStability()) ? $this->apiVersion()->getStability() : 'stable';
+	$log = [
             'api' => $this->apiVersion->toFullSemVerV2(),
             'state' => [
-                'release' => $this->releaseVersion->getStability() || 'stable',
-                'api' => $this->apiVersion->getStability() || 'stable',
+                'release' => $releaseStability,
+                'api' => $apiStability,
             ],
             'date' => $this->date->format('Y-m-d'),
             'license' => $this->license->toArray(),
             'notes' => $this->notes,
-        ];
+	];
         if ($withTopLevelVersion) {
             return [$versionTag => $log];
         }
