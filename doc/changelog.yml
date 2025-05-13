@@ -1,4 +1,18 @@
 ---
+1.0.0-alpha15:
+  api: 1.0.0-alpha1
+  state:
+    release: alpha
+    api: alpha
+  date: 2025-05-13
+  license:
+    identifier: LGPL-2.1-only
+    uri: http://www.horde.org/licenses/lgpl21
+  notes: |
+    fix: Changelog stability should be string, not true
+    fix: autoload-dev should read from autoload-dev definition, not read from autoload definition
+    fix: Explicitly scope int conversion for Helper Version prerelease handling
+    fix: Prepend branch versions with dev-
 1.0.0-alpha14:
   api: 1.0.0-alpha1
   state:

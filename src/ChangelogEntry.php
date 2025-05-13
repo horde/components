@@ -22,8 +22,8 @@ class ChangelogEntry
     public function toChangelogEntryArray(bool $withTopLevelVersion = false): array
     {
         $versionTag = $this->releaseVersion->toFullSemVerV2();
-	$releaseStability = strlen($this->releaseVersion->getStability()) ? $this->releaseVersion()->getStability() : 'stable';
-	$apiStability = strlen($this->apiVersion->getStability()) ? $this->apiVersion()->getStability() : 'stable';
+	$releaseStability = strlen($this->releaseVersion->getStability()) ? $this->releaseVersion->getStability() : 'stable';
+	$apiStability = strlen($this->apiVersion->getStability()) ? $this->apiVersion->getStability() : 'stable';
 	$log = [
             'api' => $this->apiVersion->toFullSemVerV2(),
             'state' => [
