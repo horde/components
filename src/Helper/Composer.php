@@ -380,7 +380,7 @@ class Composer
             $Psr4Name .= ucfirst($part) . '\\';
         }
         if (!empty($package['autoload-dev'])) {
-            foreach ($package['autoload'] as $type => $definition) {
+            foreach ($package['autoload-dev'] as $type => $definition) {
                 if ($type == 'classmap') {
                     $composerDefinition->{'autoload-dev'}['classmap']  =  $definition;
                 }
