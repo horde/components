@@ -19,7 +19,7 @@ use RuntimeException;
 use Horde\Components\Component\Task\SystemCallResult;
 use Horde\Components\Component\Task\SystemCall;
 use stdClass;
-
+use DirectoryIterator;
 /**
  * @author    Michael Slusarz <slusarz@horde.org>
  * @author    Ralf Lang <lang@horde.org>
@@ -396,6 +396,16 @@ class Composer
             $dir = dirname($package->getFullPath());
             if (is_dir($dir . '/test')) {
                 $composerDefinition->{'autoload-dev'}['psr-4']  = [$Psr4Name  => 'test/'];
+                $iterator = new DirectoryIterator($dir . '/test');
+                foreach ($iterator as $file) {
+                   $dirname = $file->getFilename();
+                   $ucDirname = mb_ucfirst($dirname);
+                   if ($file->isDot() || !$file->isDir() || !ctype_lower($dirname) || !in_array($dirname, ['fixture', 'fixtures', 'conf', 'config'])) {
+                       continue;
+
+                   }
+                   $composerDefinition->{'autoload-dev'}['psr-4']["{$Psr4Name}{$ucDirname}\\"] = "test/$dirname/";
+                }
             }
         }
         // If still empty, make sure we use an object instead.

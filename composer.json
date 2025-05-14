@@ -21,7 +21,7 @@
             "role": "contributor"
         }
     ],
-    "time": "2025-05-13",
+    "time": "2025-05-14",
     "repositories": [],
     "require": {
         "horde/horde-installer-plugin": "^2.6 || dev-FRAMEWORK_6_0",
@@ -64,7 +64,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Horde\\Components\\Test\\": "test/"
+            "Horde\\Components\\Test\\": "test/",
+            "Horde\\Components\\Test\\Fixtures\\": "test/fixtures/"
         }
     },
     "bin": [
@@ -74,5 +75,7 @@
         "allow-plugins": {
             "horde/horde-installer-plugin": true
         }
-    }
+    },
+    "prefer-stable": true,
+    "minimum-stability": "dev"
 }
