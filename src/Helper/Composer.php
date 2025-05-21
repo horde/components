@@ -198,7 +198,7 @@ class Composer
         // Replaces ? Only needed for special cases. Default cases are handled implicitly
         // provides? apps can depend on provided APIs rather than other apps
         $this->_setProvides($package, $composerDefinition);
-
+        $version = $package->getReleaseVersion();
         // Enforce suggest to be a json object rather than array
         if (empty($composerDefinition->suggest)) {
             $composerDefinition->suggest = new \stdClass();
@@ -206,8 +206,24 @@ class Composer
         if (empty($composerDefinition->{'require-dev'})) {
             $composerDefinition->{'require-dev'} = new \stdClass();
         }
+        $gitHelper = new Git();
+        $branch = $gitHelper->getCurrentBranch(dirname($package->getFullPath()));
+        // branch alias
+        if ($branch == 'FRAMEWORK_6_0') {
+            if (empty($composerDefinition->extra)) {
+                $composerDefinition->extra = new \stdClass();
+            }
+            if (empty($composerDefinition->extra->{'branch-alias'})) {
+                $composerDefinition->extra->{'branch-alias'} = new \stdClass();
+            }
+            if (empty($composerDefinition->extra->{'branch-alias'}->{'dev-' . $branch})) {
+                $composerDefinition->extra->{'branch-alias'}->{'dev-' . $branch} = $version->getMajor() . '.x-dev';
+            }
+        }
+
         $jsonDefinition = json_encode($composerDefinition, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         file_put_contents($filename, $jsonDefinition);
+        
 
         if (isset($options['logger'])) {
             $options['logger']->ok(

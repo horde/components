@@ -21,7 +21,7 @@
             "role": "contributor"
         }
     ],
-    "time": "2025-05-14",
+    "time": "2025-05-21",
     "repositories": [],
     "require": {
         "horde/horde-installer-plugin": "^2.6 || dev-FRAMEWORK_6_0",
@@ -76,6 +76,9 @@
             "horde/horde-installer-plugin": true
         }
     },
-    "prefer-stable": true,
-    "minimum-stability": "dev"
+    "extra": {
+        "branch-alias": {
+            "dev-FRAMEWORK_6_0": "1.x-dev"
+        }
+    }
 }
