@@ -108,8 +108,8 @@ class HordeRelease
         }
         // TODO: Composer validate
         // TODO: write application.php Sentinel
-        if ($hordeYml['type'] == 'application') {
-            $applicationPhp = new ApplicationPhp($this->directory);
+        if (in_array($hordeYml['type'], ['application', 'horde-application'])) {
+              $applicationPhp = new ApplicationPhp($this->directory);
             $applicationPhp->setVersion($hordeYml->getReleaseVersion()->toFullSemverV2());
             $applicationPhp->save();
         }
