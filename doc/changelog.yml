@@ -1,4 +1,19 @@
 ---
+1.0.0-alpha16:
+  api: 1.0.0-alpha1
+  state:
+    release: alpha
+    api: alpha
+  date: 2025-06-04
+  license:
+    identifier: LGPL-2.1-only
+    uri: http://www.horde.org/licenses/lgpl21
+  notes: |
+    feat: Allow horde/horde-installer-plugin versions 2.x and 3.x - add release branch to allowed versions by default
+    style: Apply php-cs-fixer php 8.3 ruleset
+    fix: Run the Application.php updater for horde-application types, too
+    feat: Alias the FRAMEWORK_6_0 branch to the package's current major version. This could benefit from more generalisation.
+    feat: Autogenerate autoload-dev by looking for lowercase phpunit test suite folders under test
 1.0.0-alpha15:
   api: 1.0.0-alpha1
   state:
