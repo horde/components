@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Task_CommitPreRelease:: commits any changes prior to the
  * release.

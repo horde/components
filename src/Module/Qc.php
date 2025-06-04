@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Module_Qc:: checks the component for quality.
  *

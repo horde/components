@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Module_Base:: provides core functionality for the
  * different modules.
@@ -40,9 +41,7 @@ abstract class Base implements Module, \Horde_Cli_Modular_ModuleUsage
      *
      * @param Injector $dependencies The dependency provider.
      */
-    public function __construct(protected Injector $dependencies)
-    {
-    }
+    public function __construct(protected Injector $dependencies) {}
 
     /**
      * Get the usage title for this module.

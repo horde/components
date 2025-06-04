@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test the current sentinel release task.
  *
@@ -29,6 +30,7 @@ use Horde\Components\Test\TestCase;
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class CurrentSentinelTest extends TestCase
 {
@@ -93,7 +95,7 @@ const VERSION = \'4.0.1RC1\';
                 'commit' => new HelperCommit(
                     $this->_output,
                     ['pretend' => true]
-                )
+                ),
             ]
         );
         $this->assertEquals(
@@ -105,7 +107,7 @@ const VERSION = \'4.0.1RC1\';
                 'Would run "git add composer.json" now.',
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Application.php" now.',
-                'Would run "git commit -m "Released Horde-4.0.1RC1"" now.'
+                'Would run "git commit -m "Released Horde-4.0.1RC1"" now.',
             ],
             $this->_output->getOutput()
         );
@@ -124,7 +126,7 @@ const VERSION = \'4.0.1RC1\';
                 'commit' => new HelperCommit(
                     $this->_output,
                     ['pretend' => true]
-                )
+                ),
             ]
         );
         $this->assertEquals(
@@ -136,7 +138,7 @@ const VERSION = \'4.0.1RC1\';
                 'Would run "git add composer.json" now.',
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Bundle.php" now.',
-                'Would run "git commit -m "Released Horde-4.0.1RC1"" now.'
+                'Would run "git commit -m "Released Horde-4.0.1RC1"" now.',
             ],
             $this->_output->getOutput()
         );

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Pear_Factory:: generates PEAR specific handlers.
  *
@@ -44,8 +45,7 @@ class Factory
          * @param Dependencies
          */
         private readonly Dependencies $_dependencies
-    ) {
-    }
+    ) {}
 
     /**
      * Create a representation for a PEAR environment.

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Runner_Installer:: installs a Horde component including its
  * dependencies.
@@ -56,8 +57,7 @@ class Installer
          * @param Output
          */
         private readonly Output $_output
-    ) {
-    }
+    ) {}
 
     public function run(): void
     {

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test the Release module.
  *
@@ -10,7 +11,9 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Integration\Components\Module;
+
 use Horde\Components\StoryTestCase;
 
 /**
@@ -26,6 +29,7 @@ use Horde\Components\StoryTestCase;
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class ReleaseTest extends StoryTestCase
 {

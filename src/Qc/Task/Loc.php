@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2013-2024 Horde LLC (http://www.horde.org/)
  *
@@ -100,53 +101,53 @@ class Loc extends Base
         }
 
         $format = <<<END
-Size
-  Lines of Code (LOC)                       %10d
-  Comment Lines of Code (CLOC)              %10d (%.2f%%)
-  Non-Comment Lines of Code (NCLOC)         %10d (%.2f%%)
-  Logical Lines of Code (LLOC)              %10d (%.2f%%)
-    Classes                                 %10d (%.2f%%)
-    Functions                               %10d (%.2f%%)
-      Average Function Length               %10d
-    Not in classes or functions             %10d (%.2f%%)
+            Size
+              Lines of Code (LOC)                       %10d
+              Comment Lines of Code (CLOC)              %10d (%.2f%%)
+              Non-Comment Lines of Code (NCLOC)         %10d (%.2f%%)
+              Logical Lines of Code (LLOC)              %10d (%.2f%%)
+                Classes                                 %10d (%.2f%%)
+                Functions                               %10d (%.2f%%)
+                  Average Function Length               %10d
+                Not in classes or functions             %10d (%.2f%%)
 
-Complexity
-  Cyclomatic Complexity / LLOC              %10.2f
+            Complexity
+              Cyclomatic Complexity / LLOC              %10.2f
 
-Dependencies
-  Global Accesses                           %10d
-    Global Constants                        %10d (%.2f%%)
-    Global Variables                        %10d (%.2f%%)
-    Super-Global Variables                  %10d (%.2f%%)
-  Attribute Accesses                        %10d
-    Non-Static                              %10d (%.2f%%)
-    Static                                  %10d (%.2f%%)
-  Method Calls                              %10d
-    Non-Static                              %10d (%.2f%%)
-    Static                                  %10d (%.2f%%)
+            Dependencies
+              Global Accesses                           %10d
+                Global Constants                        %10d (%.2f%%)
+                Global Variables                        %10d (%.2f%%)
+                Super-Global Variables                  %10d (%.2f%%)
+              Attribute Accesses                        %10d
+                Non-Static                              %10d (%.2f%%)
+                Static                                  %10d (%.2f%%)
+              Method Calls                              %10d
+                Non-Static                              %10d (%.2f%%)
+                Static                                  %10d (%.2f%%)
 
-Structure
-  Namespaces                                %10d
-  Interfaces                                %10d
-  Traits                                    %10d
-  Classes                                   %10d
-    Abstract Classes                        %10d (%.2f%%)
-    Concrete Classes                        %10d (%.2f%%)
-  Methods                                   %10d
-    Scope
-      Non-Static Methods                    %10d (%.2f%%)
-      Static Methods                        %10d (%.2f%%)
-    Visibility
-      Public Methods                        %10d (%.2f%%)
-      Non-Public Methods                    %10d (%.2f%%)
-  Functions                                 %10d
-    Named Functions                         %10d (%.2f%%)
-    Anonymous Functions                     %10d (%.2f%%)
-  Constants                                 %10d
-    Global Constants                        %10d (%.2f%%)
-    Class Constants                         %10d (%.2f%%)
+            Structure
+              Namespaces                                %10d
+              Interfaces                                %10d
+              Traits                                    %10d
+              Classes                                   %10d
+                Abstract Classes                        %10d (%.2f%%)
+                Concrete Classes                        %10d (%.2f%%)
+              Methods                                   %10d
+                Scope
+                  Non-Static Methods                    %10d (%.2f%%)
+                  Static Methods                        %10d (%.2f%%)
+                Visibility
+                  Public Methods                        %10d (%.2f%%)
+                  Non-Public Methods                    %10d (%.2f%%)
+              Functions                                 %10d
+                Named Functions                         %10d (%.2f%%)
+                Anonymous Functions                     %10d (%.2f%%)
+              Constants                                 %10d
+                Global Constants                        %10d (%.2f%%)
+                Class Constants                         %10d (%.2f%%)
 
-END;
+            END;
 
         printf(
             $format,

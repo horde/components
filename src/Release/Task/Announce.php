@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Task_Announce:: announces new releases to the mailing
  * lists.
@@ -95,7 +96,7 @@ class Announce extends Base
                 $class = \Horde_Mail_Transport_Sendmail::class;
                 $mailer->getMail()->send(new $class([]));
             } catch (Exception $e) {
-                $this->getOutput()->warn((string)$e);
+                $this->getOutput()->warn((string) $e);
             }
         } else {
             if (!empty($options['dump'])) {

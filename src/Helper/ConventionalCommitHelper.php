@@ -1,7 +1,10 @@
 <?php
+
 namespace Horde\Components\Helper;
+
 use Horde\Components\GitCommitLog;
 use Horde\Components\ConventionalCommitReader;
+
 /**
  * Read git commits since last tag and determine
  * - Conventional commits
@@ -18,7 +21,7 @@ class ConventionalCommitHelper
     public function __construct(Git $gitHelper)
     {
         $gitLog = $gitHelper->getGitLog(getcwd());
-        $originalTagString='0.0.1alpha1';
+        $originalTagString = '0.0.1alpha1';
         foreach ($gitLog as $commit) {
             if ($commit->hasTags()) {
                 $gitLog = $gitLog->getLogSince($commit);

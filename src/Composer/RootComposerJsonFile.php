@@ -1,9 +1,12 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components\Composer;
 
 use RuntimeException;
 use stdClass;
+
 /**
  * Represents an installation's root composer.json file
  */
@@ -37,7 +40,7 @@ class RootComposerJsonFile
             throw new RuntimeException('Could not load root composer.json file: ' . $data);
         }
         if ($data === false) {
-          throw new RuntimeException('Could not load root composer.json file');
+            throw new RuntimeException('Could not load root composer.json file');
         }
         return new self($data);
     }
@@ -45,7 +48,7 @@ class RootComposerJsonFile
     public function render(): string
     {
         $this->content->repositories = [];
-        foreach ($this->repositories as  $id => $repository) {
+        foreach ($this->repositories as $id => $repository) {
             $this->content->repositories[$id] = $repository->dumpStdClass();
         }
         return (string) json_encode($this->content, JSON_PRETTY_PRINT);

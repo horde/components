@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Module_Help:: provides information for a single action.
  *
@@ -109,7 +110,7 @@ class Help extends Base
         return false;
     }
 
-    function handleWithAction(string $action)
+    public function handleWithAction(string $action)
     {
         $formatter = new IndentedHelpFormatter();
         $modular = $this->dependencies->get(ModularCli::class);

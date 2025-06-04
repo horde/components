@@ -1,4 +1,5 @@
 <?php
+
 /**
  * The Components_Dependencies_Injector:: class provides the
  * Components dependencies based on the Horde injector.

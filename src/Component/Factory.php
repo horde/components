@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
  *
@@ -67,9 +68,7 @@ class Factory
      * @param Output $_output The output handler.
      * @param ReleaseNotes $_notes The release notes.
     */
-    public function __construct(protected Config $_config, protected PearFactory $_factory, protected \Horde_Http_Client $_client, protected Output $_output, protected ReleaseNotes $_notes)
-    {
-    }
+    public function __construct(protected Config $_config, protected PearFactory $_factory, protected \Horde_Http_Client $_client, protected Output $_output, protected ReleaseNotes $_notes) {}
 
     /**
      * Create a representation for a source component.

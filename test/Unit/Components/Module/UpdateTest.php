@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test the Update module.
  *
@@ -28,6 +29,7 @@ use Horde\Components\Test\TestCase;
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class UpdateTest extends TestCase
 {
@@ -82,7 +84,7 @@ dependencies:
         $_SERVER['argv'] = [
             'horde-components',
             '--updatexml',
-            $tmp_dir . '/framework/test'
+            $tmp_dir . '/framework/test',
         ];
         $this->_callStrictComponents();
         $this->assertTrue(
@@ -160,7 +162,7 @@ dependencies:
             'horde-components',
             '--action=print',
             '--updatexml',
-            __DIR__ . '/../../../fixture/framework/simple'
+            __DIR__ . '/../../../fixture/framework/simple',
         ];
         return $this->_callStrictComponents();
     }

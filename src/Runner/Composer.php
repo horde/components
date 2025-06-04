@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2013-2024 Horde LLC (http://www.horde.org/)
  *
@@ -35,10 +36,7 @@ class Composer
                                  job.
      * @param Output $_output The output handler.
     */
-    public function __construct(private readonly Output $_output)
-    {
-
-    }
+    public function __construct(private readonly Output $_output) {}
 
     public function run(Config $config): void
     {

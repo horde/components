@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Config_Application:: provides a wrapper that provides application
  * specific configuration values by combining defaults and options provided at
@@ -39,10 +40,7 @@ class Application
      *
      * @param Config $_config The generic configuration handler.
      */
-    public function __construct(private readonly Config $_config)
-    {
-
-    }
+    public function __construct(private readonly Config $_config) {}
 
     /**
      * Return the path to the template directory

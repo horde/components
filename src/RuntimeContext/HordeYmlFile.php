@@ -18,7 +18,7 @@ class HordeYmlFile
 
     public function __construct(private CurrentWorkingDirectory $cwd, private EnvironmentConfigProvider $env, private CliConfig $argv)
     {
-//        $this->hordeYmlFilePath = $this->checkFirstArg($this->filename) ?? $this->checkEnv($this->filename) ?? $this->checkCwd($this->filename) ?? '';
+        //        $this->hordeYmlFilePath = $this->checkFirstArg($this->filename) ?? $this->checkEnv($this->filename) ?? $this->checkCwd($this->filename) ?? '';
         $hordeYmlFilePath = $this->checkEnv($this->filename);
         if (empty($hordeYmlFilePath)) {
             $hordeYmlFilePath = $this->checkCwd($this->filename);

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Module_Snapshot:: generates a development snapshot for the
  * specified package.

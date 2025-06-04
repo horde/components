@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Represents a remote component.
  *
@@ -164,7 +165,7 @@ class Remote extends Base
         $data->summary = $release->getSummary();
         $data->description = $release->getDescription();
         $data->version = $release->getVersion();
-        $data->releaseDate = (string)$release->da;
+        $data->releaseDate = (string) $release->da;
         $data->download = $release->getDownloadUri();
         $data->hasCi = $this->_hasCi();
         return $data;

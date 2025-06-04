@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Module_CiSetup:: generates the configuration for Hudson based
  * continuous integration of a Horde PEAR package.

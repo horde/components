@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2013-2024 Horde LLC (http://www.horde.org/)
  *
@@ -20,6 +21,7 @@ use Horde\Components\Component\Task\SystemCallResult;
 use Horde\Components\Component\Task\SystemCall;
 use stdClass;
 use DirectoryIterator;
+
 /**
  * @author    Michael Slusarz <slusarz@horde.org>
  * @author    Ralf Lang <lang@horde.org>
@@ -148,7 +150,7 @@ class Composer
                 $this->_composerRepo = 'composer';
                 $this->_repositories['composer'] = [
                     'type' => 'composer',
-                    'url' => substr((string) $options['composer_repo'], 6)
+                    'url' => substr((string) $options['composer_repo'], 6),
                 ];
             }
         }
@@ -223,7 +225,7 @@ class Composer
 
         $jsonDefinition = json_encode($composerDefinition, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         file_put_contents($filename, $jsonDefinition);
-        
+
 
         if (isset($options['logger'])) {
             $options['logger']->ok(
@@ -414,19 +416,19 @@ class Composer
                 $composerDefinition->{'autoload-dev'}['psr-4']  = [$Psr4Name  => 'test/'];
                 $iterator = new DirectoryIterator($dir . '/test');
                 foreach ($iterator as $file) {
-                   $dirname = $file->getFilename();
-                   $ucDirname = mb_ucfirst($dirname);
-                   if ($file->isDot() || !$file->isDir() || !ctype_lower($dirname) || !in_array($dirname, ['fixture', 'fixtures', 'conf', 'config'])) {
-                       continue;
+                    $dirname = $file->getFilename();
+                    $ucDirname = mb_ucfirst($dirname);
+                    if ($file->isDot() || !$file->isDir() || !ctype_lower($dirname) || !in_array($dirname, ['fixture', 'fixtures', 'conf', 'config'])) {
+                        continue;
 
-                   }
-                   $composerDefinition->{'autoload-dev'}['psr-4']["{$Psr4Name}{$ucDirname}\\"] = "test/$dirname/";
+                    }
+                    $composerDefinition->{'autoload-dev'}['psr-4']["{$Psr4Name}{$ucDirname}\\"] = "test/$dirname/";
                 }
             }
         }
         // If still empty, make sure we use an object instead.
         if (empty($composerDefinition->{'autoload-dev'})) {
-            $composerDefinition->{'autoload-dev'} = new stdClass;
+            $composerDefinition->{'autoload-dev'} = new stdClass();
         }
     }
 
@@ -663,7 +665,7 @@ class Composer
             $composerDefinition->config = ['allow-plugins' => true];
         } else {
             $composerDefinition->config = [
-                'allow-plugins' => $plugins
+                'allow-plugins' => $plugins,
             ];
         }
     }

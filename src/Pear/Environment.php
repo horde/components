@@ -1,4 +1,5 @@
 <?php
+
 /**
  * PearEnvironment:: handles a specific PEAR environment.
  *
@@ -65,9 +66,7 @@ class Environment
      *
      * @param Output $_output The output handler.
      */
-    public function __construct(private readonly Output $_output)
-    {
-    }
+    public function __construct(private readonly Output $_output) {}
 
     /**
      * Define the factory that creates our PEAR dependencies.
@@ -116,7 +115,7 @@ class Environment
                 . '/distribution/channels';
             if (!file_exists($options['channelxmlpath'])) {
                 if (!empty($options['build_distribution'])) {
-                    mkdir($options['channelxmlpath'], 0777, true);
+                    mkdir($options['channelxmlpath'], 0o777, true);
                 } else {
                     unset($options['channelxmlpath']);
                 }
@@ -153,7 +152,7 @@ class Environment
                 . '/distribution/source';
             if (!file_exists($options['sourcepath'])) {
                 if (!empty($options['build_distribution'])) {
-                    mkdir($options['sourcepath'], 0777, true);
+                    mkdir($options['sourcepath'], 0o777, true);
                 } else {
                     unset($options['sourcepath']);
                 }
@@ -226,7 +225,7 @@ class Environment
         $config->_registry['default'] = new \PEAR_Registry("$root/pear/php");
         $config->_noRegistry = true;
         if (!file_exists("$root/pear")) {
-            mkdir("$root/pear/php", 0777, true);
+            mkdir("$root/pear/php", 0o777, true);
         }
         $this->_output->pear(ob_get_clean());
         $this->_output->ok(
@@ -375,7 +374,7 @@ class Environment
                 if (file_exists($dest)) {
                     @unlink($dest);
                 } elseif (!file_exists(dirname($dest))) {
-                    @mkdir(dirname($dest), 0777, true);
+                    @mkdir(dirname($dest), 0o777, true);
                 }
 
                 print 'SYMLINK: ' . $orig . ' -> ' . $dest . "\n";

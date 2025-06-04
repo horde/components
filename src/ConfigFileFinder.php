@@ -8,9 +8,7 @@ use Horde\Components\ConfigProvider\EnvironmentConfigProvider;
 
 class ConfigFileFinder
 {
-    public function __construct(private EnvironmentConfigProvider $env)
-    {
-    }
+    public function __construct(private EnvironmentConfigProvider $env) {}
 
     public function find(): string
     {

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Task_Packagist:: Notify Packagist of update
  *

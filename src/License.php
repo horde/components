@@ -1,6 +1,9 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components;
+
 use Stringable;
 
 class License implements Stringable
@@ -8,8 +11,7 @@ class License implements Stringable
     public function __construct(
         public readonly string $identifier,
         public readonly string $uri,
-    ) {
-    }
+    ) {}
     public function toArray()
     {
         return [

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Horde\Components\Component\Resolver:: resolves component names and dependencies
  * into component representations.
@@ -44,9 +45,7 @@ class Resolver
      * @param HelperRoot $_root The repository root.
      * @param Factory $_factory Helper factory.
      */
-    public function __construct(private readonly HelperRoot $_root, private readonly Factory $_factory)
-    {
-    }
+    public function __construct(private readonly HelperRoot $_root, private readonly Factory $_factory) {}
 
     /**
      * Try to resolve a dependency into a component.

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Task_Base:: provides core functionality for release tasks.
  *

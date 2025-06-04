@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test the file based configuration handler.
  *
@@ -14,7 +15,6 @@
 namespace Horde\Components\Unit\Components\Config;
 
 use Horde\Components\Config\File as ConfigFile;
-
 use Horde\Components\Constants;
 use Horde\Components\Test\TestCase;
 
@@ -31,6 +31,7 @@ use Horde\Components\Test\TestCase;
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class FileTest extends TestCase
 {

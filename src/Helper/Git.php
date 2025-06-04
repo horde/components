@@ -74,7 +74,7 @@ class Git
         }
     }
 
-    public function getGitLog(string $localDir, int $limit=5): GitCommitLog
+    public function getGitLog(string $localDir, int $limit = 5): GitCommitLog
     {
         // Naive JSON formatting with --pretty=format breaks on unexpected ' or "
         // Properly calling into libgit2 with FFI or git extension is overkill for now

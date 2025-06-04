@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Module_Change:: records a change log entry.
  *
@@ -34,7 +35,6 @@ use Horde\Components\Runner\Status as RunnerStatus;
  */
 class Status extends Base
 {
-
     public function getOptionGroupTitle(): string
     {
         return 'status';
@@ -117,7 +117,7 @@ class Status extends Base
 
         if (!empty($options['status']) ||
             (isset($arguments[0]) && $arguments[0] == 'status')) {
-            $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory);
+            $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory());
             $component = $this->dependencies
             ->getComponentFactory()
             ->createSource($componentDirectory);

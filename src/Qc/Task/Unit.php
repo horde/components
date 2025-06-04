@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Qc_Task_Unit:: runs the test suite of the component.
  *

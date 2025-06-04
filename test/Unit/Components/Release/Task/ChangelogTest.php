@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
  *
@@ -28,6 +29,7 @@ use Horde\Components\Test\TestCase;
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class ChangelogTest extends TestCase
 {
@@ -81,14 +83,14 @@ class ChangelogTest extends TestCase
                 'commit' => new HelperCommit(
                     $this->_output,
                     ['pretend' => true]
-                )
+                ),
             ]
         );
         $this->assertEquals(
             [
                 sprintf('Would timestamp "%s" now and synchronize its change log.', realpath($this->_fixture . '/package.xml')),
                 sprintf('Would run "git add %s" now.', realpath($this->_fixture . '/package.xml')),
-                'Would run "git commit -m "Released Fixture-0.0.1"" now.'
+                'Would run "git commit -m "Released Fixture-0.0.1"" now.',
             ],
             $this->_output->getOutput()
         );

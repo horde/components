@@ -9,7 +9,7 @@ if (isset($options['destination'])) {
     $destination = getcwd();
 }
 
-$applications = array(
+$applications = [
     'content',
     'horde',
     'imp',
@@ -19,14 +19,14 @@ $applications = array(
     'nag',
     'timeobjects',
     'turba',
-    'webmail'
-);
+    'webmail',
+];
 
-$bundles = array(
+$bundles = [
     'groupware',
     'webmail',
-    'kolab_webmail'
-);
+    'kolab_webmail',
+];
 
 $pkg_info = '/usr/share/pkg-php-tools/scripts/phppkginfo';
 if (!is_executable($pkg_info)) {
@@ -46,13 +46,13 @@ $package_version = shell_exec(
     escapeshellarg($component->getVersion())
 );
 $archive = array_shift(
-    $component->placeArchive($destination, array("logger" => $this->_output))
+    $component->placeArchive($destination, ["logger" => $this->_output])
 );
 
 // Canonicalize path
 $archive = realpath($archive);
 
-if (substr($archive, -4)=='.tgz') {
+if (substr($archive, -4) == '.tgz') {
     // Tarball name is not a Debian orig one
     rename($archive, dirname($archive) . '/' . $package_name . '_' . $package_version . '.orig.tar.gz');
     $archive = dirname($archive) . '/' . $package_name . '_' . $package_version . '.orig.tar.gz';
@@ -61,14 +61,14 @@ if (substr($archive, -4)=='.tgz') {
 $destination .= '/' . $package_name . '-' . $package_version;
 
 if (!file_exists($destination)) {
-    mkdir($destination, 0700, true);
+    mkdir($destination, 0o700, true);
 }
 
 system('cd ' . $destination . ' && tar xzpf ' . $archive);
 
-$t_dirs = array(
-    $this->_config_application->getTemplateDirectory() . '/templates'
-);
+$t_dirs = [
+    $this->_config_application->getTemplateDirectory() . '/templates',
+];
 if (file_exists($t_dirs[0] . '-' . $package_name)) {
     $t_dirs[] = $t_dirs[0] . '-' . $package_name;
 }
@@ -81,13 +81,13 @@ foreach ($t_dirs as $template_directory) {
         $destination . '/debian'
     );
     $build_template->write(
-        array(
+        [
             'name' => $package_name,
             'version' => $package_version,
             'component' => $component,
             'applications' => $applications,
-            'bundles' => $bundles
-        )
+            'bundles' => $bundles,
+        ]
     );
 }
 

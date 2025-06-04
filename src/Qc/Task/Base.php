@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Qc_Task_Base:: provides core functionality for qc tasks.
  *

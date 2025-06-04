@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
  *
@@ -47,9 +48,7 @@ class Notes
      *
      * @param Output $_output Accepts output.
      */
-    public function __construct(protected Output $_output)
-    {
-    }
+    public function __construct(protected Output $_output) {}
 
     /**
      * Set the component this task should act upon.

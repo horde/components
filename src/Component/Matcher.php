@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Match an expression against a component.
  *

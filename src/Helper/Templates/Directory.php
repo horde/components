@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Helper_Templatesdirectory:: converts template files from a
  * directory into files in a target directory.
@@ -60,11 +61,10 @@ class Directory extends Templates
     public function write(array $parameters = []): void
     {
         if (!file_exists($this->_target)) {
-            mkdir($this->_target, 0777, true);
+            mkdir($this->_target, 0o777, true);
         }
         foreach (
-            new \IteratorIterator(new \DirectoryIterator($this->_source))
-            as $file
+            new \IteratorIterator(new \DirectoryIterator($this->_source)) as $file
         ) {
             if ($file->isFile()) {
                 $this->writeSourceToTarget(

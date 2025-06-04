@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components\Module\ConventionalCommit:: Handle conventional commits.
  *
@@ -108,7 +109,7 @@ class ConventionalCommit extends Base
     {
         return [
             //'--commit' => 'Commit the change log entries to git (using the change log entry as commit message).', '--pretend' => ''
-            // 
+            //
         ];
     }
 
@@ -127,7 +128,7 @@ class ConventionalCommit extends Base
 
         if (!empty($options['conventionalcommit']) ||
             (isset($arguments[0]) && $arguments[0] == 'conventionalcommit')) {
-            $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory);
+            $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory());
             $component = $this->dependencies
             ->getComponentFactory()
             ->createSource($componentDirectory);

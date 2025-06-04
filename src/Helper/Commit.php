@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Helper_Commit:: helps with collecting for git commit events.
  *
@@ -49,8 +50,7 @@ class Commit
          */
         private readonly Output $_output,
         private $_options
-    ) {
-    }
+    ) {}
 
     /**
      * Add a path to be included in the commit and record the working directory

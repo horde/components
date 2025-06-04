@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test instrumented version of the Horde Cli
  *

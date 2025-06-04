@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Represents base functionality for a component.
  *
@@ -45,9 +46,7 @@ abstract class Base implements Component
      * @param Factory $_factory Generator for additional
                                             helpers.
     */
-    public function __construct(protected Config $_config, private readonly Factory $_factory)
-    {
-    }
+    public function __construct(protected Config $_config, private readonly Factory $_factory) {}
 
     /**
      * Return the name of the component.
@@ -107,7 +106,7 @@ abstract class Base implements Component
         $versions = $this->getPackageXml()->getVersions();
         usort(
             $versions,
-            fn ($a, $b) => version_compare($a['version'], $b['version'])
+            fn($a, $b) => version_compare($a['version'], $b['version'])
         );
         foreach ($versions as $version) {
             // If this is a stable version we want the previous stable version,
@@ -446,7 +445,7 @@ abstract class Base implements Component
     protected function createDestination($destination)
     {
         if (!file_exists($destination)) {
-            mkdir($destination, 0700, true);
+            mkdir($destination, 0o700, true);
         }
     }
 

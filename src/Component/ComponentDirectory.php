@@ -1,5 +1,7 @@
 <?php
+
 namespace Horde\Components\Component;
+
 use Horde\Components\Component;
 use Horde\Components\Component\DependencyList;
 use Horde\Components\Helper\Commit as HelperCommit;

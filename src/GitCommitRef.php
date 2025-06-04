@@ -8,8 +8,7 @@ class GitCommitRef implements \Stringable
 {
     public function __construct(
         public readonly string|Stringable $refString = '',
-    ) {
-    }
+    ) {}
     public function __toString(): string
     {
         return $this->refString;

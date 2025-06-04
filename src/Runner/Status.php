@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Horde\Components\Runner\Status:: runner for status output.
  *

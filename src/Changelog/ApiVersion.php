@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components\Changelog;
 
 use Horde\Components\Helper\Version;
@@ -18,6 +20,7 @@ class ApiVersion extends Version
             stability: $version->getStability(),
             stabilityVersion: $version->getStabilityVersion(),
             buildInfo: $version->getBuildInfo(),
-            other:  $version->getOther());
+            other: $version->getOther()
+        );
     }
 }

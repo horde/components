@@ -31,6 +31,7 @@ use Horde\Components\Test\TestCase;
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class VersionTest extends TestCase
 {
@@ -117,7 +118,7 @@ class VersionTest extends TestCase
             [
                 'min' => '2.0.0',
                 'max' => '3.0.0alpha1',
-                'exclude' => '3.0.0alpha1'
+                'exclude' => '3.0.0alpha1',
             ],
             HelperVersion::composerToPear('^2')
         );
@@ -125,7 +126,7 @@ class VersionTest extends TestCase
             [
                 'min' => '2.1.0',
                 'max' => '3.0.0alpha1',
-                'exclude' => '3.0.0alpha1'
+                'exclude' => '3.0.0alpha1',
             ],
             HelperVersion::composerToPear('^2.1')
         );
@@ -133,7 +134,7 @@ class VersionTest extends TestCase
             [
                 'min' => '2.1.3',
                 'max' => '3.0.0alpha1',
-                'exclude' => '3.0.0alpha1'
+                'exclude' => '3.0.0alpha1',
             ],
             HelperVersion::composerToPear('^2.1.3')
         );
@@ -141,7 +142,7 @@ class VersionTest extends TestCase
             [
                 'min' => '5.3.0',
                 'max' => '8.0.0alpha1',
-                'exclude' => '8.0.0alpha1'
+                'exclude' => '8.0.0alpha1',
             ],
             HelperVersion::composerToPear('^5.3 || ^7')
         );

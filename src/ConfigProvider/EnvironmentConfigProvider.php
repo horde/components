@@ -9,9 +9,7 @@ namespace Horde\Components\ConfigProvider;
  */
 class EnvironmentConfigProvider implements ConfigProvider
 {
-    public function __construct(private array $settings)
-    {
-    }
+    public function __construct(private array $settings) {}
 
 
     public function hasSetting(string $id): bool

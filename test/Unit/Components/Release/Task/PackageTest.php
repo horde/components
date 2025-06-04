@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test the package release task.
  *
@@ -28,6 +29,7 @@ use Horde\Components\Test\TestCase;
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class PackageTest extends TestCase
 {
@@ -87,14 +89,14 @@ class PackageTest extends TestCase
                 'releaseserver' => 'pear.horde.org',
                 'releasedir' => 'B',
                 'pretend' => true,
-                'upload' => true
+                'upload' => true,
             ]
         );
         $this->assertEquals(
             [
                 'Would package NAME now.',
                 'Would run "scp [PATH TO RESULTING]/[PACKAGE.TGZ - PRETEND MODE] pear.horde.org:~/" now.',
-                'Would run "ssh pear.horde.org "umask 0002 && pirum add B ~/[PACKAGE.TGZ - PRETEND MODE] && rm [PACKAGE.TGZ - PRETEND MODE]"" now.'
+                'Would run "ssh pear.horde.org "umask 0002 && pirum add B ~/[PACKAGE.TGZ - PRETEND MODE] && rm [PACKAGE.TGZ - PRETEND MODE]"" now.',
             ],
             $this->_output->getOutput()
         );

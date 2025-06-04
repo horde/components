@@ -1,5 +1,7 @@
 <?php
+
 namespace Horde\Components\Release;
+
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Helper\Composer as ComposerHelper;
 use Horde\Components\Helper\ConventionalCommitHelper;
@@ -13,14 +15,15 @@ use RecursiveIteratorIterator;
 use SplFileInfo;
 use Horde\Components\Wrapper\ApplicationPhp;
 use Horde\Components\ChangelogEntry;
-/** 
+
+/**
  * Horde 6 Release pipeline
- * 
+ *
  * This is an attempt at redesigning from the old H4/H5 style releases
- * 
+ *
  * Supposed to be run on the release branch after including code (i.e. after PR)
  * but before writing the metadata and tagging.
- * 
+ *
  * Post release tagging metadata will NOT be updated for "next version".
  *  - Check if we are on release branch
  *  - Read ConventionalCommits & expected next version
@@ -29,7 +32,7 @@ use Horde\Components\ChangelogEntry;
  *  - move changelog.yml to doc basedir if it is nested into subdirs
  *  - write changelog.yml updates
  *  - write composer.json from changelog and horde.yml
- *  - Remove package.xml and CHANGES file if present. 
+ *  - Remove package.xml and CHANGES file if present.
  *  - Composer validate
  *  - write application.php Sentinel
  *  - Run any document pulls from Wiki or other sources
@@ -37,17 +40,15 @@ use Horde\Components\ChangelogEntry;
  *  - tag & push
  *  - Post Tasks, trigger packagist and horde infra apis
  *  - Post release commit if needed.
- *  - 
+ *  -
  */
 class HordeRelease
 {
     public function __construct(
         private ComposerHelper $composerHelper,
-        private GitHelper $gitHelper,         
+        private GitHelper $gitHelper,
         private ComponentDirectory $directory,
-    ) {
-
-    }
+    ) {}
     /**
      * Run the release flow. Most steps should be idempotent.
      */
@@ -73,8 +74,7 @@ class HordeRelease
         // While apps used to have changelog.yml in doc/, libs had it in doc/long/lib/name - simplify this
         // write changelog.yml
         $splFileInfo = self::findFile((string) $this->directory . '/doc', 'changelog.yml');
-        if ($splFileInfo && ($splFileInfo->getPathname() !== $this->directory . '/doc/changelog.yml')) 
-        {
+        if ($splFileInfo && ($splFileInfo->getPathname() !== $this->directory . '/doc/changelog.yml')) {
             $this->gitHelper->moveFile($splFileInfo->getPathname(), $this->directory . '/doc/changelog.yml');
         }
 
@@ -95,21 +95,21 @@ class HordeRelease
         $changelog->save();
         // write composer.json from changelog and horde.yml
         $this->composerHelper->generateComposerJson($hordeYml, ['composer_version' => 'dev-' . $currentBranch]);
-        
+
         // Remove CHANGES file if present
         $splFileInfo = self::findFile((string) $this->directory . '/doc', 'CHANGES');
-        if ($splFileInfo && ($splFileInfo->getPathname() !== (string)$this->directory . '/doc')) {
+        if ($splFileInfo && ($splFileInfo->getPathname() !== (string) $this->directory . '/doc')) {
             $this->gitHelper->deleteFile($splFileInfo->getPathname());
         }
         // Remove package.xml file if present
-        $packagePath = (string)$this->directory . '/package.xml';
-        if (file_exists($packagePath)){
+        $packagePath = (string) $this->directory . '/package.xml';
+        if (file_exists($packagePath)) {
             $this->gitHelper->deleteFile($packagePath);
         }
         // TODO: Composer validate
         // TODO: write application.php Sentinel
         if (in_array($hordeYml['type'], ['application', 'horde-application'])) {
-              $applicationPhp = new ApplicationPhp($this->directory);
+            $applicationPhp = new ApplicationPhp($this->directory);
             $applicationPhp->setVersion($hordeYml->getReleaseVersion()->toFullSemverV2());
             $applicationPhp->save();
         }
@@ -121,14 +121,14 @@ class HordeRelease
         $this->gitHelper->add((string) $this->directory . '/composer.json');
         $releaseMessage = 'Release ' . $hordeYml->getReleaseVersion()->toFullSemverV2() . '  (API Version: ' . $hordeYml->getApiVersion()->toFullSemverV2() . ") \n\n" . $logNotes;
         $this->gitHelper->commit(
-            (string) $this->directory, 
+            (string) $this->directory,
             $releaseMessage
-            );
+        );
         // TODO: tag & push
         $this->gitHelper->tag(
             (string) $this->directory,
             $hordeYml->getReleaseVersion()->toHordeTag(),
-            $releaseMessage        
+            $releaseMessage
         );
         $this->gitHelper->push(
             (string) $this->directory,
@@ -137,20 +137,18 @@ class HordeRelease
             $hordeYml->getReleaseVersion()->toHordeTag()
         );
         // TODO: Post Tasks, trigger packagist and horde infra apis
-        // Post release commit if needed.           
+        // Post release commit if needed.
     }
 
 
     public static function findFile(
         string $sourceRootDir,
         string $sourceFilename,
-    ): ?SplFileInfo
-    {
+    ): ?SplFileInfo {
         $recDirIterator = new RecursiveDirectoryIterator($sourceRootDir);
         $recIteratorIterator = new RecursiveIteratorIterator($recDirIterator);
-        foreach ($recIteratorIterator as $splFileInfo)
-        {
-            if ($splFileInfo->getFilename() === $sourceFilename )  {
+        foreach ($recIteratorIterator as $splFileInfo) {
+            if ($splFileInfo->getFilename() === $sourceFilename) {
                 return $splFileInfo;
             }
         }

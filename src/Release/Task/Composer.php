@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Task_Composer:: Update the composer file
  *

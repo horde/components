@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
  *
@@ -27,6 +28,7 @@ use Horde\Components\Test\TestCase;
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class NextVersionTest extends TestCase
 {
@@ -130,7 +132,7 @@ TEST
    <date>2017-12-31</date>
    <license uri=""></license>
    <notes>
-* '.'
+* ' . '
    </notes>
   </release>
  </changelog>
@@ -176,7 +178,7 @@ dependencies: []
                 'commit' => new HelperCommit(
                     $this->_output,
                     ['pretend' => true]
-                )
+                ),
             ]
         );
         $this->assertEquals(
@@ -188,7 +190,7 @@ dependencies: []
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git add doc/changelog.yml" now.',
-                'Would run "git commit -m "Development mode for Horde-5.0.0"" now.'
+                'Would run "git commit -m "Development mode for Horde-5.0.0"" now.',
             ],
             $this->_output->getOutput()
         );
@@ -208,7 +210,7 @@ dependencies: []
                 'commit' => new HelperCommit(
                     $this->_output,
                     ['pretend' => true]
-                )
+                ),
             ]
         );
         $this->assertEquals(
@@ -220,7 +222,7 @@ dependencies: []
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git add doc/changelog.yml" now.',
-                'Would run "git commit -m "Development mode for Horde-5.0.1"" now.'
+                'Would run "git commit -m "Development mode for Horde-5.0.1"" now.',
             ],
             $this->_output->getOutput()
         );
@@ -240,7 +242,7 @@ dependencies: []
                 'commit' => new HelperCommit(
                     $this->_output,
                     ['pretend' => true]
-                )
+                ),
             ]
         );
         $this->assertEquals(
@@ -252,7 +254,7 @@ dependencies: []
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git add doc/changelog.yml" now.',
-                'Would run "git commit -m "Development mode for Horde-5.0.0alpha2"" now.'
+                'Would run "git commit -m "Development mode for Horde-5.0.0alpha2"" now.',
             ],
             $this->_output->getOutput()
         );
@@ -273,7 +275,7 @@ dependencies: []
                 'commit' => new HelperCommit(
                     $this->_output,
                     ['pretend' => true]
-                )
+                ),
             ]
         );
         $this->assertEquals(
@@ -285,7 +287,7 @@ dependencies: []
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git add doc/changelog.yml" now.',
-                'Would run "git commit -m "Development mode for Horde-5.1.0"" now.'
+                'Would run "git commit -m "Development mode for Horde-5.1.0"" now.',
             ],
             $this->_output->getOutput()
         );

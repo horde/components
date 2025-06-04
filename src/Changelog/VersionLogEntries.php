@@ -1,4 +1,5 @@
 <?php
+
 namespace Horde\Components\Changelog;
 
 use Iterator;

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test the Snapshot module.
  *
@@ -29,6 +30,7 @@ use Horde\Components\Test\TestCase;
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class SnapshotTest extends TestCase
 {
@@ -50,7 +52,7 @@ class SnapshotTest extends TestCase
             '--verbose',
             '--snapshot',
             '--destination=' . $tmp_dir,
-            __DIR__ . '/../../../fixture/framework/Install'
+            __DIR__ . '/../../../fixture/framework/Install',
         ];
         $this->_callUnstrictComponents();
         $this->fileRegexpPresent(
@@ -67,7 +69,7 @@ class SnapshotTest extends TestCase
             '--keep-version',
             '--snapshot',
             '--destination=' . $tmp_dir,
-            __DIR__ . '/../../../fixture/framework/Install'
+            __DIR__ . '/../../../fixture/framework/Install',
         ];
         $this->_callUnstrictComponents();
         $this->fileRegexpPresent('/Install-0.0.1/', $tmp_dir);
@@ -83,7 +85,7 @@ class SnapshotTest extends TestCase
             '--verbose',
             '--snapshot',
             '--destination=' . $tmp_dir,
-            __DIR__ . '/../../../fixture/simple'
+            __DIR__ . '/../../../fixture/simple',
         ];
         try {
             $this->_callUnstrictComponents();

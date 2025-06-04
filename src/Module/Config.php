@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components\Module\Change:: Read and Manipulate the Config File
  *

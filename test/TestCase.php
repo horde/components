@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test base.
  *
@@ -33,6 +34,7 @@ use Horde\Components\Test\Stub\Output;
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class TestCase extends \PHPUnit\Framework\TestCase
 {

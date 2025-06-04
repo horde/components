@@ -25,7 +25,7 @@ class Pipeline extends Base
             '',
             '--clean-room-dir',
             ['action' => 'store', 'help'   => 'Where to put the auto-deleted dir?',
-            'default' => dirname(__FILE__, 3) . '/tmp'
+                'default' => dirname(__FILE__, 3) . '/tmp',
             ]
         )];
     }

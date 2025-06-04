@@ -1,4 +1,5 @@
 <?php
+
 /**
  * InstallModule:: Setup a horde installation from a git checkout
  *
@@ -33,7 +34,6 @@ use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
  */
 class InstallModule extends Base
 {
-
     public function getOptionGroupTitle(): string
     {
         return 'install';
@@ -116,7 +116,7 @@ class InstallModule extends Base
 
         if (!empty($options['install']) ||
             (isset($arguments[0]) && $arguments[0] == 'install')) {
-            $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory);
+            $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory());
             $component = $this->dependencies
             ->getComponentFactory()
             ->createSource($componentDirectory);

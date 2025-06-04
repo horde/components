@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Runner_Fetchdocs:: fetches documentation for a component.
  *
@@ -39,9 +40,7 @@ class Fetchdocs
      * @param Output $_output The output handler.
      * @param \Horde_Http_Client $_client A HTTP client.
      */
-    public function __construct(private readonly Config $_config, private readonly Output $_output, private readonly \Horde_Http_Client $_client)
-    {
-    }
+    public function __construct(private readonly Config $_config, private readonly Output $_output, private readonly \Horde_Http_Client $_client) {}
 
     public function run(): void
     {

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Runner_Distribute:: prepares a distribution package for a
  * component.
@@ -51,8 +52,7 @@ class Distribute
          * @param Component_Output
          */
         private readonly Output $_output
-    ) {
-    }
+    ) {}
 
     public function run(): void
     {

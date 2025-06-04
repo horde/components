@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Configs:: class represents configuration for the
  * Horde component tool.
@@ -44,9 +45,7 @@ class Configs extends Base
     /**
      * Constructor.
      */
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     /**
      * Add a configuration type to the configuration handler.

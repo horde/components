@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Runner_CiPrebuild:: prepares a continuous integration setup for a
  * component.
@@ -43,9 +44,7 @@ class CiPrebuild
      * @param ConfigApplication $_config_application The application configuration.
      * @param PearFactory $_factory Generator for all required PEAR components.
      */
-    public function __construct(private readonly Config $_config, private readonly ConfigApplication $_config_application, private readonly PearFactory $_factory)
-    {
-    }
+    public function __construct(private readonly Config $_config, private readonly ConfigApplication $_config_application, private readonly PearFactory $_factory) {}
 
     public function run(): void
     {

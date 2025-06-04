@@ -13,7 +13,7 @@ class PhpConfigFileProvider implements ConfigProvider
         $path = dirname($location);
         $file = basename($location);
         if (!file_exists($path)) {
-            mkdir($path, 0700, true);
+            mkdir($path, 0o700, true);
         }
         if (!file_exists($location)) {
             $this->writeToDisk($location);
@@ -48,7 +48,7 @@ class PhpConfigFileProvider implements ConfigProvider
 
     public function writeToDisk()
     {
-        $fileContent = '<?php'  . PHP_EOL . '//Horde Components Config File' .  PHP_EOL. '$conf = [];' .  PHP_EOL;
+        $fileContent = '<?php' . PHP_EOL . '//Horde Components Config File' . PHP_EOL . '$conf = [];' . PHP_EOL;
         foreach ($this->settings as $id => $value) {
             $fileContent .= '$conf["' . $id . '"] = "' . $value . '";' . PHP_EOL;
         }

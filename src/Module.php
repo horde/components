@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Module:: represents a task for a Horde component.
  *

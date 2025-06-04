@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Task_TagRelease:: tags the git repository.
  *

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Constants:: provides the constants for this package.
  *

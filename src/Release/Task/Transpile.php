@@ -115,7 +115,7 @@ class Transpile extends Base
                 $refType = substr($from_version, 0, $offset);
             }
         }
-        $sourceRef = $sourceRef ?? $currentRef;
+        $sourceRef ??= $currentRef;
         if ($refType != 'auto') {
             // TBD
         } elseif ($this->git->localBranchExists($componentDir, $sourceRef)) {
@@ -184,7 +184,7 @@ class Transpile extends Base
                 $this->getOutput()->fail('The intended target tag already exists. ' . $tag);
                 return;
             }
-            $this->git->tag($componentDir, $tag, 'Transpiled release for ' .  $options['target_platform'], true);
+            $this->git->tag($componentDir, $tag, 'Transpiled release for ' . $options['target_platform'], true);
         }
         // Check if we should push
         if (!empty($options['push_remote'])) {

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test the identification of the selected component.
  *
@@ -32,6 +33,7 @@ use Horde\Components\Test\TestCase;
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class IdentifyTest extends TestCase
 {
@@ -138,7 +140,7 @@ class IdentifyTest extends TestCase
             $this->config,
             [
                 'list' => ['test'],
-                'missing_argument' => ['help']
+                'missing_argument' => ['help'],
             ],
             $dependencies
         );

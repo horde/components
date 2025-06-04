@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Task_NextVersion:: updates the package.xml file with
  * information about the next component version.

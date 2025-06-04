@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Tasks:: organizes the different tasks required for
  * releasing a package.
@@ -50,9 +51,7 @@ class Tasks
      *
      * @param Dependencies $_dependencies The task factory.
      */
-    public function __construct(private readonly Dependencies $_dependencies)
-    {
-    }
+    public function __construct(private readonly Dependencies $_dependencies) {}
 
     /**
      * Return the named task.

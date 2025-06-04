@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Horde\Components\Runner\Init:: create new metadata.
  *
@@ -45,8 +46,7 @@ class Pipeline
          * @param Output
          */
         private readonly Output $output
-    ) {
-    }
+    ) {}
 
     public function run(): void
     {
@@ -65,7 +65,7 @@ class Pipeline
         $pipelineNames = [];
         foreach ($options['pipeline'] as $L1Key => $pipelineL2) {
             if (!empty($pipelineL2) && is_string(array_keys($pipelineL2)[0])) {
-                foreach ($pipelineL2  as $L2Key => $L3) {
+                foreach ($pipelineL2 as $L2Key => $L3) {
                     $pipelineNames[] = "$L1Key:$L2Key";
                 }
             } else {

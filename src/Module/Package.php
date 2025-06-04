@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Horde\Components\Module\Package:: Frontend to check various aspects of the package under test
  *
@@ -131,7 +132,7 @@ For checking a specific directory
         $arguments = $config->getArguments();
         if ((isset($arguments[0]) && $arguments[0] == 'package')) {
             $cli = $this->dependencies->get(Cli::class);
-            $cli->writeln(print_r($options,1));
+            $cli->writeln(print_r($options, 1));
             return true;
         }
         return false;

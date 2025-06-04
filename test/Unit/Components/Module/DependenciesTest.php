@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test the Dependencies module.
  *
@@ -28,6 +29,7 @@ use Horde\Components\Test\TestCase;
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class DependenciesTest extends TestCase
 {
@@ -46,7 +48,7 @@ class DependenciesTest extends TestCase
         $_SERVER['argv'] = [
             'horde-components',
             '--list-deps',
-            __DIR__ . '/../../../fixture/framework/Install'
+            __DIR__ . '/../../../fixture/framework/Install',
         ];
         $this->assertStringContainsString(
             'Dependency-0.0.1',
@@ -60,7 +62,7 @@ class DependenciesTest extends TestCase
             'horde-components',
             '--list-deps',
             '--alldeps',
-            __DIR__ . '/../../../fixture/framework/Install'
+            __DIR__ . '/../../../fixture/framework/Install',
         ];
         $this->assertStringContainsString(
             '_Console_Getopt',
@@ -75,7 +77,7 @@ class DependenciesTest extends TestCase
             '--list-deps',
             '--alldeps',
             '--short',
-            __DIR__ . '/../../../fixture/framework/Install'
+            __DIR__ . '/../../../fixture/framework/Install',
         ];
         $this->assertStringContainsString(
             'Console_Getopt',

@@ -1,5 +1,3 @@
 <?php
 
-interface Command
-{
-}
+interface Command {}

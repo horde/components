@@ -1,17 +1,17 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Horde\Components\Composer;
 
 use Stringable;
+
 /**
  * Represents the supposed root directory of a composer based horde installation
  */
 class InstallationDirectory implements Stringable
 {
-    public function __construct(private string|Stringable $installDir)
-    {
-    }
+    public function __construct(private string|Stringable $installDir) {}
 
     public function exists()
     {

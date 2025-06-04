@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test the CI setup module.
  *
@@ -10,8 +11,11 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components\Integration\Components\Module;
+
 use Horde\Components\StoryTestCase;
+
 /**
  * Test the CI setup module.
  *
@@ -25,6 +29,7 @@ use Horde\Components\StoryTestCase;
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class CiSetupTest extends StoryTestCase
 {

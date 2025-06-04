@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components\Runner\ConventionalCommit:: isolated actions for conventional commits.
  *
@@ -34,7 +35,6 @@ use Horde\Components\ConventionalCommitReader;
  */
 class ConventionalCommit
 {
-
     private VersionHelper $lastVersion;
     private VersionHelper $nextVersion;
     /**
@@ -51,8 +51,7 @@ class ConventionalCommit
          * @param Output
          */
         private readonly Output $_output
-    ) {
-    }
+    ) {}
 
     public function loadCommitReader(): ConventionalCommitReader
     {
@@ -60,7 +59,7 @@ class ConventionalCommit
         $gitHelper = new GitHelper();
         // TODO: Don't rely on cwd, rely on component path
         $gitLog = $gitHelper->getGitLog(getcwd());
-        $originalTagString='0.0.1alpha1';
+        $originalTagString = '0.0.1alpha1';
         foreach ($gitLog as $commit) {
             if ($commit->hasTags()) {
                 $gitLog = $gitLog->getLogSince($commit);
@@ -84,7 +83,7 @@ class ConventionalCommit
         $this->_output->plain("see https://www.conventionalcommits.org/");
         $this->_output->plain(sprintf("Highest severity: %s\n", $conventional->getTopSeverity()));
         $this->_output->plain("Anticipated next version tag: " . $this->nextVersion->toHordeTag());
-        $this->_output->plain("Stability: " .  $conventional->getLatestStabilityChange());
+        $this->_output->plain("Stability: " . $conventional->getLatestStabilityChange());
         foreach ($gitLog as $commit) {
             $this->_output->plain(str_repeat("-", 79));
             $this->_output->plain(sprintf("%8s %8s %8s: %s", $commit->type, $commit->scope, $commit->severity, $commit->description));

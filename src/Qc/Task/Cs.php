@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Qc_Task_Cs:: runs a code style check on the component.
  *
@@ -75,7 +76,7 @@ class Cs extends Base
             '--basepath=' . $lib_dir,
             '--report=emacs',
             '--standard=' . Constants::getDataDirectory() . '/qc_standards/phpcs.xml',
-            $lib_dir
+            $lib_dir,
         ];
 
         define('PHP_CODESNIFFER_CBF', false);

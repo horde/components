@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Runner_Webdocs:: generates the www.horde.org data for a component.
  *
@@ -38,9 +39,7 @@ class Webdocs
      * @param Config $_config The configuration for the current job.
      * @param HelperWebsite $_website_helper The website helper.
      */
-    public function __construct(private readonly Config $_config, private readonly HelperWebsite $_website_helper)
-    {
-    }
+    public function __construct(private readonly Config $_config, private readonly HelperWebsite $_website_helper) {}
 
     public function run(): void
     {

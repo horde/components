@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Helper_DocOrigin:: deals with a DOCS_ORIGIN file.
  *

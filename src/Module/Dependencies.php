@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Moduledependencies:: generates a dependency listing for the
  * specified package.

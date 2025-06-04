@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Runner_Dependencies:: lists a tree of dependencies.
  *
@@ -37,9 +38,7 @@ class Dependencies
      * @param Config $_config The configuration for the current job.
      * @param HelperDependencies $_dependencies The list helper.
      */
-    public function __construct(private readonly Config $_config, private readonly HelperDependencies $_dependencies)
-    {
-    }
+    public function __construct(private readonly Config $_config, private readonly HelperDependencies $_dependencies) {}
 
     public function run(): void
     {

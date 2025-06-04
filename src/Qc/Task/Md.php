@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Qc_Task_Md:: runs a mess detection check on the component.
  *

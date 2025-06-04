@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2017 Horde LLC (http://www.horde.org/)
  *
@@ -76,7 +77,7 @@ class ApplicationPhp implements Wrapper, \Stringable
      */
     public function isBundle(): bool
     {
-        return (bool)strpos($this->_file, '/Bundle.php');
+        return (bool) strpos($this->_file, '/Bundle.php');
     }
 
     /**

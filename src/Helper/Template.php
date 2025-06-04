@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Helper_Template:: converts a template into a target file.
  *
@@ -33,9 +34,7 @@ class Template
      * @param string $_source The source location.
      * @param string $_target The target location.
      */
-    public function __construct(protected $_source, protected $_target)
-    {
-    }
+    public function __construct(protected $_source, protected $_target) {}
 
     /**
      * Rewrite the template from the source to the target location.

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Horde\Components\Runner\Init:: create new metadata.
  *
@@ -45,8 +46,7 @@ class Init
          * @param Output
          */
         private readonly Output $_output
-    ) {
-    }
+    ) {}
 
     public function run(): void
     {
@@ -62,7 +62,7 @@ class Init
         $path = explode('/', getcwd());
         $id = array_pop($path);
         if ($type == 'library') {
-            $homepage = 'http://www.horde.org/libraries/Horde_'. $id;
+            $homepage = 'http://www.horde.org/libraries/Horde_' . $id;
         } elseif ($type == 'application') {
             $homepage = 'http://www.horde.org/apps/' . $id;
         }
@@ -218,7 +218,7 @@ class Init
         if ($type == 'library') {
             $docdir = 'doc/Horde/' . str_replace('_', '/', $id);
         }
-        mkdir($docdir, 0755, true);
+        mkdir($docdir, 0o755, true);
         $yaml = $this->_config->getComponent()->getWrapper('ChangelogYml');
         $yaml[$version['release']] = ['api' => $version['api'], 'state' => $state, 'date' => $dt->format('Y-m-d'), 'license' => $license, 'notes' => $changelog];
         $yaml->save();

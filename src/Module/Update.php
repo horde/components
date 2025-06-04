@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Module_Update:: can update the package.xml of
  * a Horde element.

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Task_GitPush:: Push any changes to a remote server
  *

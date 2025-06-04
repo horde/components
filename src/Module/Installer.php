@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Module_Installer:: installs a Horde element including
  * its dependencies.

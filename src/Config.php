@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Config:: interface represents a configuration type for the Horde
  * component tool.

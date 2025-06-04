@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Pear_Package:: provides package handling mechanisms.
  *
@@ -77,8 +78,7 @@ class Package
          * @param Output
          */
         private readonly Output $_output
-    ) {
-    }
+    ) {}
 
     /**
      * Define the surrounding PEAR environment for the package.

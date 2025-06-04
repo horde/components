@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2017 Horde LLC (http://www.horde.org/)
  *
@@ -25,6 +26,7 @@ use Horde\Components\Wrapper\ChangelogYml as WrapperChangelogYml;
  * @subpackage UnitTests
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class ChangelogYmlTest extends TestCase
 {

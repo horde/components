@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components\Changelog;
 
 class Changelog
@@ -7,10 +9,7 @@ class Changelog
     public function __construct(
         private VersionLogEntries $versionLogEntries = new VersionLogEntries(),
         private Unreleased $unreleased = new Unreleased()
-        )
-    {
-
-    }
+    ) {}
 
     public function addVersionLogEntry($versionLogEntry)
     {

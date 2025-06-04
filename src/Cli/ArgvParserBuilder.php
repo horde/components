@@ -10,6 +10,7 @@ use Horde\Argv\Option;
 use Horde\Argv\OptionGroup;
 use Horde\Argv\Values;
 use Horde\Components\Module;
+
 /**
  * The Global Argv Parser with the fixed, always present options.
  *
@@ -32,7 +33,8 @@ class ArgvParserBuilder
             [
                 'allowUnknownArgs' => true,
                 'ignoreUnknownArgs' => true,
-        ]);
+            ]
+        );
         return $this;
     }
 

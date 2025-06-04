@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Task_Sentinel:: provides base functionality for the
  * sentinel tasks.

@@ -10,10 +10,10 @@ use Rector\Config\RectorConfig;
 return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->paths([
         __DIR__ . '/src',
-        __DIR__ . '/test',        
+        __DIR__ . '/test',
     ]);
 
     $rectorConfig->sets([
-        DowngradeLevelSetList::DOWN_TO_PHP_74
+        DowngradeLevelSetList::DOWN_TO_PHP_74,
     ]);
 };

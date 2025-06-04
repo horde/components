@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Module_Distribute:: prepares a distribution package for a
  * component.

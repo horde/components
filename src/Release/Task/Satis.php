@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Task_Satis:: Rebuild a satis repo
  *
@@ -121,7 +122,7 @@ class Satis extends Base
         // Rebuild the satis repo
         $this->getOutput()->info(
             sprintf(
-                'Rebuilding static content at %s from json config at %s -'.
+                'Rebuilding static content at %s from json config at %s -' .
                 ' This may take very long',
                 $options['satis_outdir'],
                 $options['satis_json']

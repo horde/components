@@ -10,7 +10,7 @@ if (isset($options['destination'])) {
 }
 
 
-$applications = array(
+$applications = [
     'content',
     'horde',
     'imp',
@@ -20,20 +20,21 @@ $applications = array(
     'nag',
     'timeobjects',
     'turba',
-    'webmail'
-);
+    'webmail',
+];
 
-$bundles = array(
+$bundles = [
     'groupware',
     'webmail',
-    'kolab_webmail'
-);
+    'kolab_webmail',
+];
 
-function processDependencies($component) {
+function processDependencies($component)
+{
 
-    $buildRequires = array();
-    $requires = array();
-    $suggests = array();
+    $buildRequires = [];
+    $requires = [];
+    $suggests = [];
 
     // currently we always need the horde channel and sometimes pear - but pear is a default
     $channel  = 'php5-pear-channel-horde';
@@ -104,11 +105,11 @@ function processDependencies($component) {
 
 
 if (in_array($component->getName(), $applications)) {
-    $package_name = 'horde5-' .  $component->getName();
+    $package_name = 'horde5-' . $component->getName();
 } elseif (in_array($component->getName(), $bundles)) {
     throw new Components_Exception("Bundles are not supported in openSUSE");
 } else {
-    $package_name = 'php5-pear-' .  $component->getName();
+    $package_name = 'php5-pear-' . $component->getName();
 }
 
 $package_version = $component->getVersion();
@@ -116,16 +117,16 @@ $package_version = $component->getVersion();
 $destination .= '/server:php:applications/' . $package_name;
 
 $archive = array_shift(
-    $component->placeArchive($destination, array("logger" => $this->_output, 'keep_version' => true))
+    $component->placeArchive($destination, ["logger" => $this->_output, 'keep_version' => true])
 );
 
 if (!file_exists($destination)) {
-    mkdir($destination, 0700, true);
+    mkdir($destination, 0o700, true);
 }
 
-$t_dirs = array(
-    $this->_config_application->getTemplateDirectory() . '/templates'
-);
+$t_dirs = [
+    $this->_config_application->getTemplateDirectory() . '/templates',
+];
 if (file_exists($t_dirs[0] . '-' . $package_name)) {
     $t_dirs[] = $t_dirs[0] . '-' . $package_name;
 }
@@ -139,13 +140,13 @@ foreach ($t_dirs as $template_directory) {
         $destination
     );
     $build_template->write(
-        array(
+        [
             'name' => $package_name,
             'version' => $package_version,
             'component' => $component,
             'applications' => $applications,
-            'bundles' => $bundles
-        )
+            'bundles' => $bundles,
+        ]
     );
 }
 // build a text containing only the last change. Use dash instead of *

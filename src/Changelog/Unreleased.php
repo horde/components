@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components\Changelog;
 
 use DateTime;
@@ -20,9 +22,7 @@ class Unreleased
         private array $removed = [],
         private array $fixed = [],
         private array $security = [],
-    )
-    {
-    }
+    ) {}
 
     public function appendAdded(string $added)
     {

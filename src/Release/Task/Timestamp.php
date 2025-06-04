@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Task_Timestamp:: timestamps the package right before the
  * release.

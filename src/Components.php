@@ -1,4 +1,5 @@
 <?php
+
 /**
  * The Components:: class is the entry point for the various component actions
  * provided by the package.

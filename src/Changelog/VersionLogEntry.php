@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components\Changelog;
 
 use DateTime;
@@ -26,8 +28,7 @@ class VersionLogEntry
         private array $removed = [],
         private array $fixed = [],
         private array $security = [],
-    )
-    {
+    ) {
         // A version log must have a version - the API version can be guessed from it of missing
         $this->packageVersion = is_string($packageVersion) ? PackageVersion::fromComposerString($packageVersion) : $packageVersion;
         if (is_null($apiVersion)) {

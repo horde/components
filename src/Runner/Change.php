@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Runner_Change:: adds a new change log entry.
  *
@@ -45,8 +46,7 @@ class Change
          * @param Output
          */
         private readonly Output $_output
-    ) {
-    }
+    ) {}
 
     public function run(Config $config): void
     {

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test the document fetching helper.
  *
@@ -29,6 +30,7 @@ use Horde\Components\Test\TestCase;
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class DocsOriginTest extends TestCase
 {

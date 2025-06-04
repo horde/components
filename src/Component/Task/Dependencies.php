@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Horde\Components\Component\Task\Dependencies:: Declare and receive dependencies
  *

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Runner_Qc:: checks the component for quality.
  *
@@ -52,8 +53,7 @@ class Qc
          * @param QcTasks
          */
         private readonly QcTasks $_qc
-    ) {
-    }
+    ) {}
 
     public function run(): void
     {

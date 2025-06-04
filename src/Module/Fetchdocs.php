@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Module_Fetchdocs:: fetches remote documentation files.
  *

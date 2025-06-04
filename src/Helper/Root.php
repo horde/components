@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Helper_Root:: handles the root position for a tree of dependencies
  * and takes the Horde component layout into account.
@@ -60,9 +61,7 @@ class Root
      *                            determine the root of the Horde
     *                           repository based on this path.
     */
-    public function __construct(protected $_options = [], protected ?Component $_component = null, protected $_path = null)
-    {
-    }
+    public function __construct(protected $_options = [], protected ?Component $_component = null, protected $_path = null) {}
 
     /**
      * Return the path to the package.xml for the package with the provided

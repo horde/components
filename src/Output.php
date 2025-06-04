@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Output:: handles output from the components application.
  *

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Task_CommitPostRelease:: commits any changes after to the
  * release.

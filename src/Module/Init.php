@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Horde\Components\Module\Init:: initializes component metadata.
  *

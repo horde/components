@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Helper_Installer:: provides an installation helper.
  *
@@ -152,7 +153,7 @@ class Installer
                             $source = $options['sourcepath'] . '/'
                                 . $component->getChannel();
                             if (!file_exists($source)) {
-                                @mkdir(dirname($source), 0777, true);
+                                @mkdir(dirname($source), 0o777, true);
                             }
                             if ($dep instanceof Source) {
                                 $environment->provideChannel(
@@ -277,7 +278,7 @@ class Installer
                                 'stable',
                                 'beta',
                                 'alpha',
-                                'devel'
+                                'devel',
                             ]
                         );
                         $this->_per_component_options[$key] = array_merge(

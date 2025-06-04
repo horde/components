@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Config_Cli:: class provides central options for the command line
  * configuration of the components tool.
@@ -44,7 +45,7 @@ class CliConfig extends Base
         private ArgvWrapper $argv,
         Module|null $module
     ) {
-        $builder = (new ArgvParserBuilder)->withGlobalOptions();
+        $builder = (new ArgvParserBuilder())->withGlobalOptions();
         if ($module) {
             $builder->withModuleOptions($module);
         }

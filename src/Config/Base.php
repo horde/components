@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Base:: provides common utilities for the configuration
  * handlers.

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2017 Horde LLC (http://www.horde.org/)
  *
@@ -12,6 +13,7 @@
  */
 
 namespace Horde\Components\Wrapper;
+
 use Horde\Components\Helper\Version;
 use Horde\Components\Exception;
 use Horde\Components\Wrapper;
@@ -51,7 +53,7 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
         }
         parent::__construct($horde);
     }
-    
+
     public function setLicense(License $license)
     {
         $this['license'] = $license->toArray();
@@ -129,7 +131,7 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
                 $allowedPlugins['horde/horde-installer-plugin'] = true;
             }
         }
-        return (object)$allowedPlugins;
+        return (object) $allowedPlugins;
     }
     /**
      * Returns the file contents.

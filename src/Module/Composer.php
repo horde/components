@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2013-2024 Horde LLC (http://www.horde.org/)
  *
@@ -54,7 +55,7 @@ class Composer extends Base
                 '--composer-version',
                 [
                     'action' => 'store',
-                    'help' => 'A fixed version or branch expression to append after the version from yaml'
+                    'help' => 'A fixed version or branch expression to append after the version from yaml',
                 ],
             ),
             new Option(
@@ -62,9 +63,9 @@ class Composer extends Base
                 [
                     'action' => 'store',
                     'dest' => 'minimum-stability',
-                    'help' => 'A minimum stability statement (dev, alpha, beta, rc, stable)'
+                    'help' => 'A minimum stability statement (dev, alpha, beta, rc, stable)',
                 ]
-            )
+            ),
         ];
     }
 
@@ -124,7 +125,7 @@ class Composer extends Base
     {
         $options = $config->getOptions();
         $arguments = $config->getArguments();
-        $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory);
+        $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory());
         $component = $this->dependencies
         ->getComponentFactory()
         ->createSource($componentDirectory);

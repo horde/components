@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Helper_Templates_Single:: converts a single template file into a
  * target file.

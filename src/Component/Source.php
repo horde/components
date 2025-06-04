@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
  *
@@ -44,7 +45,6 @@ use stdClass;
  */
 class Source extends Base
 {
-
     /**
      * The PEAR package file representing the component.
      *
@@ -364,7 +364,7 @@ class Source extends Base
             $this->updateComposerFromHordeYml();
         }
 
-        switch($action) {
+        switch ($action) {
             case 'print':
                 return implode("===\n", $this->_wrappers);
             case 'diff':
@@ -919,7 +919,7 @@ class Source extends Base
         }
         $changelog[$version] = $nextVersion;
         $changelog->uksort(
-            fn ($a, $b) => \version_compare($b, $a)
+            fn($a, $b) => \version_compare($b, $a)
         );
 
         $updated = $this->_setVersion($version);
@@ -1353,7 +1353,7 @@ class Source extends Base
         return implode(
             ', ',
             array_map(
-                fn (Wrapper $wrapper) => $wrapper->getLocalPath($this->directory),
+                fn(Wrapper $wrapper) => $wrapper->getLocalPath($this->directory),
                 $wrappers
             )
         );

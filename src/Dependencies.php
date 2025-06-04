@@ -1,4 +1,5 @@
 <?php
+
 /**
  * The Components_Dependencies:: interface is a central broker for
  * providing the dependencies to the different application parts.

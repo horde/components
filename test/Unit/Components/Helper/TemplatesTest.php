@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test the template machinery.
  *
@@ -32,6 +33,7 @@ use Horde\Components\Test\TestCase;
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class TemplatesTest extends TestCase
 {
@@ -149,7 +151,7 @@ class TemplatesTest extends TestCase
     public function testMissingTargetDirectory()
     {
         $tdir =  $this->getTemporaryDirectory() . DIRECTORY_SEPARATOR
-            . 'a' .'/b';
+            . 'a' . '/b';
         $templates = new TemplatesDirectory(
             __DIR__ . '/../../../fixture/templates/dir',
             $tdir
@@ -209,7 +211,7 @@ class TemplatesTest extends TestCase
     public function testMissingTargetRecursiveDirectory()
     {
         $tdir =  $this->getTemporaryDirectory() . DIRECTORY_SEPARATOR
-            . 'a' .'/b';
+            . 'a' . '/b';
         $templates = new TemplatesRecursiveDirectory(
             __DIR__ . '/../../../fixture/templates/rec-dir',
             $tdir

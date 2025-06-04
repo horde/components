@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components\Composer;
 
 use Horde\Components\Module\Release;
@@ -38,10 +40,7 @@ class RepositoryList implements IteratorAggregate
         $this->repositories[] = $repository;
     }
 
-    public function ensureAbsent(RepositoryDefinition $repository)
-    {
-
-    }
+    public function ensureAbsent(RepositoryDefinition $repository) {}
 
     public static function fromStdClasses(stdClass ...$repositories): RepositoryList
     {

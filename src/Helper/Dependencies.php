@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Helper_Dependencies:: provides a utility that produces a dependency
  * list and records what has already been listed.
@@ -55,8 +56,7 @@ class Dependencies
          * @param Output
          */
         private readonly Output $_output
-    ) {
-    }
+    ) {}
 
     /**
      * List the dependency tree for this package.

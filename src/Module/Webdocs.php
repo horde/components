@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Module_Webdocs:: generates the www.horde.org data for a component.
  *

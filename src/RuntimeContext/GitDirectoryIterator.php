@@ -1,4 +1,5 @@
 <?php
+
 namespace Horde\Components\RuntimeContext;
 
 use Countable;

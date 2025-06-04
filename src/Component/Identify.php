@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Identifies the requested component based on an argument and delivers a
  * corresponding component instance.
@@ -42,9 +43,7 @@ class Identify
      * @param array $_actions The list of available actions.
      * @param Dependencies $_dependencies The dependency handler.
      */
-    public function __construct(private readonly Config $_config, private $_actions, private readonly Dependencies $_dependencies)
-    {
-    }
+    public function __construct(private readonly Config $_config, private $_actions, private readonly Dependencies $_dependencies) {}
 
     /**
      * Inject the component selected based on the command arguments into the
@@ -145,7 +144,7 @@ class Identify
          */
         $whitelist = [
             ['init'],        // The init command creates new metadata
-            ['git', 'clone'] // git clone must run on empty base dir
+            ['git', 'clone'], // git clone must run on empty base dir
         ];
         foreach ($whitelist as $componentArgs) {
             foreach ($componentArgs as $argPos => $argValue) {

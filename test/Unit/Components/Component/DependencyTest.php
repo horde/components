@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test the dependency list.
  *
@@ -29,6 +30,7 @@ use Horde\Components\Test\TestCase;
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class DependencyTest extends TestCase
 {
@@ -135,7 +137,7 @@ class DependencyTest extends TestCase
                 [
                     'type' => 'pkg',
                     'name' => 'PEAR',
-                    'channel' => 'pear.php.net'
+                    'channel' => 'pear.php.net',
                 ]
             )
             ->isPearBase()
@@ -170,7 +172,7 @@ class DependencyTest extends TestCase
                 [
                     'type' => 'pkg',
                     'name' => 'PEAR',
-                    'channel' => 'pear.php.net'
+                    'channel' => 'pear.php.net',
                 ]
             )
             ->key()

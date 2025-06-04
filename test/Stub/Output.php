@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test Stub for the Output interface
  *

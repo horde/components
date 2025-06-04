@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Horde\Components\Runner\Git:: runner for git operations.
  *
@@ -87,18 +88,17 @@ class Github
             }
             if (!is_dir($this->localCheckoutDir)) {
                 $this->output->plain('Local checkout directory missing and could not be created: ' . $this->localCheckoutDir);
-                    throw new RuntimeException('Local checkout directory missing and could not be created');
+                throw new RuntimeException('Local checkout directory missing and could not be created');
             }
             if (!is_writable($this->localCheckoutDir)) {
                 $this->output->plain('Local checkout directory is not writable: ' . $this->localCheckoutDir);
                 throw new RuntimeException('Local checkout directory is not writable');
             }
             $catalog = [];
-            foreach ($repoMeta as $repo)
-            {
+            foreach ($repoMeta as $repo) {
                 // TODO: Build a helper object for checking if repo dir exists and another for creating if not
                 $this->output->plain('Checking ' . $repo->getFullName());
-                $repoDir = $this->localCheckoutDir . DIRECTORY_SEPARATOR  . $repo->getFullName();
+                $repoDir = $this->localCheckoutDir . DIRECTORY_SEPARATOR . $repo->getFullName();
                 if (is_dir($repoDir . DIRECTORY_SEPARATOR . '.git')) {
                     $this->output->plain('Repo seems to be checked out already: ' . $repo->getFullName());
                     // Update the local component

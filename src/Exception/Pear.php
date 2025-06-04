@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This class converts PEAR errors into exceptions for the Components package.
  *

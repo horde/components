@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Task_GitBranch:: Check or enforce a branch checkout
  *

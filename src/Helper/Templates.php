@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Helper_Templates:: converts templates into target files.
  *

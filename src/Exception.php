@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This class provides the standard error class for the Components
  * package.
@@ -27,6 +28,4 @@ namespace Horde\Components;
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class Exception extends \Horde_Exception
-{
-}
+class Exception extends \Horde_Exception {}

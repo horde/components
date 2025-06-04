@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2017 Horde LLC (http://www.horde.org/)
  *
@@ -24,6 +25,7 @@ use Horde\Components\Test\TestCase;
  * @subpackage UnitTests
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class UpdateFromHordeYmlTest extends TestCase
 {
@@ -217,7 +219,7 @@ class UpdateFromHordeYmlTest extends TestCase
                 'horde/core' => '^2.31',
                 'horde/date' => '^2',
                 'horde/form' => '^2.0.16',
-                'horde/horde-installer-plugin' => '*'
+                'horde/horde-installer-plugin' => '*',
             ],
             $json['require']
         );
@@ -234,7 +236,7 @@ class UpdateFromHordeYmlTest extends TestCase
         $fixtures = __DIR__ . '/../../../fixture/deps/';
         ;
         $dir = \Horde_Util::createTempDir();
-        mkdir($dir . '/doc/Horde/Deps', 0777, true);
+        mkdir($dir . '/doc/Horde/Deps', 0o777, true);
         copy($fixtures . '.horde.yml', $dir . '/.horde.yml');
         copy($fixtures . 'package.xml', $dir . '/package.xml');
         copy(
@@ -299,7 +301,7 @@ class UpdateFromHordeYmlTest extends TestCase
             ],
             'optional' => [
                 'ext' => [
-                    'iconv' => '*'
+                    'iconv' => '*',
                 ],
             ],
         ];

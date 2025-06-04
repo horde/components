@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test the Components entry point.
  *
@@ -29,6 +30,7 @@ use Horde\Components\Test\TestCase;
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class ComponentsTest extends TestCase
 {
@@ -36,7 +38,7 @@ class ComponentsTest extends TestCase
     {
         chdir(\Horde_Util::createTempDir());
         $_SERVER['argv'] = [
-            'horde-components'
+            'horde-components',
         ];
         $this->assertStringContainsString(
             Components::ERROR_NO_COMPONENT,
@@ -48,7 +50,7 @@ class ComponentsTest extends TestCase
     {
         $_SERVER['argv'] = [
             'horde-components',
-            '--help'
+            '--help',
         ];
         $this->assertMatchesRegularExpression(
             '/-h,[ ]*--help[ ]*' . \Horde_Argv_Translation::t("show this help message and exit") . '/',
@@ -61,7 +63,7 @@ class ComponentsTest extends TestCase
         $_SERVER['argv'] = [
             'horde-components',
             '--list-deps',
-            __DIR__ . '/../fixture/framework/Install/package.xml'
+            __DIR__ . '/../fixture/framework/Install/package.xml',
         ];
         $output = $this->_callUnstrictComponents();
         $this->assertStringContainsString(
@@ -75,7 +77,7 @@ class ComponentsTest extends TestCase
         $_SERVER['argv'] = [
             'horde-components',
             '--list-deps',
-            __DIR__ . '/../fixture/framework/Install'
+            __DIR__ . '/../fixture/framework/Install',
         ];
         $output = $this->_callUnstrictComponents();
         $this->assertStringContainsString(

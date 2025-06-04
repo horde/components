@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Config\File:: class provides simple options for the bootstrap
  * process.

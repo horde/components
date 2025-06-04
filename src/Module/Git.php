@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Horde\Components\Module\Git:: Useful git command wrappers for CI
  *

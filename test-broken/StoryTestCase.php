@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Base for story based package testing.
  *
@@ -10,7 +11,9 @@
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
+
 namespace Horde\Components;
+
 use Horde\Components\Exception\Pear as ExceptionPear;
 use Horde\Components\Components;
 use Horde\Components\Dependencies\Injector;
@@ -28,6 +31,7 @@ use Horde\Components\Dependencies\Injector;
  * @subpackage UnitTests
  * @author     Gunnar Wrobel <wrobel@pardus.de>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @coversNothing
  */
 class StoryTestCase extends \PHPUnit_Extensions_Story_TestCase
 {
@@ -49,11 +53,11 @@ class StoryTestCase extends \PHPUnit_Extensions_Story_TestCase
      */
     public function runGiven(&$world, $action, $arguments)
     {
-        switch($action) {
-        case 'the default Components setup':
-            break;
-        default:
-            return $this->notImplemented($action);
+        switch ($action) {
+            case 'the default Components setup':
+                break;
+            default:
+                return $this->notImplemented($action);
         }
     }
 
@@ -68,285 +72,285 @@ class StoryTestCase extends \PHPUnit_Extensions_Story_TestCase
      */
     public function runWhen(&$world, $action, $arguments)
     {
-        switch($action) {
-        case 'calling the package with the help option':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--help',
-                __DIR__ . '/fixture/empty'
-            );
-            $world['output'] = $this->_callStrictComponents();
-            break;
-        case 'calling the package with the updatexml option with action "print" and a Horde component':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--updatexml',
-                '--action=print',
-                __DIR__ . '/fixture/simple'
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the updatexml option and a path without package.xml':
-            $temp = $this->_getTemporaryDirectory();
-            mkdir($temp . DIRECTORY_SEPARATOR . 'test');
-            file_put_contents(
-                $temp . DIRECTORY_SEPARATOR . 'test'  . DIRECTORY_SEPARATOR . 'test.php',
-                '<?php'
-            );
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--updatexml',
-                $temp
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the pearrc, the updatexml option with action "print", and a Horde component':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--pearrc=' . $this->_getTemporaryDirectory() . DIRECTORY_SEPARATOR . '.pearrc',
-                '--updatexml',
-                '--action=print',
-                __DIR__ . '/fixture/simple'
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the updatexml option with action "print" and a component with empty changelog':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--pearrc=' . $this->_getTemporaryDirectory() . DIRECTORY_SEPARATOR . '.pearrc',
-                '--updatexml',
-                '--action=print',
-                __DIR__ . '/fixture/changelog'
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the updatexml option and the path':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--updatexml',
-                $arguments[0]
-            );
-            $world['output'] = $this->_callStrictComponents();
-            break;
-/*
-        case 'calling the package with the cisetup option and paths':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--cisetup=' . $arguments[0],
-                $arguments[1]
-            );
-            $world['output'] = $this->_callStrictComponents();
-            break;
-        case 'calling the package with the cisetup, toolsdir options and path':
-            $tmp = $this->_getTemporaryDirectory();
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--toolsdir=/DUMMY_TOOLS',
-                '--cisetup=' . $arguments[0],
-                $arguments[1]
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the cisetup, toolsdir, pearrc options and path':
-            $tmp = $this->_getTemporaryDirectory();
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--cisetup=' . $tmp,
-                '--toolsdir=/DUMMY_TOOLS',
-                '--pearrc=' . $tmp . DIRECTORY_SEPARATOR . '.pearrc',
-                $arguments[0]
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the ciprebuild option and path':
-            $tmp = $this->_getTemporaryDirectory();
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--ciprebuild=' . $tmp,
-                $arguments[0]
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the ciprebuild, toolsdir option and path':
-            $tmp = $this->_getTemporaryDirectory();
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--ciprebuild=' . $tmp,
-                '--toolsdir=/DUMMY_TOOLS',
-                $arguments[0]
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the cisetup, toolsdir, pearrc, template options and path':
-            $tmp = $this->_getTemporaryDirectory();
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--cisetup=' . $tmp,
-                '--toolsdir=/DUMMY_TOOLS',
-                '--pearrc=' . $tmp . DIRECTORY_SEPARATOR . '.pearrc',
-                '--templatedir=' . __DIR__ . '/fixture/templates',
-                $arguments[0]
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the ciprebuild, toolsdir, template options and path':
-            $tmp = $this->_getTemporaryDirectory();
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--ciprebuild=' . $tmp,
-                '--toolsdir=/DUMMY_TOOLS',
-                '--templatedir=' . __DIR__ . '/fixture/templates',
-                $arguments[0]
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-*/
-        case 'calling the package with the install option and a path to a Horde framework component':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--channelxmlpath=' . __DIR__ . '/fixture/channels',
-                '--sourcepath=' . __DIR__ . '/fixture/packages',
-                '--install=' . $this->_getTemporaryDirectory() . DIRECTORY_SEPARATOR . '.pearrc',
-                __DIR__ . '/fixture/framework/Install'
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the install option, the pretend option and a path to a Horde framework component':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--channelxmlpath=' . __DIR__ . '/fixture/channels',
-                '--sourcepath=' . __DIR__ . '/fixture/packages',
-                '--pretend',
-                '--install=' . $this->_getTemporaryDirectory() . DIRECTORY_SEPARATOR . '.pearrc',
-                __DIR__ . '/fixture/framework/Install'
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the install option, a path to a Horde framework component, and the following include/exclude options':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--channelxmlpath=' . __DIR__ . '/fixture/channels',
-                '--sourcepath=' . __DIR__ . '/fixture/packages',
-                '--pretend',
-                '--include=' . $arguments[0],
-                '--exclude=' . $arguments[1],
-                '--install=' . $this->_getTemporaryDirectory() . DIRECTORY_SEPARATOR . '.pearrc',
-                __DIR__ . '/fixture/framework/Install'
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the list dependencies option and a path to a Horde framework component':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--list-deps',
-                __DIR__ . '/fixture/framework/Install'
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the verbose list dependencies option and a path to a Horde framework component':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--verbose',
-                '--list-deps',
-                __DIR__ . '/fixture/framework/Install'
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the list dependencies option, the nocolor option and a path to a Horde framework component':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--nocolor',
-                '--list-deps',
-                __DIR__ . '/fixture/framework/Install'
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the quiet list dependencies option and a path to a Horde framework component':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--quiet',
-                '--list-deps',
-                __DIR__ . '/fixture/framework/Install'
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the snapshot option, the archive directory option and a path to a Horde framework component':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--verbose',
-                '--snapshot',
-                '--archivedir=' . $this->_getTemporaryDirectory(),
-                __DIR__ . '/fixture/framework/Install'
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the snapshot option, the archive directory option and a path to an invalid Horde framework component':
-            $this->_setPearGlobals();
-            $cwd = getcwd();
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--verbose',
-                '--snapshot',
-                '--archivedir=' . $this->_getTemporaryDirectory(),
-                __DIR__ . '/fixture/simple'
-            );
-            try {
+        switch ($action) {
+            case 'calling the package with the help option':
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--help',
+                    __DIR__ . '/fixture/empty',
+                ];
+                $world['output'] = $this->_callStrictComponents();
+                break;
+            case 'calling the package with the updatexml option with action "print" and a Horde component':
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--updatexml',
+                    '--action=print',
+                    __DIR__ . '/fixture/simple',
+                ];
                 $world['output'] = $this->_callUnstrictComponents();
-            } catch (ExceptionPear $e) {
-                ob_end_clean();
-                $world['output'] = (string) $e;
-            }
-            chdir($cwd);
-            break;
-        case 'calling the package with the release option and a path to a component':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--verbose',
-                '--release',
-                __DIR__ . '/fixture/framework/Install'
-            );
-            $olddir = getcwd();
-            chdir($this->_getTemporaryDirectory());
-            $world['output'] = $this->_callUnstrictComponents();
-            chdir($olddir);
-            break;
-        case 'calling the package with the release option and an invalid path':
-            $this->_setPearGlobals();
-            $cwd = getcwd();
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--verbose',
-                '--release',
-                __DIR__ . '/fixture/simple'
-            );
-            try {
+                break;
+            case 'calling the package with the updatexml option and a path without package.xml':
+                $temp = $this->_getTemporaryDirectory();
+                mkdir($temp . DIRECTORY_SEPARATOR . 'test');
+                file_put_contents(
+                    $temp . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'test.php',
+                    '<?php'
+                );
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--updatexml',
+                    $temp,
+                ];
                 $world['output'] = $this->_callUnstrictComponents();
-            } catch (ExceptionPear $e) {
-                ob_end_clean();
-                $world['output'] = (string) $e;
-            }
-            chdir($cwd);
-            break;
-        case 'calling the package with the distribute option and a path to a Horde framework component':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--templatedir=' . __DIR__ . '/fixture/templates/distribute/openpkg',
-                '--distribute=' . $this->_getTemporaryDirectory(),
-                __DIR__ . '/fixture/framework/Install'
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        case 'calling the package with the document option and a path to a Horde framework component':
-            $_SERVER['argv'] = array(
-                'horde-components',
-                '--templatedir=' . __DIR__ . '/fixture/templates/html',
-                '--document=' . $this->_getTemporaryDirectory(),
-                __DIR__ . '/fixture/framework/Install'
-            );
-            $world['output'] = $this->_callUnstrictComponents();
-            break;
-        default:
-            return $this->notImplemented($action);
+                break;
+            case 'calling the package with the pearrc, the updatexml option with action "print", and a Horde component':
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--pearrc=' . $this->_getTemporaryDirectory() . DIRECTORY_SEPARATOR . '.pearrc',
+                    '--updatexml',
+                    '--action=print',
+                    __DIR__ . '/fixture/simple',
+                ];
+                $world['output'] = $this->_callUnstrictComponents();
+                break;
+            case 'calling the package with the updatexml option with action "print" and a component with empty changelog':
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--pearrc=' . $this->_getTemporaryDirectory() . DIRECTORY_SEPARATOR . '.pearrc',
+                    '--updatexml',
+                    '--action=print',
+                    __DIR__ . '/fixture/changelog',
+                ];
+                $world['output'] = $this->_callUnstrictComponents();
+                break;
+            case 'calling the package with the updatexml option and the path':
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--updatexml',
+                    $arguments[0],
+                ];
+                $world['output'] = $this->_callStrictComponents();
+                break;
+                /*
+                        case 'calling the package with the cisetup option and paths':
+                            $_SERVER['argv'] = array(
+                                'horde-components',
+                                '--cisetup=' . $arguments[0],
+                                $arguments[1]
+                            );
+                            $world['output'] = $this->_callStrictComponents();
+                            break;
+                        case 'calling the package with the cisetup, toolsdir options and path':
+                            $tmp = $this->_getTemporaryDirectory();
+                            $_SERVER['argv'] = array(
+                                'horde-components',
+                                '--toolsdir=/DUMMY_TOOLS',
+                                '--cisetup=' . $arguments[0],
+                                $arguments[1]
+                            );
+                            $world['output'] = $this->_callUnstrictComponents();
+                            break;
+                        case 'calling the package with the cisetup, toolsdir, pearrc options and path':
+                            $tmp = $this->_getTemporaryDirectory();
+                            $_SERVER['argv'] = array(
+                                'horde-components',
+                                '--cisetup=' . $tmp,
+                                '--toolsdir=/DUMMY_TOOLS',
+                                '--pearrc=' . $tmp . DIRECTORY_SEPARATOR . '.pearrc',
+                                $arguments[0]
+                            );
+                            $world['output'] = $this->_callUnstrictComponents();
+                            break;
+                        case 'calling the package with the ciprebuild option and path':
+                            $tmp = $this->_getTemporaryDirectory();
+                            $_SERVER['argv'] = array(
+                                'horde-components',
+                                '--ciprebuild=' . $tmp,
+                                $arguments[0]
+                            );
+                            $world['output'] = $this->_callUnstrictComponents();
+                            break;
+                        case 'calling the package with the ciprebuild, toolsdir option and path':
+                            $tmp = $this->_getTemporaryDirectory();
+                            $_SERVER['argv'] = array(
+                                'horde-components',
+                                '--ciprebuild=' . $tmp,
+                                '--toolsdir=/DUMMY_TOOLS',
+                                $arguments[0]
+                            );
+                            $world['output'] = $this->_callUnstrictComponents();
+                            break;
+                        case 'calling the package with the cisetup, toolsdir, pearrc, template options and path':
+                            $tmp = $this->_getTemporaryDirectory();
+                            $_SERVER['argv'] = array(
+                                'horde-components',
+                                '--cisetup=' . $tmp,
+                                '--toolsdir=/DUMMY_TOOLS',
+                                '--pearrc=' . $tmp . DIRECTORY_SEPARATOR . '.pearrc',
+                                '--templatedir=' . __DIR__ . '/fixture/templates',
+                                $arguments[0]
+                            );
+                            $world['output'] = $this->_callUnstrictComponents();
+                            break;
+                        case 'calling the package with the ciprebuild, toolsdir, template options and path':
+                            $tmp = $this->_getTemporaryDirectory();
+                            $_SERVER['argv'] = array(
+                                'horde-components',
+                                '--ciprebuild=' . $tmp,
+                                '--toolsdir=/DUMMY_TOOLS',
+                                '--templatedir=' . __DIR__ . '/fixture/templates',
+                                $arguments[0]
+                            );
+                            $world['output'] = $this->_callUnstrictComponents();
+                            break;
+                */
+            case 'calling the package with the install option and a path to a Horde framework component':
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--channelxmlpath=' . __DIR__ . '/fixture/channels',
+                    '--sourcepath=' . __DIR__ . '/fixture/packages',
+                    '--install=' . $this->_getTemporaryDirectory() . DIRECTORY_SEPARATOR . '.pearrc',
+                    __DIR__ . '/fixture/framework/Install',
+                ];
+                $world['output'] = $this->_callUnstrictComponents();
+                break;
+            case 'calling the package with the install option, the pretend option and a path to a Horde framework component':
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--channelxmlpath=' . __DIR__ . '/fixture/channels',
+                    '--sourcepath=' . __DIR__ . '/fixture/packages',
+                    '--pretend',
+                    '--install=' . $this->_getTemporaryDirectory() . DIRECTORY_SEPARATOR . '.pearrc',
+                    __DIR__ . '/fixture/framework/Install',
+                ];
+                $world['output'] = $this->_callUnstrictComponents();
+                break;
+            case 'calling the package with the install option, a path to a Horde framework component, and the following include/exclude options':
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--channelxmlpath=' . __DIR__ . '/fixture/channels',
+                    '--sourcepath=' . __DIR__ . '/fixture/packages',
+                    '--pretend',
+                    '--include=' . $arguments[0],
+                    '--exclude=' . $arguments[1],
+                    '--install=' . $this->_getTemporaryDirectory() . DIRECTORY_SEPARATOR . '.pearrc',
+                    __DIR__ . '/fixture/framework/Install',
+                ];
+                $world['output'] = $this->_callUnstrictComponents();
+                break;
+            case 'calling the package with the list dependencies option and a path to a Horde framework component':
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--list-deps',
+                    __DIR__ . '/fixture/framework/Install',
+                ];
+                $world['output'] = $this->_callUnstrictComponents();
+                break;
+            case 'calling the package with the verbose list dependencies option and a path to a Horde framework component':
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--verbose',
+                    '--list-deps',
+                    __DIR__ . '/fixture/framework/Install',
+                ];
+                $world['output'] = $this->_callUnstrictComponents();
+                break;
+            case 'calling the package with the list dependencies option, the nocolor option and a path to a Horde framework component':
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--nocolor',
+                    '--list-deps',
+                    __DIR__ . '/fixture/framework/Install',
+                ];
+                $world['output'] = $this->_callUnstrictComponents();
+                break;
+            case 'calling the package with the quiet list dependencies option and a path to a Horde framework component':
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--quiet',
+                    '--list-deps',
+                    __DIR__ . '/fixture/framework/Install',
+                ];
+                $world['output'] = $this->_callUnstrictComponents();
+                break;
+            case 'calling the package with the snapshot option, the archive directory option and a path to a Horde framework component':
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--verbose',
+                    '--snapshot',
+                    '--archivedir=' . $this->_getTemporaryDirectory(),
+                    __DIR__ . '/fixture/framework/Install',
+                ];
+                $world['output'] = $this->_callUnstrictComponents();
+                break;
+            case 'calling the package with the snapshot option, the archive directory option and a path to an invalid Horde framework component':
+                $this->_setPearGlobals();
+                $cwd = getcwd();
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--verbose',
+                    '--snapshot',
+                    '--archivedir=' . $this->_getTemporaryDirectory(),
+                    __DIR__ . '/fixture/simple',
+                ];
+                try {
+                    $world['output'] = $this->_callUnstrictComponents();
+                } catch (ExceptionPear $e) {
+                    ob_end_clean();
+                    $world['output'] = (string) $e;
+                }
+                chdir($cwd);
+                break;
+            case 'calling the package with the release option and a path to a component':
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--verbose',
+                    '--release',
+                    __DIR__ . '/fixture/framework/Install',
+                ];
+                $olddir = getcwd();
+                chdir($this->_getTemporaryDirectory());
+                $world['output'] = $this->_callUnstrictComponents();
+                chdir($olddir);
+                break;
+            case 'calling the package with the release option and an invalid path':
+                $this->_setPearGlobals();
+                $cwd = getcwd();
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--verbose',
+                    '--release',
+                    __DIR__ . '/fixture/simple',
+                ];
+                try {
+                    $world['output'] = $this->_callUnstrictComponents();
+                } catch (ExceptionPear $e) {
+                    ob_end_clean();
+                    $world['output'] = (string) $e;
+                }
+                chdir($cwd);
+                break;
+            case 'calling the package with the distribute option and a path to a Horde framework component':
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--templatedir=' . __DIR__ . '/fixture/templates/distribute/openpkg',
+                    '--distribute=' . $this->_getTemporaryDirectory(),
+                    __DIR__ . '/fixture/framework/Install',
+                ];
+                $world['output'] = $this->_callUnstrictComponents();
+                break;
+            case 'calling the package with the document option and a path to a Horde framework component':
+                $_SERVER['argv'] = [
+                    'horde-components',
+                    '--templatedir=' . __DIR__ . '/fixture/templates/html',
+                    '--document=' . $this->_getTemporaryDirectory(),
+                    __DIR__ . '/fixture/framework/Install',
+                ];
+                $world['output'] = $this->_callUnstrictComponents();
+                break;
+            default:
+                return $this->notImplemented($action);
         }
     }
 
@@ -361,348 +365,348 @@ class StoryTestCase extends \PHPUnit_Extensions_Story_TestCase
      */
     public function runThen(&$world, $action, $arguments)
     {
-        switch($action) {
-        case 'the help will be displayed':
-            $this->assertMatchesRegularExpression(
-                '/-h,[ ]*--help[ ]*show this help message and exit/',
-                $world['output']
-            );
-            break;
-        case 'the help will contain the "A" option.':
-            $this->assertMatchesRegularExpression(
-                '/-A ACTION,\s*--action=ACTION/m',
-                $world['output']
-            );
-            break;
-        case 'the help will contain the "u" option.':
-            $this->assertMatchesRegularExpression(
-                '/-u,\s*--updatexml/',
-                $world['output']
-            );
-            break;
-        case 'the help will contain the "z" option.':
-            $this->assertMatchesRegularExpression(
-                '/-z,\s*--snapshot/',
-                $world['output']
-            );
-            break;
-        case 'the help will contain the option':
-            $this->assertMatchesRegularExpression(
-                '/' . $arguments[0] . '/',
-                $world['output']
-            );
-            break;
-        case 'the new package.xml of the Horde element will be printed.':
-            $this->assertMatchesRegularExpression(
-                '/<file name="New.php" role="php" \/>/',
-                $world['output']
-            );
-            break;
-        case 'the new package.xml of the Horde component will retain all "replace" tasks.':
-            $this->assertMatchesRegularExpression(
-                '#<tasks:replace from="@data_dir@" to="data_dir" type="pear-config" />#',
-                $world['output']
-            );
-            break;
-        case 'the new package.xml will install java script files in a default location':
-            $this->assertMatchesRegularExpression(
-                '#<install as="js/test.js" name="js/test.js" />#',
-                $world['output']
-            );
-            break;
-        case 'the new package.xml will install migration files in a default location':
-            $this->assertMatchesRegularExpression(
-                '#<install as="migration/test.sql" name="migration/test.sql" />#',
-                $world['output']
-            );
-            break;
-        case 'the new package.xml will install script files in a default location':
-            $this->assertMatchesRegularExpression(
-                '#<install as="other_script" name="script/other_script" />#',
-                $world['output']
-            );
-            $this->assertMatchesRegularExpression(
-                '#<install as="shell_script.sh" name="script/shell_script.sh" />#',
-                $world['output']
-            );
-            $this->assertMatchesRegularExpression(
-                '#<install as="script" name="script/script.php" />#',
-                $world['output']
-            );
-            break;
-        case 'the new package.xml of the Horde component will not contain the file':
-            $this->assertDoesNotMatchRegularExpression(
-                '#' . $arguments[0] . '#',
-                $world['output']
-            );
-            break;
-        case 'the new package.xml of the Horde component will contain the file':
-            $this->assertMatchesRegularExpression(
-                '#' . $arguments[0] . '#',
-                $world['output']
-            );
-            break;
-        case 'a new package.xml will be created.':
-            $this->assertTrue(
-                file_exists($this->_temp_dir . DIRECTORY_SEPARATOR . 'package.xml')
-            );
-            break;
-        case 'the new package.xml of the Horde component will have a changelog entry':
-            $this->assertMatchesRegularExpression(
-                '#</changelog>#',
-                $world['output']
-            );
-            break;
-        case 'a new PEAR configuration file will be installed':
-            $this->assertTrue(
-                file_exists($this->_temp_dir . DIRECTORY_SEPARATOR . '.pearrc')
-            );
-            break;
-        case 'the dummy PEAR package will be installed':
-            $this->assertTrue(
-                file_exists(
-                    $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'pear' . DIRECTORY_SEPARATOR
-                    . 'php' . DIRECTORY_SEPARATOR
-                    . 'PEAR.php'
-                )
-            );
-            break;
-        case 'the non-Horde dependencies of the component will get installed':
-            $this->assertTrue(
-                file_exists(
-                    $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'pear' . DIRECTORY_SEPARATOR
-                    . 'php' . DIRECTORY_SEPARATOR
-                    . 'Console.php'
-                )
-            );
-            break;
-        case 'the Horde dependencies of the component will get installed from the current tree':
-            $this->assertTrue(
-                file_exists(
-                    $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'pear' . DIRECTORY_SEPARATOR
-                    . 'php' . DIRECTORY_SEPARATOR
-                    . 'Dependency.php'
-                )
-            );
-            break;
-        case 'the Components library will be installed':
-            $this->assertTrue(
-                file_exists(
-                    $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'pear' . DIRECTORY_SEPARATOR
-                    . 'php' . DIRECTORY_SEPARATOR
-                    . 'Components.php'
-                )
-            );
-            break;
-        case 'the component will be installed':
-            $this->assertTrue(
-                file_exists(
-                    $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'pear' . DIRECTORY_SEPARATOR
-                    . 'php' . DIRECTORY_SEPARATOR
-                    . 'Install.php'
-                )
-            );
-            break;
-        case 'the dummy PEAR package will be listed':
-            $this->assertStringContainsString(
-                'Would install external package pear.php.net/PEAR',
-                $world['output']
-            );
-            break;
-        case 'the non-Horde dependencies of the component would be installed':
-            $this->assertStringContainsString(
-                'Would install external package pear.php.net/Console_Getopt',
-                $world['output']
-            );
-            break;
-        case 'the PECL will package will be listed':
-            $this->assertStringContainsString(
-                'Would install external package pecl.php.net/PECL',
-                $world['output']
-            );
-            break;
-        case 'the PECL will package will not be listed':
-            $this->assertNotContains(
-                'Would install external package pecl.php.net/PECL',
-                $world['output']
-            );
-            break;
-        case 'the Console_Getopt package will be listed':
-            $this->assertStringContainsString(
-                'Would install external package pear.php.net/Console_Getopt',
-                $world['output']
-            );
-            break;
-        case 'the Console_Getopt package will not be listed':
-            $this->assertNotContains(
-                'Would install external package pear.php.net/Console_Getopt',
-                $world['output']
-            );
-            break;
-        case 'the Horde dependencies of the component would be installed':
-            $trimmed = strtr($world['output'], array(' ' => '', "\n" => ''));
-            $this->assertMatchesRegularExpression(
-                '#Wouldinstallpackage.*Dependency/package.xml#',
-                $trimmed
-            );
-            break;
-        case 'the old-style Horde dependencies of the component would be installed':
-            $trimmed = strtr($world['output'], array(' ' => '', "\n" => ''));
-            $this->assertMatchesRegularExpression(
-                '#Wouldinstallpackage.*Old/package.xml#',
-                $trimmed
-            );
-            break;
-        case 'the Optional package will be listed':
-            $trimmed = strtr($world['output'], array(' ' => '', "\n" => ''));
-            $this->assertMatchesRegularExpression(
-                '#Wouldinstallpackage.*Optional/package.xml#',
-                $trimmed
-            );
-            break;
-        case 'the Optional package will not be listed':
-            $trimmed = strtr($world['output'], array(' ' => '', "\n" => ''));
-            $this->assertDoesNotMatchRegularExpression(
-                '#Wouldinstallpackage.*Optional/package.xml#',
-                $trimmed
-            );
-            break;
-        case 'the component will be listed':
-            $trimmed = strtr($world['output'], array(' ' => '', "\n" => ''));
-            $this->assertMatchesRegularExpression(
-                '#Wouldinstallpackage.*Install/package.xml#',
-                $trimmed
-            );
-            break;
-        case 'the CI configuration will be installed.':
-            $this->assertTrue(
-                file_exists(
-                    $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'config.xml'
-                )
-            );
-            break;
-        case 'the installation requires no network access.':
-            $this->assertNotContains(
-                'network',
-                $world['output']
-            );
-            break;
-        case 'the CI build script will be installed.':
-            $this->assertTrue(
-                file_exists(
-                    $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'build.xml'
-                )
-            );
-            break;
-        case 'the CI configuration will be installed according to the specified template.':
-            $this->assertEquals(
-                "CONFIG.XML\n",
-                file_get_contents(
-                    $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'config.xml'
-                )
-            );
-            break;
-        case 'the CI build script will be installed according to the specified template.':
-            $this->assertEquals(
-                "BUILD.XML\n",
-                file_get_contents(
-                    $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'build.xml'
-                )
-            );
-            break;
-        case 'the call will fail with':
-            $this->assertContains(
-                $arguments[0],
-                $world['output']
-            );
-            break;
-        case 'the call will succeed':
-            $this->assertNotContains(
-                'Fatal error',
-                $world['output']
-            );
-            break;
-        case 'the non-Horde dependencies of the component will not be listed':
-            $this->assertNotContains(
-                'Console_Getopt',
-                $world['output']
-            );
-            break;
-        case 'the non-Horde dependencies of the component will be listed':
-            $this->assertContains(
-                'Console_Getopt',
-                $world['output']
-            );
-            break;
-        case 'the Horde dependencies of the component will be listed':
-            $this->assertContains(
-                'Dependency',
-                $world['output']
-            );
-            break;
-        case 'a package snapshot will be generated at the indicated archive directory':
-            $found = false;
-            foreach (new \DirectoryIterator($this->_temp_dir) as $file) {
-                if (preg_match('/Install-[0-9]+(\.[0-9]+)+([a-z0-9]+)?/', $file->getBasename('.tgz'), $matches)) {
-                    $found = true;
+        switch ($action) {
+            case 'the help will be displayed':
+                $this->assertMatchesRegularExpression(
+                    '/-h,[ ]*--help[ ]*show this help message and exit/',
+                    $world['output']
+                );
+                break;
+            case 'the help will contain the "A" option.':
+                $this->assertMatchesRegularExpression(
+                    '/-A ACTION,\s*--action=ACTION/m',
+                    $world['output']
+                );
+                break;
+            case 'the help will contain the "u" option.':
+                $this->assertMatchesRegularExpression(
+                    '/-u,\s*--updatexml/',
+                    $world['output']
+                );
+                break;
+            case 'the help will contain the "z" option.':
+                $this->assertMatchesRegularExpression(
+                    '/-z,\s*--snapshot/',
+                    $world['output']
+                );
+                break;
+            case 'the help will contain the option':
+                $this->assertMatchesRegularExpression(
+                    '/' . $arguments[0] . '/',
+                    $world['output']
+                );
+                break;
+            case 'the new package.xml of the Horde element will be printed.':
+                $this->assertMatchesRegularExpression(
+                    '/<file name="New.php" role="php" \/>/',
+                    $world['output']
+                );
+                break;
+            case 'the new package.xml of the Horde component will retain all "replace" tasks.':
+                $this->assertMatchesRegularExpression(
+                    '#<tasks:replace from="@data_dir@" to="data_dir" type="pear-config" />#',
+                    $world['output']
+                );
+                break;
+            case 'the new package.xml will install java script files in a default location':
+                $this->assertMatchesRegularExpression(
+                    '#<install as="js/test.js" name="js/test.js" />#',
+                    $world['output']
+                );
+                break;
+            case 'the new package.xml will install migration files in a default location':
+                $this->assertMatchesRegularExpression(
+                    '#<install as="migration/test.sql" name="migration/test.sql" />#',
+                    $world['output']
+                );
+                break;
+            case 'the new package.xml will install script files in a default location':
+                $this->assertMatchesRegularExpression(
+                    '#<install as="other_script" name="script/other_script" />#',
+                    $world['output']
+                );
+                $this->assertMatchesRegularExpression(
+                    '#<install as="shell_script.sh" name="script/shell_script.sh" />#',
+                    $world['output']
+                );
+                $this->assertMatchesRegularExpression(
+                    '#<install as="script" name="script/script.php" />#',
+                    $world['output']
+                );
+                break;
+            case 'the new package.xml of the Horde component will not contain the file':
+                $this->assertDoesNotMatchRegularExpression(
+                    '#' . $arguments[0] . '#',
+                    $world['output']
+                );
+                break;
+            case 'the new package.xml of the Horde component will contain the file':
+                $this->assertMatchesRegularExpression(
+                    '#' . $arguments[0] . '#',
+                    $world['output']
+                );
+                break;
+            case 'a new package.xml will be created.':
+                $this->assertTrue(
+                    file_exists($this->_temp_dir . DIRECTORY_SEPARATOR . 'package.xml')
+                );
+                break;
+            case 'the new package.xml of the Horde component will have a changelog entry':
+                $this->assertMatchesRegularExpression(
+                    '#</changelog>#',
+                    $world['output']
+                );
+                break;
+            case 'a new PEAR configuration file will be installed':
+                $this->assertTrue(
+                    file_exists($this->_temp_dir . DIRECTORY_SEPARATOR . '.pearrc')
+                );
+                break;
+            case 'the dummy PEAR package will be installed':
+                $this->assertTrue(
+                    file_exists(
+                        $this->_temp_dir . DIRECTORY_SEPARATOR
+                        . 'pear' . DIRECTORY_SEPARATOR
+                        . 'php' . DIRECTORY_SEPARATOR
+                        . 'PEAR.php'
+                    )
+                );
+                break;
+            case 'the non-Horde dependencies of the component will get installed':
+                $this->assertTrue(
+                    file_exists(
+                        $this->_temp_dir . DIRECTORY_SEPARATOR
+                        . 'pear' . DIRECTORY_SEPARATOR
+                        . 'php' . DIRECTORY_SEPARATOR
+                        . 'Console.php'
+                    )
+                );
+                break;
+            case 'the Horde dependencies of the component will get installed from the current tree':
+                $this->assertTrue(
+                    file_exists(
+                        $this->_temp_dir . DIRECTORY_SEPARATOR
+                        . 'pear' . DIRECTORY_SEPARATOR
+                        . 'php' . DIRECTORY_SEPARATOR
+                        . 'Dependency.php'
+                    )
+                );
+                break;
+            case 'the Components library will be installed':
+                $this->assertTrue(
+                    file_exists(
+                        $this->_temp_dir . DIRECTORY_SEPARATOR
+                        . 'pear' . DIRECTORY_SEPARATOR
+                        . 'php' . DIRECTORY_SEPARATOR
+                        . 'Components.php'
+                    )
+                );
+                break;
+            case 'the component will be installed':
+                $this->assertTrue(
+                    file_exists(
+                        $this->_temp_dir . DIRECTORY_SEPARATOR
+                        . 'pear' . DIRECTORY_SEPARATOR
+                        . 'php' . DIRECTORY_SEPARATOR
+                        . 'Install.php'
+                    )
+                );
+                break;
+            case 'the dummy PEAR package will be listed':
+                $this->assertStringContainsString(
+                    'Would install external package pear.php.net/PEAR',
+                    $world['output']
+                );
+                break;
+            case 'the non-Horde dependencies of the component would be installed':
+                $this->assertStringContainsString(
+                    'Would install external package pear.php.net/Console_Getopt',
+                    $world['output']
+                );
+                break;
+            case 'the PECL will package will be listed':
+                $this->assertStringContainsString(
+                    'Would install external package pecl.php.net/PECL',
+                    $world['output']
+                );
+                break;
+            case 'the PECL will package will not be listed':
+                $this->assertNotContains(
+                    'Would install external package pecl.php.net/PECL',
+                    $world['output']
+                );
+                break;
+            case 'the Console_Getopt package will be listed':
+                $this->assertStringContainsString(
+                    'Would install external package pear.php.net/Console_Getopt',
+                    $world['output']
+                );
+                break;
+            case 'the Console_Getopt package will not be listed':
+                $this->assertNotContains(
+                    'Would install external package pear.php.net/Console_Getopt',
+                    $world['output']
+                );
+                break;
+            case 'the Horde dependencies of the component would be installed':
+                $trimmed = strtr($world['output'], [' ' => '', "\n" => '']);
+                $this->assertMatchesRegularExpression(
+                    '#Wouldinstallpackage.*Dependency/package.xml#',
+                    $trimmed
+                );
+                break;
+            case 'the old-style Horde dependencies of the component would be installed':
+                $trimmed = strtr($world['output'], [' ' => '', "\n" => '']);
+                $this->assertMatchesRegularExpression(
+                    '#Wouldinstallpackage.*Old/package.xml#',
+                    $trimmed
+                );
+                break;
+            case 'the Optional package will be listed':
+                $trimmed = strtr($world['output'], [' ' => '', "\n" => '']);
+                $this->assertMatchesRegularExpression(
+                    '#Wouldinstallpackage.*Optional/package.xml#',
+                    $trimmed
+                );
+                break;
+            case 'the Optional package will not be listed':
+                $trimmed = strtr($world['output'], [' ' => '', "\n" => '']);
+                $this->assertDoesNotMatchRegularExpression(
+                    '#Wouldinstallpackage.*Optional/package.xml#',
+                    $trimmed
+                );
+                break;
+            case 'the component will be listed':
+                $trimmed = strtr($world['output'], [' ' => '', "\n" => '']);
+                $this->assertMatchesRegularExpression(
+                    '#Wouldinstallpackage.*Install/package.xml#',
+                    $trimmed
+                );
+                break;
+            case 'the CI configuration will be installed.':
+                $this->assertTrue(
+                    file_exists(
+                        $this->_temp_dir . DIRECTORY_SEPARATOR
+                        . 'config.xml'
+                    )
+                );
+                break;
+            case 'the installation requires no network access.':
+                $this->assertNotContains(
+                    'network',
+                    $world['output']
+                );
+                break;
+            case 'the CI build script will be installed.':
+                $this->assertTrue(
+                    file_exists(
+                        $this->_temp_dir . DIRECTORY_SEPARATOR
+                        . 'build.xml'
+                    )
+                );
+                break;
+            case 'the CI configuration will be installed according to the specified template.':
+                $this->assertEquals(
+                    "CONFIG.XML\n",
+                    file_get_contents(
+                        $this->_temp_dir . DIRECTORY_SEPARATOR
+                        . 'config.xml'
+                    )
+                );
+                break;
+            case 'the CI build script will be installed according to the specified template.':
+                $this->assertEquals(
+                    "BUILD.XML\n",
+                    file_get_contents(
+                        $this->_temp_dir . DIRECTORY_SEPARATOR
+                        . 'build.xml'
+                    )
+                );
+                break;
+            case 'the call will fail with':
+                $this->assertContains(
+                    $arguments[0],
+                    $world['output']
+                );
+                break;
+            case 'the call will succeed':
+                $this->assertNotContains(
+                    'Fatal error',
+                    $world['output']
+                );
+                break;
+            case 'the non-Horde dependencies of the component will not be listed':
+                $this->assertNotContains(
+                    'Console_Getopt',
+                    $world['output']
+                );
+                break;
+            case 'the non-Horde dependencies of the component will be listed':
+                $this->assertContains(
+                    'Console_Getopt',
+                    $world['output']
+                );
+                break;
+            case 'the Horde dependencies of the component will be listed':
+                $this->assertContains(
+                    'Dependency',
+                    $world['output']
+                );
+                break;
+            case 'a package snapshot will be generated at the indicated archive directory':
+                $found = false;
+                foreach (new \DirectoryIterator($this->_temp_dir) as $file) {
+                    if (preg_match('/Install-[0-9]+(\.[0-9]+)+([a-z0-9]+)?/', $file->getBasename('.tgz'), $matches)) {
+                        $found = true;
+                    }
                 }
-            }
-            $this->assertTrue($found);
-            break;
-        case 'a package release will be generated in the current directory':
-            $found = false;
-            foreach (new \DirectoryIterator($this->_temp_dir) as $file) {
-                if (preg_match('/Install-0.0.1/', $file->getBasename('.tgz'), $matches)) {
-                    $found = true;
+                $this->assertTrue($found);
+                break;
+            case 'a package release will be generated in the current directory':
+                $found = false;
+                foreach (new \DirectoryIterator($this->_temp_dir) as $file) {
+                    if (preg_match('/Install-0.0.1/', $file->getBasename('.tgz'), $matches)) {
+                        $found = true;
+                    }
                 }
-            }
-            $this->assertTrue($found);
-            break;
-        case 'a package definition will be generated at the indicated location':
-            $this->assertTrue(
-                file_exists(
-                    $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'Install.spec'
-                )
-            );
-            break;
-        case 'the package documentation will be generated at the indicated location':
-            $this->assertTrue(
-                file_exists(
-                    $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'index.html'
-                )
-            );
-            $this->assertTrue(
-                file_exists(
-                    $this->_temp_dir . DIRECTORY_SEPARATOR
-                    . 'install.html'
-                )
-            );
-            break;
-        case 'the output should indicate an invalid package.xml':
-            $this->assertContains(
-                'PEAR_Packagefile_v2::toTgz: invalid package.xml',
-                $world['output']
-            );
-            break;
-        case 'indicate the specific problem of the package.xml':
-            $this->assertContains(
-                'Old.php" in package.xml does not exist',
-                $world['output']
-            );
-            break;
-        default:
-            return $this->notImplemented($action);
+                $this->assertTrue($found);
+                break;
+            case 'a package definition will be generated at the indicated location':
+                $this->assertTrue(
+                    file_exists(
+                        $this->_temp_dir . DIRECTORY_SEPARATOR
+                        . 'Install.spec'
+                    )
+                );
+                break;
+            case 'the package documentation will be generated at the indicated location':
+                $this->assertTrue(
+                    file_exists(
+                        $this->_temp_dir . DIRECTORY_SEPARATOR
+                        . 'index.html'
+                    )
+                );
+                $this->assertTrue(
+                    file_exists(
+                        $this->_temp_dir . DIRECTORY_SEPARATOR
+                        . 'install.html'
+                    )
+                );
+                break;
+            case 'the output should indicate an invalid package.xml':
+                $this->assertContains(
+                    'PEAR_Packagefile_v2::toTgz: invalid package.xml',
+                    $world['output']
+                );
+                break;
+            case 'indicate the specific problem of the package.xml':
+                $this->assertContains(
+                    'Old.php" in package.xml does not exist',
+                    $world['output']
+                );
+                break;
+            default:
+                return $this->notImplemented($action);
         }
     }
 
@@ -732,14 +736,14 @@ class StoryTestCase extends \PHPUnit_Extensions_Story_TestCase
         }
     }
 
-    private function _callStrictComponents(array $parameters = array())
+    private function _callStrictComponents(array $parameters = [])
     {
-        return $this->_callComponents($parameters, array($this, '_callStrict'));
+        return $this->_callComponents($parameters, [$this, '_callStrict']);
     }
 
-    private function _callUnstrictComponents(array $parameters = array())
+    private function _callUnstrictComponents(array $parameters = [])
     {
-        return $this->_callComponents($parameters, array($this, '_callUnstrict'));
+        return $this->_callComponents($parameters, [$this, '_callUnstrict']);
     }
 
     private function _callComponents(array $parameters, $callback)
@@ -750,9 +754,9 @@ class StoryTestCase extends \PHPUnit_Extensions_Story_TestCase
         $parameters['dependencies'] = new Injector();
         $parameters['dependencies']->setInstance(
             'Horde_Cli',
-            new \Horde_Test_Stub_Cli(array('output' => $stream))
+            new \Horde_Test_Stub_Cli(['output' => $stream])
         );
-        call_user_func_array($callback, array($parameters));
+        call_user_func_array($callback, [$parameters]);
         rewind($stream);
         $output = stream_get_contents($stream);
         fclose($stream);
@@ -776,10 +780,10 @@ class StoryTestCase extends \PHPUnit_Extensions_Story_TestCase
 
     private function _setPearGlobals()
     {
-        $GLOBALS['_PEAR_ERRORSTACK_DEFAULT_CALLBACK'] = array(
+        $GLOBALS['_PEAR_ERRORSTACK_DEFAULT_CALLBACK'] = [
             '*' => false,
-        );
+        ];
         $GLOBALS['_PEAR_ERRORSTACK_DEFAULT_LOGGER'] = false;
-        $GLOBALS['_PEAR_ERRORSTACK_OVERRIDE_CALLBACK'] = array();
+        $GLOBALS['_PEAR_ERRORSTACK_OVERRIDE_CALLBACK'] = [];
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Task_CurrentSentinel:: updates the CHANGES and the
  * Application.php/Bundle.php files with the current package version.

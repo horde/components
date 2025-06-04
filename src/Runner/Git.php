@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Horde\Components\Runner\Git:: runner for git operations.
  *
@@ -82,7 +83,7 @@ class Git
             $component = $arguments[2];
             $branch = $arguments[4] ?? '';
             $componentDir = $this->localCheckoutDir . $component . '/';
-            $cloneUrl = $this->gitRepoBase . '/' .  $component . '.git';
+            $cloneUrl = $this->gitRepoBase . '/' . $component . '.git';
             // Achieved fixed format, delegate to helper
             return $this->gitHelper->workflowClone(
                 $this->output,

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Horde\Components\Component\Task\SystemCallResult:: Holds Output, Return code etc
  *

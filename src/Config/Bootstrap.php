@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Bootstrap:: class provides simple options for the bootstrap
  * process.

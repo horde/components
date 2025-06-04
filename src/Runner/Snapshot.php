@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Runner_Snapshot:: packages a snapshot.
  *
@@ -47,8 +48,7 @@ class Snapshot
          * @param Output
          */
         private readonly Output $_output
-    ) {
-    }
+    ) {}
 
     public function run(): void
     {
@@ -68,7 +68,7 @@ class Snapshot
         }
         if (!empty($result[1])) {
             $this->_output->fail(
-                'Generating snapshot failed with:'. "\n\n" . join("\n", $result[1])
+                'Generating snapshot failed with:' . "\n\n" . join("\n", $result[1])
             );
         } else {
             $this->_output->ok('Generated snapshot ' . $result[0]);

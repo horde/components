@@ -33,7 +33,7 @@ class Version
      * @var bool
      */
     private bool $changed = false;
-    protected array $supportedStabilities = ['stable' => 5 , '' => 5, 'RC' => 4 , 'beta' => 3 , 'alpha' => 2, 'dev' => 1];
+    protected array $supportedStabilities = ['stable' => 5, '' => 5, 'RC' => 4, 'beta' => 3, 'alpha' => 2, 'dev' => 1];
 
     // Object methods
     public function __construct(
@@ -47,8 +47,7 @@ class Version
         private int $stabilityVersion = 0,
         private string $buildInfo = '',
         private string $other = ''
-    ) {
-    }
+    ) {}
 
     // Mark the internal state as changed from the original string
     private function change(): self
@@ -94,7 +93,7 @@ class Version
             }
         }
         if ($this->buildInfo) {
-            $versionString .= '+' .  $this->buildInfo;
+            $versionString .= '+' . $this->buildInfo;
         }
         return $versionString;
     }
@@ -151,7 +150,7 @@ class Version
         return $this->original;
     }
 
-    public function nextVersionObject(string $severity='patch', string $stability='unchanged'): Version
+    public function nextVersionObject(string $severity = 'patch', string $stability = 'unchanged'): Version
     {
         $nextVersion = clone $this;
         $nextVersion->original = '';
@@ -159,7 +158,7 @@ class Version
         $stabilityChangeDirection = $this->stabilityChangeDirection($newStability);
         // unstable target versions
         if (self::isUnstable($newStability)) {
-        // For non-stable and unchanged state
+            // For non-stable and unchanged state
             if (self::isUp($stabilityChangeDirection)) {
                 $nextVersion->stability = $newStability;
                 $nextVersion->stabilityVersion = 1;
@@ -169,7 +168,7 @@ class Version
                 $nextVersion->patch += 1;
                 $nextVersion->stability = $newStability;
                 $nextVersion->stabilityVersion = 1;
-            }    else {
+            } else {
                 // No change in stability
                 $nextVersion->stabilityVersion += 1;
             }
@@ -226,34 +225,35 @@ class Version
     }
 
     public function toHordeTag(): string
-    {        
+    {
         $version =  'v' . $this->getMajor() . '.' . $this->getMinor() . '.' . $this->getPatch();
         $subpatch = $this->getSubPatch();
-        if ((int)$subpatch > 0) {
+        if ((int) $subpatch > 0) {
             $version .= '.' . $subpatch;
-        } 
+        }
         $stability = $this->getStability();
-        if ($stability)  {
+        if ($stability) {
             $version .= $stability . $this->getStabilityVersion();
         }
-        if  ($this->getBuildInfo()) {
-            '+' . $this->getBuildInfo(); 
+        if ($this->getBuildInfo()) {
+            '+' . $this->getBuildInfo();
         }
         return $version;
     }
 
     /**
      * Semantic Version V2 M.m.p Core format
-     * 
+     *
      * SemVer neither supports version prefixes nor subpatch but pre-releases and builds
-     * 
+     *
      * https://semver.org/
-     * 
+     *
      */
     public function toSemVerV2VersionCore(): string
     {
         // SemVer does not support prefixes
-        return sprintf("%s.%s.%s",
+        return sprintf(
+            "%s.%s.%s",
             $this->major ?? '0',
             $this->minor ?? '0',
             $this->patch ?? '0'
@@ -262,23 +262,23 @@ class Version
 
     /**
      * Semantic Version V2 M.m.p Full Format
-     * 
+     *
      * SemVer neither supports version prefixes nor subpatch but pre-releases and builds
-     * 
+     *
      * https://semver.org/
-     * 
+     *
      */
     public function toFullSemVerV2(): string
     {
         $base = $this->toSemVerV2VersionCore();
         if ($this->stability) {
             $base .= '-' . $this->stability;
-            if ((int)$this->stabilityVersion) {
+            if ((int) $this->stabilityVersion) {
                 $base .= (string) $this->stabilityVersion;
             }
         }
         if ($this->buildInfo) {
-            $base .= '+' .  $this->buildInfo;
+            $base .= '+' . $this->buildInfo;
         }
         return $base;
     }
@@ -300,7 +300,7 @@ class Version
     }
     /**
      * Determine if stability changed and in which direction
-     * 
+     *
      * -1 down
      * 0 unchanged
      * 1 up
@@ -324,14 +324,14 @@ class Version
             throw new Exception('Could not parse Composer style version string: ' . $version);
         }
 
-        list($original, $prefix, $major, $minor, $patch, $subpatch, $other) = array_pad($match, 7, null);
+        [$original, $prefix, $major, $minor, $patch, $subpatch, $other] = array_pad($match, 7, null);
         $prefix ??= '';
         $major = (int) $major;
         $minor = (int) ltrim((string) $minor, '.');
-        $patch = (int) ltrim((string)$patch, '.');
-        $subpatch = (int) ltrim((string)$subpatch, '.');
+        $patch = (int) ltrim((string) $patch, '.');
+        $subpatch = (int) ltrim((string) $subpatch, '.');
         $other ??= '';
-        // If it's SemVerV2-ish, anything after patch must begin with a - (prerelease) or a + (buildinfo)        
+        // If it's SemVerV2-ish, anything after patch must begin with a - (prerelease) or a + (buildinfo)
         // Bisect other string into buildinfo and stability
         $startBuildInfo = stripos($other, '+');
         if ($startBuildInfo === false) {
@@ -348,11 +348,11 @@ class Version
             $res = preg_match('/^([A-Za-z]+)(\d+)?$/', $prerelease, $prereleaseMatch);
             $prerelease = $prereleaseMatch[1] ?? '';
             if ($prerelease) {
-                $prereleaseVersion = (int)($prereleaseMatch[2] ?? 1);
+                $prereleaseVersion = (int) ($prereleaseMatch[2] ?? 1);
             } else {
                 $prereleaseVersion = 0;
             }
-            // TODO: If we have a recognized stability, clear "other". 
+            // TODO: If we have a recognized stability, clear "other".
             // If we don't recognize the prerelease info as a stability, clear it and use "other"
         }
         return new Version($original, $prefix, $major, $minor, $patch, $subpatch, $prerelease, (int) $prereleaseVersion, $buildInfo, $other);
@@ -382,12 +382,12 @@ class Version
                     [
                         'ALPHA', '-ALPHA', '-alpha',
                         'BETA', '-BETA', '-beta',
-                        '-RC'
+                        '-RC',
                     ],
                     [
                         'alpha', 'alpha','alpha',
                         'beta', 'beta', 'beta',
-                        'RC'
+                        'RC',
                     ],
                     (string) $match[2]
                 );
@@ -705,7 +705,7 @@ class Version
         );
         \usort(
             $versions,
-            fn ($a, $b) => \version_compare(\ltrim((string) $a, '^'), \ltrim((string) $b, '^'))
+            fn($a, $b) => \version_compare(\ltrim((string) $a, '^'), \ltrim((string) $b, '^'))
         );
 
         $constraints = [];

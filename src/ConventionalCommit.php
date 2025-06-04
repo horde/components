@@ -1,5 +1,7 @@
 <?php
+
 namespace Horde\Components;
+
 class ConventionalCommit extends GitCommit
 {
     public readonly bool   $breaking;
@@ -11,29 +13,29 @@ class ConventionalCommit extends GitCommit
 
     public function __construct(
         string $commit = '',
-        string $abbreviated_commit='',
-        string $tree='',
-        string $abbreviated_tree='',
-        string $parent_commit='',
-        string $abbreviated_parent_commit='',
-        string|iterable $refs=[],
-        string $encoding='',
-        string $subject='',
-        string $sanitized_subject='',
-        string $body='',
-        string $raw_body='',
-        string $commit_notes='',
-        string $verification_flag='',
-        string $signer='',
-        string $signer_key='',
-        string $author_name='',
-        string $author_email='',
-        string $author_date='',
-        string $committer_name='',
-        string $committer_email='',
-        string $committer_date='',
-        string $trailers='',
-        array $conventionalAttributes=[],
+        string $abbreviated_commit = '',
+        string $tree = '',
+        string $abbreviated_tree = '',
+        string $parent_commit = '',
+        string $abbreviated_parent_commit = '',
+        string|iterable $refs = [],
+        string $encoding = '',
+        string $subject = '',
+        string $sanitized_subject = '',
+        string $body = '',
+        string $raw_body = '',
+        string $commit_notes = '',
+        string $verification_flag = '',
+        string $signer = '',
+        string $signer_key = '',
+        string $author_name = '',
+        string $author_email = '',
+        string $author_date = '',
+        string $committer_name = '',
+        string $committer_email = '',
+        string $committer_date = '',
+        string $trailers = '',
+        array $conventionalAttributes = [],
         string $stability = 'unchanged'
     ) {
         parent::__construct(
@@ -91,10 +93,10 @@ class ConventionalCommit extends GitCommit
         $this->stability = $stability;
         $this->breaking = $breaking;
         $this->severity = $severity;
-        $this->scope = rtrim(ltrim((string)($conventionalAttributes['scope'] ?? ''), "("), ")");
+        $this->scope = rtrim(ltrim((string) ($conventionalAttributes['scope'] ?? ''), "("), ")");
         // TODO: Handle unknown types
-        $this->type = (string)$conventionalAttributes['type'] ?? '';
-        $this->description = (string)$conventionalAttributes['description'] ?? '';
+        $this->type = (string) $conventionalAttributes['type'] ?? '';
+        $this->description = (string) $conventionalAttributes['description'] ?? '';
     }
 
     public static function fromGitCommit(GitCommit $commit): ConventionalCommit|null
@@ -102,7 +104,7 @@ class ConventionalCommit extends GitCommit
         $regex =  '/^(?P<type>build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(?P<scope>\([\w\-\.]+\))?(?P<breaking>!)?: (?P<description>.*)\s*/u';
         $res = preg_match($regex, $commit->subject, $matches);
         if ($res == 0) {
-           return null;
+            return null;
         }
         // Handle BREAKING CHANGE: Description (from ConventionalCommit) and INCOMPATBLE: Description (from AutoSemVer)
         $breakingFooterRegex = '/^\s*(?P<breaking>BREAKING\s+CHANGE|INCOMPATIBLE):\s+(?P<breaking_description>.+)/u';

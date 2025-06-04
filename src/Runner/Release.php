@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Runner_Release:: releases a new version for a package.
  *
@@ -65,8 +66,7 @@ class Release
          * @param QcTasks
          */
         private readonly QcTasks $_qc
-    ) {
-    }
+    ) {}
 
     /**
      * @throws Exception
@@ -100,8 +100,7 @@ class Release
             return;
         } elseif ((count($arguments) == 2) &&
         $arguments[0] == 'release' &&
-        $arguments[1] == 'h6')
-        {
+        $arguments[1] == 'h6') {
             $this->_output->warn('H6 Release Pipeline');
             $path = new ComponentDirectory($component->getComponentDirectory());
             $gitHelper = new GitHelper();
@@ -113,10 +112,9 @@ class Release
             );
             $release->run();
             return;
-        }
-        else {
+        } else {
             $this->_output->warn('Run "horde-components release for <pipeline>"');
-            $this->_output->info("Available pipelines from your configuration: \n" . implode("\n", array_keys($options['pipeline']['release'] ?? [])));    
+            $this->_output->info("Available pipelines from your configuration: \n" . implode("\n", array_keys($options['pipeline']['release'] ?? [])));
         }
     }
 

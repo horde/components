@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Horde\Components\Runner;
 
 use Horde\Components\Composer\InstallationDirectory;
@@ -17,9 +19,7 @@ class InstallRunner
         private GitCheckoutDirectory $gitCheckoutDirectory,
         private InstallationDirectory $installationDirectory,
         private readonly Output $output,
-    )
-    {
-    }
+    ) {}
 
     public function run(Config $config)
     {
@@ -27,8 +27,7 @@ class InstallRunner
         // TODO: Make this more flexbible
         $targetVersion = 'dev-FRAMEWORK_6_0';
         $baseComponent = 'horde/bundle';
-        if (!$this->gitCheckoutDirectory->exists() || $this->gitCheckoutDirectory->getGitDirs()->count() == 0)  
-        {
+        if (!$this->gitCheckoutDirectory->exists() || $this->gitCheckoutDirectory->getGitDirs()->count() == 0) {
             $this->output->warn("The developer checkout directory is missing or empty: " . $this->gitCheckoutDirectory);
             $this->output->help("Run horde-components github-clone-org");
             return;
@@ -64,7 +63,7 @@ class InstallRunner
                 "COMPOSER_ALLOW_SUPERUSER=1 composer create-project horde/bundle %s %s --no-install --keep-vcs --repository='%s'",
                 $this->installationDirectory,
                 $targetVersion,
-                json_encode($repository->dumpStdClass(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION | JSON_THROW_ON_ERROR, 512) // TODO: Check if this is needed 
+                json_encode($repository->dumpStdClass(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION | JSON_THROW_ON_ERROR, 512) // TODO: Check if this is needed
             );
             // TODO: Hook into composer instead
             $outputString = $resultCode = null;
@@ -75,11 +74,11 @@ class InstallRunner
         }
         // TODO: If the root bundle component from the git dir was already "installed" in situ, it might contain symlink garbage under /var or /web mixed with genuine package content
         $copyHelper = new RecursiveCopy(
-            (string)$baseComponentGitDir,
-            (string)$this->installationDirectory,
+            (string) $baseComponentGitDir,
+            (string) $this->installationDirectory,
             filter: [
-                    'vendor',
-                    'composer.lock',
+                'vendor',
+                'composer.lock',
             ],
         );
         $copyHelper->copy();
@@ -94,7 +93,7 @@ class InstallRunner
             // Load HordeYml to get the ComponentVersion
             $hordeYml = new HordeYml($hordeYmlDir);
             $pathRepositoryOptions = ['versions' => [$hordeYml->getComposerName() => $hordeYml->getReleaseVersion()->toHordeTag()]];
-            $composerJson->getRepositoryList()->ensurePresent(new PathRepositoryDefinition($hordeYmlDir, (object)$pathRepositoryOptions));
+            $composerJson->getRepositoryList()->ensurePresent(new PathRepositoryDefinition($hordeYmlDir, (object) $pathRepositoryOptions));
         }
         $composerJson->setPreferStable()->setMinimumStability('dev');
         $composerJson->writeFile($this->installationDirectory->getComposerJsonPath());

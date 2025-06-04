@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
  *
@@ -39,8 +40,7 @@ class Website
          * @param Output
          */
         private readonly Output $_output
-    ) {
-    }
+    ) {}
 
     /**
      * Updates the component information in the horde-web repository.
@@ -91,7 +91,7 @@ class Website
                 $component->getName() . '/docs';
         }
         if (!file_exists($view_root)) {
-            mkdir($view_root, 0777, true);
+            mkdir($view_root, 0o777, true);
         }
 
         $docs = '<h3>Documentation</h3>
@@ -102,9 +102,9 @@ class Website
 ';
         foreach ($doc_files as $path => $filename) {
             if (preg_match('/^Horde_/', $component->getName())) {
-                $docs .= '<li><a href="<?php echo $this->urlWriter->urlFor(array(\'controller\' => \'library\', \'action\' => \'docs\', \'library\' => \'' . $component->getName() . '\', \'file\' => \'' . $filename. '\')); ?>">' . $filename. '</a></li>' . "\n";
+                $docs .= '<li><a href="<?php echo $this->urlWriter->urlFor(array(\'controller\' => \'library\', \'action\' => \'docs\', \'library\' => \'' . $component->getName() . '\', \'file\' => \'' . $filename . '\')); ?>">' . $filename . '</a></li>' . "\n";
             } else {
-                $docs .= '<li><a href="<?php echo $this->urlWriter->urlFor(array(\'controller\' => \'apps\', \'action\' => \'docs\', \'app\' => \'' . $component->getName() . '\', \'file\' => \'' . $filename. '\')); ?>">' . $filename. '</a></li>' . "\n";
+                $docs .= '<li><a href="<?php echo $this->urlWriter->urlFor(array(\'controller\' => \'apps\', \'action\' => \'docs\', \'app\' => \'' . $component->getName() . '\', \'file\' => \'' . $filename . '\')); ?>">' . $filename . '</a></li>' . "\n";
             }
 
             if ($filename == 'CHANGES') {

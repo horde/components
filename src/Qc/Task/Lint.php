@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Qc_Task_Lint:: runs a syntax check on the component.
  *

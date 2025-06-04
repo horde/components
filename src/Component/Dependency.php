@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Horde\Components\Component\Dependency:: wraps PEAR dependency information.
  *

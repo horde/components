@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Task_Base:: provides core functionality for release tasks.
  *
@@ -59,9 +60,7 @@ class Base implements TaskInterface
      * @param ReleaseNotes $_notes The release notes.
      * @param Output $_output Accepts output.
      */
-    public function __construct(protected ReleaseTasks $_tasks, protected ReleaseNotes $_notes, protected Output $_output)
-    {
-    }
+    public function __construct(protected ReleaseTasks $_tasks, protected ReleaseNotes $_notes, protected Output $_output) {}
 
     /**
      * Set the component this task should act upon.
@@ -178,9 +177,7 @@ class Base implements TaskInterface
      *
      * @param array &$options Additional options.
      */
-    public function run(&$options)
-    {
-    }
+    public function run(&$options) {}
 
     public function pretend(): bool
     {

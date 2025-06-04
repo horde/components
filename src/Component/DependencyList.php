@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Horde\Components\Component\Dependencies:: provides dependency handling mechanisms.
  *
@@ -57,8 +58,7 @@ class DependencyList implements Iterator
          * @param Factory
          */
         private readonly Factory $_factory
-    ) {
-    }
+    ) {}
 
     /**
      * Return all channels required for the component and its dependencies.

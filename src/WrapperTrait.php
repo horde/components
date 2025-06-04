@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright 2017 Horde LLC (http://www.horde.org/)
  *
@@ -107,12 +108,12 @@ trait WrapperTrait
      */
     public function save()
     {
-        $contents = (string)$this;
+        $contents = (string) $this;
         if (!strlen($contents) && !$this->exists()) {
             return;
         }
         if (!is_dir(dirname((string) $this->_file))) {
-            mkdir(dirname((string) $this->_file), 0777, true);
+            mkdir(dirname((string) $this->_file), 0o777, true);
         }
         file_put_contents($this->_file, $contents);
     }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Components_Release_Task_Package:: prepares and uploads a release package.
  *
@@ -130,7 +131,7 @@ class Package extends Base
             }
             if (!empty($result[1])) {
                 $this->getOutput()->fail(
-                    'Generating package failed with:'. "\n\n" . join("\n", $result[1])
+                    'Generating package failed with:' . "\n\n" . join("\n", $result[1])
                 );
                 return;
             }
@@ -147,7 +148,7 @@ class Package extends Base
 
         if (!empty($options['upload'])) {
             $this->system('scp ' . $path . ' ' . $options['releaseserver'] . ':~/');
-            $this->system('ssh '. $options['releaseserver'] . ' "umask 0002 && pirum add ' . $options['releasedir'] . ' ~/' . basename((string) $path) . ' && rm ' . basename((string) $path) . '"');
+            $this->system('ssh ' . $options['releaseserver'] . ' "umask 0002 && pirum add ' . $options['releasedir'] . ' ~/' . basename((string) $path) . ' && rm ' . basename((string) $path) . '"');
             if (!$this->getTasks()->pretend()) {
                 unlink($path);
             }
