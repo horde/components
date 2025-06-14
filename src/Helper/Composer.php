@@ -302,24 +302,27 @@ class Composer
 
     protected function _setType(WrapperHordeYml $package, \stdClass $composerDefinition): void
     {
-        if ($package['type'] == 'library') {
+        if (!isset($package['type']) || ($package['type'] == 'library')) {
             // Only use custom type horde-library if we have to
             // expose something under /web/
             $dir = dirname($package->getFullPath());
-            if (is_dir($dir . '/js')) {
+            if (is_dir($dir . '/js') || is_dir($dir . '/migration')) {
                 $composerDefinition->type = 'horde-library';
             } else {
                 $composerDefinition->type = 'library';
             }
         }
-        if ($package['type'] == 'application') {
+        // Debatable. We should probably drop this auto-upgrade soon and rely on the developer to know the difference.
+        elseif ($package['type'] == 'application') {
             $composerDefinition->type = 'horde-application';
         }
-        if ($package['type'] == 'component') {
+        elseif ($package['type'] == 'component') {
             $composerDefinition->type = 'horde-application';
         }
-        if ($package['type'] == 'horde-theme') {
+        elseif ($package['type'] == 'horde-theme') {
             $composerDefinition->type = 'horde-theme';
+        } else {
+            $composerDefinition->type = $package['type'];
         }
         // No type is perfectly valid for composer. Types for bundles?
     }
@@ -445,7 +448,7 @@ class Composer
     {
         $version = ($this->_composerVersion) ? $this->_composerVersion . " || ^3 || ^2" : '^3 || ^2';
         // Only require the installer if we really need it
-        if (!in_array($composerDefinition->type, ['library', 'project', 'application'])) {
+        if (property_exists($composerDefinition, 'type') && !in_array($composerDefinition->type, ['library', 'project', 'application'])) {
             $composerDefinition->require = ['horde/horde-installer-plugin' => $version];
         }
 
