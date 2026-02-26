@@ -65,6 +65,23 @@ class HordeRelease
         if (count($history->commitReader->getLog()) == 0) {
             throw new Exception('No conventional commits found since last tag. Please ensure you have made commits in the correct format.');
         }
+
+        // Precheck: If remotes are configured, check if the next version tag already exists
+        if ($this->gitHelper->hasRemotes((string) $this->directory)) {
+            $nextVersion = $history->nextVersion;
+            $nextTag = $nextVersion->toHordeTag();
+
+            if ($this->gitHelper->remoteTagExists((string) $this->directory, $nextTag)) {
+                throw new Exception(
+                    sprintf(
+                        'Tag "%s" already exists on remote. Cannot release version %s again.',
+                        $nextTag,
+                        $nextVersion->toFullSemverV2()
+                    )
+                );
+            }
+        }
+
         // write .horde.yml versions and stabilities
         $hordeYml = new HordeYml($this->directory);
         $hordeYml->setReleaseVersionAndStability($history->nextVersion);

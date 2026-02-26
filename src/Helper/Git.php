@@ -606,6 +606,71 @@ class Git
         // TODO
     }
 
+    /**
+     * Check if the repository has any configured remotes
+     *
+     * @param string $localDir Full path to repo
+     * @return bool True if remotes are configured
+     */
+    public function hasRemotes(string $localDir): bool
+    {
+        $result = $this->execInDirectory(
+            $this->gitBin . ' remote',
+            $localDir
+        );
+        return !empty($result->getOutputArray());
+    }
+
+    /**
+     * Get list of remote tags by fetching from remote
+     *
+     * @param string $localDir Full path to repo
+     * @param string $remote The remote name (default: origin)
+     * @return array<string> List of remote tags
+     */
+    public function getRemoteTags(string $localDir, string $remote = 'origin'): array
+    {
+        // Fetch tags from remote without modifying local tags
+        $this->execInDirectory(
+            $this->gitBin . ' ls-remote --tags ' . escapeshellarg($remote),
+            $localDir
+        );
+
+        // Parse the output to get tag names
+        $result = $this->execInDirectory(
+            $this->gitBin . ' ls-remote --tags ' . escapeshellarg($remote),
+            $localDir
+        );
+
+        $tags = [];
+        foreach ($result->getOutputArray() as $line) {
+            // Format: <hash> refs/tags/<tagname>
+            // Also handles annotated tags with ^{} suffix
+            if (preg_match('#refs/tags/([^\^]+)#', $line, $matches)) {
+                $tagName = $matches[1];
+                if (!in_array($tagName, $tags)) {
+                    $tags[] = $tagName;
+                }
+            }
+        }
+
+        return $tags;
+    }
+
+    /**
+     * Check if a tag exists on the remote
+     *
+     * @param string $localDir Full path to repo
+     * @param string $tag The tag name to check
+     * @param string $remote The remote name (default: origin)
+     * @return bool True if the tag exists on remote
+     */
+    public function remoteTagExists(string $localDir, string $tag, string $remote = 'origin'): bool
+    {
+        $remoteTags = $this->getRemoteTags($localDir, $remote);
+        return in_array($tag, $remoteTags);
+    }
+
     public function pull(): void
     {
         // TODO
