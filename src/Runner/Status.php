@@ -19,6 +19,14 @@ use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Output;
 use Horde\Components\Composer\InstallationDirectory;
 use Horde\Components\RuntimeContext\GitCheckoutDirectory;
+use Horde\GithubApiClient\GithubApiClient;
+use Horde\GithubApiClient\GithubApiConfig;
+use Horde\Http\Client\Curl as CurlClient;
+use Horde\Http\StreamFactory;
+use Horde\Http\RequestFactory;
+use Horde\Http\ResponseFactory;
+use Horde\Http\Client\Options;
+use Psr\Http\Client\ClientInterface;
 
 /**
  * Horde\Components\Runner\Status:: runner for status output.
@@ -98,17 +106,115 @@ class Status
             $this->output->warn("Install dir does not exist or is not readable.");
             $this->output->help("Run: \ncomposer create-project horde/bundle $installDir");
         };
-        
+
         // Check GitHub API token
         $githubToken = getenv('GITHUB_TOKEN');
         $this->output->info("GitHub API Token:");
         if ($githubToken && strlen($githubToken) > 0) {
             $maskedToken = substr($githubToken, 0, 8) . str_repeat('*', max(0, strlen($githubToken) - 8));
             $this->output->ok("GitHub API token is configured ($maskedToken)");
+
+            // Check token validity, scopes, and rate limit
+            $this->checkGitHubApiStatus($githubToken);
         } else {
             $this->output->warn("GitHub API token is not configured.");
             $this->output->help("Set GITHUB_TOKEN environment variable for GitHub operations
 Export in your shell: export GITHUB_TOKEN=ghp_your_token_here");
+        }
+    }
+
+    /**
+     * Check GitHub API status including token validity, scopes, and rate limit
+     *
+     * @param string $token The GitHub API token
+     * @return void
+     */
+    private function checkGitHubApiStatus(string $token): void
+    {
+        try {
+            // Create HTTP client
+            $httpClient = new CurlClient(
+                new ResponseFactory(),
+                new StreamFactory(),
+                new Options()
+            );
+
+            // Create GitHub API client
+            $apiConfig = new GithubApiConfig(accessToken: $token);
+            $apiClient = new GithubApiClient($httpClient, new RequestFactory(), $apiConfig);
+
+            // First try to get token scopes to verify token is valid
+            try {
+                $this->output->info("GitHub API Token Scopes:");
+                $scopes = $apiClient->getTokenScopes();
+
+                if ($scopes->isEmpty()) {
+                    $this->output->warn("Token has no scopes (may be expired or invalid)");
+                    return;
+                }
+
+                $scopesList = $scopes->toArray();
+                $this->output->ok("Token has " . count($scopesList) . " scopes: " . implode(', ', $scopesList));
+
+                // Check for useful scopes
+                if ($scopes->canReadRepositories()) {
+                    $this->output->ok("Token can read repositories");
+                }
+                if ($scopes->canWriteRepositories()) {
+                    $this->output->ok("Token can write to repositories");
+                }
+                if ($scopes->canReadOrganizations()) {
+                    $this->output->ok("Token can read organizations");
+                }
+            } catch (\Throwable $e) {
+                $this->output->warn("Failed to verify token scopes: " . $e->getMessage());
+                if (str_contains($e->getMessage(), '401')) {
+                    $this->output->warn("Token appears to be invalid, expired, or revoked");
+                    $this->output->help("Generate a new token at: https://github.com/settings/tokens");
+                    return;
+                }
+                // Continue to try rate limit check anyway
+            }
+
+            // Get rate limit
+            $this->output->info("GitHub API Rate Limit:");
+            $rateLimit = $apiClient->getRateLimit();
+
+            $usagePercent = $rateLimit->getUsagePercentage();
+            $message = sprintf(
+                "Used %d of %d requests (%.1f%% used, %d remaining)",
+                $rateLimit->used,
+                $rateLimit->limit,
+                $usagePercent,
+                $rateLimit->remaining
+            );
+
+            // Determine status based on usage
+            if ($rateLimit->isExhausted()) {
+                $resetTime = $rateLimit->getResetDateTime()->format('Y-m-d H:i:s T');
+                $this->output->warn($message);
+                $this->output->warn("Rate limit exhausted! Resets at: $resetTime");
+            } elseif ($usagePercent > 80) {
+                $this->output->warn($message);
+            } else {
+                $this->output->ok($message);
+            }
+
+            $resetTime = $rateLimit->getResetDateTime()->format('Y-m-d H:i:s T');
+            $secondsUntilReset = $rateLimit->getSecondsUntilReset();
+            if ($secondsUntilReset > 0) {
+                $minutesUntilReset = ceil($secondsUntilReset / 60);
+                $this->output->info("Rate limit resets in $minutesUntilReset minutes ($resetTime)");
+            } else {
+                $this->output->info("Rate limit reset time: $resetTime");
+            }
+        } catch (\Throwable $e) {
+            $this->output->warn("Failed to check GitHub API status: " . $e->getMessage());
+            if (str_contains($e->getMessage(), '401')) {
+                $this->output->warn("Token appears to be invalid, expired, or revoked");
+                $this->output->help("Generate a new token at: https://github.com/settings/tokens
+Token should have at least 'repo' or 'public_repo' scope");
+            }
         }
     }
 }
