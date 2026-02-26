@@ -45,3 +45,4 @@ run-tests.log
 /bin/horde-components.phar
 # Ignore runtime var directory
 /var/
+.phpunit.result.cache

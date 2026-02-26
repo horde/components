@@ -810,6 +810,28 @@ class Git
         }
         return '';
     }
+
+    /**
+     * Get the URL of a remote
+     *
+     * @param string $localDir Full path to local git repository
+     * @param string $remote The remote name (default: 'origin')
+     *
+     * @return string|null The remote URL or null if not found
+     */
+    public function getRemoteUrl(string $localDir, string $remote = 'origin'): ?string
+    {
+        $cmd = $this->gitBin . ' remote get-url ' . escapeshellarg($remote);
+        $result = $this->execInDirectory($cmd, $localDir);
+
+        if ($result->getExitCode() !== 0) {
+            return null;
+        }
+
+        $url = trim($result->getStdOut());
+        return $url !== '' ? $url : null;
+    }
+
     /**
      * Run a system call.
      *
