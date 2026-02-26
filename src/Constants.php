@@ -47,10 +47,23 @@ class Constants
     /**
      * Return the position of the package configuration file.
      *
+     * Prefers ~/.config/horde/components.php if it exists,
+     * falls back to legacy config/conf.php location.
+     *
      * @return string Path to the default configuration file.
      */
     public static function getConfigFile(): string
     {
+        // Prefer user home config directory
+        $homeDir = getenv('HOME');
+        if ($homeDir) {
+            $userConfigFile = $homeDir . '/.config/horde/components.php';
+            if (file_exists($userConfigFile)) {
+                return $userConfigFile;
+            }
+        }
+
+        // Fall back to legacy location
         if (str_starts_with(self::CFG_DIR, '@cfg_dir')) {
             return __DIR__ . '/../config/conf.php';
         }
