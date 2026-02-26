@@ -77,7 +77,7 @@ class Status extends Base
      */
     public function getActions(): array
     {
-        return ['changed'];
+        return ['status'];
     }
 
     /**
@@ -89,7 +89,94 @@ class Status extends Base
      */
     public function getHelp($action): string
     {
-        return 'horde-components status';
+        return "Display the current status of the horde-components development environment
+
+USAGE:
+    horde-components status
+
+DESCRIPTION:
+    The status command provides a comprehensive overview of your Horde development
+    environment configuration and validates that all necessary directories and files
+    are in place. It checks multiple aspects of your setup:
+
+    1. Configuration File
+       - Verifies the config file location
+       - Checks if the file exists and is readable
+       - Reports the effective config file path being used
+
+    2. Git Tree (Source Checkout Directory)
+       - Validates the git checkout directory exists
+       - Counts how many Horde repositories are checked out
+       - Counts how many Horde components (.horde.yml files) are present
+       - Reports if the directory is empty or missing
+
+    3. Installation Directory
+       - Checks if the Horde installation directory exists
+       - Verifies the presence of a root composer.json file
+       - Confirms the directory structure is valid
+
+OUTPUT LEVELS:
+    [  INFO  ]    Informational message (shows paths being checked)
+    [   OK   ]    Check passed successfully
+    [  WARN  ]    Potential issue detected (may require action)
+
+WHEN TO USE:
+    - After initial setup to verify your environment is configured correctly
+    - Before running other commands to ensure prerequisites are met
+    - When troubleshooting issues to identify missing or misconfigured components
+    - After updating your configuration to confirm changes took effect
+
+EXAMPLES:
+    # Check current environment status
+    horde-components status
+
+    # Example output when fully configured:
+    horde-components status -- minding any CLI switches, current working directory and config file content
+    [  INFO  ] Config file path: /home/user/.config/horde/components.php
+    [   OK   ] Config file exists and is readable.
+    [  INFO  ] Git Tree root path: /srv/git/horde
+    [   OK   ] Git Tree dir exists and has 185 repos checked out (172 components)
+    [  INFO  ] Install Base path: /srv/www/horde-dev
+    [   OK   ] Install dir exists.
+    [   OK   ] Root composer.json file exists.
+
+CONFIGURATION DEPENDENCIES:
+    The status command respects these configuration settings:
+
+    checkout.dir      The git checkout directory to check
+                      (default: ~/git/horde or /srv/git/horde)
+
+    install.dir       The Horde installation directory to check
+                      (default: derived from runtime context)
+
+COMMON WARNINGS AND FIXES:
+    \"Config file does not exist or is not readable\"
+      Fix: Run 'horde-components config init' to create a default config file
+
+    \"Git Tree dir exists but no components are checked out\"
+      Fix: Run 'horde-components github-clone-org' to clone all Horde repositories
+
+    \"Git Tree dir does not exist or is not readable\"
+      Fix: Create the directory or update checkout.dir config setting
+           mkdir -p ~/git/horde
+           horde-components config checkout.dir ~/git/horde
+
+    \"Install dir does not exist or is not readable\"
+      Fix: Create a Horde installation using composer
+           composer create-project horde/bundle /srv/www/horde-dev
+
+NOTES:
+    - The status command is read-only and makes no changes to your system
+    - All paths shown respect CLI switches and configuration file settings
+    - Component counting includes only directories with .horde.yml files
+    - Repository counting includes all directories with .git subdirectories
+    - Color coding helps quickly identify issues (green=OK, yellow=WARN, blue=INFO)
+
+SEE ALSO:
+    - config init              Create initial configuration file
+    - github-clone-org         Clone all Horde repositories
+    - help                     Show available commands
+";
     }
 
     /**

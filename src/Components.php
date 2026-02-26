@@ -34,6 +34,8 @@ use Horde\Components\Cli\ModuleProvider;
 use Horde\Cli\Cli;
 use Horde\Cli\Modular\Modules;
 use Horde\Cli\Modular\ParserProvider;
+use Horde\Components\Application\ShellEnvironment;
+use Horde\Components\RuntimeContext\DefaultConfigFilePath;
 use Horde_Argv_Parser;
 // For Github API Client
 use Horde\Http\Client\Options;
@@ -100,6 +102,8 @@ class Components
          * - Find out if we know the component by env, cwd or first argument
          */
         $environmentConfig = new EnvironmentConfigProvider(getenv());
+        $shellEnv = ShellEnvironment::fromGetEnv();
+        $injector->setInstance(DefaultConfigFilePath::class, new DefaultConfigFilePath($shellEnv));
         $injector->setInstance(EnvironmentConfigProvider::class, $environmentConfig);
         $injector->setInstance(BuiltinConfigProvider::class, new BuiltinConfigProvider(
             [

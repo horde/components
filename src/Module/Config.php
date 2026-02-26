@@ -87,15 +87,74 @@ class Config extends Base
      */
     public function getHelp($action): string
     {
-        return 'This module manages the horde/components tool\'s config file
+        return "This module manages the horde/components tool's configuration file
 
-For reading a config file value
-    horde-components config key
+USAGE:
+    horde-components config [SUBCOMMAND|KEY [VALUE]]
 
-For writing a config file value
-    horde-components config key value
+SUBCOMMANDS:
+    init              Initialize config file with built-in default values
+                      Creates ~/.config/horde/components.php if it doesn't exist
+                      Overwrites existing values with defaults if file exists
 
-';
+    KEY               Read and display the value of configuration key KEY
+    
+    KEY VALUE         Set configuration key KEY to VALUE
+                      Creates the key if it doesn't exist
+                      Updates the key if it already exists
+
+CONFIGURATION FILE LOCATION:
+    The config file is stored at:
+        ~/.config/horde/components.php
+    
+    This is a PHP file containing a \$conf array with key-value pairs.
+    The file is created automatically when you first write a value.
+
+COMMON CONFIGURATION KEYS:
+    checkout.dir      Directory where Horde repositories are checked out
+                      Default: ~/git/horde or /srv/git/horde
+                      Example: /home/user/projects/horde
+    
+    repo.org          GitHub organization or user name for repositories
+                      Default: horde
+                      Example: mycompany
+    
+    scm.domain        Base URL of the source control hosting service
+                      Default: https://github.com
+                      Example: https://gitlab.example.com
+    
+    scm.type          Type of source control system
+                      Default: github
+                      Example: gitlab
+
+EXAMPLES:
+    # Initialize config file with defaults
+    horde-components config init
+
+    # Read a single configuration value
+    horde-components config checkout.dir
+    horde-components config repo.org
+
+    # Set a configuration value
+    horde-components config checkout.dir /home/user/horde
+    horde-components config repo.org mycompany
+    horde-components config scm.domain https://github.example.com
+    
+    # Update an existing value
+    horde-components config repo.org updated-company
+
+NOTES:
+    - Configuration values are stored as PHP strings in a \$conf array
+    - Special characters in values (quotes, backslashes) are automatically escaped
+    - URLs and paths are supported in values
+    - The init command will overwrite existing values with built-in defaults
+    - If a key doesn't exist when reading, an error will be displayed
+
+SECURITY:
+    - The config file should only be readable by your user
+    - Do not store sensitive credentials in this file
+    - Use environment variables or secure credential stores for secrets
+";
     }
 
     /**

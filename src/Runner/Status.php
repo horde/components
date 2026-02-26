@@ -98,5 +98,17 @@ class Status
             $this->output->warn("Install dir does not exist or is not readable.");
             $this->output->help("Run: \ncomposer create-project horde/bundle $installDir");
         };
+        
+        // Check GitHub API token
+        $githubToken = getenv('GITHUB_TOKEN');
+        $this->output->info("GitHub API Token:");
+        if ($githubToken && strlen($githubToken) > 0) {
+            $maskedToken = substr($githubToken, 0, 8) . str_repeat('*', max(0, strlen($githubToken) - 8));
+            $this->output->ok("GitHub API token is configured ($maskedToken)");
+        } else {
+            $this->output->warn("GitHub API token is not configured.");
+            $this->output->help("Set GITHUB_TOKEN environment variable for GitHub operations
+Export in your shell: export GITHUB_TOKEN=ghp_your_token_here");
+        }
     }
 }
