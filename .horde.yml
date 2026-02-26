@@ -53,6 +53,7 @@ dependencies:
       horde/yaml: '*'
       horde/eventdispatcher: '*'
       horde/githubapiclient: '*'
+      horde/composer: '*'
       horde/phpconfigfile: ^0.0.1-alpha4
       horde/horde-installer-plugin: ^2.6
   optional:
