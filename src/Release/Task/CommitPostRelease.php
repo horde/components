@@ -52,10 +52,17 @@ class CommitPostRelease extends Base
             $next_version = $options['next_version'];
         }
         if (isset($options['commit'])) {
-            $options['commit']->commit(
-                'Development mode for ' . $this->getComponent()->getName()
-                . '-' . HelperVersion::validatePear($next_version)
+            $componentName = $this->getComponent()->getName();
+            $validatedVersion = HelperVersion::validatePear($next_version);
+
+            // Conventional Commit format: chore: set development mode to X.Y.Z
+            $message = sprintf(
+                "chore: set development mode to %s\n\nPrepare %s for next development cycle",
+                $validatedVersion,
+                $componentName
             );
+
+            $options['commit']->commit($message);
         }
     }
 }

@@ -185,12 +185,24 @@ class HordeRelease
             $applicationPhp->save();
         }
         // TODO: Run any document pulls from Wiki or other sources
-        // TODO: commit for release
+        // commit for release using Conventional Commit format
         $this->gitHelper->add((string) $this->directory . '/lib/Application.php');
         $this->gitHelper->add((string) $this->directory . '/doc/changelog.yml');
         $this->gitHelper->add((string) $this->directory . '/.horde.yml');
         $this->gitHelper->add((string) $this->directory . '/composer.json');
-        $releaseMessage = 'Release ' . $hordeYml->getReleaseVersion()->toFullSemverV2() . '  (API Version: ' . $hordeYml->getApiVersion()->toFullSemverV2() . ") \n\n" . $logNotes;
+
+        $releaseVersion = $hordeYml->getReleaseVersion()->toFullSemverV2();
+        $apiVersion = $hordeYml->getApiVersion()->toFullSemverV2();
+
+        // Conventional Commit format: chore(release): bump version to X.Y.Z
+        $releaseMessage = sprintf(
+            "chore(release): bump version to %s\n\nRelease version %s (API Version: %s)\n\n%s",
+            $releaseVersion,
+            $releaseVersion,
+            $apiVersion,
+            $logNotes
+        );
+
         $this->gitHelper->commit(
             (string) $this->directory,
             $releaseMessage

@@ -38,10 +38,18 @@ class CommitPreRelease extends Base
     public function run(&$options): void
     {
         if (isset($options['commit'])) {
-            $options['commit']->commit(
-                'Released ' . $this->getComponent()->getName()
-                . '-' . $this->getComponent()->getVersion()
+            $componentName = $this->getComponent()->getName();
+            $version = $this->getComponent()->getVersion();
+
+            // Conventional Commit format: chore(release): bump version to X.Y.Z
+            $message = sprintf(
+                "chore(release): bump version to %s\n\nRelease %s-%s",
+                $version,
+                $componentName,
+                $version
             );
+
+            $options['commit']->commit($message);
         }
     }
 }
