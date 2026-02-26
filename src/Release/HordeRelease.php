@@ -5,11 +5,14 @@ namespace Horde\Components\Release;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Helper\Composer as ComposerHelper;
 use Horde\Components\Helper\ConventionalCommitHelper;
+use Horde\Components\Helper\Version;
 use Horde\Components\Wrapper\HordeYml;
 use Horde\Components\Wrapper\ChangelogYml;
 use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\Exception;
 use Horde\Components\Wrapper\ComposerJson;
+use Horde\Components\Output;
+use Horde\Components\Config;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
@@ -48,30 +51,39 @@ class HordeRelease
         private ComposerHelper $composerHelper,
         private GitHelper $gitHelper,
         private ComponentDirectory $directory,
+        private Output $output,
     ) {}
     /**
      * Run the release flow. Most steps should be idempotent.
+     *
+     * @param Config $config Configuration object containing options
      */
-    public function run()
+    public function run(Config $config)
     {
+        $options = $config->getOptions();
         $currentBranch = $this->gitHelper->getCurrentBranch($this->directory);
         // Check if we are on release branch
         if ($currentBranch !== 'FRAMEWORK_6_0') {
             throw new Exception('Not on release branch. Please switch to the release branch before running this script.');
         }
-        // Read ConventionalCommits & expected next version
-        $history = new ConventionalCommitHelper($this->gitHelper);
-        // Bail out on inappropriate, i.e. no conventional commits included
-        if (count($history->commitReader->getLog()) == 0) {
-            throw new Exception('No conventional commits found since last tag. Please ensure you have made commits in the correct format.');
-        }
 
-        // Precheck: If remotes are configured, check if the next version tag already exists
-        if ($this->gitHelper->hasRemotes((string) $this->directory)) {
-            $nextVersion = $history->nextVersion;
+        // Determine the target version
+        $history = null;
+        $skipPostReleaseEdits = false;
+
+        if (!empty($options['next_version'])) {
+            // User supplied a manual version - normalize it
+            $this->output->ok('Explicit target version provided: ' . $options['next_version']);
+            $nextVersion = Version::fromComposerString($options['next_version']);
             $nextTag = $nextVersion->toHordeTag();
+            $this->output->info('Normalized to tag: ' . $nextTag . ' (SemVer: ' . $nextVersion->toFullSemverV2() . ')');
 
-            if ($this->gitHelper->remoteTagExists((string) $this->directory, $nextTag)) {
+            // Check if this version/tag already exists locally or remotely
+            if ($this->gitHelper->localTagExists((string) $this->directory, $nextTag)) {
+                $this->output->info("Tag '{$nextTag}' exists locally. Performing post-release edits only.");
+                $skipPostReleaseEdits = true;
+            } elseif ($this->gitHelper->hasRemotes((string) $this->directory) &&
+                      $this->gitHelper->remoteTagExists((string) $this->directory, $nextTag)) {
                 throw new Exception(
                     sprintf(
                         'Tag "%s" already exists on remote. Cannot release version %s again.',
@@ -80,13 +92,60 @@ class HordeRelease
                     )
                 );
             }
+        } else {
+            // Auto-calculate version from conventional commits
+            $this->output->info('Auto-calculating version from conventional commits');
+            $history = new ConventionalCommitHelper($this->gitHelper);
+
+            // Bail out on inappropriate, i.e. no conventional commits included
+            if (count($history->commitReader->getLog()) == 0) {
+                throw new Exception('No conventional commits found since last tag. Please ensure you have made commits in the correct format.');
+            }
+
+            $nextVersion = $history->nextVersion;
+            $nextTag = $nextVersion->toHordeTag();
+
+            // Precheck: If remotes are configured, check if the next version tag already exists
+            if ($this->gitHelper->hasRemotes((string) $this->directory)) {
+                if ($this->gitHelper->remoteTagExists((string) $this->directory, $nextTag)) {
+                    throw new Exception(
+                        sprintf(
+                            "Tag \"%s\" already exists on remote. Cannot release version %s again.\n" .
+                            "Suggestion: Use --next-version to specify a different version (e.g., --next-version %s)",
+                            $nextTag,
+                            $nextVersion->toFullSemverV2(),
+                            $nextVersion->nextVersionObject()->toFullSemverV2()
+                        )
+                    );
+                }
+            }
+        }
+
+        // If tag exists locally and we're using manual version, only do post-release edits
+        if ($skipPostReleaseEdits) {
+            $this->output->warn('Skipping main release process - tag already exists locally');
+            // TODO: Perform post-release edits here
+            return;
+        }
+
+        $this->output->ok('Releasing version: ' . $nextVersion->toFullSemverV2() . ' (tag: ' . $nextTag . ')');
+
+        // Read conventional commits for changelog notes (if not using manual version)
+        $logNotes = '';
+        if ($history !== null) {
+            foreach ($history->commitReader->getLog() as $commit) {
+                // TODO: Nice Format
+                $logNotes .= $commit->subject . "\n";
+            }
+        } else {
+            $logNotes = "Release version " . $nextVersion->toFullSemverV2();
         }
 
         // write .horde.yml versions and stabilities
         $hordeYml = new HordeYml($this->directory);
-        $hordeYml->setReleaseVersionAndStability($history->nextVersion);
+        $hordeYml->setReleaseVersionAndStability($nextVersion);
         // TODO: Logic on when to set API version and stability
-        // $hordeYml->setApiVersionAndStability($history->getNextVersion());
+        // $hordeYml->setApiVersionAndStability($nextVersion);
         $hordeYml->save();
         // While apps used to have changelog.yml in doc/, libs had it in doc/long/lib/name - simplify this
         // write changelog.yml
@@ -96,11 +155,6 @@ class HordeRelease
         }
 
         $changelog = new ChangelogYml($this->directory . '/doc');
-        $logNotes = '';
-        foreach ($history->commitReader->getLog() as $commit) {
-            // TODO: Nice Format
-            $logNotes .= $commit->subject . "\n";
-        }
         $entry = new ChangelogEntry(
             releaseVersion: $hordeYml->getReleaseVersion(),
             apiVersion: $hordeYml->getApiVersion(),

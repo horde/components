@@ -108,9 +108,10 @@ class Release
             $release = new HordeRelease(
                 $composerHelper,
                 $gitHelper,
-                $path
+                $path,
+                $this->_output
             );
-            $release->run();
+            $release->run($config);
             return;
         } else {
             $this->_output->warn('Run "horde-components release for <pipeline>"');

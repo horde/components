@@ -345,7 +345,8 @@ class Version
         // Parse stability and stability integer, stripping leading hyphen if any
         if ($prerelease) {
             $prerelease = ltrim($prerelease, '-');
-            $res = preg_match('/^([A-Za-z]+)(\d+)?$/', $prerelease, $prereleaseMatch);
+            // Handle both "alpha2" and "alpha.2" formats
+            $res = preg_match('/^([A-Za-z]+)\.?(\d+)?$/', $prerelease, $prereleaseMatch);
             $prerelease = $prereleaseMatch[1] ?? '';
             if ($prerelease) {
                 $prereleaseVersion = (int) ($prereleaseMatch[2] ?? 1);
