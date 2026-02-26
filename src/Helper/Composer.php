@@ -14,6 +14,8 @@
 
 namespace Horde\Components\Helper;
 
+require_once __DIR__ . '/../Polyfill/mb_ucfirst.php';
+
 use Horde\Components\Exception;
 use Horde\Components\Wrapper\HordeYml as WrapperHordeYml;
 use RuntimeException;
