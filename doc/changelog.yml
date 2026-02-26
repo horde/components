@@ -1,4 +1,19 @@
 ---
+1.0.0-alpha17:
+  api: 1.0.0-alpha1
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-02-26
+  license:
+    identifier: LGPL-2.1-only
+    uri: http://www.horde.org/licenses/lgpl21
+  notes: |
+    refactor(release): use Conventional Commit format for release commits
+    feat(release): add --next-version parameter support to release h6 command
+    feat(release): add precheck for existing tags in release h6 command
+    feat: add polyfill for mb_ucfirst() function
+    fix: Package not linking js/ with type sometimes read when unset
 1.0.0-alpha16:
   api: 1.0.0-alpha1
   state:

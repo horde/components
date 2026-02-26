@@ -21,7 +21,8 @@
             "role": "contributor"
         }
     ],
-    "time": "2025-06-04",
+    "time": "2026-02-26",
+    "repositories": [],
     "require": {
         "horde/horde-installer-plugin": "^2.6 || dev-FRAMEWORK_6_0",
         "php": "^8.2",
@@ -38,16 +39,13 @@
         "horde/release": "^4 || dev-FRAMEWORK_6_0",
         "horde/yaml": "* || dev-FRAMEWORK_6_0",
         "horde/eventdispatcher": "* || dev-FRAMEWORK_6_0",
-        "horde/githubapiclient": "dev-FRAMEWORK_6_0",
+        "horde/githubapiclient": "* || dev-FRAMEWORK_6_0",
         "horde/composer": "* || dev-FRAMEWORK_6_0",
         "horde/phpconfigfile": "^0.0.1-alpha4 || dev-FRAMEWORK_6_0"
     },
     "require-dev": {
         "horde/test": "^3 || dev-FRAMEWORK_6_0",
-        "phpunit/phpunit": "^12 || ^11 || ^10 || ^9",
-        "psr/http-client": "^1.0",
-        "psr/http-message": "^2.0",
-        "psr/http-factory": "^1.1"
+        "phpunit/phpunit": "^12 || ^11 || ^10 || ^9"
     },
     "suggest": {
         "horde/test": "^3 || dev-FRAMEWORK_6_0",
@@ -83,7 +81,5 @@
         "branch-alias": {
             "dev-FRAMEWORK_6_0": "1.x-dev"
         }
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    }
 }
