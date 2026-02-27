@@ -156,9 +156,18 @@ AVAILABLE CHECKS:
                Supports: --fix-qc-issues to auto-fix (check mode by default)
                Outputs: JSON results to build/ directory
 
-    loc        Run PHPLOC to analyze code size and structure
+    loc        Run PHPLOC to analyze code size and structure (DEPRECATED)
                Requires: phploc command available
                Reports: lines of code, cyclomatic complexity, dependencies
+               Status: Not in default pipeline (opt-in only)
+               Note: PHPLOC is unmaintained, use 'metrics' task instead
+
+    metrics    Run PHPMetrics for modern code metrics analysis
+               Requires: phpmetrics command available
+               Reports: size, complexity, maintainability index, coupling, cohesion
+               Outputs: HTML report to build/metrics/, JSON to build/metrics.json
+               Status: Not in default pipeline (opt-in only)
+               Note: Modern replacement for deprecated LOC task
 
     gitignore  Check .gitignore file for required entries
                Requires: None (always available)
@@ -180,7 +189,7 @@ AUTO-FIX MODE:
     - phpcsfixer: Fixes code style issues (runs in check mode without flag)
 
 EXAMPLES:
-    # Run default pipeline (gitignore, lint, phpcsfixer, unit, phpstan, loc)
+    # Run default pipeline (gitignore, lint, phpcsfixer, unit, phpstan)
     horde-components qc
 
     # Run only syntax check (always works, no external tools needed)
@@ -194,13 +203,19 @@ EXAMPLES:
 
     # Run multiple specific checks
     horde-components qc unit lint
-    horde-components qc phpstan md loc
+    horde-components qc phpstan md
 
     # Explicitly run PHPMD (not in default pipeline)
     horde-components qc md
 
     # Explicitly run PHPCS (not in default pipeline)
     horde-components qc cs
+
+    # Explicitly run PHPLOC (not in default pipeline, deprecated)
+    horde-components qc loc
+
+    # Run modern metrics analysis (recommended over loc)
+    horde-components qc metrics
 
     # Check code style (will not modify files)
     horde-components qc phpcsfixer
@@ -238,8 +253,11 @@ INSTALLING REQUIRED TOOLS:
     # Install PHPCS
     composer require --dev squizlabs/php_codesniffer
 
-    # Install PHPLOC
+    # Install PHPLOC (deprecated, use phpmetrics instead)
     composer require --dev phploc/phploc
+
+    # Install PHPMetrics (modern metrics tool)
+    composer require --dev phpmetrics/phpmetrics
 
 NOTE:
     The lint check (php -l) always works without additional dependencies
