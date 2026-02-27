@@ -72,3 +72,7 @@ nocommands:
   - bin/horde-bootstrap
   - bin/horde-components-prototype-transpile
 allow-plugins: ~
+
+quality:
+  phpstan:
+    level: 0

@@ -68,7 +68,13 @@ class Qc
             $sequence[] = 'unit';
         }
 
-        if ($this->_doTask('md', $arguments)) {
+        // PHPStan runs after unit tests - comprehensive static analysis
+        if ($this->_doTask('phpstan', $arguments)) {
+            $sequence[] = 'phpstan';
+        }
+
+        // PHPMD (md) is only run when explicitly requested, not in default pipeline
+        if ($this->_doTask('md', $arguments, false)) {
             $sequence[] = 'md';
         }
 

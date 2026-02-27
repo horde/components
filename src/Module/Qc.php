@@ -117,18 +117,28 @@ DEFAULT PIPELINE:
     - lint (syntax validation)
     - phpcsfixer (code style fixing)
     - unit (test suite)
-    - md (mess detection)
+    - phpstan (static analysis)
     - loc (code metrics)
 
-    Note: The "cs" (PHPCS) check must be explicitly requested.
+    Note: The "cs" (PHPCS) and "md" (PHPMD) checks must be explicitly requested.
 
 AVAILABLE CHECKS:
     unit       Run the PHPUnit unit test suite
                Requires: PHPUnit installed globally or in vendor/bin/
 
+    phpstan    Run PHPStan static analysis
+               Requires: phpstan command available
+               Checks: type errors, dead code, undefined variables, invalid types
+               Levels: 0-9 (auto-detected from phpstan.neon or defaults to 4)
+               Supports: baseline files for legacy code
+               Outputs: JSON results to build/ directory
+               Note: Default static analysis tool (PHPMD available via explicit call)
+
     md         Run PHP Mess Detector (PHPMD) to detect code quality issues
                Requires: phpmd command available
                Detects: unused code, suboptimal code, overcomplicated expressions
+               Note: NOT in default pipeline - must be explicitly requested
+               (PHPStan is the default static analysis tool)
 
     cs         Run PHP CodeSniffer (PHPCS) for code style analysis
                Requires: phpcs command available
@@ -170,7 +180,7 @@ AUTO-FIX MODE:
     - phpcsfixer: Fixes code style issues (runs in check mode without flag)
 
 EXAMPLES:
-    # Run default pipeline (gitignore, lint, phpcsfixer, unit, md, loc)
+    # Run default pipeline (gitignore, lint, phpcsfixer, unit, phpstan, loc)
     horde-components qc
 
     # Run only syntax check (always works, no external tools needed)
@@ -179,9 +189,15 @@ EXAMPLES:
     # Run only unit tests
     horde-components qc unit
 
+    # Run only PHPStan static analysis
+    horde-components qc phpstan
+
     # Run multiple specific checks
     horde-components qc unit lint
-    horde-components qc cs md loc
+    horde-components qc phpstan md loc
+
+    # Explicitly run PHPMD (not in default pipeline)
+    horde-components qc md
 
     # Explicitly run PHPCS (not in default pipeline)
     horde-components qc cs
