@@ -35,54 +35,45 @@ class Qc
     /**
      * Constructor.
      *
-     * @param Config $_config The configuration for the current job.
      * @param Output $_output The output handler.
      * @param QcTasks $_qc The qc handler.
      */
     public function __construct(
-        private readonly Config $_config,
-        /**
-         * The output handler.
-         *
-         * @param Output
-         */
         private readonly Output $_output,
-        /**
-         * The quality control tasks handler.
-         *
-         * @param QcTasks
-         */
         private readonly QcTasks $_qc
     ) {}
 
-    public function run(): void
+    public function run(Config $config): void
     {
+        $arguments = $config->getArguments();
+        $options = $config->getOptions();
+
         $sequence = [];
-        if ($this->_doTask('unit')) {
+        if ($this->_doTask('unit', $arguments)) {
             $sequence[] = 'unit';
         }
 
-        if ($this->_doTask('md')) {
+        if ($this->_doTask('md', $arguments)) {
             $sequence[] = 'md';
         }
 
-        if ($this->_doTask('cs')) {
+        if ($this->_doTask('cs', $arguments)) {
             $sequence[] = 'cs';
         }
 
-        if ($this->_doTask('lint')) {
+        if ($this->_doTask('lint', $arguments)) {
             $sequence[] = 'lint';
         }
 
-        if ($this->_doTask('loc')) {
+        if ($this->_doTask('loc', $arguments)) {
             $sequence[] = 'loc';
         }
 
         if (!empty($sequence)) {
             $this->_qc->run(
                 $sequence,
-                $this->_config->getComponent(),
-                $this->_config->getOptions()
+                $config->getComponent(),
+                $options
             );
         } else {
             $this->_output->warn('Huh?! No tasks selected... All done!');
@@ -93,12 +84,12 @@ class Qc
      * Did the user activate the given task?
      *
      * @param string $task The task name.
+     * @param array $arguments The command arguments.
      *
      * @return bool True if the task is active.
      */
-    private function _doTask($task): bool
+    private function _doTask(string $task, array $arguments): bool
     {
-        $arguments = $this->_config->getArguments();
         if ((count($arguments) == 1 && $arguments[0] == 'qc')
             || in_array($task, $arguments)) {
             return true;

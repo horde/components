@@ -14,6 +14,9 @@
 namespace Horde\Components\Module;
 
 use Horde\Components\Config;
+use Horde\Components\Component\ComponentDirectory;
+use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
+use Horde\Components\Runner\Qc as RunnerQc;
 
 /**
  * Components_Module_Qc:: checks the component for quality.
@@ -121,7 +124,12 @@ The following example would solely run the PHPUnit test for the package:
         $arguments = $config->getArguments();
         if (!empty($options['qc'])
             || (isset($arguments[0]) && $arguments[0] == 'qc')) {
-            $this->dependencies->getRunnerQc()->run();
+            $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory());
+            $component = $this->dependencies
+                ->getComponentFactory()
+                ->createSource($componentDirectory);
+            $config->setComponent($component);
+            $this->dependencies->get(RunnerQc::class)->run($config);
             return true;
         }
         return false;
