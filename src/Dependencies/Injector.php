@@ -102,12 +102,17 @@ class Injector extends HordeInjector implements Dependencies
         );
         $this->setInstance(GitHelper::class, new GitHelper());
 
-        // GitHub integration dependencies
-        $gitHelper = $this->getInstance(GitHelper::class);
-        $output = $this->getInstance(Output::class);
-        $this->setInstance(GitHubChecker::class, new GitHubChecker($gitHelper));
-        $githubChecker = $this->getInstance(GitHubChecker::class);
-        $this->setInstance(GitHubReleaseCreator::class, new GitHubReleaseCreator($githubChecker, $output));
+        // GitHub integration dependencies - use factories for lazy initialization
+        $this->bindFactory(
+            GitHubChecker::class,
+            GitHubCheckerFactory::class,
+            '__invoke'
+        );
+        $this->bindFactory(
+            GitHubReleaseCreator::class,
+            GitHubReleaseCreatorFactory::class,
+            '__invoke'
+        );
     }
 
     public static function registerAppDependencies(HordeInjector $injector)
@@ -124,12 +129,17 @@ class Injector extends HordeInjector implements Dependencies
         );
         $injector->setInstance(GitHelper::class, new GitHelper());
 
-        // GitHub integration dependencies
-        $gitHelper = $injector->getInstance(GitHelper::class);
-        $output = $injector->getInstance(Output::class);
-        $injector->setInstance(GitHubChecker::class, new GitHubChecker($gitHelper));
-        $githubChecker = $injector->getInstance(GitHubChecker::class);
-        $injector->setInstance(GitHubReleaseCreator::class, new GitHubReleaseCreator($githubChecker, $output));
+        // GitHub integration dependencies - use factories for lazy initialization
+        $injector->bindFactory(
+            GitHubChecker::class,
+            GitHubCheckerFactory::class,
+            '__invoke'
+        );
+        $injector->bindFactory(
+            GitHubReleaseCreator::class,
+            GitHubReleaseCreatorFactory::class,
+            '__invoke'
+        );
     }
 
     /**
