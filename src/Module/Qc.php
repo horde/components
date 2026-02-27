@@ -91,23 +91,91 @@ class Qc extends Base
      */
     public function getHelp($action): string
     {
-        return 'Runs quality control checks for the component. This executes a number of automated quality control checks that are similar to the checks you find on ci.horde.org. In the most simple situation it will be sufficient to move to the directory of the component you wish to release and run
+        return 'Run quality control checks for the component.
 
-  horde-components qc
+USAGE:
+    horde-components qc [TASK1 TASK2 ...]
 
-This will run all available checks. You can also choose to execute only some of the quality control checks. For that you need to indicate the desired checks after the "qc" keyword. Each argument indicates that the corresponding check should be run.
+DESCRIPTION:
+    The qc command executes automated quality control checks on the component.
+    These checks are similar to those found on ci.horde.org and help ensure
+    code quality before releases.
 
-The available checks are:
+    When run without any task arguments, ALL available checks are executed.
+    When specific task names are provided as arguments, only those checks run.
+    Multiple tasks can be specified to run them in sequence.
 
- - unit: Runs the PHPUnit unit test suite of the component.
- - md  : Runs the PHP mess detector on the code of the component.
- - cs  : Runs a checkstyle analysis of the component.
- - lint: Runs a lint check of the source code.
- - loc : Measure the size and analyze the structure of the component.
+AVAILABLE CHECKS:
+    unit    Run the PHPUnit unit test suite
+            Requires: PHPUnit installed globally or in vendor/bin/
 
-The following example would solely run the PHPUnit test for the package:
+    md      Run PHP Mess Detector (PHPMD) to detect code quality issues
+            Requires: phpmd command available
+            Detects: unused code, suboptimal code, overcomplicated expressions
 
-  horde-components qc unit';
+    cs      Run PHP CodeSniffer (PHPCS) for code style analysis
+            Requires: phpcs command available
+            Checks: coding standards compliance
+
+    lint    Run PHP syntax check (php -l) on all PHP files
+            Requires: PHP (always available)
+            Checks: syntax errors, parse errors
+
+    loc     Run PHPLOC to analyze code size and structure
+            Requires: phploc command available
+            Reports: lines of code, cyclomatic complexity, dependencies
+
+BEHAVIOR:
+    - Each check validates its requirements before running
+    - Missing tools result in a warning and that check is skipped
+    - Checks run sequentially in the order specified
+    - The command exits after all checks complete
+    - Each check reports its own error count
+
+EXAMPLES:
+    # Run all available checks
+    horde-components qc
+
+    # Run only syntax check (always works, no external tools needed)
+    horde-components qc lint
+
+    # Run only unit tests
+    horde-components qc unit
+
+    # Run multiple specific checks
+    horde-components qc unit lint
+    horde-components qc cs md loc
+
+    # Alternative: use the -Q flag (runs all checks)
+    horde-components -Q
+
+WORKING DIRECTORY:
+    The qc command operates on the component in your current working directory.
+    Make sure you are in a component directory (containing .horde.yml) before
+    running quality checks.
+
+EXIT STATUS:
+    The command reports errors found by each check but continues running
+    subsequent checks. Individual check results are displayed with:
+    - [   OK   ] No problems found
+    - [  WARN  ] N error(s) found
+
+INSTALLING REQUIRED TOOLS:
+    # Install PHPUnit
+    composer require --dev phpunit/phpunit
+
+    # Install PHPMD
+    composer require --dev phpmd/phpmd
+
+    # Install PHPCS
+    composer require --dev squizlabs/php_codesniffer
+
+    # Install PHPLOC
+    composer require --dev phploc/phploc
+
+NOTE:
+    The lint check (php -l) always works without additional dependencies
+    and is useful for quick syntax validation.';
     }
 
     /**
