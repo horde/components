@@ -59,6 +59,11 @@ class Qc
             $sequence[] = 'lint';
         }
 
+        // PHP CS Fixer runs after lint (valid PHP) but before cs (fixes many PHPCS issues)
+        if ($this->_doTask('phpcsfixer', $arguments)) {
+            $sequence[] = 'phpcsfixer';
+        }
+
         if ($this->_doTask('unit', $arguments)) {
             $sequence[] = 'unit';
         }
@@ -67,7 +72,8 @@ class Qc
             $sequence[] = 'md';
         }
 
-        if ($this->_doTask('cs', $arguments)) {
+        // PHPCS (cs) is only run when explicitly requested, not in default pipeline
+        if ($this->_doTask('cs', $arguments, false)) {
             $sequence[] = 'cs';
         }
 
@@ -91,15 +97,22 @@ class Qc
      *
      * @param string $task The task name.
      * @param array $arguments The command arguments.
+     * @param bool $includeInDefault Whether to include in default "qc" run.
      *
      * @return bool True if the task is active.
      */
-    private function _doTask(string $task, array $arguments): bool
+    private function _doTask(string $task, array $arguments, bool $includeInDefault = true): bool
     {
-        if ((count($arguments) == 1 && $arguments[0] == 'qc')
-            || in_array($task, $arguments)) {
+        // Task explicitly mentioned in arguments
+        if (in_array($task, $arguments)) {
             return true;
         }
+
+        // Running default "qc" - only include if task is in default pipeline
+        if (count($arguments) == 1 && $arguments[0] == 'qc' && $includeInDefault) {
+            return true;
+        }
+
         return false;
     }
 }

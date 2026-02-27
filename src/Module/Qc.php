@@ -107,9 +107,20 @@ DESCRIPTION:
     These checks are similar to those found on ci.horde.org and help ensure
     code quality before releases.
 
-    When run without any task arguments, ALL available checks are executed.
+    When run without any task arguments, the DEFAULT pipeline is executed.
     When specific task names are provided as arguments, only those checks run.
     Multiple tasks can be specified to run them in sequence.
+
+DEFAULT PIPELINE:
+    When running "horde-components qc" without task names, these checks run:
+    - gitignore (VCS configuration)
+    - lint (syntax validation)
+    - phpcsfixer (code style fixing)
+    - unit (test suite)
+    - md (mess detection)
+    - loc (code metrics)
+
+    Note: The "cs" (PHPCS) check must be explicitly requested.
 
 AVAILABLE CHECKS:
     unit       Run the PHPUnit unit test suite
@@ -122,10 +133,18 @@ AVAILABLE CHECKS:
     cs         Run PHP CodeSniffer (PHPCS) for code style analysis
                Requires: phpcs command available
                Checks: coding standards compliance
+               Note: NOT in default pipeline - must be explicitly requested
+               (phpcsfixer is the default code style tool)
 
     lint       Run PHP syntax check (php -l) on all PHP files
                Requires: PHP (always available)
                Checks: syntax errors, parse errors
+
+    phpcsfixer Run PHP CS Fixer for code style fixing
+               Requires: php-cs-fixer command available
+               Fixes: code style issues automatically
+               Supports: --fix-qc-issues to auto-fix (check mode by default)
+               Outputs: JSON results to build/ directory
 
     loc        Run PHPLOC to analyze code size and structure
                Requires: phploc command available
@@ -148,9 +167,10 @@ AUTO-FIX MODE:
     Use --fix-qc-issues to automatically fix issues where possible.
     Currently supported by:
     - gitignore: Creates or updates .gitignore with required entries
+    - phpcsfixer: Fixes code style issues (runs in check mode without flag)
 
 EXAMPLES:
-    # Run all available checks
+    # Run default pipeline (gitignore, lint, phpcsfixer, unit, md, loc)
     horde-components qc
 
     # Run only syntax check (always works, no external tools needed)
@@ -163,13 +183,22 @@ EXAMPLES:
     horde-components qc unit lint
     horde-components qc cs md loc
 
+    # Explicitly run PHPCS (not in default pipeline)
+    horde-components qc cs
+
+    # Check code style (won't modify files)
+    horde-components qc phpcsfixer
+
+    # Fix code style issues
+    horde-components qc phpcsfixer --fix-qc-issues
+
     # Check and fix .gitignore
     horde-components qc gitignore --fix-qc-issues
 
-    # Run all checks with auto-fix
+    # Run default pipeline with auto-fix
     horde-components qc --fix-qc-issues
 
-    # Alternative: use the -Q flag (runs all checks)
+    # Alternative: use the -Q flag (runs default pipeline)
     horde-components -Q
 
 WORKING DIRECTORY:
