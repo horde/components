@@ -1,5 +1,4 @@
 {
-  "chmod": "0755",
   "compression": "GZ",
   "directories": [
     "src"
@@ -27,8 +26,5 @@
     }
   ],
   "git-version": "package_version",
-  "intercept": true,
-  "main": "bin/horde-components",
-  "output": "bin/horde-components.phar",
-  "stub": true
+  "intercept": true
 }
