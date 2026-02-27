@@ -53,6 +53,16 @@ class Tasks
     public function __construct(private readonly Dependencies $_dependencies) {}
 
     /**
+     * Check if we are in pretend mode.
+     *
+     * @return bool True if in pretend mode.
+     */
+    public function pretend(): bool
+    {
+        return !empty($this->_options['pretend']);
+    }
+
+    /**
      * Return the named task.
      *
      * @param string $name                    The name of the task.
