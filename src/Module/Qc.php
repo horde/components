@@ -45,11 +45,17 @@ class Qc extends Base
 
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde\Argv\Option(
-            '-Q',
-            '--qc',
-            ['action' => 'store_true', 'help'   => 'Check the package quality.']
-        )];
+        return [
+            new \Horde\Argv\Option(
+                '-Q',
+                '--qc',
+                ['action' => 'store_true', 'help' => 'Check the package quality.']
+            ),
+            new \Horde\Argv\Option(
+                '--fix-qc-issues',
+                ['action' => 'store_true', 'help' => 'Automatically fix QC issues where possible.']
+            ),
+        ];
     }
 
     /**
@@ -106,24 +112,30 @@ DESCRIPTION:
     Multiple tasks can be specified to run them in sequence.
 
 AVAILABLE CHECKS:
-    unit    Run the PHPUnit unit test suite
-            Requires: PHPUnit installed globally or in vendor/bin/
+    unit       Run the PHPUnit unit test suite
+               Requires: PHPUnit installed globally or in vendor/bin/
 
-    md      Run PHP Mess Detector (PHPMD) to detect code quality issues
-            Requires: phpmd command available
-            Detects: unused code, suboptimal code, overcomplicated expressions
+    md         Run PHP Mess Detector (PHPMD) to detect code quality issues
+               Requires: phpmd command available
+               Detects: unused code, suboptimal code, overcomplicated expressions
 
-    cs      Run PHP CodeSniffer (PHPCS) for code style analysis
-            Requires: phpcs command available
-            Checks: coding standards compliance
+    cs         Run PHP CodeSniffer (PHPCS) for code style analysis
+               Requires: phpcs command available
+               Checks: coding standards compliance
 
-    lint    Run PHP syntax check (php -l) on all PHP files
-            Requires: PHP (always available)
-            Checks: syntax errors, parse errors
+    lint       Run PHP syntax check (php -l) on all PHP files
+               Requires: PHP (always available)
+               Checks: syntax errors, parse errors
 
-    loc     Run PHPLOC to analyze code size and structure
-            Requires: phploc command available
-            Reports: lines of code, cyclomatic complexity, dependencies
+    loc        Run PHPLOC to analyze code size and structure
+               Requires: phploc command available
+               Reports: lines of code, cyclomatic complexity, dependencies
+
+    gitignore  Check .gitignore file for required entries
+               Requires: None (always available)
+               Checks: /build/, /vendor/, IDE settings, tool caches
+               Ignores: PHPStorm, VSCode, Claude, Cline, PHP-CS-Fixer, PHPStan
+               Supports: --fix-qc-issues to auto-fix
 
 BEHAVIOR:
     - Each check validates its requirements before running
@@ -131,6 +143,11 @@ BEHAVIOR:
     - Checks run sequentially in the order specified
     - The command exits after all checks complete
     - Each check reports its own error count
+
+AUTO-FIX MODE:
+    Use --fix-qc-issues to automatically fix issues where possible.
+    Currently supported by:
+    - gitignore: Creates or updates .gitignore with required entries
 
 EXAMPLES:
     # Run all available checks
@@ -145,6 +162,12 @@ EXAMPLES:
     # Run multiple specific checks
     horde-components qc unit lint
     horde-components qc cs md loc
+
+    # Check and fix .gitignore
+    horde-components qc gitignore --fix-qc-issues
+
+    # Run all checks with auto-fix
+    horde-components qc --fix-qc-issues
 
     # Alternative: use the -Q flag (runs all checks)
     horde-components -Q

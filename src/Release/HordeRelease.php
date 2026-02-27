@@ -15,6 +15,7 @@ use Horde\Components\Exception;
 use Horde\Components\Wrapper\ComposerJson;
 use Horde\Components\Output;
 use Horde\Components\Config;
+use Horde\Components\Qc\Tasks as QcTasks;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
@@ -56,6 +57,7 @@ class HordeRelease
         private Output $output,
         private GitHubChecker $githubChecker,
         private GitHubReleaseCreator $githubReleaseCreator,
+        private QcTasks $qcTasks,
     ) {}
     /**
      * Run the release flow. Most steps should be idempotent.
@@ -69,6 +71,24 @@ class HordeRelease
         // Check if we are on release branch
         if ($currentBranch !== 'FRAMEWORK_6_0') {
             throw new Exception('Not on release branch. Please switch to the release branch before running this script.');
+        }
+
+        // Early QC: Check and fix .gitignore before starting release process
+        $this->output->ok('Running pre-release QC checks...');
+        $component = $config->getComponent();
+        $gitignoreTask = $this->qcTasks->getTask('gitignore', $component);
+
+        // Enable auto-fix for gitignore during release
+        $qcOptions = array_merge($options, ['fix_qc_issues' => true]);
+
+        $errors = $gitignoreTask->validate($qcOptions);
+        if (empty($errors)) {
+            $gitignoreErrors = $gitignoreTask->run($qcOptions);
+            if ($gitignoreErrors > 0) {
+                $this->output->warn('Gitignore check found issues but they were auto-fixed');
+            }
+        } else {
+            $this->output->warn('Gitignore task validation failed: ' . implode(', ', $errors));
         }
 
         // Determine the target version

@@ -49,6 +49,16 @@ class Qc
         $options = $config->getOptions();
 
         $sequence = [];
+
+        // Gitignore check runs early - ensures proper VCS configuration
+        if ($this->_doTask('gitignore', $arguments)) {
+            $sequence[] = 'gitignore';
+        }
+
+        if ($this->_doTask('lint', $arguments)) {
+            $sequence[] = 'lint';
+        }
+
         if ($this->_doTask('unit', $arguments)) {
             $sequence[] = 'unit';
         }
@@ -59,10 +69,6 @@ class Qc
 
         if ($this->_doTask('cs', $arguments)) {
             $sequence[] = 'cs';
-        }
-
-        if ($this->_doTask('lint', $arguments)) {
-            $sequence[] = 'lint';
         }
 
         if ($this->_doTask('loc', $arguments)) {

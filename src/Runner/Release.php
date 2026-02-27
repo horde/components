@@ -105,11 +105,19 @@ class Release
             $path = new ComponentDirectory($component->getComponentDirectory());
             $gitHelper = new GitHelper();
             $composerHelper = new ComposerHelper();
+
+            // Get GitHubChecker and GitHubReleaseCreator from dependencies
+            $githubChecker = new \Horde\Components\Helper\GitHubChecker($gitHelper);
+            $githubReleaseCreator = new \Horde\Components\Helper\GitHubReleaseCreator($githubChecker, $this->_output);
+
             $release = new HordeRelease(
                 $composerHelper,
                 $gitHelper,
                 $path,
-                $this->_output
+                $this->_output,
+                $githubChecker,
+                $githubReleaseCreator,
+                $this->_qc
             );
             $release->run($config);
             return;
