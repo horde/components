@@ -1,4 +1,18 @@
 ---
+1.0.0-alpha22:
+  api: 1.0.0-alpha1
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-02-27
+  license:
+    identifier: LGPL-2.1-only
+    uri: http://www.horde.org/licenses/lgpl21
+  notes: |
+    chore(phar): Explicitly distribute phar to build/ dir
+    feat: Build and upload a phar after release if setup
+    feat: Improve handling of PHPUnit from phar or composer
+    chore: Update the box tool configuration
 1.0.0-alpha21:
   api: 1.0.0-alpha1
   state:
