@@ -1,4 +1,16 @@
 ---
+1.0.0-alpha21:
+  api: 1.0.0-alpha1
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-02-27
+  license:
+    identifier: LGPL-2.1-only
+    uri: http://www.horde.org/licenses/lgpl21
+  notes: |
+    fix(release): use existing SystemCallResult API instead of adding aliases
+    fix(release): add getExitCode() and getStdOut() aliases to SystemCallResult
 1.0.0-alpha20:
   api: 1.0.0-alpha1
   state:
