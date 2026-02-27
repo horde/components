@@ -111,6 +111,11 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
         return mb_strtolower($vendor . '/' . $package);
     }
 
+    public function getName(): string
+    {
+        return $this['name'] ?? $this['id'] ?? 'unknown';
+    }
+
     public function getAllowedPlugins(): array|object
     {
         $allowedPlugins = [];
