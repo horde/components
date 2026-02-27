@@ -100,23 +100,19 @@ class Metrics extends Base
         }
 
         $this->getOutput()->detected("Found PHPMetrics at: {$phpmetrics}");
-        $this->getOutput()->running('Analyzing code metrics...');
 
-        // Run PHPMetrics with JSON output for parsing
+        // For now, analyze only the first (primary) source directory
+        // PHPMetrics v2.x doesn't handle multiple directories well
+        $primarySrcDir = $srcDirs[0];
+        $this->getOutput()->running("Analyzing code metrics in: " . basename($primarySrcDir) . '/');
+        $this->runPhpMetricsAnalysis($phpmetrics, $primarySrcDir, $buildDir);
+
+        // Display summary
+        $jsonOutput = $buildDir . '/metrics.json';
+        // Display summary
         $jsonOutput = $buildDir . '/metrics.json';
         $htmlOutput = $buildDir . '/metrics';
 
-        $command = sprintf(
-            '%s --report-json=%s --report-html=%s %s',
-            escapeshellarg($phpmetrics),
-            escapeshellarg($jsonOutput),
-            escapeshellarg($htmlOutput),
-            implode(' ', array_map('escapeshellarg', $srcDirs))
-        );
-
-        $this->system($command);
-
-        // Parse and display summary
         if (file_exists($jsonOutput)) {
             $this->displaySummary($jsonOutput);
         }
@@ -125,6 +121,32 @@ class Metrics extends Base
         $this->getOutput()->ok("JSON data saved: {$jsonOutput}");
 
         return 0;
+    }
+
+    /**
+     * Run PHPMetrics analysis on a directory.
+     *
+     * @param string $phpmetrics Path to phpmetrics binary.
+     * @param string $targetDir Directory to analyze.
+     * @param string $buildDir Build directory for output.
+     */
+    private function runPhpMetricsAnalysis(
+        string $phpmetrics,
+        string $targetDir,
+        string $buildDir
+    ): void {
+        $jsonOutput = $buildDir . '/metrics.json';
+        $htmlOutput = $buildDir . '/metrics';
+
+        $command = sprintf(
+            '%s --report-json=%s --report-html=%s %s',
+            escapeshellarg($phpmetrics),
+            escapeshellarg($jsonOutput),
+            escapeshellarg($htmlOutput),
+            escapeshellarg($targetDir)
+        );
+
+        $this->system($command);
     }
 
     /**
