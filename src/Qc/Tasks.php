@@ -93,6 +93,9 @@ class Tasks
         foreach ($task_sequence as $task) {
             $task_errors = $task->validate($options);
             if (!empty($task_errors)) {
+                $output = $this->_dependencies->getInstance(Output::class);
+                $output->plain('');
+                $output->bold(str_repeat('-', 30));
                 $this->_dependencies->getOutput()->warn(
                     sprintf(
                         "Deactivated task \"%s\":\n\n%s",
@@ -100,6 +103,8 @@ class Tasks
                         join("\n", $task_errors)
                     )
                 );
+                $output->bold(str_repeat('-', 30));
+                $output->plain('');
             } else {
                 $selected_tasks[] = $task;
             }
