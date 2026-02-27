@@ -136,20 +136,30 @@ class Metrics extends Base
     {
         $componentDir = realpath($this->_config->getPath());
 
-        // Search order: local vendor, global installation, PATH
+        // Search order: local vendor, global composer, system paths, PATH
         $possibleLocations = [
+            // 1. Local vendor (project-specific)
             $componentDir . '/vendor/bin/phpmetrics',
-            $componentDir . '/../../../vendor/bin/phpmetrics',  // Horde monorepo
+            // 2. Horde monorepo vendor
+            $componentDir . '/../../../vendor/bin/phpmetrics',
+            // 3. Global Composer (Linux/macOS)
+            getenv('HOME') . '/.composer/vendor/bin/phpmetrics',
+            getenv('HOME') . '/.config/composer/vendor/bin/phpmetrics',
+            // 4. Global Composer (Windows)
+            getenv('APPDATA') . '/Composer/vendor/bin/phpmetrics',
+            getenv('APPDATA') . '/Composer/vendor/bin/phpmetrics.bat',
+            // 5. System installations
             '/usr/local/bin/phpmetrics',
+            '/usr/bin/phpmetrics',
         ];
 
         foreach ($possibleLocations as $path) {
-            if (file_exists($path) && is_executable($path)) {
+            if ($path && file_exists($path) && is_executable($path)) {
                 return $path;
             }
         }
 
-        // Try PATH
+        // Try PATH as fallback
         $result = shell_exec('which phpmetrics 2>/dev/null');
         if ($result && trim($result)) {
             return trim($result);
