@@ -123,7 +123,7 @@ class GitHubReleaseCreatorTest extends TestCase
             prerelease: false
         );
 
-        $this->assertFalse($result);
+        $this->assertNull($result);
     }
 
     public function testCreateReleaseSkipsWhenNoGitHubToken(): void
@@ -154,7 +154,7 @@ class GitHubReleaseCreatorTest extends TestCase
             prerelease: false
         );
 
-        $this->assertFalse($result);
+        $this->assertNull($result);
 
         // Restore original environment
         if ($originalToken !== false) {
@@ -187,7 +187,7 @@ class GitHubReleaseCreatorTest extends TestCase
             prerelease: false
         );
 
-        $this->assertFalse($result);
+        $this->assertNull($result);
 
         // Restore original environment
         if ($originalToken !== false) {

@@ -43,7 +43,7 @@ class GitHubReleaseCreator
      * @param string $releaseName The release name/title
      * @param string $releaseBody The release notes/body
      * @param bool $prerelease Whether this is a prerelease
-     * @return bool True if release was created successfully
+     * @return \Horde\GithubApiClient\GithubRelease|null The created release object or null if failed/skipped
      */
     public function createRelease(
         string $localDir,
@@ -51,11 +51,11 @@ class GitHubReleaseCreator
         string $releaseName,
         string $releaseBody,
         bool $prerelease = false
-    ): bool {
+    ): ?\Horde\GithubApiClient\GithubRelease {
         // Check if this is a GitHub repository
         if (!$this->githubChecker->isOnGitHub($localDir)) {
             $this->output->info('Not a GitHub repository, skipping GitHub release creation');
-            return false;
+            return null;
         }
 
         // Get GitHub token from environment
@@ -63,14 +63,14 @@ class GitHubReleaseCreator
         if (!$githubToken || $githubToken === '') {
             $this->output->warn('GITHUB_TOKEN environment variable not set, skipping GitHub release creation');
             $this->output->help("Set GITHUB_TOKEN in your shell: export GITHUB_TOKEN=ghp_your_token_here");
-            return false;
+            return null;
         }
 
         // Get repository identifier
         $repoFullName = $this->githubChecker->getGitHubRepository($localDir);
         if (!$repoFullName) {
             $this->output->warn('Could not determine GitHub repository, skipping release creation');
-            return false;
+            return null;
         }
 
         try {
@@ -96,9 +96,65 @@ class GitHubReleaseCreator
             $release = $apiClient->createRelease($repo, $params);
 
             $this->output->ok("GitHub release created successfully: {$release->htmlUrl}");
-            return true;
+            return $release;
         } catch (\Exception $e) {
             $this->output->warn("Failed to create GitHub release: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Upload a PHAR file as a release asset
+     *
+     * @param \Horde\GithubApiClient\GithubRelease $release The release to upload to
+     * @param string $pharPath Path to the PHAR file
+     * @param string $assetName Name for the asset (e.g., 'horde-components-v1.0.0.phar')
+     * @return bool True if upload was successful
+     */
+    public function uploadPharAsset(
+        \Horde\GithubApiClient\GithubRelease $release,
+        string $pharPath,
+        string $assetName
+    ): bool {
+        if (!file_exists($pharPath)) {
+            $this->output->warn("PHAR file not found: {$pharPath}");
+            return false;
+        }
+
+        // Get GitHub token from environment
+        $githubToken = getenv('GITHUB_TOKEN');
+        if (!$githubToken || $githubToken === '') {
+            $this->output->warn('GITHUB_TOKEN environment variable not set, skipping PHAR upload');
+            return false;
+        }
+
+        try {
+            // Initialize GitHub API client
+            $httpClient = new CurlClient(new ResponseFactory(), new StreamFactory(), new Options());
+            $requestFactory = new RequestFactory();
+            $streamFactory = new StreamFactory();
+            $config = new GithubApiConfig(accessToken: $githubToken);
+            $apiClient = new GithubApiClient($httpClient, $requestFactory, $config, $streamFactory);
+
+            // Read PHAR file content
+            $fileContent = file_get_contents($pharPath);
+            if ($fileContent === false) {
+                $this->output->warn("Failed to read PHAR file: {$pharPath}");
+                return false;
+            }
+
+            $this->output->info("Uploading PHAR asset: {$assetName} (" . number_format(strlen($fileContent)) . " bytes)");
+            $asset = $apiClient->uploadReleaseAsset(
+                $release->uploadUrl,
+                $assetName,
+                $fileContent,
+                'application/octet-stream'
+            );
+
+            $this->output->ok("PHAR asset uploaded successfully: {$asset->browserDownloadUrl}");
+            return true;
+        } catch (\Exception $e) {
+            $this->output->warn("Failed to upload PHAR asset: " . $e->getMessage());
             return false;
         }
     }

@@ -254,7 +254,7 @@ class HordeRelease
         // Format release notes with severity indicator
         $formattedNotes = GitHubReleaseCreator::formatReleaseNotes($logNotes, $topSeverity);
 
-        $this->githubReleaseCreator->createRelease(
+        $release = $this->githubReleaseCreator->createRelease(
             localDir: (string) $this->directory,
             tagName: $releaseTag,
             releaseName: $releaseName,
@@ -262,8 +262,91 @@ class HordeRelease
             prerelease: $isPrerelease
         );
 
+        // If release was created and box.json.dist exists, build and upload PHAR
+        if ($release !== null) {
+            $this->buildAndUploadPhar($release, $hordeYml);
+        }
+
         // TODO: Post Tasks, trigger packagist and horde infra apis
         // Post release commit if needed.
+    }
+
+    /**
+     * Build and upload PHAR file if box.json.dist exists and box is available
+     *
+     * @param \Horde\GithubApiClient\GithubRelease $release The GitHub release to upload to
+     * @param HordeYml $hordeYml The component metadata
+     */
+    private function buildAndUploadPhar(\Horde\GithubApiClient\GithubRelease $release, HordeYml $hordeYml): void
+    {
+        $boxConfig = $this->directory . '/box.json.dist';
+
+        // Check if box.json.dist exists
+        if (!file_exists($boxConfig)) {
+            $this->output->info('No box.json.dist found, skipping PHAR build');
+            return;
+        }
+
+        // Check if box utility is available
+        $boxPath = trim((string) shell_exec('which box 2>/dev/null'));
+        if (empty($boxPath)) {
+            $this->output->warn('Box utility not found in PATH, skipping PHAR build');
+            $this->output->help('Install box from https://github.com/box-project/box');
+            return;
+        }
+
+        $this->output->info('Building PHAR with Box...');
+
+        // Build the PHAR
+        $buildCommand = sprintf(
+            'cd %s && %s compile --config=%s 2>&1',
+            escapeshellarg((string) $this->directory),
+            escapeshellarg($boxPath),
+            escapeshellarg('box.json.dist')
+        );
+
+        $buildOutput = [];
+        $returnCode = 0;
+        exec($buildCommand, $buildOutput, $returnCode);
+
+        if ($returnCode !== 0) {
+            $this->output->warn('Failed to build PHAR:');
+            $this->output->plain(implode("\n", $buildOutput));
+            return;
+        }
+
+        $this->output->ok('PHAR built successfully');
+
+        // Look for the PHAR file in build/ subdirectory
+        $buildDir = $this->directory . '/build';
+        if (!is_dir($buildDir)) {
+            $this->output->warn("Build directory not found: {$buildDir}");
+            return;
+        }
+
+        // Find PHAR files in build directory
+        $pharFiles = glob($buildDir . '/*.phar');
+        if (empty($pharFiles)) {
+            $this->output->warn('No PHAR files found in build/ directory');
+            return;
+        }
+
+        // Use the first PHAR file found
+        $pharPath = $pharFiles[0];
+        $this->output->info("Found PHAR: " . basename($pharPath));
+
+        // Create versioned asset name
+        // Extract basename without .phar extension, then add version and .phar
+        $baseName = basename($pharPath, '.phar');
+        $version = $hordeYml->getReleaseVersion()->toFullSemverV2();
+        $assetName = "{$baseName}-{$version}.phar";
+
+        // Upload the PHAR as a release asset
+        $this->githubReleaseCreator->uploadPharAsset(
+            $release,
+            $pharPath,
+            $assetName
+        );
     }
 
 
