@@ -118,9 +118,10 @@ DEFAULT PIPELINE:
     - phpcsfixer (code style fixing)
     - unit (test suite)
     - phpstan (static analysis)
-    - loc (code metrics)
+    - metrics (code quality metrics)
 
-    Note: The "cs" (PHPCS) and "md" (PHPMD) checks must be explicitly requested.
+    Note: The "cs" (PHPCS), "md" (PHPMD), and "loc" (PHPLOC) checks must be
+    explicitly requested.
 
 AVAILABLE CHECKS:
     unit       Run the PHPUnit unit test suite
@@ -166,7 +167,7 @@ AVAILABLE CHECKS:
                Requires: phpmetrics command available
                Reports: size, complexity, maintainability index, coupling, cohesion
                Outputs: HTML report to build/metrics/, JSON to build/metrics.json
-               Status: Not in default pipeline (opt-in only)
+               Status: In default pipeline
                Note: Modern replacement for deprecated LOC task
 
     gitignore  Check .gitignore file for required entries
@@ -189,7 +190,7 @@ AUTO-FIX MODE:
     - phpcsfixer: Fixes code style issues (runs in check mode without flag)
 
 EXAMPLES:
-    # Run default pipeline (gitignore, lint, phpcsfixer, unit, phpstan)
+    # Run default pipeline (gitignore, lint, phpcsfixer, unit, phpstan, metrics)
     horde-components qc
 
     # Run only syntax check (always works, no external tools needed)
