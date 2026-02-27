@@ -160,7 +160,7 @@ AVAILABLE CHECKS:
                Requires: phploc command available
                Reports: lines of code, cyclomatic complexity, dependencies
                Status: Not in default pipeline (opt-in only)
-               Note: PHPLOC is unmaintained, use 'metrics' task instead
+               Note: PHPLOC is unmaintained, use metrics task instead
 
     metrics    Run PHPMetrics for modern code metrics analysis
                Requires: phpmetrics command available
