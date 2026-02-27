@@ -249,7 +249,7 @@ class HordeRelease
         // Create GitHub release if this is a GitHub repository
         $releaseTag = $hordeYml->getReleaseVersion()->toHordeTag();
         $releaseName = $hordeYml->getName() . ' ' . $hordeYml->getReleaseVersion()->toFullSemverV2();
-        $isPrerelease = in_array($hordeYml->getReleaseVersion()->stability, ['alpha', 'beta', 'RC']);
+        $isPrerelease = in_array($hordeYml->getReleaseVersion()->getStability(), ['alpha', 'beta', 'RC']);
 
         // Format release notes with severity indicator
         $formattedNotes = GitHubReleaseCreator::formatReleaseNotes($logNotes, $topSeverity);
