@@ -6,6 +6,8 @@ use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Helper\Composer as ComposerHelper;
 use Horde\Components\Helper\ConventionalCommitHelper;
 use Horde\Components\Helper\Version;
+use Horde\Components\Helper\GitHubChecker;
+use Horde\Components\Helper\GitHubReleaseCreator;
 use Horde\Components\Wrapper\HordeYml;
 use Horde\Components\Wrapper\ChangelogYml;
 use Horde\Components\Component\ComponentDirectory;
@@ -52,6 +54,8 @@ class HordeRelease
         private GitHelper $gitHelper,
         private ComponentDirectory $directory,
         private Output $output,
+        private GitHubChecker $githubChecker,
+        private GitHubReleaseCreator $githubReleaseCreator,
     ) {}
     /**
      * Run the release flow. Most steps should be idempotent.
@@ -132,7 +136,9 @@ class HordeRelease
 
         // Read conventional commits for changelog notes (if not using manual version)
         $logNotes = '';
+        $topSeverity = 'subpatch'; // Default for manual versions
         if ($history !== null) {
+            $topSeverity = $history->commitReader->getTopSeverity();
             foreach ($history->commitReader->getLog() as $commit) {
                 // TODO: Nice Format
                 $logNotes .= $commit->subject . "\n";
@@ -219,6 +225,23 @@ class HordeRelease
             $currentBranch,
             $hordeYml->getReleaseVersion()->toHordeTag()
         );
+
+        // Create GitHub release if this is a GitHub repository
+        $releaseTag = $hordeYml->getReleaseVersion()->toHordeTag();
+        $releaseName = $hordeYml->getName() . ' ' . $hordeYml->getReleaseVersion()->toFullSemverV2();
+        $isPrerelease = in_array($hordeYml->getReleaseVersion()->stability, ['alpha', 'beta', 'RC']);
+
+        // Format release notes with severity indicator
+        $formattedNotes = GitHubReleaseCreator::formatReleaseNotes($logNotes, $topSeverity);
+
+        $this->githubReleaseCreator->createRelease(
+            localDir: (string) $this->directory,
+            tagName: $releaseTag,
+            releaseName: $releaseName,
+            releaseBody: $formattedNotes,
+            prerelease: $isPrerelease
+        );
+
         // TODO: Post Tasks, trigger packagist and horde infra apis
         // Post release commit if needed.
     }

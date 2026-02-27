@@ -22,6 +22,8 @@ use Horde\Components\ConfigProvider\EnvironmentConfigProvider;
 use Horde\Components\Dependencies;
 use Horde\Components\Output;
 use Horde\Components\Helper\Git as GitHelper;
+use Horde\Components\Helper\GitHubChecker;
+use Horde\Components\Helper\GitHubReleaseCreator;
 use Horde\Components\Release\Notes as ReleaseNotes;
 use Horde\Components\Release\Tasks as ReleaseTasks;
 use Horde\Components\Runner\Change as RunnerChange;
@@ -99,6 +101,13 @@ class Injector extends HordeInjector implements Dependencies
             'createOutput'
         );
         $this->setInstance(GitHelper::class, new GitHelper());
+
+        // GitHub integration dependencies
+        $gitHelper = $this->getInstance(GitHelper::class);
+        $output = $this->getInstance(Output::class);
+        $this->setInstance(GitHubChecker::class, new GitHubChecker($gitHelper));
+        $githubChecker = $this->getInstance(GitHubChecker::class);
+        $this->setInstance(GitHubReleaseCreator::class, new GitHubReleaseCreator($githubChecker, $output));
     }
 
     public static function registerAppDependencies(HordeInjector $injector)
@@ -114,6 +123,13 @@ class Injector extends HordeInjector implements Dependencies
             'createOutput'
         );
         $injector->setInstance(GitHelper::class, new GitHelper());
+
+        // GitHub integration dependencies
+        $gitHelper = $injector->getInstance(GitHelper::class);
+        $output = $injector->getInstance(Output::class);
+        $injector->setInstance(GitHubChecker::class, new GitHubChecker($gitHelper));
+        $githubChecker = $injector->getInstance(GitHubChecker::class);
+        $injector->setInstance(GitHubReleaseCreator::class, new GitHubReleaseCreator($githubChecker, $output));
     }
 
     /**
