@@ -342,11 +342,21 @@ class HordeRelease
         $assetName = "{$baseName}-{$version}.phar";
 
         // Upload the PHAR as a release asset
-        $this->githubReleaseCreator->uploadPharAsset(
+        $uploadSuccess = $this->githubReleaseCreator->uploadPharAsset(
             $release,
             $pharPath,
             $assetName
         );
+
+        // Rename the local PHAR file to match the versioned name
+        if ($uploadSuccess) {
+            $versionedPath = dirname($pharPath) . '/' . $assetName;
+            if (rename($pharPath, $versionedPath)) {
+                $this->output->ok("Renamed local PHAR to: {$assetName}");
+            } else {
+                $this->output->warn("Failed to rename local PHAR file");
+            }
+        }
     }
 
 
