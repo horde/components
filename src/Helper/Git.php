@@ -824,11 +824,11 @@ class Git
         $cmd = $this->gitBin . ' remote get-url ' . escapeshellarg($remote);
         $result = $this->execInDirectory($cmd, $localDir);
 
-        if ($result->getExitCode() !== 0) {
+        if ($result->getReturnValue() !== 0) {
             return null;
         }
 
-        $url = trim($result->getStdOut());
+        $url = trim($result->getOutputString());
         return $url !== '' ? $url : null;
     }
 
