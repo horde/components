@@ -1,4 +1,32 @@
 ---
+1.0.0-alpha18:
+  api: 1.0.0-alpha1
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-02-27
+  license:
+    identifier: LGPL-2.1-only
+    uri: http://www.horde.org/licenses/lgpl21
+  notes: |
+    fix(qc): analyze primary source directory only for accurate metrics
+    fix(qc): add pretend() method to QC Tasks for SystemCall trait compatibility
+    feat(qc): add global Composer paths to PHPMetrics detection
+    fix(qc): improve spacing and visual consistency for deactivated tasks
+    feat(qc): add metrics to default QC pipeline
+    fix: escape apostrophe in help text causing parse error
+    feat(qc): deprecate phploc, add modern PHPMetrics task
+    feat(output): add pluggable CLI presentation layer
+    feat(qc): add PHPStan task with self-discovering watermark system
+    fix: escape apostrophe in help text causing parse error
+    feat: implement PHP CS Fixer QC task with CLI-based strategy
+    feat: add gitignore QC task and --fix-qc-issues mode
+    feat: modernize PHPUnit task to use PHPUnit 11/12 API
+    docs: update qc help text with comprehensive documentation
+    feat: integrate and modernize QC module
+    fix: resolve circular dependency in injector initialization
+    feat: add GitHub Release creation to release pipeline
+    feat: add GitHub URL checker for components
 1.0.0-alpha17:
   api: 1.0.0-alpha1
   state:

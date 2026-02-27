@@ -27,7 +27,7 @@ authors:
     active: true
     role: contributor
 version:
-  release: 1.0.0-alpha17
+  release: 1.0.0-alpha18
   api: 1.0.0alpha1
 state:
   release: alpha
@@ -72,7 +72,6 @@ nocommands:
   - bin/horde-bootstrap
   - bin/horde-components-prototype-transpile
 allow-plugins: ~
-
 quality:
   phpstan:
     level: 0
