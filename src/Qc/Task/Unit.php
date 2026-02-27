@@ -13,6 +13,7 @@
 
 namespace Horde\Components\Qc\Task;
 
+use Horde\Components\Qc\ToolFinder;
 use PHPUnit\Event\Code\TestMethod;
 use PHPUnit\Event\Test\Errored;
 use PHPUnit\Event\Test\Failed;
@@ -22,7 +23,7 @@ use PHPUnit\Event\Test\Skipped;
 /**
  * Components_Qc_Task_Unit:: runs the test suite of the component.
  *
- * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2011-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -44,6 +45,11 @@ class Unit extends Base
         'errors' => 0,
         'skipped' => 0,
     ];
+
+    /**
+     * Track whether PHPUnit source has been reported.
+     */
+    private bool $sourceReported = false;
 
     /**
      * Get the name of this task.
@@ -85,47 +91,59 @@ class Unit extends Base
     {
         // Already loaded via Composer autoloader
         if (class_exists('PHPUnit\TextUI\Application')) {
-            $this->detectPhpUnitSource();
+            if (!$this->sourceReported) {
+                $this->detectPhpUnitSource();
+                $this->sourceReported = true;
+            }
             return;
         }
 
         $componentPath = $this->_config->getPath();
 
-        // Order of preference as requested:
-        // 1. vendor/ dir of target module
-        // 2. tools/ dir of target module
-        // 3. global phive tools dir for current user
-        // 4. system search path
+        // Get the actual component path (handles null/empty)
+        if (empty($componentPath)) {
+            $componentPath = getcwd() ?: '.';
+        }
+
+        // Build list of possible locations
         $possibleLocations = [
-            // 1. Vendor directory (Composer installed)
+            // Local component installations
             $componentPath . '/vendor/bin/phpunit.phar',
+            $componentPath . '/vendor/bin/phpunit',
             $componentPath . '/vendor/phpunit/phpunit/phpunit',
-            // 2. Tools directory of target module
             $componentPath . '/tools/phpunit.phar',
             $componentPath . '/tools/phpunit',
-            // 3. Global Phive tools directory for current user
+            // Global user installations
+            $_SERVER['HOME'] . '/.config/composer/vendor/bin/phpunit',
+            $_SERVER['HOME'] . '/.composer/vendor/bin/phpunit',
             $_SERVER['HOME'] . '/.phive/phpunit.phar',
             $_SERVER['HOME'] . '/.phive/phpunit',
-            // 4. System search path
+            // System installations
             '/usr/local/bin/phpunit.phar',
             '/usr/local/bin/phpunit',
             '/usr/bin/phpunit.phar',
             '/usr/bin/phpunit',
         ];
 
-        foreach ($possibleLocations as $pharPath) {
-            if (file_exists($pharPath) && is_readable($pharPath)) {
-                // Check if it's actually a PHAR
-                if (str_ends_with($pharPath, '.phar') || $this->isPhar($pharPath)) {
-                    try {
-                        require_once 'phar://' . $pharPath . '/vendor/autoload.php';
+        $toolFinder = new ToolFinder($componentPath);
+
+        foreach ($possibleLocations as $toolPath) {
+            if (!file_exists($toolPath) || !is_readable($toolPath)) {
+                continue;
+            }
+
+            // Try to load PHPUnit using ToolFinder
+            if ($toolFinder->loadTool($toolPath)) {
+                // Check if PHPUnit classes are now available
+                if (class_exists('PHPUnit\TextUI\Application')) {
+                    if (!$this->sourceReported) {
                         $version = $this->getPhpUnitVersion();
                         $versionStr = $version ? ' version ' . $version : '';
-                        $this->getOutput()->info('Using PHPUnit' . $versionStr . ' from: ' . $pharPath . ' (PHAR)');
-                        return;
-                    } catch (\Throwable $e) {
-                        // Continue trying other locations
+                        $type = $toolFinder->isPhar($toolPath) ? 'PHAR' : 'Composer';
+                        $this->getOutput()->info('Using PHPUnit' . $versionStr . ' from: ' . $toolPath . ' (' . $type . ')');
+                        $this->sourceReported = true;
                     }
+                    return;
                 }
             }
         }
@@ -199,31 +217,6 @@ class Unit extends Base
     }
 
     /**
-     * Check if a file is a PHAR archive.
-     *
-     * @param string $path Path to the file.
-     *
-     * @return bool True if the file is a PHAR.
-     */
-    private function isPhar(string $path): bool
-    {
-        if (!is_readable($path)) {
-            return false;
-        }
-
-        $handle = fopen($path, 'r');
-        if ($handle === false) {
-            return false;
-        }
-
-        // PHAR files start with a stub that contains "<?php" and "__HALT_COMPILER();"
-        $header = fread($handle, 4096);
-        fclose($handle);
-
-        return str_contains($header, '__HALT_COMPILER');
-    }
-
-    /**
      * Register event subscribers to collect test statistics.
      *
      * @return void
@@ -293,7 +286,12 @@ class Unit extends Base
         // Ensure PHPUnit is loaded (handles PHAR installations)
         $this->loadPhpUnit();
 
-        $testDir = realpath($this->_config->getPath() . '/test');
+        $componentPath = $this->_config->getPath();
+        if (empty($componentPath)) {
+            $componentPath = getcwd() ?: '.';
+        }
+
+        $testDir = realpath($componentPath . '/test');
 
         if (!$testDir || !is_dir($testDir)) {
             return 0; // No test directory, no errors
@@ -312,7 +310,6 @@ class Unit extends Base
         $this->registerEventSubscribers();
 
         // Look for phpunit.xml or phpunit.xml.dist in component root
-        $componentPath = $this->_config->getPath();
         $configFile = null;
 
         if (file_exists($componentPath . '/phpunit.xml')) {
@@ -341,6 +338,7 @@ class Unit extends Base
             mkdir($buildDir, 0o755, true);
         }
 
+        $argv[] = '--no-output';
         $argv[] = '--log-junit';
         $argv[] = $jsonLogPath;
 
@@ -426,7 +424,7 @@ class Unit extends Base
                 $message = 'There were issues. Test results: ' . implode(', ', $parts);
                 $this->getOutput()->warn($message);
             } else {
-                $message = 'No problems found. Test results: ' . implode(', ', $parts) . ' ran OK';
+                $message = 'Test results: ' . implode(', ', $parts) . ' ran OK';
                 $this->getOutput()->ok($message);
             }
         }

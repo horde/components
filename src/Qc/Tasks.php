@@ -134,8 +134,6 @@ class Tasks
                 $output->warn("$numErrors error!");
             } elseif ($numErrors) {
                 $output->warn("$numErrors errors!");
-            } else {
-                $output->ok('No problems found.');
             }
             $output->bold(str_repeat('-', 30) . "\n");
         }
