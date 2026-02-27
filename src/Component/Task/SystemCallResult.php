@@ -42,6 +42,16 @@ class SystemCallResult implements \Stringable
     }
 
     /**
+     * Alias for getReturnValue() for consistency with other code
+     *
+     * @return int The exit code
+     */
+    public function getExitCode(): int
+    {
+        return $this->_fields['retval'];
+    }
+
+    /**
      * Return multiline command output as single string
      *
      * @return string Command output as a multiline string
@@ -49,6 +59,16 @@ class SystemCallResult implements \Stringable
     public function getOutputString(): string
     {
         return implode("\n", $this->_fields['stdout']);
+    }
+
+    /**
+     * Alias for getOutputString() for consistency with other code
+     *
+     * @return string Command output as a multiline string
+     */
+    public function getStdOut(): string
+    {
+        return $this->getOutputString();
     }
 
     /**
