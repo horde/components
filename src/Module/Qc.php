@@ -186,7 +186,7 @@ EXAMPLES:
     # Explicitly run PHPCS (not in default pipeline)
     horde-components qc cs
 
-    # Check code style (won't modify files)
+    # Check code style (will not modify files)
     horde-components qc phpcsfixer
 
     # Fix code style issues
