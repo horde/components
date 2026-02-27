@@ -43,7 +43,7 @@ class CliConfig extends Base
     private Parser $parser;
     public function __construct(
         private ArgvWrapper $argv,
-        Module|null $module
+        ?Module $module
     ) {
         $builder = (new ArgvParserBuilder())->withGlobalOptions();
         if ($module) {

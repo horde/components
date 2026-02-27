@@ -84,9 +84,9 @@ class Release
          * Catch predefined release pipelines
          */
         $arguments = $config->getArguments();
-        if ((count($arguments) == 3) &&
-            $arguments[0] == 'release' &&
-            $arguments[1] == 'for') {
+        if ((count($arguments) == 3)
+            && $arguments[0] == 'release'
+            && $arguments[1] == 'for') {
             $pipeline = $arguments[2];
             if (empty($options['pipeline']['release'][$pipeline])) {
                 $this->_output->warn("Pipeline $pipeline not defined in config");
@@ -98,9 +98,9 @@ class Release
                 $options
             );
             return;
-        } elseif ((count($arguments) == 2) &&
-        $arguments[0] == 'release' &&
-        $arguments[1] == 'h6') {
+        } elseif ((count($arguments) == 2)
+        && $arguments[0] == 'release'
+        && $arguments[1] == 'h6') {
             $this->_output->warn('H6 Release Pipeline');
             $path = new ComponentDirectory($component->getComponentDirectory());
             $gitHelper = new GitHelper();
@@ -137,8 +137,8 @@ class Release
     private function _doTask($task): bool
     {
         $arguments = $this->_config->getArguments();
-        if ((count($arguments) == 1 && $arguments[0] == 'release') ||
-            in_array($task, $arguments)) {
+        if ((count($arguments) == 1 && $arguments[0] == 'release')
+            || in_array($task, $arguments)) {
             if ($this->_config->getOption('dump') && $task != 'announce') {
                 return false;
             }

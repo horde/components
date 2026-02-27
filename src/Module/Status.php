@@ -202,8 +202,8 @@ SEE ALSO:
         $options = $config->getOptions();
         $arguments = $config->getArguments();
 
-        if (!empty($options['status']) ||
-            (isset($arguments[0]) && $arguments[0] == 'status')) {
+        if (!empty($options['status'])
+            || (isset($arguments[0]) && $arguments[0] == 'status')) {
             $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory());
             $component = $this->dependencies
             ->getComponentFactory()

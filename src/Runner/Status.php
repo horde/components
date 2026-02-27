@@ -63,8 +63,8 @@ class Status
     ) {
         //        $this->gitHelper = $git;
         $options = $this->config->getOptions();
-        $this->gitRepoBase = $options['git_repo_base'] ??
-        'https://github.com/horde/';
+        $this->gitRepoBase = $options['git_repo_base']
+        ?? 'https://github.com/horde/';
     }
 
     public function run()

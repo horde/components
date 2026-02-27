@@ -401,8 +401,8 @@ class Version
             $version = $match[1] . '.0' . $match[2];
         }
         // We also had horde version 2.2.6-RC1 - make this 2.2.6RC1
-        if (preg_match('/^(\d+\.\d+\.\d+)(-RC\d+)?$/', $version, $match) &&
-            !empty($match[2])) {
+        if (preg_match('/^(\d+\.\d+\.\d+)(-RC\d+)?$/', $version, $match)
+            && !empty($match[2])) {
             $match[2] = substr((string) $match[2], 1);
             $version = $match[1] . $match[2];
         }
@@ -695,9 +695,9 @@ class Version
         \array_walk(
             $versions,
             function ($v) use ($version, $versions) {
-                if ($v[0] != '^' &&
-                    (!preg_match('/^\d+\.\d+\.\d+$/', $version) ||
-                     count($versions) > 1)) {
+                if ($v[0] != '^'
+                    && (!preg_match('/^\d+\.\d+\.\d+$/', $version)
+                     || count($versions) > 1)) {
                     throw new Exception(
                         'Unsupport Composer version format: ' . $version
                     );

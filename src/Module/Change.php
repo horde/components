@@ -139,8 +139,8 @@ to just update package.xml and doc/CHANGES:
         $options = $config->getOptions();
         $arguments = $config->getArguments();
 
-        if (!empty($options['changed']) ||
-            (isset($arguments[0]) && $arguments[0] == 'changed')) {
+        if (!empty($options['changed'])
+            || (isset($arguments[0]) && $arguments[0] == 'changed')) {
             $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory());
             $component = $this->dependencies
             ->getComponentFactory()

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Horde\Components\Qc\Task\PhpCsFixer runs PHP CS Fixer on the component.
+ * Horde\Components\Qc\Task\Phpcsfixer runs PHP CS Fixer on the component.
  *
  * @category Horde
  * @package  Components
@@ -12,7 +12,7 @@
 namespace Horde\Components\Qc\Task;
 
 /**
- * Horde\Components\Qc\Task\PhpCsFixer runs PHP CS Fixer on the component.
+ * Horde\Components\Qc\Task\Phpcsfixer runs PHP CS Fixer on the component.
  *
  * Copyright 2026 Horde LLC (http://www.horde.org/)
  *
@@ -24,7 +24,7 @@ namespace Horde\Components\Qc\Task;
  * @author   Ralf Lang <ralf.lang@ralf-lang.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class PhpCsFixer extends Base
+class Phpcsfixer extends Base
 {
     /**
      * Statistics collected during execution.
@@ -94,6 +94,10 @@ class PhpCsFixer extends Base
         $this->detectVersion($binary);
 
         $componentPath = $this->_config->getPath();
+
+        if (empty($componentPath)) {
+            $componentPath = getcwd();
+        }
 
         // Reset statistics
         $this->stats = [
@@ -225,16 +229,87 @@ class PhpCsFixer extends Base
         // Execute and capture output
         exec($command . ' 2>&1', $output, $exitCode);
 
-        // Parse JSON output
-        $jsonOutput = implode("\n", $output);
-        $this->nativeResults = json_decode($jsonOutput, true);
+        // Parse JSON output - PHP CS Fixer may output warnings before JSON
+        $fullOutput = implode("\n", $output);
 
-        if ($this->nativeResults === null && json_last_error() !== JSON_ERROR_NONE) {
-            $this->getOutput()->warn('Failed to parse PHP CS Fixer JSON output');
-            $this->getOutput()->plain('Output: ' . $jsonOutput);
+        // Extract JSON portion (find the JSON object in the output)
+        $jsonOutput = $this->extractJson($fullOutput);
+
+        if ($jsonOutput !== null) {
+            $this->nativeResults = json_decode($jsonOutput, true);
+
+            if ($this->nativeResults === null && json_last_error() !== JSON_ERROR_NONE) {
+                $this->getOutput()->warn('Failed to parse PHP CS Fixer JSON output');
+                if ($this->getOutput()->isVerbose()) {
+                    $this->getOutput()->plain('JSON portion: ' . $jsonOutput);
+                }
+            }
+        } else {
+            // No JSON found in output
+            if ($this->getOutput()->isVerbose()) {
+                $this->getOutput()->plain('Full output: ' . $fullOutput);
+            }
         }
 
         return $exitCode;
+    }
+
+    /**
+     * Extract JSON object from mixed output.
+     *
+     * PHP CS Fixer may output warnings and informational messages before the JSON.
+     * This method finds and extracts just the JSON portion.
+     *
+     * @param string $output The full output from PHP CS Fixer.
+     *
+     * @return string|null The extracted JSON string, or null if not found.
+     */
+    private function extractJson(string $output): ?string
+    {
+        // Find the first opening brace that starts a JSON object
+        $start = strpos($output, '{');
+        if ($start === false) {
+            return null;
+        }
+
+        // Find the matching closing brace by counting braces
+        $braceCount = 0;
+        $inString = false;
+        $escapeNext = false;
+        $length = strlen($output);
+
+        for ($i = $start; $i < $length; $i++) {
+            $char = $output[$i];
+
+            if ($escapeNext) {
+                $escapeNext = false;
+                continue;
+            }
+
+            if ($char === '\\') {
+                $escapeNext = true;
+                continue;
+            }
+
+            if ($char === '"') {
+                $inString = !$inString;
+                continue;
+            }
+
+            if (!$inString) {
+                if ($char === '{') {
+                    $braceCount++;
+                } elseif ($char === '}') {
+                    $braceCount--;
+                    if ($braceCount === 0) {
+                        // Found matching closing brace
+                        return substr($output, $start, $i - $start + 1);
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -273,7 +348,7 @@ class PhpCsFixer extends Base
 
         // Create build directory if it doesn't exist
         if (!is_dir($buildDir)) {
-            mkdir($buildDir, 0755, true);
+            mkdir($buildDir, 0o755, true);
         }
 
         // Write native PHP CS Fixer JSON

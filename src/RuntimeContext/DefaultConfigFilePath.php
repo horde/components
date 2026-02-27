@@ -1,14 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Horde\Components\RuntimeContext;
+
 use Horde\Components\Application\ShellEnvironment;
 
 class DefaultConfigFilePath
 {
-    public function __construct(private ShellEnvironment $env)
-    {
-    }
+    public function __construct(private ShellEnvironment $env) {}
 
     /**
      * Returns the default config file path.
@@ -27,7 +27,7 @@ class DefaultConfigFilePath
         // TODO: Mind CLI option.
         $homeDir = $this->env->getOrDefault('HOME', '');
         $defaultConfigFilePath = implode(DIRECTORY_SEPARATOR, [$homeDir, '.config', 'horde', 'components.php']);
-        $legacyConfigFilePath = dirname(__FILE__, 2) . DIRECTORY_SEPARATOR . 'config' .  DIRECTORY_SEPARATOR . 'conf.php';
+        $legacyConfigFilePath = dirname(__FILE__, 2) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'conf.php';
         if (is_readable($defaultConfigFilePath)) {
             return $defaultConfigFilePath;
         }
@@ -43,4 +43,3 @@ class DefaultConfigFilePath
         return $this->find();
     }
 }
-

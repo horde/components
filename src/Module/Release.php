@@ -188,8 +188,8 @@ The following example would generate the package and add the release tag to git 
             $config->setOption('pretend', true);
         }
         $arguments = $config->getArguments();
-        if (!empty($options['release']) ||
-            (isset($arguments[0]) && $arguments[0] == 'release')) {
+        if (!empty($options['release'])
+            || (isset($arguments[0]) && $arguments[0] == 'release')) {
             $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory());
             $component = $this->dependencies
             ->getComponentFactory()

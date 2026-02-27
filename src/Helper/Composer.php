@@ -141,8 +141,8 @@ class Composer
         // Handle cases where vendor is not horde.
         $this->_vendor = $options['vendor'] ?? 'horde';
         // The git repo base URL, defaults to github/vendor.
-        $this->_gitRepoBase = $options['git_repo_base'] ??
-            'https://github.com/' . $this->_vendor . '/';
+        $this->_gitRepoBase = $options['git_repo_base']
+            ?? 'https://github.com/' . $this->_vendor . '/';
         // Decide on repo type hints
         if (!empty($options['composer_repo'])) {
             if ($options['composer_repo'] == 'vcs') {
@@ -317,11 +317,9 @@ class Composer
         // Debatable. We should probably drop this auto-upgrade soon and rely on the developer to know the difference.
         elseif ($package['type'] == 'application') {
             $composerDefinition->type = 'horde-application';
-        }
-        elseif ($package['type'] == 'component') {
+        } elseif ($package['type'] == 'component') {
             $composerDefinition->type = 'horde-application';
-        }
-        elseif ($package['type'] == 'horde-theme') {
+        } elseif ($package['type'] == 'horde-theme') {
             $composerDefinition->type = 'horde-theme';
         } else {
             $composerDefinition->type = $package['type'];

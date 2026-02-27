@@ -121,8 +121,8 @@ class Environment
                 }
             }
         }
-        if (empty($options['channelxmlpath']) &&
-            !empty($this->_sourcedirectory)) {
+        if (empty($options['channelxmlpath'])
+            && !empty($this->_sourcedirectory)) {
             $options['channelxmlpath'] = $this->_sourcedirectory;
         }
         if (!empty($options['channelxmlpath'])) {

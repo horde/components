@@ -234,7 +234,7 @@ class Unit extends Base
 
         // Subscribe to test finished events to count tests
         $facade->registerSubscriber(
-            new class($this->stats) implements \PHPUnit\Event\Test\FinishedSubscriber {
+            new class ($this->stats) implements \PHPUnit\Event\Test\FinishedSubscriber {
                 public function __construct(private array &$stats) {}
 
                 public function notify(Finished $event): void
@@ -246,7 +246,7 @@ class Unit extends Base
 
         // Subscribe to test failed events
         $facade->registerSubscriber(
-            new class($this->stats) implements \PHPUnit\Event\Test\FailedSubscriber {
+            new class ($this->stats) implements \PHPUnit\Event\Test\FailedSubscriber {
                 public function __construct(private array &$stats) {}
 
                 public function notify(Failed $event): void
@@ -258,7 +258,7 @@ class Unit extends Base
 
         // Subscribe to test errored events
         $facade->registerSubscriber(
-            new class($this->stats) implements \PHPUnit\Event\Test\ErroredSubscriber {
+            new class ($this->stats) implements \PHPUnit\Event\Test\ErroredSubscriber {
                 public function __construct(private array &$stats) {}
 
                 public function notify(Errored $event): void
@@ -270,7 +270,7 @@ class Unit extends Base
 
         // Subscribe to test skipped events
         $facade->registerSubscriber(
-            new class($this->stats) implements \PHPUnit\Event\Test\SkippedSubscriber {
+            new class ($this->stats) implements \PHPUnit\Event\Test\SkippedSubscriber {
                 public function __construct(private array &$stats) {}
 
                 public function notify(Skipped $event): void
@@ -338,7 +338,7 @@ class Unit extends Base
 
         // Create build directory if it doesn't exist
         if (!is_dir($buildDir)) {
-            mkdir($buildDir, 0755, true);
+            mkdir($buildDir, 0o755, true);
         }
 
         $argv[] = '--log-junit';

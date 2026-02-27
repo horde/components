@@ -80,6 +80,12 @@ class ArgvParserBuilder
         );
         $this->parser->addOption(
             new Option(
+                '--cli-format',
+                ['action' => 'store', 'help'   => 'CLI presentation format: autodetect (default), classic, ci, unicode', 'default' => 'autodetect', 'dest' => 'cli_format']
+            )
+        );
+        $this->parser->addOption(
+            new Option(
                 '-d',
                 '--working-dir',
                 ['action' => 'store', 'help'   => 'The working directory for the command']

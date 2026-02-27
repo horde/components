@@ -120,8 +120,8 @@ class Identify
         // Usability: check if we are in a subdir of a component
         do {
             if (
-                $this->_isDirectory($cwd) &&
-                ($this->_containsPackageXml($cwd) || $this->_containsHordeYml($cwd))
+                $this->_isDirectory($cwd)
+                && ($this->_containsPackageXml($cwd) || $this->_containsHordeYml($cwd))
             ) {
                 return [$this->_dependencies
                 ->getComponentFactory()

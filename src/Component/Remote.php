@@ -116,8 +116,8 @@ class Remote extends Base
         foreach ($versions as $version) {
             // If this is a stable version we want the previous stable version,
             // otherwise use any previous version.
-            if ($currentState == 'stable' &&
-                $releases->getReleaseStability($version) != 'stable') {
+            if ($currentState == 'stable'
+                && $releases->getReleaseStability($version) != 'stable') {
                 continue;
             }
             if (version_compare($version, $currentVersion, '>=')) {

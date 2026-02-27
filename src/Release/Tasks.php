@@ -98,8 +98,8 @@ class Tasks
         $this->_sequence = $sequence;
         $taskSequence = [];
         // check for predefined pipelines
-        if ((count($sequence) == 2) &&
-            $sequence[0] == 'pipeline:'
+        if ((count($sequence) == 2)
+            && $sequence[0] == 'pipeline:'
         ) {
             $pipeline = $sequence[1];
             $this->_dependencies->getOutput()->info("Running Pipeline $pipeline");

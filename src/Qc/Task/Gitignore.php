@@ -64,6 +64,11 @@ class Gitignore extends Base
     public function run(array &$options = []): int
     {
         $componentPath = $this->_config->getPath();
+
+        if (empty($componentPath)) {
+            $componentPath = getcwd();
+        }
+
         $gitignorePath = $this->findGitignore($componentPath);
 
         if ($gitignorePath === null) {

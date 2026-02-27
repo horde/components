@@ -60,7 +60,7 @@ class Git
     /**
      * A variable potentially holding the output tool
      */
-    public Output|null $output;
+    public ?Output $output;
     /**
      * Constructor
      *
@@ -839,7 +839,7 @@ class Git
      *
      * @return string The command output.
      */
-    protected function system(string $call): string|null
+    protected function system(string $call): ?string
     {
         if (empty($this->options['pretend'])) {
             //@todo Error handling

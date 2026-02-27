@@ -80,14 +80,14 @@ class Announce extends Base
         );
         $mailer->append($this->getNotes()->getAnnouncement());
         $mailer->append(
-            "\n\n" .
-            'The full list of changes can be viewed here:' .
-            "\n\n" .
-            $this->getComponent()->getChangelogLink() .
-            "\n\n" .
-            'Have fun!' .
-            "\n\n" .
-            'The Horde Team.'
+            "\n\n"
+            . 'The full list of changes can be viewed here:'
+            . "\n\n"
+            . $this->getComponent()->getChangelogLink()
+            . "\n\n"
+            . 'Have fun!'
+            . "\n\n"
+            . 'The Horde Team.'
         );
 
         if (!$this->getTasks()->pretend()) {

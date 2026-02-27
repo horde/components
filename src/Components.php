@@ -199,7 +199,7 @@ This is a list of available actions (use "help ACTION" to get additional informa
         }
     }
 
-    protected static function _prepareConfig(ArgvWrapper $argv, Module|null $module = null): \Horde\Components\Configs
+    protected static function _prepareConfig(ArgvWrapper $argv, ?Module $module = null): \Horde\Components\Configs
     {
         $config = new Configs();
         $config->addConfigurationType(

@@ -53,8 +53,8 @@ class Lint extends Base
         );
         $errors = 0;
         foreach ($recursion as $file) {
-            if ($file->isFile() && preg_match('/.php$/', (string) $file->getFilename()) &&
-            !str_starts_with((string) $file->getPathname(), $lib . DIRECTORY_SEPARATOR . 'vendor')
+            if ($file->isFile() && preg_match('/.php$/', (string) $file->getFilename())
+            && !str_starts_with((string) $file->getPathname(), $lib . DIRECTORY_SEPARATOR . 'vendor')
             ) {
                 $errors += $this->_lint($file->getPathname());
             }

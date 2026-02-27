@@ -118,13 +118,13 @@ class Phpstan extends Base
             ];
 
             // Run at watermark level (MUST PASS)
-            $this->getOutput()->info('Testing watermark level ' . $watermark . '...');
+            $this->getOutput()->running('Testing watermark level ' . $watermark . '...');
             $watermarkResult = $this->testLevel($binary, $componentPath, $watermark);
 
             if (!$watermarkResult['passed']) {
                 // CODE REGRESSION - fails at watermark!
-                $this->getOutput()->warn(
-                    '❌ REGRESSION: Code fails at watermark level ' . $watermark
+                $this->getOutput()->regression(
+                    'Code fails at watermark level ' . $watermark
                     . ' (' . $watermarkResult['errors'] . ' error'
                     . ($watermarkResult['errors'] !== 1 ? 's' : '') . ')'
                 );
@@ -141,7 +141,7 @@ class Phpstan extends Base
             }
 
             // Watermark passed - discover highest passing level
-            $this->getOutput()->info('Discovering highest passing level...');
+            $this->getOutput()->running('Discovering highest passing level...');
 
             $highestPassing = $watermark;
             $testLevel = $watermark + 1;
@@ -156,8 +156,8 @@ class Phpstan extends Base
                     $testLevel++;
                 } else {
                     $this->getOutput()->info(
-                        '✗ Level ' . $testLevel . ' fails with ' . $result['errors'] .
-                        ' error' . ($result['errors'] !== 1 ? 's' : '')
+                        '✗ Level ' . $testLevel . ' fails with ' . $result['errors']
+                        . ' error' . ($result['errors'] !== 1 ? 's' : '')
                     );
                     break; // Stop at first failure
                 }
@@ -196,8 +196,8 @@ class Phpstan extends Base
                     '✓ Code passes watermark level ' . $watermark
                 );
                 $this->getOutput()->info(
-                    'Next level (' . $nextLevel . ') has ' . $nextResult['errors'] .
-                    ' error' . ($nextResult['errors'] !== 1 ? 's' : '') . ' remaining'
+                    'Next level (' . $nextLevel . ') has ' . $nextResult['errors']
+                    . ' error' . ($nextResult['errors'] !== 1 ? 's' : '') . ' remaining'
                 );
 
                 // Use watermark results for output

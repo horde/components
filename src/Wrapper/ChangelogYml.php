@@ -89,7 +89,9 @@ class ChangelogYml extends \ArrayObject implements Wrapper, \Stringable
      */
     public function __toString(): string
     {
-        $this->uksort(function ($a, $b) { return strnatcmp($b, $a);});
+        $this->uksort(function ($a, $b) {
+            return strnatcmp($b, $a);
+        });
         return \Horde_Yaml::dump(
             iterator_to_array($this),
             ['wordwrap' => 0]

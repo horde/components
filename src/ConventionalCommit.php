@@ -99,7 +99,7 @@ class ConventionalCommit extends GitCommit
         $this->description = (string) $conventionalAttributes['description'] ?? '';
     }
 
-    public static function fromGitCommit(GitCommit $commit): ConventionalCommit|null
+    public static function fromGitCommit(GitCommit $commit): ?ConventionalCommit
     {
         $regex =  '/^(?P<type>build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(?P<scope>\([\w\-\.]+\))?(?P<breaking>!)?: (?P<description>.*)\s*/u';
         $res = preg_match($regex, $commit->subject, $matches);

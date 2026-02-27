@@ -161,7 +161,7 @@ interface Component
      *
      * @return string|null The path name or NULL if there is no DOCS_ORIGIN file.
      */
-    public function getDocumentOrigin(): string|null;
+    public function getDocumentOrigin(): ?string;
 
     /**
      * Update the package.xml file for this component.

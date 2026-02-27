@@ -36,7 +36,7 @@ use Horde_Pear_Package_Xml;
  */
 class Archive extends Base
 {
-    protected Horde_Pear_Package_Xml|null $package = null;
+    protected ?Horde_Pear_Package_Xml $package = null;
     /**
      * Constructor.
      *

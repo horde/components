@@ -135,13 +135,13 @@ class Installer
                     $dependency,
                     $options
                 );
-                if ($dependency->isRequired() ||
-                    !empty($c_options['include'])) {
+                if ($dependency->isRequired()
+                    || !empty($c_options['include'])) {
                     $dep = $dependency->getComponent($c_options);
-                    if (!($dep instanceof Archive) &&
-                        !empty($options['build_distribution'])) {
-                        if (empty($options['allow_remote']) &&
-                            !($component instanceof Source)) {
+                    if (!($dep instanceof Archive)
+                        && !empty($options['build_distribution'])) {
+                        if (empty($options['allow_remote'])
+                            && !($component instanceof Source)) {
                             throw new Exception(
                                 sprintf(
                                     'Cannot add component "%s". Remote access has been disabled (activate with --allow-remote)!',

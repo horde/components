@@ -237,8 +237,8 @@ class Dependencies
         array_multisort($channels, $names, $colors);
         foreach ($names as $key => $name) {
             $this->_output->{$colors[$key]}(
-                \Horde_String::pad($name, 28) .
-                \Horde_String::pad('[' . $channels[$key] . ']', 20)
+                \Horde_String::pad($name, 28)
+                . \Horde_String::pad('[' . $channels[$key] . ']', 20)
             );
         }
     }

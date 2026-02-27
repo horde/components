@@ -106,8 +106,8 @@ class HordeRelease
             if ($this->gitHelper->localTagExists((string) $this->directory, $nextTag)) {
                 $this->output->info("Tag '{$nextTag}' exists locally. Performing post-release edits only.");
                 $skipPostReleaseEdits = true;
-            } elseif ($this->gitHelper->hasRemotes((string) $this->directory) &&
-                      $this->gitHelper->remoteTagExists((string) $this->directory, $nextTag)) {
+            } elseif ($this->gitHelper->hasRemotes((string) $this->directory)
+                      && $this->gitHelper->remoteTagExists((string) $this->directory, $nextTag)) {
                 throw new Exception(
                     sprintf(
                         'Tag "%s" already exists on remote. Cannot release version %s again.',
@@ -134,8 +134,8 @@ class HordeRelease
                 if ($this->gitHelper->remoteTagExists((string) $this->directory, $nextTag)) {
                     throw new Exception(
                         sprintf(
-                            "Tag \"%s\" already exists on remote. Cannot release version %s again.\n" .
-                            "Suggestion: Use --next-version to specify a different version (e.g., --next-version %s)",
+                            "Tag \"%s\" already exists on remote. Cannot release version %s again.\n"
+                            . "Suggestion: Use --next-version to specify a different version (e.g., --next-version %s)",
                             $nextTag,
                             $nextVersion->toFullSemverV2(),
                             $nextVersion->nextVersionObject()->toFullSemverV2()

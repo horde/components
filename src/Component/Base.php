@@ -111,8 +111,8 @@ abstract class Base implements Component
         foreach ($versions as $version) {
             // If this is a stable version we want the previous stable version,
             // otherwise use any previous version.
-            if ($currentState == 'stable' &&
-                $version['stability'] != 'stable') {
+            if ($currentState == 'stable'
+                && $version['stability'] != 'stable') {
                 continue;
             }
             if (version_compare($version['version'], $currentVersion, '>=')) {

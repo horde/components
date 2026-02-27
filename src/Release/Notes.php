@@ -177,8 +177,8 @@ The major changes compared to the %s version %s are:%s',
      */
     public function getBranch(): string
     {
-        if (!empty($this->_notes['branch']) &&
-            $this->_notes['name'] != \Horde::class) {
+        if (!empty($this->_notes['branch'])
+            && $this->_notes['name'] != \Horde::class) {
             return strtr($this->_notes['branch'], ['Horde ' => 'H']);
         }
         return '';

@@ -102,7 +102,7 @@ class DependencyList implements Iterator
      *
      * @return Dependency|null
      */
-    public function __get($key): Dependency|null
+    public function __get($key): ?Dependency
     {
         $dependencies = $this->_getDependencies();
         if (isset($dependencies[$key])) {
@@ -127,7 +127,7 @@ class DependencyList implements Iterator
      *
      * @return Dependency|null The current dependency.
      */
-    public function current(): Dependency|null
+    public function current(): ?Dependency
     {
         return current($this->_dependencies);
     }
@@ -137,7 +137,7 @@ class DependencyList implements Iterator
      *
      * @return mixed The key for the current position.
      */
-    public function key(): Dependency|null
+    public function key(): ?Dependency
     {
         return key($this->_dependencies);
     }

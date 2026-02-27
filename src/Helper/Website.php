@@ -84,11 +84,11 @@ class Website
         }
 
         if (\preg_match('/^Horde_/', $component->getName())) {
-            $view_root = $destination . '/app/views/Library/libraries/' .
-                $component->getName() . '/docs';
+            $view_root = $destination . '/app/views/Library/libraries/'
+                . $component->getName() . '/docs';
         } else {
-            $view_root = $destination . '/app/views/App/apps/' .
-                $component->getName() . '/docs';
+            $view_root = $destination . '/app/views/App/apps/'
+                . $component->getName() . '/docs';
         }
         if (!file_exists($view_root)) {
             mkdir($view_root, 0o777, true);
@@ -212,11 +212,11 @@ class Website
             return $doc_files;
         }
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path)) as $file) {
-            if ($file->isFile() &&
-                preg_match('/[A-Z_]+/', (string) $file->getFilename()) &&
-                !preg_match('/\.(html|php)$/', (string) $file->getFilename()) &&
-                !in_array($file->getFilename(), ['COPYING', 'LICENSE']) &&
-                !preg_match('#/examples/#', (string) $file->getPathname())) {
+            if ($file->isFile()
+                && preg_match('/[A-Z_]+/', (string) $file->getFilename())
+                && !preg_match('/\.(html|php)$/', (string) $file->getFilename())
+                && !in_array($file->getFilename(), ['COPYING', 'LICENSE'])
+                && !preg_match('#/examples/#', (string) $file->getPathname())) {
                 $doc_files[$file->getPathname()] = $file->getFilename();
             }
         }

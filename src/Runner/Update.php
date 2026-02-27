@@ -61,8 +61,8 @@ class Update
             $this->_config->getOptions()
         );
 
-        if (!empty($options['updatexml']) ||
-            (isset($arguments[0]) && $arguments[0] == 'update')) {
+        if (!empty($options['updatexml'])
+            || (isset($arguments[0]) && $arguments[0] == 'update')) {
             $action = !empty($options['action'])
                 ? $options['action']
                 : 'update';
@@ -78,8 +78,8 @@ class Update
             }
             /** @var Source $component */
             $component = $this->_config->getComponent();
-            if (!empty($options['new_version']) ||
-                !empty($options['new_api'])) {
+            if (!empty($options['new_version'])
+                || !empty($options['new_api'])) {
                 $result = $component->setVersion(
                     $options['new_version'],
                     $options['new_api'],
@@ -88,12 +88,12 @@ class Update
                 if ($action != 'print' && $action != 'diff') {
                     $this->_output->ok($result);
                 }
-                if (!empty($options['new_version']) &&
-                    !empty($options['sentinel'])) {
+                if (!empty($options['new_version'])
+                    && !empty($options['sentinel'])) {
                     $notes = new ReleaseNotes($this->_output);
                     $notes->setComponent($component);
-                    $application_version =
-                        HelperVersion::pearToHordeWithBranch(
+                    $application_version
+                        = HelperVersion::pearToHordeWithBranch(
                             $options['new_version'] . '-git',
                             $notes->getBranch()
                         );
@@ -107,8 +107,8 @@ class Update
                     }
                 }
             }
-            if (!empty($options['new_state']) ||
-                !empty($options['new_apistate'])) {
+            if (!empty($options['new_state'])
+                || !empty($options['new_apistate'])) {
                 $result = $component->setState(
                     $options['new_state'],
                     $options['new_apistate'],

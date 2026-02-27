@@ -395,8 +395,8 @@ class ChangeLog
             }
             $notes = explode("\n", (string) $info['notes']);
             foreach ($notes as $entry) {
-                if (preg_match('/^\[.*?\] (.*)$/', $entry, $match, PREG_OFFSET_CAPTURE) ||
-                    preg_match('/^[A-Z]{3,}: (.*)$/', $entry, $match, PREG_OFFSET_CAPTURE)) {
+                if (preg_match('/^\[.*?\] (.*)$/', $entry, $match, PREG_OFFSET_CAPTURE)
+                    || preg_match('/^[A-Z]{3,}: (.*)$/', $entry, $match, PREG_OFFSET_CAPTURE)) {
                     $indent = $match[1][1];
                 } else {
                     $indent = 6;

@@ -114,8 +114,8 @@ class InstallModule extends Base
         $options = $config->getOptions();
         $arguments = $config->getArguments();
 
-        if (!empty($options['install']) ||
-            (isset($arguments[0]) && $arguments[0] == 'install')) {
+        if (!empty($options['install'])
+            || (isset($arguments[0]) && $arguments[0] == 'install')) {
             $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory());
             $component = $this->dependencies
             ->getComponentFactory()

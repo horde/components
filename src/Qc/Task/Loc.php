@@ -72,8 +72,8 @@ class Loc extends Base
         );
         $errors = 0;
         foreach ($recursion as $file) {
-            if ($file->isFile() && preg_match('/.php$/', (string) $file->getFilename()) &&
-            !str_starts_with((string) $file->getPathname(), $vendorDir)
+            if ($file->isFile() && preg_match('/.php$/', (string) $file->getFilename())
+            && !str_starts_with((string) $file->getPathname(), $vendorDir)
             ) {
                 $files[] = $file->getPathname();
             }
@@ -93,8 +93,8 @@ class Loc extends Base
     {
         if ($count['directories'] > 0) {
             printf(
-                "Directories                                 %10d\n" .
-                "Files                                       %10d\n\n",
+                "Directories                                 %10d\n"
+                . "Files                                       %10d\n\n",
                 $count['directories'],
                 $count['files']
             );
@@ -213,9 +213,9 @@ class Loc extends Base
         );
 
         printf(
-            "\nTests\n" .
-            "  Classes                                   %10d\n" .
-            "  Methods                                   %10d\n",
+            "\nTests\n"
+            . "  Classes                                   %10d\n"
+            . "  Methods                                   %10d\n",
             $count['testClasses'],
             $count['testMethods']
         );

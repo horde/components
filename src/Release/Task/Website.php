@@ -44,8 +44,8 @@ class Website extends Base
         $errors = [];
         if (empty($options['web_dir'])) {
             $errors[] = 'The "web" option has no value. Where is the local checkout of the horde-web repository?';
-        } elseif (!file_exists($options['web_dir'] . '/config/versions.sqlite') ||
-            !is_writable($options['web_dir'] . '/config/versions.sqlite')) {
+        } elseif (!file_exists($options['web_dir'] . '/config/versions.sqlite')
+            || !is_writable($options['web_dir'] . '/config/versions.sqlite')) {
             $errors[] = 'The database at ' . $options['web_dir'] . '/config/versions.sqlite doesn\'t exist or is not writable';
         } else {
             $this->_db = new \PDO('sqlite:' . $options['web_dir'] . '/config/versions.sqlite');

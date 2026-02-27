@@ -50,8 +50,8 @@ function processDependencies($component)
             $name = 'php5-pear';
             $requires[$name]      = "$name >= " . $dependency['version'];
             $buildRequires[$name] = "$name >= " . $dependency['version'];
-        } elseif (!empty($dependency['channel']) &&
-            $dependency['channel'] == 'pear.horde.org') {
+        } elseif (!empty($dependency['channel'])
+            && $dependency['channel'] == 'pear.horde.org') {
 
             // library or app naming scheme?
             if (preg_match('/Horde_/', $dependency['name'])) {
@@ -67,8 +67,8 @@ function processDependencies($component)
                 $requires[$name]      = isset($dependency['min']) ? "$name >= " . $dependency['min'] : "$name";
                 $buildRequires[$name] = isset($dependency['min']) ? "$name >= " . $dependency['min'] : "$name";
             }
-        } elseif (!empty($dependency['channel']) &&
-            $dependency['channel'] == 'pear.php.net') {
+        } elseif (!empty($dependency['channel'])
+            && $dependency['channel'] == 'pear.php.net') {
             $name = 'php5-pear-' . $dependency['name'];
             if ($dependency['optional'] == 'yes') {
                 $suggests[$name] = isset($dependency['min']) ? "$name >= " . $dependency['min'] : "$name";

@@ -66,8 +66,8 @@ class Github
         //        $this->gitHelper = $git;
         $this->environmentConfig ??= new EnvironmentConfigProvider(getenv());
         $options = $this->config->getOptions();
-        $this->gitRepoBase = $options['git_repo_base'] ??
-        'https://github.com/horde/';
+        $this->gitRepoBase = $options['git_repo_base']
+        ?? 'https://github.com/horde/';
         $this->localCheckoutDir = $options['checkout_dir'] ?? $gitCheckoutDirectory;
     }
 

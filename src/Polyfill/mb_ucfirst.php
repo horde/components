@@ -26,7 +26,7 @@ if (!function_exists('mb_ucfirst')) {
      */
     function mb_ucfirst(string $string, ?string $encoding = null): string
     {
-        $encoding = $encoding ?? mb_internal_encoding();
+        $encoding ??= mb_internal_encoding();
 
         if (empty($string)) {
             return $string;

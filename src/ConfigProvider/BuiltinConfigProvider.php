@@ -9,8 +9,8 @@ namespace Horde\Components\ConfigProvider;
  */
 class BuiltinConfigProvider implements ConfigProvider
 {
-    public function __construct(private array $settings =
-    [
+    public function __construct(private array $settings
+    = [
 
     ]) {}
 

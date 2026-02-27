@@ -57,8 +57,8 @@ class Git
     ) {
         //        $this->gitHelper = $git;
         $options = $this->config->getOptions();
-        $this->gitRepoBase = $options['git_repo_base'] ??
-        'https://github.com/horde/';
+        $this->gitRepoBase = $options['git_repo_base']
+        ?? 'https://github.com/horde/';
         $this->localCheckoutDir = $options['checkout_dir'] ?? '/srv/git/horde';
     }
 

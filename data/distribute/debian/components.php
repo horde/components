@@ -38,12 +38,12 @@ if (!is_executable($pkg_info)) {
     );
 }
 $package_name = shell_exec(
-    $pkg_info . ' debian_pkgname pear.horde.org ' .
-    escapeshellarg($component->getName())
+    $pkg_info . ' debian_pkgname pear.horde.org '
+    . escapeshellarg($component->getName())
 );
 $package_version = shell_exec(
-    $pkg_info . ' debian_version ' .
-    escapeshellarg($component->getVersion())
+    $pkg_info . ' debian_version '
+    . escapeshellarg($component->getVersion())
 );
 $archive = array_shift(
     $component->placeArchive($destination, ["logger" => $this->_output])

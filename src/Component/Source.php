@@ -133,10 +133,10 @@ class Source extends Base
 
                 // Some older changelog entries may not have the state
                 // attribute, this may give index errors
-                if ($currentState == 'stable' &&
-                    !empty($info['state']) &&
-                    !empty($info['state']['release']) &&
-                    $info['state']['release'] != 'stable') {
+                if ($currentState == 'stable'
+                    && !empty($info['state'])
+                    && !empty($info['state']['release'])
+                    && $info['state']['release'] != 'stable') {
                     continue;
                 }
                 if (\version_compare($version, $currentVersion, '>=')) {
@@ -318,8 +318,8 @@ class Source extends Base
                 continue;
             }
             foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path)) as $file) {
-                if ($file->isFile() &&
-                    $file->getFilename() == 'DOCS_ORIGIN') {
+                if ($file->isFile()
+                    && $file->getFilename() == 'DOCS_ORIGIN') {
                     return [$file->getPathname(), $this->directory];
                 }
             }
@@ -593,8 +593,8 @@ class Source extends Base
 
         // Create changelog.yml
         $helper = $this->getFactory()->createChangelog($this);
-        if (!$helper->changelogFileExists() &&
-            $this->getPackageXml()->exists()) {
+        if (!$helper->changelogFileExists()
+            && $this->getPackageXml()->exists()) {
             $helper->migrateToChangelogYml($this->getPackageXml());
             if (empty($options['pretend'])) {
                 $output[] = sprintf(
@@ -1314,8 +1314,8 @@ class Source extends Base
                     break;
                 }
             }
-            if (($wrapper->exists() || strlen((string) $wrapper)) &&
-                strlen($wrapperDiff = $this->_createDiff($wrapper, $current))) {
+            if (($wrapper->exists() || strlen((string) $wrapper))
+                && strlen($wrapperDiff = $this->_createDiff($wrapper, $current))) {
                 $diff .= "\n" . $wrapperDiff;
             }
         }
