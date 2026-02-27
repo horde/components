@@ -73,6 +73,11 @@ class Qc
             $sequence[] = 'phpstan';
         }
 
+        // Metrics (phpmetrics) provides code quality insights
+        if ($this->_doTask('metrics', $arguments)) {
+            $sequence[] = 'metrics';
+        }
+
         // PHPMD (md) is only run when explicitly requested, not in default pipeline
         if ($this->_doTask('md', $arguments, false)) {
             $sequence[] = 'md';
@@ -87,12 +92,6 @@ class Qc
         // Deprecated: Use 'metrics' task (PHPMetrics) instead for modern metrics
         if ($this->_doTask('loc', $arguments, false)) {
             $sequence[] = 'loc';
-        }
-
-        // Metrics (phpmetrics) is only run when explicitly requested, not in default pipeline yet
-        // Modern replacement for deprecated LOC task
-        if ($this->_doTask('metrics', $arguments, false)) {
-            $sequence[] = 'metrics';
         }
 
         if (!empty($sequence)) {
