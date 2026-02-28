@@ -627,7 +627,7 @@ class Version
             throw new Exception('Invalid version number ' . $version);
         }
 
-        return $match[1] . ++$match[2] . '.0';
+        return $match[1] . '.' . ++$match[2] . '.0';
     }
 
     public static function nextPatchVersion($version): string
