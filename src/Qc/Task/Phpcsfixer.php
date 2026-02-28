@@ -219,6 +219,9 @@ class Phpcsfixer extends Base
         // Allow risky rules (may be needed for some Horde rules)
         $cmd[] = '--allow-risky=yes';
 
+        // Disable interactive prompts (CI/automation mode)
+        $cmd[] = '--no-interaction';
+
         // Show progress if verbose
         if ($this->getOutput()->isVerbose()) {
             $cmd[] = '--verbose';

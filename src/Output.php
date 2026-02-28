@@ -242,6 +242,16 @@ class Output
     }
 
     /**
+     * Get the terminal width in columns.
+     *
+     * @return int|null The terminal width in columns, or null if not detected
+     */
+    public function getTerminalWidth(): ?int
+    {
+        return $this->_cli->getWidth();
+    }
+
+    /**
      * Output a message with semantic category.
      *
      * Semantic categories provide richer meaning than the basic 4 levels

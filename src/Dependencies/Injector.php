@@ -24,6 +24,7 @@ use Horde\Components\Output;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Helper\GitHubChecker;
 use Horde\Components\Helper\GitHubReleaseCreator;
+use Horde\Components\Helper\PullRequestManager;
 use Horde\Components\Release\Notes as ReleaseNotes;
 use Horde\Components\Release\Tasks as ReleaseTasks;
 use Horde\Components\Runner\Change as RunnerChange;
@@ -38,6 +39,7 @@ use Horde\Components\Runner\Git as RunnerGit;
 use Horde\Components\Runner\Github as RunnerGithub;
 use Horde\Components\Runner\Init as RunnerInit;
 use Horde\Components\Runner\Installer as RunnerInstaller;
+use Horde\Components\Runner\Pullrequest as RunnerPullrequest;
 use Horde\Components\Runner\Qc as RunnerQc;
 use Horde\Components\Runner\Release as RunnerRelease;
 use Horde\Components\Runner\Snapshot as RunnerSnapshot;
@@ -113,6 +115,11 @@ class Injector extends HordeInjector implements Dependencies
             GitHubReleaseCreatorFactory::class,
             '__invoke'
         );
+        $this->bindFactory(
+            PullRequestManager::class,
+            PullRequestManagerFactory::class,
+            '__invoke'
+        );
     }
 
     public static function registerAppDependencies(HordeInjector $injector)
@@ -138,6 +145,11 @@ class Injector extends HordeInjector implements Dependencies
         $injector->bindFactory(
             GitHubReleaseCreator::class,
             GitHubReleaseCreatorFactory::class,
+            '__invoke'
+        );
+        $injector->bindFactory(
+            PullRequestManager::class,
+            PullRequestManagerFactory::class,
             '__invoke'
         );
     }
@@ -342,6 +354,16 @@ class Injector extends HordeInjector implements Dependencies
     public function getRunnerInstaller()
     {
         return $this->getInstance(RunnerInstaller::class);
+    }
+
+    /**
+     * Returns the pull request handler.
+     *
+     * @return RunnerPullrequest The pull request handler.
+     */
+    public function getRunnerPullrequest()
+    {
+        return $this->getInstance(RunnerPullrequest::class);
     }
 
     /**
