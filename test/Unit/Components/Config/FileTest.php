@@ -37,24 +37,24 @@ class FileTest extends TestCase
 {
     public function testGetOption()
     {
-        $config = $this->_getFileConfig();
+        $config = new ConfigFile(__DIR__ . '/../../../../config/conf.php.dist');
         $options = $config->getOptions();
         $this->assertEquals('pear.horde.org', $options['releaseserver']);
     }
 
     public function testArgumentsEmpty()
     {
+        $config = new ConfigFile(__DIR__ . '/../../../../config/conf.php.dist');
         $this->assertEquals(
             [],
-            $this->_getFileConfig()->getArguments()
+            $config->getArguments()
         );
     }
 
-    private function _getFileConfig()
+    public function testNonExistentConfigFileOption()
     {
-        $path = Constants::getConfigFile();
-        return new ConfigFile(
-            $path . '.dist'
-        );
+        $config = new ConfigFile('/path/to/nonexistent/file.php');
+        $options = $config->getOptions();
+        $this->assertEquals([], $options);
     }
 }
