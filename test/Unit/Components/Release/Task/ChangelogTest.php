@@ -37,7 +37,7 @@ class ChangelogTest extends TestCase
 
     public function setUp(): void
     {
-        $this->_fixture = __DIR__ . '/../../../../fixture/simple';
+        $this->_fixture = __DIR__ . '/../../../../fixtures/simple';
     }
 
     public function testPreValidateSucceeds()

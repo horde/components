@@ -50,7 +50,7 @@ class ResolverTest extends TestCase
             new HelperRoot(
                 null,
                 null,
-                __DIR__ . '/../../../fixture/framework'
+                __DIR__ . '/../../../fixtures/framework'
             ),
             $this->getComponentFactory()
         );

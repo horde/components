@@ -211,7 +211,7 @@ class DependencyTest extends TestCase
     {
         $this->lessStrict();
         $comp = $this->getComponent(
-            __DIR__ . '/../../../fixture/framework/Install'
+            __DIR__ . '/../../../fixtures/framework/Install'
         );
         $this->assertTrue(
             $comp->getDependencyList()->{'pear.horde.org/Dependency'}->isRequired()
