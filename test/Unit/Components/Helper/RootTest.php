@@ -17,6 +17,7 @@ namespace Horde\Components\Unit\Components\Helper;
 use Horde\Components\Exception;
 use Horde\Components\Helper\Root as HelperRoot;
 use Horde\Components\Test\TestCase;
+use Horde\Exception\NotFound;
 
 /**
  * Test the root helper.
@@ -113,7 +114,7 @@ class RootTest extends TestCase
 
     public function testInvalidComponent()
     {
-        $this->expectException(\Horde_Exception_NotFound::class);
+        $this->expectException(NotFound::class);
         $this->changeDirectory('/');
         $root = new HelperRoot(null, $this->getComponent('/'));
         $root->getRoot();

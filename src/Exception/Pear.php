@@ -13,6 +13,8 @@
 
 namespace Horde\Components\Exception;
 
+use Horde\Exception\Pear as HordePear;
+
 /**
  * This class converts PEAR errors into exceptions for the Components package.
  *
@@ -26,7 +28,7 @@ namespace Horde\Components\Exception;
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class Pear extends \Horde_Exception_Pear
+class Pear extends HordePear
 {
     /**
      * Exception handling.

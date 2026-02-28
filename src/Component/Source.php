@@ -28,6 +28,7 @@ use Horde\Components\Release\Notes as ReleaseNotes;
 use Horde\Components\Wrapper;
 use Horde\Components\Wrapper\ApplicationPhp as WrapperApplicationPhp;
 use Horde\Components\Wrapper\ChangelogYml as WrapperChangelogYml;
+use Horde\Exception\NotFound;
 use Horde\Components\Wrapper\Changes as WrapperChanges;
 use Horde\Components\Wrapper\ComposerJson as WrapperComposerJson;
 use Horde\Components\Wrapper\HordeYml as WrapperHordeYml;
@@ -337,7 +338,7 @@ class Source extends Base
      * @return string  The result of the action.
      * @throws Exception
      * @throws \Horde_Pear_Exception
-     * @throws \Horde_Exception_NotFound
+     * @throws NotFound
      */
     public function updatePackage($action, $options): string
     {
@@ -387,7 +388,7 @@ class Source extends Base
      * @return WrapperPackageXml  The updated package.xml handler.
      * @throws Exception
      * @throws \Horde_Pear_Exception
-     * @throws \Horde_Exception_NotFound
+     * @throws NotFound
      */
     public function updatePackageFromHordeYml(): WrapperPackageXml
     {
@@ -1143,7 +1144,7 @@ class Source extends Base
      * Returns a .horde.yml definition for the component.
      *
      * @throws Exception
-     * @throws \Horde_Exception_NotFound
+     * @throws NotFound
      */
     public function getHordeYml(): WrapperHordeYml
     {
@@ -1155,7 +1156,7 @@ class Source extends Base
      *
      * @return WrapperPackageXml The package representation.
      * @throws Exception
-     * @throws \Horde_Exception_NotFound
+     * @throws NotFound
      */
     protected function getPackageXml(): WrapperPackageXml
     {
@@ -1217,7 +1218,7 @@ class Source extends Base
             if ($info['type'] == 'library') {
                 $dir .= '/Horde/' . str_replace('_', '/', (string) $info['id']);
             }
-        } catch (\Horde_Exception_NotFound) {
+        } catch (NotFound) {
         }
         return $dir;
     }
@@ -1245,7 +1246,7 @@ class Source extends Base
      *         The requested file
      *                                                                                                                                                                                                 wrapper.
      * @throws Exception
-     * @throws \Horde_Exception_NotFound
+     * @throws NotFound
      */
     public function getWrapper($file)
     {
@@ -1256,7 +1257,7 @@ class Source extends Base
                         $this->directory
                     );
                     if (!$this->_wrappers[$file]->exists()) {
-                        throw new \Horde_Exception_NotFound(
+                        throw new NotFound(
                             $this->_wrappers[$file]->getFileName() . ' is missing.'
                         );
                     }
