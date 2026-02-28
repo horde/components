@@ -61,7 +61,7 @@ class ChangeLog
      */
     public function changelogYml($log, $options): string
     {
-        if (!strlen($log)) {
+        if (!mb_strlen($log)) {
             return '';
         }
 
@@ -387,7 +387,7 @@ class ChangeLog
             }
             $started = true;
             $version = 'v' . $version;
-            $lines = str_repeat('-', strlen($version)) . "\n";
+            $lines = str_repeat('-', mb_strlen($version)) . "\n";
             $changes->add($lines . $version . "\n" . $lines);
 
             if (!$info['notes']) {

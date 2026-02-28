@@ -11,10 +11,10 @@
             "role": "lead"
         }
     ],
-    "time": "2022-08-25",
+    "time": "2026-02-28",
     "repositories": [],
     "require": {
-        "horde/horde-installer-plugin": "^2",
+        "horde/horde-installer-plugin": "^3 || ^2",
         "php": "^5"
     },
     "require-dev": {},
@@ -24,7 +24,7 @@
             "Fixture": "lib/"
         }
     },
-    "autoload-dev": [],
+    "autoload-dev": {},
     "config": {
         "allow-plugins": {
             "horde/horde-installer-plugin": true
