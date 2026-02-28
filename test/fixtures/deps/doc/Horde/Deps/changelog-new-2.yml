@@ -1,5 +1,5 @@
 ---
-2.31.0:
+2.31.1:
   api: 2.31.0
   state:
     release: stable
@@ -9,7 +9,7 @@
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
   notes: |
-2.31.1:
+2.31.0:
   api: 2.31.0
   state:
     release: stable
