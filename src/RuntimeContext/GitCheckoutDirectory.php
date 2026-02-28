@@ -38,11 +38,11 @@ class GitCheckoutDirectory implements Stringable
 
     public function getGitDirs(): GitDirectoryIterator
     {
-        return $componentsCount = new GitDirectoryIterator($this->path . '/*/*/.git');
+        return $componentsCount = new GitDirectoryIterator($this->path . '/*/.git');
     }
     public function getHordeYmlDirs(): GitDirectoryIterator
     {
-        return $componentsCount = new GitDirectoryIterator($this->path . '/*/*/.horde.yml');
+        return $componentsCount = new GitDirectoryIterator($this->path . '/*/.horde.yml');
     }
 
     public function getComposerJsonPath(): string
