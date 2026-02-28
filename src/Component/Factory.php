@@ -16,6 +16,7 @@
 namespace Horde\Components\Component;
 
 use Horde\Components\Component;
+use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\Config;
 use Horde\Components\Exception;
 use Horde\Components\Helper\ChangeLog as HelperChangeLog;
@@ -80,7 +81,7 @@ class Factory
     public function createSource($directory): \Horde\Components\Component\Source
     {
         $component = new Source(
-            $directory,
+            new ComponentDirectory($directory),
             $this->_config,
             $this->_notes,
             $this
