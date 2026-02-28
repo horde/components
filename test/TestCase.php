@@ -44,6 +44,16 @@ class TestCase extends \PHPUnit\Framework\TestCase
      */
     protected $_output;
 
+    /**
+     * @var int|null
+     */
+    protected $old_errorreporting;
+
+    /**
+     * @var string|null
+     */
+    protected $cwd;
+
     protected function getComponentFactory(
         $arguments = [],
         $options = []

@@ -37,6 +37,16 @@ use Horde\Components\Test\TestCase;
  */
 class IdentifyTest extends TestCase
 {
+    /**
+     * @var string|null
+     */
+    private $oldcwd;
+
+    /**
+     * @var Config|null
+     */
+    private $config;
+
     public function tearDown(): void
     {
         if (isset($this->oldcwd) && $this->oldcwd != getcwd()) {
