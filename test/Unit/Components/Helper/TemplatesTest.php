@@ -41,7 +41,7 @@ class TemplatesTest extends TestCase
     {
         $tdir =  $this->getTemporaryDirectory();
         $templates = new TemplatesSingle(
-            __DIR__ . '/../../../fixture/templates',
+            __DIR__ . '/../../../fixtures/templates',
             $tdir,
             'simple',
             'target'
@@ -54,7 +54,7 @@ class TemplatesTest extends TestCase
     {
         $tdir =  $this->getTemporaryDirectory();
         $templates = new TemplatesSingle(
-            __DIR__ . '/../../../fixture/templates',
+            __DIR__ . '/../../../fixtures/templates',
             $tdir,
             'simple',
             'target'
@@ -77,7 +77,7 @@ class TemplatesTest extends TestCase
     {
         $tdir =  $this->getTemporaryDirectory();
         $templates = new TemplatesSingle(
-            __DIR__ . '/../../../fixture/templates',
+            __DIR__ . '/../../../fixtures/templates',
             $tdir,
             'variables',
             'target'
@@ -93,7 +93,7 @@ class TemplatesTest extends TestCase
     {
         $tdir =  $this->getTemporaryDirectory();
         $templates = new TemplatesSingle(
-            __DIR__ . '/../../../fixture/templates',
+            __DIR__ . '/../../../fixtures/templates',
             $tdir,
             'php',
             'target'
@@ -109,7 +109,7 @@ class TemplatesTest extends TestCase
     {
         $tdir =  $this->getTemporaryDirectory();
         $templates = new TemplatesSingle(
-            __DIR__ . '/../../../fixture/templates',
+            __DIR__ . '/../../../fixtures/templates',
             $tdir,
             'input',
             'target'
@@ -125,7 +125,7 @@ class TemplatesTest extends TestCase
     {
         $tdir =  $this->getTemporaryDirectory();
         $templates = new TemplatesDirectory(
-            __DIR__ . '/../../../fixture/templates/dir',
+            __DIR__ . '/../../../fixtures/templates/dir',
             $tdir
         );
         $templates->write(['one' => 'One', 'two' => 'Two']);
@@ -143,7 +143,7 @@ class TemplatesTest extends TestCase
     {
         $this->expectException(Exception::class);
         new TemplatesDirectory(
-            __DIR__ . '/../../../fixture/templates/NOSUCHDIR',
+            __DIR__ . '/../../../fixtures/templates/NOSUCHDIR',
             $this->getTemporaryDirectory()
         );
     }
@@ -153,7 +153,7 @@ class TemplatesTest extends TestCase
         $tdir =  $this->getTemporaryDirectory() . DIRECTORY_SEPARATOR
             . 'a' . '/b';
         $templates = new TemplatesDirectory(
-            __DIR__ . '/../../../fixture/templates/dir',
+            __DIR__ . '/../../../fixtures/templates/dir',
             $tdir
         );
         $templates->write(['one' => 'One', 'two' => 'Two']);
@@ -171,7 +171,7 @@ class TemplatesTest extends TestCase
     {
         $tdir =  $this->getTemporaryDirectory();
         $templates = new TemplatesDirectory(
-            __DIR__ . '/../../../fixture/templates/rewrite',
+            __DIR__ . '/../../../fixtures/templates/rewrite',
             $tdir
         );
         $templates->write(['one' => 'One']);
@@ -185,7 +185,7 @@ class TemplatesTest extends TestCase
     {
         $tdir =  $this->getTemporaryDirectory();
         $templates = new TemplatesRecursiveDirectory(
-            __DIR__ . '/../../../fixture/templates/rec-dir',
+            __DIR__ . '/../../../fixtures/templates/rec-dir',
             $tdir
         );
         $templates->write(['one' => 'One', 'two' => 'Two']);
@@ -203,7 +203,7 @@ class TemplatesTest extends TestCase
     {
         $this->expectException(Exception::class);
         new TemplatesRecursiveDirectory(
-            __DIR__ . '/../../../fixture/templates/NOSUCHDIR',
+            __DIR__ . '/../../../fixtures/templates/NOSUCHDIR',
             $this->getTemporaryDirectory()
         );
     }
@@ -213,7 +213,7 @@ class TemplatesTest extends TestCase
         $tdir =  $this->getTemporaryDirectory() . DIRECTORY_SEPARATOR
             . 'a' . '/b';
         $templates = new TemplatesRecursiveDirectory(
-            __DIR__ . '/../../../fixture/templates/rec-dir',
+            __DIR__ . '/../../../fixtures/templates/rec-dir',
             $tdir
         );
         $templates->write(['one' => 'One', 'two' => 'Two']);

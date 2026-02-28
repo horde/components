@@ -36,7 +36,7 @@ class DocsOriginTest extends TestCase
 {
     public function testEmpty()
     {
-        $do = __DIR__ . '/../../../fixture/docsorigin/empty';
+        $do = __DIR__ . '/../../../fixtures/docsorigin/empty';
         $docs_origin = new HelperDocsOrigin($do, $this->_getClient());
         $this->assertEquals(
             [],
@@ -47,7 +47,7 @@ class DocsOriginTest extends TestCase
     public function testSimple()
     {
         $this->markTestIncomplete();
-        $do = __DIR__ . '/../../../fixture/docsorigin/simple';
+        $do = __DIR__ . '/../../../fixtures/docsorigin/simple';
         $docs_origin = new HelperDocsOrigin($do, $this->_getClient());
         $this->assertEquals(
             ['doc/TEST' => 'http://example.com/TEST'],
@@ -58,7 +58,7 @@ class DocsOriginTest extends TestCase
     public function testMultiple()
     {
         $this->markTestIncomplete();
-        $do = __DIR__ . '/../../../fixture/docsorigin/multiple';
+        $do = __DIR__ . '/../../../fixtures/docsorigin/multiple';
         $docs_origin = new HelperDocsOrigin($do, $this->_getClient());
         $this->assertEquals(
             [

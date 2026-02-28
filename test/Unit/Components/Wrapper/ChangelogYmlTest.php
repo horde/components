@@ -33,12 +33,12 @@ class ChangelogYmlTest extends TestCase
     public function testConstruct()
     {
         $changelog = new WrapperChangelogYml(
-            __DIR__ . '/../../../fixture/deps'
+            __DIR__ . '/../../../fixtures/deps'
         );
         $this->assertInstanceOf('ArrayObject', $changelog);
         $this->assertEmpty($changelog);
         $changelog = new WrapperChangelogYml(
-            __DIR__ . '/../../../fixture/deps/doc/Horde/Deps'
+            __DIR__ . '/../../../fixtures/deps/doc/Horde/Deps'
         );
         $this->assertInstanceOf('ArrayObject', $changelog);
         $this->assertCount(1, $changelog);
@@ -47,11 +47,11 @@ class ChangelogYmlTest extends TestCase
     public function testExists()
     {
         $changelog = new WrapperChangelogYml(
-            __DIR__ . '/../../../fixture/deps'
+            __DIR__ . '/../../../fixtures/deps'
         );
         $this->assertFalse($changelog->exists());
         $changelog = new WrapperChangelogYml(
-            __DIR__ . '/../../../fixture/deps/doc/Horde/Deps'
+            __DIR__ . '/../../../fixtures/deps/doc/Horde/Deps'
         );
         $this->assertTrue($changelog->exists());
     }
@@ -59,17 +59,17 @@ class ChangelogYmlTest extends TestCase
     public function testGetFullPath()
     {
         $changelog = new WrapperChangelogYml(
-            __DIR__ . '/../../../fixture/deps'
+            __DIR__ . '/../../../fixtures/deps'
         );
         $this->assertEquals(
-            __DIR__ . '/../../../fixture/deps/changelog.yml',
+            __DIR__ . '/../../../fixtures/deps/changelog.yml',
             $changelog->getFullPath()
         );
         $changelog = new WrapperChangelogYml(
-            __DIR__ . '/../../../fixture/deps/doc/Horde/Deps'
+            __DIR__ . '/../../../fixtures/deps/doc/Horde/Deps'
         );
         $this->assertEquals(
-            __DIR__ . '/../../../fixture/deps/doc/Horde/Deps/changelog.yml',
+            __DIR__ . '/../../../fixtures/deps/doc/Horde/Deps/changelog.yml',
             $changelog->getFullPath()
         );
     }
@@ -77,32 +77,32 @@ class ChangelogYmlTest extends TestCase
     public function testGetLocalPath()
     {
         $changelog = new WrapperChangelogYml(
-            __DIR__ . '/../../../fixture/deps'
+            __DIR__ . '/../../../fixtures/deps'
         );
         $this->assertEquals(
             'changelog.yml',
-            $changelog->getLocalPath(__DIR__ . '/../../../fixture/deps')
+            $changelog->getLocalPath(__DIR__ . '/../../../fixtures/deps')
         );
         $changelog = new WrapperChangelogYml(
-            __DIR__ . '/../../../fixture/deps/doc/Horde/Deps'
+            __DIR__ . '/../../../fixtures/deps/doc/Horde/Deps'
         );
         $this->assertEquals(
             'doc/Horde/Deps/changelog.yml',
-            $changelog->getLocalPath(__DIR__ . '/../../../fixture/deps')
+            $changelog->getLocalPath(__DIR__ . '/../../../fixtures/deps')
         );
     }
 
     public function testGetFileName()
     {
         $changelog = new WrapperChangelogYml(
-            __DIR__ . '/../../../fixture/deps'
+            __DIR__ . '/../../../fixtures/deps'
         );
         $this->assertEquals(
             'changelog.yml',
             $changelog->getFileName()
         );
         $changelog = new WrapperChangelogYml(
-            __DIR__ . '/../../../fixture/deps/doc/Horde/Deps'
+            __DIR__ . '/../../../fixtures/deps/doc/Horde/Deps'
         );
         $this->assertEquals(
             'changelog.yml',
@@ -114,14 +114,14 @@ class ChangelogYmlTest extends TestCase
     {
         $dir = \Horde_Util::createTempDir();
         copy(
-            __DIR__ . '/../../../fixture/deps/doc/Horde/Deps/changelog.yml',
+            __DIR__ . '/../../../fixtures/deps/doc/Horde/Deps/changelog.yml',
             $dir . '/changelog.yml'
         );
         $changelog = new WrapperChangelogYml($dir);
         $changelog['2.31.0']['date'] = '2017-12-31';
         $changelog->save();
         $this->assertFileEquals(
-            __DIR__ . '/../../../fixture/deps/doc/Horde/Deps/changelog-new-1.yml',
+            __DIR__ . '/../../../fixtures/deps/doc/Horde/Deps/changelog-new-1.yml',
             $changelog->getFullPath()
         );
     }
@@ -130,7 +130,7 @@ class ChangelogYmlTest extends TestCase
     {
         $dir = \Horde_Util::createTempDir();
         copy(
-            __DIR__ . '/../../../fixture/deps/doc/Horde/Deps/changelog.yml',
+            __DIR__ . '/../../../fixtures/deps/doc/Horde/Deps/changelog.yml',
             $dir . '/changelog.yml'
         );
         $changelog = new WrapperChangelogYml($dir);
@@ -138,7 +138,7 @@ class ChangelogYmlTest extends TestCase
         $changelog['2.31.1'] = $entry;
         $changelog->save();
         $this->assertFileEquals(
-            __DIR__ . '/../../../fixture/deps/doc/Horde/Deps/changelog-new-2.yml',
+            __DIR__ . '/../../../fixtures/deps/doc/Horde/Deps/changelog-new-2.yml',
             $changelog->getFullPath()
         );
     }
@@ -147,7 +147,7 @@ class ChangelogYmlTest extends TestCase
     {
         $dir = \Horde_Util::createTempDir();
         copy(
-            __DIR__ . '/../../../fixture/deps/doc/Horde/Deps/changelog.yml',
+            __DIR__ . '/../../../fixtures/deps/doc/Horde/Deps/changelog.yml',
             $dir . '/changelog.yml'
         );
         $changelog = new WrapperChangelogYml($dir);
@@ -156,7 +156,7 @@ class ChangelogYmlTest extends TestCase
         unset($changelog['2.31.0']);
         $changelog->save();
         $this->assertFileEquals(
-            __DIR__ . '/../../../fixture/deps/doc/Horde/Deps/changelog-new-3.yml',
+            __DIR__ . '/../../../fixtures/deps/doc/Horde/Deps/changelog-new-3.yml',
             $changelog->getFullPath()
         );
     }
