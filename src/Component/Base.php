@@ -21,6 +21,13 @@ use Horde\Components\Helper\Commit as HelperCommit;
 use Horde\Components\Helper\Root as HelperRoot;
 use Horde\Components\Pear\Environment as PearEnvironment;
 use Horde\Components\Wrapper\PackageXml as WrapperPackageXml;
+use Horde\Http\HordeClientWrapper;
+use Horde\Http\Client\Curl;
+use Horde\Http\Client\Options;
+use Horde\Http\RequestFactory;
+use Horde\Http\StreamFactory;
+use Horde\Http\ResponseFactory;
+use Horde\Http\ClientException;
 use stdClass;
 
 /**
@@ -486,12 +493,21 @@ abstract class Base implements Component
         if ($this->getChannel() != 'pear.horde.org') {
             return false;
         }
-        $client = new \Horde_Http_Client(['request.timeout' => 15]);
+        $httpClient = new Curl(
+            new ResponseFactory(),
+            new StreamFactory(),
+            new Options(['request.timeout' => 15])
+        );
+        $client = new HordeClientWrapper(
+            $httpClient,
+            new RequestFactory(),
+            new StreamFactory()
+        );
         try {
             $response = $client->get('http://ci.horde.org/job/' . str_replace('Horde_', '', $this->getName() . '/api/json'));
-        } catch (\Horde_Http_Exception) {
+        } catch (ClientException) {
             return false;
         }
-        return $response->code != 404;
+        return $response->getStatusCode() != 404;
     }
 }

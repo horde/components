@@ -17,6 +17,12 @@ namespace Horde\Components\Release\Task;
 use Horde\Components\Exception;
 use Horde\Components\Helper\Version as HelperVersion;
 use Horde\Components\Output;
+use Horde\Http\HordeClientWrapper;
+use Horde\Http\Client\Curl;
+use Horde\Http\Client\Options;
+use Horde\Http\RequestFactory;
+use Horde\Http\StreamFactory;
+use Horde\Http\ResponseFactory;
 
 /**
  * Components_Release_Task_Bugs adds the new release to the issue tracker.
@@ -78,10 +84,25 @@ class Bugs extends Base
         if (!isset($options['horde_user']) || !isset($options['horde_user'])) {
             throw new Exception('Missing credentials!');
         }
+        $httpClient = new Curl(
+            new ResponseFactory(),
+            new StreamFactory(),
+            new Options([
+                'request.username' => $options['horde_user'],
+                'request.password' => $options['horde_pass'],
+                'request.timeout' => 10
+            ])
+        );
+        $client = new HordeClientWrapper(
+            $httpClient,
+            new RequestFactory(),
+            new StreamFactory()
+        );
         return new \Horde_Release_Whups(
-            ['client' => new \Horde_Http_Client(
-                ['request.username' => $options['horde_user'], 'request.password' => $options['horde_pass'], 'request.timeout' => 10]
-            ), 'url' => 'https://dev.horde.org/horde/rpc.php']
+            [
+                'client' => $client,
+                'url' => 'https://dev.horde.org/horde/rpc.php'
+            ]
         );
     }
 
