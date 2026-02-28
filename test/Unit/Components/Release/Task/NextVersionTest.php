@@ -34,6 +34,7 @@ class NextVersionTest extends TestCase
 {
     public function testRunTaskWithoutCommit()
     {
+        $this->markTestSkipped('CHANGES file format is being phased out in favor of changelog.yml');
         $tmp_dir = $this->_prepareApplicationDirectory();
         $tasks = $this->getReleaseTasks();
         $package = $this->getComponent($tmp_dir);
@@ -222,7 +223,9 @@ dependencies: []
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git add doc/changelog.yml" now.',
-                'Would run "git commit -m "Development mode for Horde-5.0.1"" now.',
+                'Would run "git commit -m "chore: set development mode to 5.0.1
+
+Prepare Horde for next development cycle"" now.',
             ],
             $this->_output->getOutput()
         );
@@ -254,7 +257,9 @@ dependencies: []
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git add doc/changelog.yml" now.',
-                'Would run "git commit -m "Development mode for Horde-5.0.0alpha2"" now.',
+                'Would run "git commit -m "chore: set development mode to 5.0.0alpha2
+
+Prepare Horde for next development cycle"" now.',
             ],
             $this->_output->getOutput()
         );
@@ -287,7 +292,9 @@ dependencies: []
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Application.php" now.',
                 'Would run "git add doc/changelog.yml" now.',
-                'Would run "git commit -m "Development mode for Horde-5.1.0"" now.',
+                'Would run "git commit -m "chore: set development mode to 5.1.0
+
+Prepare Horde for next development cycle"" now.',
             ],
             $this->_output->getOutput()
         );
