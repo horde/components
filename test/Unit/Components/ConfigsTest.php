@@ -96,21 +96,21 @@ class ConfigsTest extends TestCase
     private function _getAConfig()
     {
         return new ConfigFile(
-            __DIR__ . '/../../fixture/config/a.php'
+            __DIR__ . '/../../fixtures/config/a.php'
         );
     }
 
     private function _getBConfig()
     {
         return new ConfigFile(
-            __DIR__ . '/../../fixture/config/b.php'
+            __DIR__ . '/../../fixtures/config/b.php'
         );
     }
 
     private function _getNullConfig()
     {
         return new ConfigFile(
-            __DIR__ . '/../../fixture/config/null.php'
+            __DIR__ . '/../../fixtures/config/null.php'
         );
     }
 }

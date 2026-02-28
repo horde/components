@@ -36,7 +36,7 @@ class DependencyListTest extends TestCase
     public function testDependencyList()
     {
         $comp = $this->getComponent(
-            __DIR__ . '/../../../fixture/framework/Install'
+            __DIR__ . '/../../../fixtures/framework/Install'
         );
         $this->assertInstanceOf(
             'Horde\Components\Component\DependencyList',
@@ -48,7 +48,7 @@ class DependencyListTest extends TestCase
     {
         $this->lessStrict();
         $comp = $this->getComponent(
-            __DIR__ . '/../../../fixture/framework/Install'
+            __DIR__ . '/../../../fixtures/framework/Install'
         );
         $list = $comp->getDependencyList();
         foreach ($list as $element) {
@@ -60,7 +60,7 @@ class DependencyListTest extends TestCase
     {
         $this->lessStrict();
         $comp = $this->getComponent(
-            __DIR__ . '/../../../fixture/framework/Install'
+            __DIR__ . '/../../../fixtures/framework/Install'
         );
         $list = $comp->getDependencyList();
         $names = [];
@@ -74,7 +74,7 @@ class DependencyListTest extends TestCase
     {
         $this->lessStrict();
         $comp = $this->getComponent(
-            __DIR__ . '/../../../fixture/framework/Install'
+            __DIR__ . '/../../../fixtures/framework/Install'
         );
         $this->assertEquals(
             ['pear.php.net', 'pear.horde.org'],
@@ -86,7 +86,7 @@ class DependencyListTest extends TestCase
     {
         $this->lessStrict();
         $comp = $this->getComponent(
-            __DIR__ . '/../../../fixture/framework/Install'
+            __DIR__ . '/../../../fixtures/framework/Install'
         );
         $this->assertInstanceOf(
             'Horde\Components\Component\Dependency',
