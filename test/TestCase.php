@@ -14,6 +14,7 @@
 
 namespace Horde\Components\Test;
 
+use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\Component\Source;
 use Horde\Components\Components;
 use Horde\Components\Dependencies\Injector;
@@ -63,7 +64,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $dependencies->initConfig($config);
         $factory = $dependencies->getComponentFactory();
         return new Source(
-            $directory,
+            new ComponentDirectory($directory),
             $config,
             $dependencies->getInstance(ReleaseNotes::class),
             $factory
