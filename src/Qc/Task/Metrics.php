@@ -78,7 +78,18 @@ class Metrics extends Base
      */
     public function run(array &$options = []): int
     {
-        $componentDir = realpath($this->_config->getPath());
+        $path = $this->_config->getPath();
+        if ($path === null || $path === '') {
+            $this->getOutput()->error('Component path not configured');
+            return 1;
+        }
+
+        $componentDir = realpath($path);
+        if ($componentDir === false) {
+            $this->getOutput()->error('Component path does not exist: ' . $path);
+            return 1;
+        }
+
         $buildDir = $componentDir . DIRECTORY_SEPARATOR . 'build';
         $phpmetrics = $this->findPhpMetrics();
 
@@ -156,14 +167,15 @@ class Metrics extends Base
      */
     private function findPhpMetrics(): ?string
     {
-        $componentDir = realpath($this->_config->getPath());
+        $path = $this->_config->getPath();
+        $componentDir = ($path !== null && $path !== '') ? realpath($path) : false;
 
         // Search order: local vendor, global composer, system paths, PATH
         $possibleLocations = [
             // 1. Local vendor (project-specific)
-            $componentDir . '/vendor/bin/phpmetrics',
+            $componentDir ? $componentDir . '/vendor/bin/phpmetrics' : null,
             // 2. Horde monorepo vendor
-            $componentDir . '/../../../vendor/bin/phpmetrics',
+            $componentDir ? $componentDir . '/../../../vendor/bin/phpmetrics' : null,
             // 3. Global Composer (Linux/macOS)
             getenv('HOME') . '/.composer/vendor/bin/phpmetrics',
             getenv('HOME') . '/.config/composer/vendor/bin/phpmetrics',
