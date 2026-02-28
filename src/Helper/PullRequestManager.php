@@ -291,7 +291,15 @@ class PullRequestManager
             }
             return true;
         } catch (\Exception $e) {
-            $this->output->error("Failed to approve PR #{$number}: {$e->getMessage()}");
+            $errorMessage = $e->getMessage();
+
+            // Special handling for self-approval attempt
+            if (str_contains($errorMessage, 'Can not approve your own pull request')) {
+                $this->output->warn("Cannot approve your own pull request #{$number}");
+                $this->output->info("Tip: Ask another maintainer to review, or use 'pr merge' if you have permissions.");
+            } else {
+                $this->output->error("Failed to approve PR #{$number}: {$errorMessage}");
+            }
             return false;
         }
     }
