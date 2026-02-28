@@ -81,7 +81,7 @@ class PackageTest extends TestCase
         $package = $this->_getPackage();
         $package->expects($this->any())
             ->method('getName')
-            ->will($this->returnValue('NAME'));
+            ->willReturn('NAME');
         $this->getReleaseTasks()->run(
             ['Package'],
             $package,
@@ -109,10 +109,10 @@ class PackageTest extends TestCase
         ->getMock();
         $package->expects($this->any())
             ->method('getState')
-            ->will($this->returnValue('stable'));
+            ->willReturn('stable');
         $package->expects($this->any())
             ->method('getVersion')
-            ->will($this->returnValue('1.0.0'));
+            ->willReturn('1.0.0');
         return $package;
     }
 }

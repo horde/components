@@ -103,7 +103,7 @@ class ChangelogTest extends TestCase
         ->getMock();
         $package->expects($this->any())
             ->method('hasLocalPackageXml')
-            ->will($this->returnValue(true));
+            ->willReturn(true);
         return $package;
     }
 }
