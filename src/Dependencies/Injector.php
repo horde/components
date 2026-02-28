@@ -427,10 +427,26 @@ class Injector extends HordeInjector implements Dependencies
     /**
      * Create the CLI handler.
      *
+     * Horde_Cli::init() sets a global exception handler which can interfere
+     * with PHPUnit's exception handling in tests. We detect if running under
+     * PHPUnit and avoid init() in that case.
+     *
      * @return \Horde_Cli The CLI handler.
      */
     public function createCli(): \Horde_Cli
     {
+        // Check if running under PHPUnit
+        $isTestEnvironment = defined('PHPUNIT_COMPOSER_INSTALL') ||
+                           defined('__PHPUNIT_PHAR__') ||
+                           class_exists('PHPUnit\\Framework\\TestCase', false);
+
+        if ($isTestEnvironment) {
+            // In test environment, use constructor directly to avoid
+            // set_exception_handler() call in Horde_Cli::init()
+            return new \Horde_Cli(['pager' => $this->_usePager]);
+        }
+
+        // In production, use init() which sets up full CLI environment
         return \Horde_Cli::init(['pager' => $this->_usePager]);
     }
 
