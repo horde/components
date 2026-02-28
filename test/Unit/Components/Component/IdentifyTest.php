@@ -64,7 +64,7 @@ class IdentifyTest extends TestCase
     public function testWithPackageXml()
     {
         $this->_initIdentify(
-            [__DIR__ . '/../../../fixture/framework/Install/package.xml']
+            [__DIR__ . '/../../../fixtures/framework/Install/package.xml']
         );
         $this->assertInstanceOf(
             'Horde\Components\Component\Source',
@@ -75,7 +75,7 @@ class IdentifyTest extends TestCase
     public function testWithPackageXmlDirectory()
     {
         $this->_initIdentify(
-            [__DIR__ . '/../../../fixture/framework/Install']
+            [__DIR__ . '/../../../fixtures/framework/Install']
         );
         $this->assertInstanceOf(
             'Horde\Components\Component\Source',
@@ -86,7 +86,7 @@ class IdentifyTest extends TestCase
     public function testWithPackageXmlDirectoryAndSlash()
     {
         $this->_initIdentify(
-            [__DIR__ . '/../../../fixture/framework/Install/']
+            [__DIR__ . '/../../../fixtures/framework/Install/']
         );
         $this->assertInstanceOf(
             'Horde\Components\Component\Source',
@@ -97,7 +97,7 @@ class IdentifyTest extends TestCase
     public function testWithinComponent()
     {
         $this->oldcwd = getcwd();
-        chdir(__DIR__ . '/../../../fixture/framework/Install');
+        chdir(__DIR__ . '/../../../fixtures/framework/Install');
         $this->_initIdentify(['test']);
         chdir($this->oldcwd);
         $this->assertInstanceOf(
@@ -109,7 +109,7 @@ class IdentifyTest extends TestCase
     public function testWithinComponentNoAction()
     {
         $this->oldcwd = getcwd();
-        chdir(__DIR__ . '/../../../fixture/framework/Install');
+        chdir(__DIR__ . '/../../../fixtures/framework/Install');
         $this->_initIdentify([]);
         chdir($this->oldcwd);
         $this->assertInstanceOf(
@@ -122,7 +122,7 @@ class IdentifyTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->_initIdentify(
-            [__DIR__ . '/../../../fixture/DOESNOTEXIST']
+            [__DIR__ . '/../../../fixtures/DOESNOTEXIST']
         );
     }
 
