@@ -118,7 +118,7 @@ class Help extends Base
             $element = $module;
             if (in_array($action, $element->getActions())) {
                 $title = "ACTION \"" . $action . "\"";
-                $sub = str_repeat('-', strlen($title));
+                $sub = str_repeat('-', mb_strlen($title));
                 $help = "\n"
                     . $formatter->highlightHeading($title . "\n" . $sub)
                     . "\n\n";

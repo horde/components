@@ -109,7 +109,7 @@ trait WrapperTrait
     public function save()
     {
         $contents = (string) $this;
-        if (!strlen($contents) && !$this->exists()) {
+        if (!mb_strlen($contents) && !$this->exists()) {
             return;
         }
         if (!is_dir(dirname((string) $this->_file))) {

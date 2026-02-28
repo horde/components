@@ -110,8 +110,8 @@ class Status
         // Check GitHub API token
         $githubToken = getenv('GITHUB_TOKEN');
         $this->output->info("GitHub API Token:");
-        if ($githubToken && strlen($githubToken) > 0) {
-            $maskedToken = substr($githubToken, 0, 8) . str_repeat('*', max(0, strlen($githubToken) - 8));
+        if ($githubToken && mb_strlen($githubToken) > 0) {
+            $maskedToken = substr($githubToken, 0, 8) . str_repeat('*', max(0, mb_strlen($githubToken) - 8));
             $this->output->ok("GitHub API token is configured ($maskedToken)");
 
             // Check token validity, scopes, and rate limit

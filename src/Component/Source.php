@@ -1314,8 +1314,8 @@ class Source extends Base
                     break;
                 }
             }
-            if (($wrapper->exists() || strlen((string) $wrapper))
-                && strlen($wrapperDiff = $this->_createDiff($wrapper, $current))) {
+            if (($wrapper->exists() || mb_strlen((string) $wrapper))
+                && mb_strlen($wrapperDiff = $this->_createDiff($wrapper, $current))) {
                 $diff .= "\n" . $wrapperDiff;
             }
         }
