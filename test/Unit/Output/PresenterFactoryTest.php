@@ -99,7 +99,12 @@ class PresenterFactoryTest extends TestCase
 
     public function testCreateWithNoColorOption(): void
     {
-        // Clear env vars to force Classic
+        // Clear ALL CI env vars to force Classic
+        putenv('GITHUB_ACTIONS');
+        putenv('GITLAB_CI');
+        putenv('JENKINS_HOME');
+        putenv('CIRCLECI');
+        putenv('TRAVIS');
         putenv('CI');
         putenv('LANG=C');
         putenv('TERM=dumb');
@@ -114,7 +119,12 @@ class PresenterFactoryTest extends TestCase
 
     public function testCreateWithNoOptions(): void
     {
-        // Clear env vars to force Classic
+        // Clear ALL CI env vars to force Classic
+        putenv('GITHUB_ACTIONS');
+        putenv('GITLAB_CI');
+        putenv('JENKINS_HOME');
+        putenv('CIRCLECI');
+        putenv('TRAVIS');
         putenv('CI');
         putenv('LANG=C');
         putenv('TERM=dumb');
@@ -125,7 +135,12 @@ class PresenterFactoryTest extends TestCase
 
     public function testCreateWithEmptyOptions(): void
     {
-        // Clear env vars to force Classic
+        // Clear ALL CI env vars to force Classic
+        putenv('GITHUB_ACTIONS');
+        putenv('GITLAB_CI');
+        putenv('JENKINS_HOME');
+        putenv('CIRCLECI');
+        putenv('TRAVIS');
         putenv('CI');
         putenv('LANG=C');
         putenv('TERM=dumb');
@@ -152,7 +167,12 @@ class PresenterFactoryTest extends TestCase
      */
     public function testInvalidFormatFallsBackToClassic(): void
     {
-        // Clear env vars to force Classic
+        // Clear ALL CI env vars to force Classic
+        putenv('GITHUB_ACTIONS');
+        putenv('GITLAB_CI');
+        putenv('JENKINS_HOME');
+        putenv('CIRCLECI');
+        putenv('TRAVIS');
         putenv('CI');
         putenv('LANG=C');
         putenv('TERM=dumb');
