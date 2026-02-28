@@ -45,7 +45,7 @@ class RootTest extends TestCase
 
     public function testValidCwd()
     {
-        $path = __DIR__ . '/../../../fixture';
+        $path = __DIR__ . '/../../../fixtures';
         $this->changeDirectory($path);
         $root = new HelperRoot();
         $this->assertEquals(realpath($path), realpath($root->getRoot()));
@@ -53,7 +53,7 @@ class RootTest extends TestCase
 
     public function testValidSubCwd()
     {
-        $path = __DIR__ . '/../../../fixture';
+        $path = __DIR__ . '/../../../fixtures';
         $this->changeDirectory($path . '/horde');
         $root = new HelperRoot();
         $this->assertEquals(realpath($path), realpath($root->getRoot()));
@@ -69,14 +69,14 @@ class RootTest extends TestCase
 
     public function testDetermineRootInTestFixture()
     {
-        $path = __DIR__ . '/../../../fixture';
+        $path = __DIR__ . '/../../../fixtures';
         $root = new HelperRoot(null, null, $path);
         $this->assertEquals($path, $root->getRoot());
     }
 
     public function testDetermineRootInSubdirectory()
     {
-        $path = __DIR__ . '/../../../fixture';
+        $path = __DIR__ . '/../../../fixtures';
         $root = new HelperRoot(null, null, $path . '/horde');
         $this->assertEquals($path, $root->getRoot());
     }
@@ -93,7 +93,7 @@ class RootTest extends TestCase
 
     public function testDetermineRootViaOption()
     {
-        $path = __DIR__ . '/../../../fixture';
+        $path = __DIR__ . '/../../../fixtures';
         $root = new HelperRoot(
             ['horde_root' => $path]
         );
@@ -104,7 +104,7 @@ class RootTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->changeDirectory('/');
-        $path = __DIR__ . '/../../../fixture';
+        $path = __DIR__ . '/../../../fixtures';
         $root = new HelperRoot(
             ['horde_root' => $path . '/horde']
         );
@@ -121,7 +121,7 @@ class RootTest extends TestCase
 
     public function testDetermineRootViaComponent()
     {
-        $path = __DIR__ . '/../../../fixture/framework';
+        $path = __DIR__ . '/../../../fixtures/framework';
         $root = new HelperRoot(
             null,
             $this->getComponent($path . '/Install')
@@ -131,7 +131,7 @@ class RootTest extends TestCase
 
     public function testFrameworkComponent()
     {
-        $path = __DIR__ . '/../../../fixture/framework';
+        $path = __DIR__ . '/../../../fixtures/framework';
         $root = new HelperRoot(['horde_root' => $path]);
         $this->assertEquals(
             $path . '/Old/package.xml',
@@ -141,7 +141,7 @@ class RootTest extends TestCase
 
     public function testFrameworkComponentTwo()
     {
-        $path = __DIR__ . '/../../../fixture/framework';
+        $path = __DIR__ . '/../../../fixtures/framework';
         $root = new HelperRoot(['horde_root' => $path]);
         $this->assertEquals(
             $path . '/Old/package.xml',
@@ -151,7 +151,7 @@ class RootTest extends TestCase
 
     public function testBundleComponent()
     {
-        $path = __DIR__ . '/../../../fixture/bundles';
+        $path = __DIR__ . '/../../../fixtures/bundles';
         $root = new HelperRoot(['horde_root' => $path]);
         $this->assertEquals(
             $path . '/Bundle/package.xml',
@@ -161,7 +161,7 @@ class RootTest extends TestCase
 
     public function testApplicationComponent()
     {
-        $path = __DIR__ . '/../../../fixture';
+        $path = __DIR__ . '/../../../fixtures';
         $root = new HelperRoot(['horde_root' => $path]);
         $this->assertEquals(
             $path . '/horde/package.xml',
