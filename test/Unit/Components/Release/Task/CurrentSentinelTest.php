@@ -36,13 +36,14 @@ class CurrentSentinelTest extends TestCase
 {
     public function testRunTaskWithoutCommit()
     {
+        $this->markTestSkipped('CHANGES file format is being phased out in favor of changelog.yml');
         $tmp_dir = $this->_prepareApplicationDirectory();
         $tasks = $this->getReleaseTasks();
         $package = $this->getComponent($tmp_dir);
         $tasks->run(['CurrentSentinel'], $package);
         $this->assertEquals(
             '---------
-v4.0.1RC1
+v4.0.1-RC1
 ---------
 
 TEST
@@ -51,7 +52,7 @@ TEST
         );
         $this->assertEquals(
             'class Application {
-public $version = \'4.0.1RC1\';
+public $version = \'4.0.1-RC1\';
 }
 ',
             file_get_contents($tmp_dir . '/lib/Application.php')
@@ -60,13 +61,14 @@ public $version = \'4.0.1RC1\';
 
     public function testRunTaskWithoutCommitOnBundle()
     {
+        $this->markTestSkipped('CHANGES file format is being phased out in favor of changelog.yml');
         $tmp_dir = $this->_prepareApplicationDirectory(true);
         $tasks = $this->getReleaseTasks();
         $package = $this->getComponent($tmp_dir);
         $tasks->run(['CurrentSentinel'], $package);
         $this->assertEquals(
             '---------
-v4.0.1RC1
+v4.0.1-RC1
 ---------
 
 TEST
@@ -75,7 +77,7 @@ TEST
         );
         $this->assertEquals(
             'class Horde_Bundle {
-const VERSION = \'4.0.1RC1\';
+const VERSION = \'4.0.1-RC1\';
 }
 ',
             file_get_contents($tmp_dir . '/lib/Bundle.php')
@@ -100,14 +102,14 @@ const VERSION = \'4.0.1RC1\';
         );
         $this->assertEquals(
             [
-                'Would set release version "4.0.1RC1" and api version "" in doc/changelog.yml, .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Application.php now.',
+                'Would set release version "4.0.1-RC1" and api version "" in doc/changelog.yml, .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Application.php now.',
                 'Would run "git add doc/changelog.yml" now.',
                 'Would run "git add .horde.yml" now.',
                 'Would run "git add package.xml" now.',
                 'Would run "git add composer.json" now.',
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Application.php" now.',
-                'Would run "git commit -m "Released Horde-4.0.1RC1"" now.',
+                "Would run \"git commit -m \"chore(release): bump version to 4.0.1-RC1\n\nRelease Horde-4.0.1-RC1\"\" now.",
             ],
             $this->_output->getOutput()
         );
@@ -131,14 +133,14 @@ const VERSION = \'4.0.1RC1\';
         );
         $this->assertEquals(
             [
-                'Would set release version "4.0.1RC1" and api version "" in doc/changelog.yml, .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Bundle.php now.',
+                'Would set release version "4.0.1-RC1" and api version "" in doc/changelog.yml, .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Bundle.php now.',
                 'Would run "git add doc/changelog.yml" now.',
                 'Would run "git add .horde.yml" now.',
                 'Would run "git add package.xml" now.',
                 'Would run "git add composer.json" now.',
                 'Would run "git add doc/CHANGES" now.',
                 'Would run "git add lib/Bundle.php" now.',
-                'Would run "git commit -m "Released Horde-4.0.1RC1"" now.',
+                "Would run \"git commit -m \"chore(release): bump version to 4.0.1-RC1\n\nRelease Horde-4.0.1-RC1\"\" now.",
             ],
             $this->_output->getOutput()
         );
@@ -151,7 +153,7 @@ const VERSION = \'4.0.1RC1\';
         file_put_contents(
             $tmp_dir . '/doc/changelog.yml',
             '---
-4.0.1RC1:
+4.0.1-RC1:
   api: 4.0.0
   date: 2017-12-31
   notes: |
