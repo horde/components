@@ -97,11 +97,11 @@ class TimestampTest extends TestCase
         $wrapper = $this->getMockBuilder(ChangelogYml::class)->disableOriginalConstructor()->getMock();
         $wrapper->expects($this->any())
             ->method('exists')
-            ->will($this->returnValue(true));
+            ->willReturn(true);
         $package = $this->getMockBuilder(SourceComponent::class)->disableOriginalConstructor()->getMock();
         $package->expects($this->any())
             ->method('getWrapper')
-            ->will(($this->returnValue($wrapper)));
+            ->willReturn($wrapper);
         return $package;
     }
 }
