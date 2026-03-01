@@ -77,8 +77,9 @@ class PageGenerator
 
         file_put_contents($outputFile, $html);
 
-        // Also generate component-specific pages
-        $this->generateComponentPages($outputFile, $events, $byComponent);
+        // Generate component-specific pages for ALL components in catalog
+        $outputDir = dirname($outputFile);
+        $this->generateComponentPages($outputDir, $components, $byComponent);
     }
 
     private function loadTemplate(string $filename): string
@@ -101,6 +102,42 @@ class PageGenerator
             throw new RuntimeException("Invalid JSON in {$this->componentsFile}");
         }
         return $data;
+    }
+
+    private function loadHordeYml(string $componentName): ?array
+    {
+        // Try to find .horde.yml in git checkout
+        // Component name format: "horde/ComponentName"
+        $parts = explode('/', $componentName);
+        if (count($parts) !== 2) {
+            return null;
+        }
+
+        $repoName = $parts[1];
+
+        // Try common locations
+        $homeDir = getenv('HOME') ?: '/home/i567442';
+        $possiblePaths = [
+            "{$homeDir}/git/horde/{$repoName}/.horde.yml",
+        ];
+
+        foreach ($possiblePaths as $path) {
+            if (file_exists($path)) {
+                try {
+                    // Use Horde_Yaml (PEAR-style) to parse
+                    if (class_exists('Horde_Yaml')) {
+                        return \Horde_Yaml::loadFile($path);
+                    }
+                    // Fallback: return null if Yaml not available
+                    return null;
+                } catch (\Exception $e) {
+                    // Ignore parse errors, return null
+                    return null;
+                }
+            }
+        }
+
+        return null;
     }
 
     private function groupByType(array $events): array
@@ -349,30 +386,42 @@ HTML;
 HTML;
     }
 
-    private function generateComponentPages(string $mainOutputFile, array $allEvents, array $byComponent): void
+    private function generateComponentPages(string $outputDir, array $components, array $byComponent): void
     {
-        $outputDir = dirname($mainOutputFile);
         $componentDir = $outputDir . '/components';
         if (!is_dir($componentDir)) {
             mkdir($componentDir, 0755, true);
         }
 
-        foreach ($byComponent as $component => $componentEvents) {
-            $safeName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $component);
+        // Generate page for EVERY component in catalog, not just those with events
+        foreach ($components as $component) {
+            $componentName = $component['name'];
+            $safeName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $componentName);
             $filePath = $componentDir . '/' . $safeName . '.html';
 
-            // Generate simple component page (reuse existing logic if needed)
-            $html = $this->renderSimpleComponentPage($component, $componentEvents);
+            // Get events for this component (empty array if none)
+            $componentEvents = $byComponent[$componentName] ?? [];
+
+            // Load .horde.yml data if available
+            $hordeYml = $this->loadHordeYml($componentName);
+
+            // Generate component page with full details
+            $html = $this->renderComponentPage($component, $hordeYml, $componentEvents);
             file_put_contents($filePath, $html);
         }
     }
 
-    private function renderSimpleComponentPage(string $component, array $events): string
+    private function renderComponentPage(array $componentMeta, ?array $hordeYml, array $events): string
     {
-        $componentEsc = $this->esc($component);
-        $eventsHtml = '';
+        $componentName = $componentMeta['name'];
+        $componentEsc = $this->esc($componentName);
 
-        $displayEvents = array_slice($events, 0, 20);
+        // Render component details card
+        $detailsCard = $this->renderComponentDetailsCard($componentMeta, $hordeYml);
+
+        // Render events
+        $eventsHtml = '';
+        $displayEvents = array_slice($events, 0, 50); // Show up to 50 events
         foreach ($displayEvents as $event) {
             $eventsHtml .= $this->renderEventCard($event);
         }
@@ -395,6 +444,8 @@ HTML;
         <div class="back-link"><a href="../index.html">← Back to dev.horde.org</a></div>
         <h1>{$componentEsc}</h1>
 
+{$detailsCard}
+
         <div class="activity-section">
             <h2>Recent Activity</h2>
             <div class="event-list">
@@ -404,6 +455,101 @@ HTML;
 </body>
 </html>
 HTML;
+    }
+
+    private function renderComponentDetailsCard(array $componentMeta, ?array $hordeYml): string
+    {
+        $name = $this->esc($componentMeta['name']);
+        $version = $this->esc($componentMeta['version'] ?? 'unknown');
+        $description = $this->esc($componentMeta['description'] ?? 'No description available');
+        $githubUrl = $this->esc($componentMeta['github_url'] ?? '#');
+
+        // Extract data from .horde.yml if available
+        $fullDesc = null;
+        $license = null;
+        $authors = [];
+        $dependencies = [];
+
+        if ($hordeYml !== null) {
+            // Use version from .horde.yml if available
+            if (isset($hordeYml['version']['release'])) {
+                $version = $this->esc($hordeYml['version']['release']);
+            }
+
+            // Full description
+            if (isset($hordeYml['description'])) {
+                $fullDesc = $this->esc($hordeYml['description']);
+            } elseif (isset($hordeYml['full'])) {
+                $fullDesc = $this->esc($hordeYml['full']);
+            }
+
+            // License
+            if (isset($hordeYml['license']['identifier'])) {
+                $license = $this->esc($hordeYml['license']['identifier']);
+                $licenseUri = $hordeYml['license']['uri'] ?? null;
+            }
+
+            // Authors
+            if (isset($hordeYml['authors']) && is_array($hordeYml['authors'])) {
+                foreach ($hordeYml['authors'] as $author) {
+                    if (isset($author['name'])) {
+                        $authors[] = $this->esc($author['name']) .
+                            (isset($author['role']) ? ' (' . $this->esc($author['role']) . ')' : '');
+                    }
+                }
+            }
+
+            // Dependencies
+            if (isset($hordeYml['dependencies']['required']['composer'])) {
+                foreach ($hordeYml['dependencies']['required']['composer'] as $pkg => $ver) {
+                    $dependencies[] = $this->esc($pkg) . ': ' . $this->esc($ver);
+                }
+            }
+        }
+
+        $html = '<div class="component-details-card">' . "\n";
+        $html .= '  <div class="component-detail-row">' . "\n";
+        $html .= '    <strong>Version:</strong> ' . $version . "\n";
+        $html .= '  </div>' . "\n";
+
+        if ($fullDesc) {
+            $html .= '  <div class="component-detail-row">' . "\n";
+            $html .= '    <strong>Description:</strong> ' . $fullDesc . "\n";
+            $html .= '  </div>' . "\n";
+        }
+
+        if ($license) {
+            $html .= '  <div class="component-detail-row">' . "\n";
+            $html .= '    <strong>License:</strong> ' . $license;
+            if (isset($licenseUri)) {
+                $html .= ' (<a href="' . $this->esc($licenseUri) . '" target="_blank">view</a>)';
+            }
+            $html .= "\n  </div>\n";
+        }
+
+        if (!empty($authors)) {
+            $html .= '  <div class="component-detail-row">' . "\n";
+            $html .= '    <strong>Authors:</strong> ' . implode(', ', $authors) . "\n";
+            $html .= '  </div>' . "\n";
+        }
+
+        if (!empty($dependencies)) {
+            $html .= '  <div class="component-detail-row">' . "\n";
+            $html .= '    <strong>Dependencies:</strong><br>' . "\n";
+            $html .= '    <ul class="dependency-list">' . "\n";
+            foreach ($dependencies as $dep) {
+                $html .= '      <li>' . $dep . '</li>' . "\n";
+            }
+            $html .= '    </ul>' . "\n";
+            $html .= '  </div>' . "\n";
+        }
+
+        $html .= '  <div class="component-detail-row">' . "\n";
+        $html .= '    <a href="' . $githubUrl . '" target="_blank" class="component-link">View on GitHub →</a>' . "\n";
+        $html .= '  </div>' . "\n";
+        $html .= '</div>' . "\n\n";
+
+        return $html;
     }
 
     private function truncate(string $text, int $length): string
