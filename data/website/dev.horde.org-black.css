@@ -672,6 +672,47 @@ tr:hover {
 }
 
 /* ============================================================================
+   Component Details Card (individual component pages)
+   ============================================================================ */
+.component-details-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-xl);
+    box-shadow: var(--shadow-md);
+    border-left: 4px solid var(--horde-red);
+}
+
+.component-detail-row {
+    padding: var(--space-sm) 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.component-detail-row:last-child {
+    border-bottom: none;
+    padding-top: var(--space-md);
+}
+
+.component-detail-row strong {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-right: var(--space-sm);
+}
+
+.dependency-list {
+    margin: var(--space-sm) 0 0 var(--space-lg);
+    padding: 0;
+    list-style: disc;
+    color: var(--text-secondary);
+}
+
+.dependency-list li {
+    padding: var(--space-xs) 0;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+}
+
+/* ============================================================================
    Responsive Design
    ============================================================================ */
 @media (max-width: 768px) {
