@@ -1,4 +1,45 @@
 ---
+1.0.0-alpha24:
+  api: 1.0.0-alpha1
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-03-01
+  license:
+    identifier: LGPL-2.1-only
+    uri: http://www.horde.org/licenses/lgpl21
+  notes: |
+    fix(release): create build dir and include .gitignore in release h6
+    chore(build): exclude build and webhooks from phar and git
+    feat(web): add website generation assets and standalone scripts
+    feat(web): add web module for dev.horde.org generation
+    feat(webhook): refactor webhook handler into components codebase
+    fix: correct glob pattern for flat git checkout structure
+    fix: align GitCheckoutDirectory default path with documentation
+    fix(test): clear all CI env vars in PresenterFactory tests
+    fix: prevent Horde_Cli exception handler in test environment
+    refactor(http): migrate from PSR-0 Horde_Http_Client to PSR-4 HordeClientWrapper
+    refactor: migrate from PSR-0 to PSR-4 Horde\Exception classes
+    fix: replace strlen with mb_strlen for null safety and Unicode support
+    fix: resolve PHP 8.4 dynamic property and PHPUnit deprecations
+    test: skip CurrentSentinelTest pretend tests requiring version normalization
+    test: normalize fixture version formats for changelog.yml
+    test: fix NextVersionTest::testPretend conventional commit expectation
+    test: fix changelog-new-2.yml version ordering
+    test: fix FileTest to load config from repository
+    test: update NextVersionTest for conventional commits and skip CHANGES test
+    test: update output stub for Presenter pattern
+    fix: add missing dot separator in nextMinorVersion()
+    test: fix remaining fixture path references
+    fix: wrap directory in ComponentDirectory in Factory::createSource
+    test: fix fixture path in RootTest
+    test: fix fixture directory paths in tests
+    test: fix ComponentDirectory type hint in test helper
+    test: fix PHPUnit 12 returnValue() deprecation
+    test: remove obsolete tests for disabled modules
+    feat(pr): improve error handling for PR approval with enhanced GitHub API messages
+    fix: Deprecation warning when running on own repository
+    feat: Add pull request management to the cli
 1.0.0-alpha23:
   api: 1.0.0-alpha1
   state:
