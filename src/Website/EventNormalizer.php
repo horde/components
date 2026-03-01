@@ -35,7 +35,13 @@ class EventNormalizer
             'push' => $this->normalizePush($json, $rawEvent['metadata'], $timestamp),
             'issue_comment' => $this->normalizeComment($json, $rawEvent['metadata'], $timestamp),
             'create' => $this->normalizeCreate($json, $rawEvent['metadata'], $timestamp),
-            default => null, // Skip ping, label, unknown, etc.
+            'delete' => $this->normalizeDelete($json, $rawEvent['metadata'], $timestamp),
+            'pull_request' => $this->normalizePullRequest($json, $rawEvent['metadata'], $timestamp),
+            'pull_request_review' => $this->normalizePullRequestReview($json, $rawEvent['metadata'], $timestamp),
+            'pull_request_review_comment' => $this->normalizePullRequestReviewComment($json, $rawEvent['metadata'], $timestamp),
+            'fork' => $this->normalizeFork($json, $rawEvent['metadata'], $timestamp),
+            'repository' => $this->normalizeRepository($json, $rawEvent['metadata'], $timestamp),
+            default => null, // Skip ping, label, star, watch, etc.
         };
     }
 
@@ -135,6 +141,138 @@ class EventNormalizer
             action: 'created',
             repo: $repo,
             title: ucfirst($refType) . " {$ref} created",
+            url: $json['repository']['html_url'] ?? '#',
+            timestamp: $timestamp,
+            actor: $json['sender']['login'] ?? 'unknown',
+            summary: null
+        );
+    }
+
+    private function normalizeDelete(array $json, array $meta, DateTime $timestamp): Event
+    {
+        $repo = $json['repository']['full_name'] ?? ($meta['org'] . '/' . $meta['repo']);
+        $refType = $json['ref_type'] ?? 'ref';
+        $ref = $json['ref'] ?? 'unknown';
+
+        return new Event(
+            type: 'delete',
+            action: 'deleted',
+            repo: $repo,
+            title: ucfirst($refType) . " {$ref} deleted",
+            url: $json['repository']['html_url'] ?? '#',
+            timestamp: $timestamp,
+            actor: $json['sender']['login'] ?? 'unknown',
+            summary: null
+        );
+    }
+
+    private function normalizePullRequest(array $json, array $meta, DateTime $timestamp): Event
+    {
+        $pr = $json['pull_request'] ?? [];
+        $repo = $json['repository']['full_name'] ?? ($meta['org'] . '/' . $meta['repo']);
+
+        $summary = null;
+        if ($pr['draft'] ?? false) {
+            $summary = 'Draft';
+        }
+        if ($pr['merged'] ?? false) {
+            $summary = 'Merged';
+        }
+
+        return new Event(
+            type: 'pull_request',
+            action: $meta['action'],
+            repo: $repo,
+            title: "PR #{$pr['number']}: {$pr['title']}",
+            url: $pr['html_url'] ?? '#',
+            timestamp: $timestamp,
+            actor: $pr['user']['login'] ?? 'unknown',
+            summary: $summary
+        );
+    }
+
+    private function normalizePullRequestReview(array $json, array $meta, DateTime $timestamp): Event
+    {
+        $pr = $json['pull_request'] ?? [];
+        $review = $json['review'] ?? [];
+        $repo = $json['repository']['full_name'] ?? ($meta['org'] . '/' . $meta['repo']);
+
+        $state = $review['state'] ?? 'commented';
+        $summary = match ($state) {
+            'approved' => 'Approved',
+            'changes_requested' => 'Changes requested',
+            'commented' => 'Commented',
+            default => ucfirst($state)
+        };
+
+        return new Event(
+            type: 'pull_request_review',
+            action: $meta['action'],
+            repo: $repo,
+            title: "Review on PR #{$pr['number']}: {$pr['title']}",
+            url: $review['html_url'] ?? $pr['html_url'] ?? '#',
+            timestamp: $timestamp,
+            actor: $review['user']['login'] ?? 'unknown',
+            summary: $summary
+        );
+    }
+
+    private function normalizePullRequestReviewComment(array $json, array $meta, DateTime $timestamp): Event
+    {
+        $pr = $json['pull_request'] ?? [];
+        $comment = $json['comment'] ?? [];
+        $repo = $json['repository']['full_name'] ?? ($meta['org'] . '/' . $meta['repo']);
+
+        return new Event(
+            type: 'pull_request_review_comment',
+            action: $meta['action'],
+            repo: $repo,
+            title: "Review comment on PR #{$pr['number']}: {$pr['title']}",
+            url: $comment['html_url'] ?? $pr['html_url'] ?? '#',
+            timestamp: $timestamp,
+            actor: $comment['user']['login'] ?? 'unknown',
+            summary: null
+        );
+    }
+
+    private function normalizeFork(array $json, array $meta, DateTime $timestamp): Event
+    {
+        $repo = $json['repository']['full_name'] ?? ($meta['org'] . '/' . $meta['repo']);
+        $forkee = $json['forkee'] ?? [];
+
+        return new Event(
+            type: 'fork',
+            action: 'forked',
+            repo: $repo,
+            title: "Forked to {$forkee['full_name']}",
+            url: $forkee['html_url'] ?? '#',
+            timestamp: $timestamp,
+            actor: $forkee['owner']['login'] ?? $json['sender']['login'] ?? 'unknown',
+            summary: null
+        );
+    }
+
+    private function normalizeRepository(array $json, array $meta, DateTime $timestamp): Event
+    {
+        $repo = $json['repository']['full_name'] ?? ($meta['org'] . '/' . $meta['repo']);
+        $action = $meta['action'];
+
+        $title = match ($action) {
+            'created' => "Repository created",
+            'deleted' => "Repository deleted",
+            'archived' => "Repository archived",
+            'unarchived' => "Repository unarchived",
+            'publicized' => "Repository made public",
+            'privatized' => "Repository made private",
+            'renamed' => "Repository renamed",
+            default => "Repository {$action}"
+        };
+
+        return new Event(
+            type: 'repository',
+            action: $action,
+            repo: $repo,
+            title: $title,
             url: $json['repository']['html_url'] ?? '#',
             timestamp: $timestamp,
             actor: $json['sender']['login'] ?? 'unknown',

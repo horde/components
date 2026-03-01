@@ -58,7 +58,7 @@ class PageGenerator
         $issuesHtml = $this->renderEventSection($byType['issue'] ?? [], $maxEvents);
         $releasesHtml = $this->renderEventSection($byType['release'] ?? [], $maxEvents);
         $pushesHtml = $this->renderEventSection($byType['push'] ?? [], $maxEvents);
-        $prsHtml = $this->renderPRsSection();  // Placeholder for now
+        $prsHtml = $this->renderEventSection($byType['pull_request'] ?? [], $maxEvents);
         $componentDirectory = $this->renderComponentDirectory($components, $byComponent, $maxComponentEvents);
 
         // Build complete page
@@ -109,6 +109,7 @@ class PageGenerator
             'issue' => [],
             'release' => [],
             'push' => [],
+            'pull_request' => [],
         ];
 
         foreach ($events as $event) {
@@ -177,11 +178,6 @@ class PageGenerator
 HTML;
     }
 
-    private function renderPRsSection(): string
-    {
-        return "                    <div class=\"event-item empty\">No pull request data available yet.</div>\n";
-    }
-
     private function renderComponentDirectory(array $components, array $eventsByComponent, int $maxEvents): string
     {
         $totalCount = count($components);
@@ -231,6 +227,14 @@ HTML;
                     'release' => '📦',
                     'push' => '🔀',
                     'pull_request' => '🔁',
+                    'pull_request_review' => '👁️',
+                    'pull_request_review_comment' => '💬',
+                    'create' => '🌱',
+                    'delete' => '🗑️',
+                    'fork' => '🍴',
+                    'repository' => '📁',
+                    'comment' => '💬',
+                    'issue_comment' => '💬',
                     default => '📌'
                 };
 
