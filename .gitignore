@@ -62,3 +62,5 @@ run-tests.log
 /phpstan.neon
 # PHPStan cache directory
 /.phpstan.cache/
+build/
+data/webhooks/

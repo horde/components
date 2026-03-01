@@ -1,11 +1,15 @@
 {
   "compression": "GZ",
   "directories": [
-    "src"
+    "src",
+    "data"
   ],
   "files": [
     "LICENSE",
-    "bin/horde-components"
+    "bin/horde-components",
+    "bin/generate-dev-horde-org.php",
+    "bin/generate-github-activity-html.php",
+    "bin/web-catalog-github"
   ],
   "finder": [
     {
@@ -24,6 +28,10 @@
       ],
       "in": "vendor/horde"
     }
+  ],
+  "blacklist": [
+    "build",
+    "data/webhooks"
   ],
   "git-version": "package_version",
   "intercept": true,
