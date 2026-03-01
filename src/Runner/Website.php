@@ -56,6 +56,7 @@ class Website
         $outputDir = $options['web_output'] ?? $this->componentsRoot . '/build/dev.horde.org';
         $templatesDir = $options['web_templates'] ?? $this->componentsRoot . '/data/website';
         $componentsFile = $options['web_components'] ?? $templatesDir . '/components.json';
+        $cssFilename = 'dev.horde.org-black.css';
 
         $this->output->info("Generating dev.horde.org website");
         $this->output->info("  Input:      $inputDir");
@@ -80,18 +81,44 @@ class Website
             $this->output->ok("Created output directory");
         }
 
-        // Load the legacy generator temporarily
-        // TODO: Refactor into proper classes
-        require_once __DIR__ . '/../Website/LegacyGenerator.php';
+        // Scan and normalize webhook events
+        $this->output->info("Scanning webhook events from $inputDir...");
+        $scanner = new \Horde\Components\Website\EventScanner($inputDir);
+        $rawEvents = $scanner->scan();
+        $this->output->plain(sprintf("Found %d raw events.", count($rawEvents)));
 
-        $generator = new \Horde\Components\Website\LegacyGenerator(
-            $this->output,
+        $normalizer = new \Horde\Components\Website\EventNormalizer();
+        $events = [];
+        foreach ($rawEvents as $rawEvent) {
+            $normalized = $normalizer->normalize($rawEvent);
+            if ($normalized !== null) {
+                $events[] = $normalized;
+            }
+        }
+        $this->output->plain(sprintf("Normalized %d events.", count($events)));
+
+        // Generate website
+        $this->output->info("Generating complete dev.horde.org page...");
+        $generator = new \Horde\Components\Website\PageGenerator(
             $templatesDir,
-            'dev.horde.org-black.css',
+            $cssFilename,
             $componentsFile
         );
+        $generator->generatePage(
+            $events,
+            $outputDir . '/index.html',
+            10,  // max events per section
+            2    // max events per component card
+        );
 
-        $generator->generate($inputDir, $outputDir);
+        // Copy CSS to output
+        $cssSource = $templatesDir . '/' . $cssFilename;
+        $cssDest = $outputDir . '/' . $cssFilename;
+
+        if (file_exists($cssSource)) {
+            copy($cssSource, $cssDest);
+            $this->output->ok("Copied CSS stylesheet");
+        }
 
         $this->output->ok("Website generated successfully!");
         $this->output->info("  Main page: $outputDir/index.html");

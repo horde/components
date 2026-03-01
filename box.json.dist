@@ -2,13 +2,11 @@
   "compression": "GZ",
   "directories": [
     "src",
-    "data"
+    "data/website"
   ],
   "files": [
     "LICENSE",
-    "bin/horde-components",
-    "bin/generate-dev-horde-org.php",
-    "bin/generate-github-activity-html.php"
+    "bin/horde-components"
   ],
   "finder": [
     {
@@ -29,10 +27,10 @@
     }
   ],
   "blacklist": [
-    "build",
-    "data/webhooks"
+    "build"
   ],
   "git-version": "package_version",
   "intercept": true,
+  "main": "bin/horde-components",
   "output": "build/horde-components.phar"
 }

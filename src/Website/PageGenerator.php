@@ -1,25 +1,24 @@
-#!/usr/bin/env php
 <?php
+
 /**
- * dev.horde.org Complete Page Generator
+ * Full page generator for dev.horde.org
  *
- * Generates the complete dev.horde.org index page from:
- * - GitHub webhook JSON files (activity data via existing classes)
- * - Component metadata JSON file
- * - Static HTML template files
+ * Copyright 2013-2026 The Horde Project (http://www.horde.org/)
  *
- * Copyright 2026 The Horde Project (http://www.horde.org/)
+ * See the enclosed file LICENSE for license information (LGPL). If you
+ * did not receive this file, see http://www.horde.org/licenses/lgpl21.
  */
 
 declare(strict_types=1);
 
-// Load existing event scanner and normalizer classes
-require_once __DIR__ . '/generate-github-activity-html.php';
+namespace Horde\Components\Website;
+
+use RuntimeException;
 
 /**
  * Full page generator for dev.horde.org
  */
-class DevHordeOrgGenerator
+class PageGenerator
 {
     private string $templatesDir;
     private string $cssFilename;
@@ -410,99 +409,5 @@ HTML;
     private function esc(string $str): string
     {
         return htmlspecialchars($str, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-    }
-}
-
-// Main execution - only if run directly
-if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'] ?? '')) {
-    try {
-        $config = [
-            'input' => null,
-            'output' => null,
-            'templates' => __DIR__ . '/templates',
-            'components' => null,  // Will default to templates/components.json
-            'css' => 'dev.horde.org-black.css',
-            'max_events' => 10,
-            'max_component_events' => 2,
-        ];
-
-        // Parse arguments
-        for ($i = 1; $i < count($argv); $i++) {
-            switch ($argv[$i]) {
-                case '--input':
-                    $config['input'] = rtrim($argv[++$i], '/');
-                    break;
-                case '--output':
-                    $config['output'] = $argv[++$i];
-                    break;
-                case '--templates':
-                    $config['templates'] = rtrim($argv[++$i], '/');
-                    break;
-                case '--components':
-                    $config['components'] = $argv[++$i];
-                    break;
-                case '--css':
-                    $config['css'] = $argv[++$i];
-                    break;
-                case '--max-events':
-                    $config['max_events'] = (int)$argv[++$i];
-                    break;
-                case '--max-component-events':
-                    $config['max_component_events'] = (int)$argv[++$i];
-                    break;
-                case '--help':
-                case '-h':
-                    echo "dev.horde.org Complete Page Generator\n\n";
-                    echo "Usage: php generate-dev-horde-org.php --input <dir> --output <file> [options]\n\n";
-                    echo "Options:\n";
-                    echo "  --input <dir>                 Source directory with webhook JSON files (required)\n";
-                    echo "  --output <file>               Output HTML file path (required)\n";
-                    echo "  --templates <dir>             Templates directory (default: ./templates)\n";
-                    echo "  --components <file>           Component metadata JSON (default: templates/components.json)\n";
-                    echo "  --css <file>                  CSS filename to link (default: dev.horde.org-black.css)\n";
-                    echo "  --max-events <n>              Max events per activity section (default: 10)\n";
-                    echo "  --max-component-events <n>    Max events per component card (default: 2)\n";
-                    echo "  --help, -h                    Show this help\n";
-                    exit(0);
-            }
-        }
-
-        if (!$config['input'] || !$config['output']) {
-            fwrite(STDERR, "ERROR: --input and --output are required\n");
-            exit(1);
-        }
-
-        echo "Scanning webhook events from {$config['input']}...\n";
-
-        $scanner = new EventScanner($config['input']);
-        $rawEvents = $scanner->scan();
-        echo "Found " . count($rawEvents) . " raw events.\n";
-
-        $normalizer = new EventNormalizer();
-        $events = [];
-        foreach ($rawEvents as $rawEvent) {
-            $normalized = $normalizer->normalize($rawEvent);
-            if ($normalized !== null) {
-                $events[] = $normalized;
-            }
-        }
-        echo "Normalized " . count($events) . " events.\n";
-
-        echo "Generating complete dev.horde.org page...\n";
-        $generator = new DevHordeOrgGenerator($config['templates'], $config['css'], $config['components']);
-        $generator->generatePage(
-            $events,
-            $config['output'],
-            $config['max_events'],
-            $config['max_component_events']
-        );
-
-        echo "\n✓ Successfully generated dev.horde.org!\n";
-        echo "  Main page: {$config['output']}\n";
-        echo "  Component pages: " . dirname($config['output']) . "/components/\n";
-
-    } catch (Exception $e) {
-        fwrite(STDERR, "ERROR: {$e->getMessage()}\n");
-        exit(1);
     }
 }
