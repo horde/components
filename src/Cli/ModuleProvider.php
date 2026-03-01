@@ -21,6 +21,7 @@ use Horde\Components\Module\Pullrequest;
 use Horde\Components\Module\Qc;
 use Horde\Components\Module\Release;
 use Horde\Components\Module\Status;
+use Horde\Components\Module\Website;
 
 /**
  * Components tool specific, context aware module provider
@@ -59,6 +60,7 @@ class ModuleProvider implements CliModuleProvider
             $this->injector->get(Qc::class),
             $this->injector->get(Release::class),
             $this->injector->get(Status::class),
+            $this->injector->get(Website::class),
         ]);
     }
 }
