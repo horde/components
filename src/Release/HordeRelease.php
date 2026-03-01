@@ -336,27 +336,34 @@ class HordeRelease
 
         $this->output->ok('PHAR built successfully');
 
-        // Look for the PHAR file in build/ subdirectory
-        $buildDir = $this->directory . '/build';
-        if (!is_dir($buildDir)) {
-            $this->output->warn("Build directory not found: {$buildDir}");
+        // Read the output path from box.json.dist to find the correct PHAR
+        $boxConfigContent = file_get_contents($boxConfig);
+        $boxConfigData = json_decode($boxConfigContent, true);
+
+        if (!isset($boxConfigData['output'])) {
+            $this->output->warn('Could not find output path in box.json.dist');
             return;
         }
 
-        // Find PHAR files in build directory
-        $pharFiles = glob($buildDir . '/*.phar');
-        if (empty($pharFiles)) {
-            $this->output->warn('No PHAR files found in build/ directory');
+        // The output path is relative to component directory
+        $pharPath = $this->directory . '/' . $boxConfigData['output'];
+
+        if (!file_exists($pharPath)) {
+            $this->output->warn("PHAR file not found at expected location: {$pharPath}");
             return;
         }
 
-        // Use the first PHAR file found
-        $pharPath = $pharFiles[0];
         $this->output->info("Found PHAR: " . basename($pharPath));
 
         // Create versioned asset name
-        // Extract basename without .phar extension, then add version and .phar
-        $baseName = basename($pharPath, '.phar');
+        // Extract base name without version (e.g., "horde-components" from "horde-components.phar")
+        $baseNameWithExt = basename($pharPath);
+        $baseName = preg_replace('/\.phar$/', '', $baseNameWithExt);
+
+        // Remove any existing version from the base name if present
+        // Handles names like "horde-components-1.0.0-alpha23" -> "horde-components"
+        $baseName = preg_replace('/-\d+\.\d+\.\d+.*$/', '', $baseName);
+
         $version = $hordeYml->getReleaseVersion()->toFullSemverV2();
         $assetName = "{$baseName}-{$version}.phar";
 
