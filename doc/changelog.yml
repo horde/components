@@ -1,4 +1,16 @@
 ---
+1.0.0-alpha25:
+  api: 1.0.0-alpha1
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-03-01
+  license:
+    identifier: LGPL-2.1-only
+    uri: http://www.horde.org/licenses/lgpl21
+  notes: |
+    fix(release): use correct PHAR file from box.json.dist output
+    fix(release): only add lib/Application.php if it exists
 1.0.0-alpha24:
   api: 1.0.0-alpha1
   state:
