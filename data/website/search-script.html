@@ -1,0 +1,32 @@
+    <script>
+        // Simple component filter - no dependencies
+        (function() {
+            const filterInput = document.getElementById('componentFilter');
+            const searchInfo = document.getElementById('searchInfo');
+            const componentCards = document.querySelectorAll('.component-card');
+            const totalCount = componentCards.length;
+
+            function filterComponents() {
+                const query = filterInput.value.toLowerCase().trim();
+                let visibleCount = 0;
+
+                componentCards.forEach(card => {
+                    const componentName = card.getAttribute('data-component').toLowerCase();
+                    const description = card.querySelector('.component-description').textContent.toLowerCase();
+                    const searchText = componentName + ' ' + description;
+
+                    if (searchText.includes(query)) {
+                        card.style.display = '';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                searchInfo.innerHTML = `Showing <strong>${visibleCount}</strong> of <strong>${totalCount}</strong> components`;
+            }
+
+            filterInput.addEventListener('input', filterComponents);
+            filterInput.addEventListener('keyup', filterComponents);
+        })();
+    </script>

@@ -1,0 +1,1154 @@
+[
+    {
+        "name": "horde/ActiveSync",
+        "version": "unknown",
+        "description": "Horde ActiveSync Server Library",
+        "github_url": "https://github.com/horde/ActiveSync"
+    },
+    {
+        "name": "horde/agora",
+        "version": "unknown",
+        "description": "Forum application",
+        "github_url": "https://github.com/horde/agora"
+    },
+    {
+        "name": "horde/Alarm",
+        "version": "unknown",
+        "description": "Horde Alarm Libraries",
+        "github_url": "https://github.com/horde/Alarm"
+    },
+    {
+        "name": "horde/ansel",
+        "version": "unknown",
+        "description": "Photo management application",
+        "github_url": "https://github.com/horde/ansel"
+    },
+    {
+        "name": "horde/ApertureToAnselExportPlugin",
+        "version": "unknown",
+        "description": "No description available",
+        "github_url": "https://github.com/horde/ApertureToAnselExportPlugin"
+    },
+    {
+        "name": "horde/Argv",
+        "version": "unknown",
+        "description": "Horde command-line argument parsing package",
+        "github_url": "https://github.com/horde/Argv"
+    },
+    {
+        "name": "horde/Auth",
+        "version": "unknown",
+        "description": "Horde Authentication API",
+        "github_url": "https://github.com/horde/Auth"
+    },
+    {
+        "name": "horde/Autoloader",
+        "version": "unknown",
+        "description": "Horde Autoloader",
+        "github_url": "https://github.com/horde/Autoloader"
+    },
+    {
+        "name": "horde/Autoloader_Cache",
+        "version": "unknown",
+        "description": "Cache for the Horde_Autoloader library",
+        "github_url": "https://github.com/horde/Autoloader_Cache"
+    },
+    {
+        "name": "horde/Backup",
+        "version": "unknown",
+        "description": "Backup and restore library",
+        "github_url": "https://github.com/horde/Backup"
+    },
+    {
+        "name": "horde/base",
+        "version": "unknown",
+        "description": "Horde Application Framework",
+        "github_url": "https://github.com/horde/base"
+    },
+    {
+        "name": "horde/beatnik",
+        "version": "unknown",
+        "description": "DNS record management for Horde",
+        "github_url": "https://github.com/horde/beatnik"
+    },
+    {
+        "name": "horde/Browser",
+        "version": "unknown",
+        "description": "Horde Browser API",
+        "github_url": "https://github.com/horde/Browser"
+    },
+    {
+        "name": "horde/bundle",
+        "version": "unknown",
+        "description": "A composer deployed horde",
+        "github_url": "https://github.com/horde/bundle"
+    },
+    {
+        "name": "horde/Cache",
+        "version": "unknown",
+        "description": "Horde Caching API",
+        "github_url": "https://github.com/horde/Cache"
+    },
+    {
+        "name": "horde/chora",
+        "version": "unknown",
+        "description": "No description available",
+        "github_url": "https://github.com/horde/chora"
+    },
+    {
+        "name": "horde/Cli",
+        "version": "unknown",
+        "description": "Horde Command Line Interface API",
+        "github_url": "https://github.com/horde/Cli"
+    },
+    {
+        "name": "horde/Cli_Application",
+        "version": "unknown",
+        "description": "Library for creating command line applications",
+        "github_url": "https://github.com/horde/Cli_Application"
+    },
+    {
+        "name": "horde/Cli_Modular",
+        "version": "unknown",
+        "description": "A toolset for CLI interfaces that are modular.",
+        "github_url": "https://github.com/horde/Cli_Modular"
+    },
+    {
+        "name": "horde/components",
+        "version": "unknown",
+        "description": "A package for dealing with Horde components",
+        "github_url": "https://github.com/horde/components"
+    },
+    {
+        "name": "horde/Composer",
+        "version": "unknown",
+        "description": "Iterate composer installations and deal with composer file format.",
+        "github_url": "https://github.com/horde/Composer"
+    },
+    {
+        "name": "horde/Compress",
+        "version": "unknown",
+        "description": "Horde Compression API",
+        "github_url": "https://github.com/horde/Compress"
+    },
+    {
+        "name": "horde/Compress_Fast",
+        "version": "unknown",
+        "description": "Fast Compression Library",
+        "github_url": "https://github.com/horde/Compress_Fast"
+    },
+    {
+        "name": "horde/Constraint",
+        "version": "unknown",
+        "description": "Horde Constraint library",
+        "github_url": "https://github.com/horde/Constraint"
+    },
+    {
+        "name": "horde/content",
+        "version": "unknown",
+        "description": "Tagging application",
+        "github_url": "https://github.com/horde/content"
+    },
+    {
+        "name": "horde/Controller",
+        "version": "unknown",
+        "description": "Horde Controller libraries",
+        "github_url": "https://github.com/horde/Controller"
+    },
+    {
+        "name": "horde/Core",
+        "version": "unknown",
+        "description": "Horde Core Framework libraries",
+        "github_url": "https://github.com/horde/Core"
+    },
+    {
+        "name": "horde/Crypt",
+        "version": "unknown",
+        "description": "Horde Cryptography API",
+        "github_url": "https://github.com/horde/Crypt"
+    },
+    {
+        "name": "horde/Crypt_Blowfish",
+        "version": "unknown",
+        "description": "Blowfish Encryption Library",
+        "github_url": "https://github.com/horde/Crypt_Blowfish"
+    },
+    {
+        "name": "horde/Css_Parser",
+        "version": "unknown",
+        "description": "Horde CSS Parser",
+        "github_url": "https://github.com/horde/Css_Parser"
+    },
+    {
+        "name": "horde/CssMinify",
+        "version": "unknown",
+        "description": "CSS Minification",
+        "github_url": "https://github.com/horde/CssMinify"
+    },
+    {
+        "name": "horde/Dashboard",
+        "version": "unknown",
+        "description": "No description available",
+        "github_url": "https://github.com/horde/Dashboard"
+    },
+    {
+        "name": "horde/Data",
+        "version": "unknown",
+        "description": "Horde Data API",
+        "github_url": "https://github.com/horde/Data"
+    },
+    {
+        "name": "horde/Date",
+        "version": "unknown",
+        "description": "Horde Date package",
+        "github_url": "https://github.com/horde/Date"
+    },
+    {
+        "name": "horde/Date_Parser",
+        "version": "unknown",
+        "description": "Horde Date Parser",
+        "github_url": "https://github.com/horde/Date_Parser"
+    },
+    {
+        "name": "horde/Dav",
+        "version": "unknown",
+        "description": "Horde library for WebDAV, CalDAV, CardDAV",
+        "github_url": "https://github.com/horde/Dav"
+    },
+    {
+        "name": "horde/Db",
+        "version": "unknown",
+        "description": "Horde Database Libraries",
+        "github_url": "https://github.com/horde/Db"
+    },
+    {
+        "name": "horde/dev.horde.org",
+        "version": "unknown",
+        "description": "PHPDoc and other auto-generated per-library resources.",
+        "github_url": "https://github.com/horde/dev.horde.org"
+    },
+    {
+        "name": "horde/dns",
+        "version": "unknown",
+        "description": "Horde PHP 8 port of PEAR net_dns2",
+        "github_url": "https://github.com/horde/dns"
+    },
+    {
+        "name": "horde/Editor",
+        "version": "unknown",
+        "description": "Horde Editor API",
+        "github_url": "https://github.com/horde/Editor"
+    },
+    {
+        "name": "horde/ElasticSearch",
+        "version": "unknown",
+        "description": "Horde ElasticSearch client",
+        "github_url": "https://github.com/horde/ElasticSearch"
+    },
+    {
+        "name": "horde/EventDispatcher",
+        "version": "unknown",
+        "description": "A simple PSR-14 EventDispatcher / ListenerProvider system for Horde",
+        "github_url": "https://github.com/horde/EventDispatcher"
+    },
+    {
+        "name": "horde/Exception",
+        "version": "unknown",
+        "description": "Horde Exception Handler",
+        "github_url": "https://github.com/horde/Exception"
+    },
+    {
+        "name": "horde/Feed",
+        "version": "unknown",
+        "description": "Horde Feed libraries",
+        "github_url": "https://github.com/horde/Feed"
+    },
+    {
+        "name": "horde/folks",
+        "version": "unknown",
+        "description": "No description available",
+        "github_url": "https://github.com/horde/folks"
+    },
+    {
+        "name": "horde/Form",
+        "version": "unknown",
+        "description": "Horde Form API",
+        "github_url": "https://github.com/horde/Form"
+    },
+    {
+        "name": "horde/git-tools",
+        "version": "unknown",
+        "description": "Toolchain for dealing with the new split Horde repositories",
+        "github_url": "https://github.com/horde/git-tools"
+    },
+    {
+        "name": "horde/GithubApiClient",
+        "version": "unknown",
+        "description": "An OO way to access the Github API - partial implementation",
+        "github_url": "https://github.com/horde/GithubApiClient"
+    },
+    {
+        "name": "horde/gollem",
+        "version": "unknown",
+        "description": "Web-based file manager",
+        "github_url": "https://github.com/horde/gollem"
+    },
+    {
+        "name": "horde/Group",
+        "version": "unknown",
+        "description": "Horde User Groups System",
+        "github_url": "https://github.com/horde/Group"
+    },
+    {
+        "name": "horde/groupware",
+        "version": "unknown",
+        "description": "Horde Groupware",
+        "github_url": "https://github.com/horde/groupware"
+    },
+    {
+        "name": "horde/HashTable",
+        "version": "unknown",
+        "description": "Horde Hash Table Interface",
+        "github_url": "https://github.com/horde/HashTable"
+    },
+    {
+        "name": "horde/hermes",
+        "version": "unknown",
+        "description": "A web based time tracker",
+        "github_url": "https://github.com/horde/hermes"
+    },
+    {
+        "name": "horde/History",
+        "version": "unknown",
+        "description": "API for tracking the history of an object",
+        "github_url": "https://github.com/horde/History"
+    },
+    {
+        "name": "horde/horde",
+        "version": "unknown",
+        "description": "This is the old, deprecated, monolith Horde repository, archived here for historical reasons.",
+        "github_url": "https://github.com/horde/horde"
+    },
+    {
+        "name": "horde/horde-installer-plugin",
+        "version": "unknown",
+        "description": "A Composer plugin for a horde installation",
+        "github_url": "https://github.com/horde/horde-installer-plugin"
+    },
+    {
+        "name": "horde/horde-support",
+        "version": "unknown",
+        "description": "Horde Support",
+        "github_url": "https://github.com/horde/horde-support"
+    },
+    {
+        "name": "horde/horde-web",
+        "version": "unknown",
+        "description": "Horde Website",
+        "github_url": "https://github.com/horde/horde-web"
+    },
+    {
+        "name": "horde/hordectl",
+        "version": "unknown",
+        "description": "Horde CLI setup and scenario deployment utility",
+        "github_url": "https://github.com/horde/hordectl"
+    },
+    {
+        "name": "horde/HordeYmlFile",
+        "version": "unknown",
+        "description": "Handle .horde.yml and changelog.yml files",
+        "github_url": "https://github.com/horde/HordeYmlFile"
+    },
+    {
+        "name": "horde/Http",
+        "version": "unknown",
+        "description": "Horde HTTP libraries",
+        "github_url": "https://github.com/horde/Http"
+    },
+    {
+        "name": "horde/Http_Server",
+        "version": "unknown",
+        "description": "PSR-15 server-side components, spiritual successor to Horde_Controller",
+        "github_url": "https://github.com/horde/Http_Server"
+    },
+    {
+        "name": "horde/hylax",
+        "version": "unknown",
+        "description": "Fax frontend",
+        "github_url": "https://github.com/horde/hylax"
+    },
+    {
+        "name": "horde/Icalendar",
+        "version": "unknown",
+        "description": "iCalendar API",
+        "github_url": "https://github.com/horde/Icalendar"
+    },
+    {
+        "name": "horde/Idna",
+        "version": "unknown",
+        "description": "IDNA backend normalization package",
+        "github_url": "https://github.com/horde/Idna"
+    },
+    {
+        "name": "horde/Image",
+        "version": "unknown",
+        "description": "Horde Image API",
+        "github_url": "https://github.com/horde/Image"
+    },
+    {
+        "name": "horde/Imap_Client",
+        "version": "unknown",
+        "description": "Horde IMAP Client",
+        "github_url": "https://github.com/horde/Imap_Client"
+    },
+    {
+        "name": "horde/imp",
+        "version": "unknown",
+        "description": "A web based webmail system",
+        "github_url": "https://github.com/horde/imp"
+    },
+    {
+        "name": "horde/Imsp",
+        "version": "unknown",
+        "description": "IMSP API",
+        "github_url": "https://github.com/horde/Imsp"
+    },
+    {
+        "name": "horde/ingo",
+        "version": "unknown",
+        "description": "An email filter rules manager",
+        "github_url": "https://github.com/horde/ingo"
+    },
+    {
+        "name": "horde/Injector",
+        "version": "unknown",
+        "description": "Horde dependency injection container",
+        "github_url": "https://github.com/horde/Injector"
+    },
+    {
+        "name": "horde/iPhoto2Ansel",
+        "version": "unknown",
+        "description": "No description available",
+        "github_url": "https://github.com/horde/iPhoto2Ansel"
+    },
+    {
+        "name": "horde/Itip",
+        "version": "unknown",
+        "description": "iTip invitation response handling",
+        "github_url": "https://github.com/horde/Itip"
+    },
+    {
+        "name": "horde/JavascriptMinify",
+        "version": "unknown",
+        "description": "Javascript Minification",
+        "github_url": "https://github.com/horde/JavascriptMinify"
+    },
+    {
+        "name": "horde/JavascriptMinify_Jsmin",
+        "version": "unknown",
+        "description": "Horde Javascript Minifier - Jsmin PHP Driver",
+        "github_url": "https://github.com/horde/JavascriptMinify_Jsmin"
+    },
+    {
+        "name": "horde/jonah",
+        "version": "unknown",
+        "description": "Jonah is an application for handling news.",
+        "github_url": "https://github.com/horde/jonah"
+    },
+    {
+        "name": "horde/klutz",
+        "version": "unknown",
+        "description": "Comic reader",
+        "github_url": "https://github.com/horde/klutz"
+    },
+    {
+        "name": "horde/Kolab_Cli",
+        "version": "unknown",
+        "description": "A command line interface to the Kolab storage system",
+        "github_url": "https://github.com/horde/Kolab_Cli"
+    },
+    {
+        "name": "horde/Kolab_Config",
+        "version": "unknown",
+        "description": "A package for reading the Kolab server configuration",
+        "github_url": "https://github.com/horde/Kolab_Config"
+    },
+    {
+        "name": "horde/Kolab_Filter",
+        "version": "unknown",
+        "description": "Postfix filters for the Kolab server",
+        "github_url": "https://github.com/horde/Kolab_Filter"
+    },
+    {
+        "name": "horde/Kolab_Format",
+        "version": "unknown",
+        "description": "A package for reading/writing Kolab data formats.",
+        "github_url": "https://github.com/horde/Kolab_Format"
+    },
+    {
+        "name": "horde/Kolab_FreeBusy",
+        "version": "unknown",
+        "description": "A package for providing free/busy information",
+        "github_url": "https://github.com/horde/Kolab_FreeBusy"
+    },
+    {
+        "name": "horde/Kolab_Resource",
+        "version": "unknown",
+        "description": "Resource management for the Kolab server",
+        "github_url": "https://github.com/horde/Kolab_Resource"
+    },
+    {
+        "name": "horde/Kolab_Server",
+        "version": "unknown",
+        "description": "A package for manipulating the Kolab user database",
+        "github_url": "https://github.com/horde/Kolab_Server"
+    },
+    {
+        "name": "horde/Kolab_Session",
+        "version": "unknown",
+        "description": "A package managing an active Kolab session",
+        "github_url": "https://github.com/horde/Kolab_Session"
+    },
+    {
+        "name": "horde/Kolab_Storage",
+        "version": "unknown",
+        "description": "A package for handling Kolab data stored on an IMAP server",
+        "github_url": "https://github.com/horde/Kolab_Storage"
+    },
+    {
+        "name": "horde/kolab_webmail",
+        "version": "unknown",
+        "description": "Horde Groupware Kolab Edition",
+        "github_url": "https://github.com/horde/kolab_webmail"
+    },
+    {
+        "name": "horde/koward",
+        "version": "unknown",
+        "description": "An administration frontend for the Kolab server",
+        "github_url": "https://github.com/horde/koward"
+    },
+    {
+        "name": "horde/kronolith",
+        "version": "unknown",
+        "description": "A web based calendar",
+        "github_url": "https://github.com/horde/kronolith"
+    },
+    {
+        "name": "horde/Ldap",
+        "version": "unknown",
+        "description": "Horde LDAP libraries",
+        "github_url": "https://github.com/horde/Ldap"
+    },
+    {
+        "name": "horde/Lens",
+        "version": "unknown",
+        "description": "Horde Lens decorating iterator/flyweight implementation",
+        "github_url": "https://github.com/horde/Lens"
+    },
+    {
+        "name": "horde/ListHeaders",
+        "version": "unknown",
+        "description": "Horde List Headers Parsing Library",
+        "github_url": "https://github.com/horde/ListHeaders"
+    },
+    {
+        "name": "horde/Lock",
+        "version": "unknown",
+        "description": "Horde Resource Locking System",
+        "github_url": "https://github.com/horde/Lock"
+    },
+    {
+        "name": "horde/Log",
+        "version": "unknown",
+        "description": "Horde Logging library",
+        "github_url": "https://github.com/horde/Log"
+    },
+    {
+        "name": "horde/LoginTasks",
+        "version": "unknown",
+        "description": "Horde Login Tasks System",
+        "github_url": "https://github.com/horde/LoginTasks"
+    },
+    {
+        "name": "horde/luxor",
+        "version": "unknown",
+        "description": "Source code cross referencer",
+        "github_url": "https://github.com/horde/luxor"
+    },
+    {
+        "name": "horde/Mail",
+        "version": "unknown",
+        "description": "Horde Mail Library",
+        "github_url": "https://github.com/horde/Mail"
+    },
+    {
+        "name": "horde/Mail_Autoconfig",
+        "version": "unknown",
+        "description": "Horde Mail Autoconfiguration",
+        "github_url": "https://github.com/horde/Mail_Autoconfig"
+    },
+    {
+        "name": "horde/ManageSieve",
+        "version": "unknown",
+        "description": "Client library for ManageSieve",
+        "github_url": "https://github.com/horde/ManageSieve"
+    },
+    {
+        "name": "horde/Mapi",
+        "version": "unknown",
+        "description": "MAPI utility library.",
+        "github_url": "https://github.com/horde/Mapi"
+    },
+    {
+        "name": "horde/Memcache",
+        "version": "unknown",
+        "description": "Horde Memcache API",
+        "github_url": "https://github.com/horde/Memcache"
+    },
+    {
+        "name": "horde/Mime",
+        "version": "unknown",
+        "description": "Horde MIME Library",
+        "github_url": "https://github.com/horde/Mime"
+    },
+    {
+        "name": "horde/Mime_Viewer",
+        "version": "unknown",
+        "description": "Horde MIME Viewer Library",
+        "github_url": "https://github.com/horde/Mime_Viewer"
+    },
+    {
+        "name": "horde/mnemo",
+        "version": "unknown",
+        "description": "A web based notes manager",
+        "github_url": "https://github.com/horde/mnemo"
+    },
+    {
+        "name": "horde/Model",
+        "version": "unknown",
+        "description": "No description available",
+        "github_url": "https://github.com/horde/Model"
+    },
+    {
+        "name": "horde/Mongo",
+        "version": "unknown",
+        "description": "Horde Mongo Configuration",
+        "github_url": "https://github.com/horde/Mongo"
+    },
+    {
+        "name": "horde/nag",
+        "version": "unknown",
+        "description": "A web based task list manager",
+        "github_url": "https://github.com/horde/nag"
+    },
+    {
+        "name": "horde/Nls",
+        "version": "unknown",
+        "description": "Native Language Support (NLS)",
+        "github_url": "https://github.com/horde/Nls"
+    },
+    {
+        "name": "horde/Notification",
+        "version": "unknown",
+        "description": "Horde Notification System",
+        "github_url": "https://github.com/horde/Notification"
+    },
+    {
+        "name": "horde/Oauth",
+        "version": "unknown",
+        "description": "Horde OAuth client/server",
+        "github_url": "https://github.com/horde/Oauth"
+    },
+    {
+        "name": "horde/OpenXchange",
+        "version": "unknown",
+        "description": "Open-Xchange Connector",
+        "github_url": "https://github.com/horde/OpenXchange"
+    },
+    {
+        "name": "horde/operator",
+        "version": "unknown",
+        "description": "No description available",
+        "github_url": "https://github.com/horde/operator"
+    },
+    {
+        "name": "horde/Pack",
+        "version": "unknown",
+        "description": "Horde Pack Utility",
+        "github_url": "https://github.com/horde/Pack"
+    },
+    {
+        "name": "horde/passwd",
+        "version": "unknown",
+        "description": "Horde password changing application",
+        "github_url": "https://github.com/horde/passwd"
+    },
+    {
+        "name": "horde/pastie",
+        "version": "unknown",
+        "description": "Pastie Pastebin application",
+        "github_url": "https://github.com/horde/pastie"
+    },
+    {
+        "name": "horde/Pdf",
+        "version": "unknown",
+        "description": "Horde PDF library",
+        "github_url": "https://github.com/horde/Pdf"
+    },
+    {
+        "name": "horde/Pear",
+        "version": "unknown",
+        "description": "A library for handling a subset of the PEAR formats and specifications",
+        "github_url": "https://github.com/horde/Pear"
+    },
+    {
+        "name": "horde/Perms",
+        "version": "unknown",
+        "description": "Horde Permissions System",
+        "github_url": "https://github.com/horde/Perms"
+    },
+    {
+        "name": "horde/Pgp",
+        "version": "unknown",
+        "description": "Horde PGP API",
+        "github_url": "https://github.com/horde/Pgp"
+    },
+    {
+        "name": "horde/PhpConfigFile",
+        "version": "unknown",
+        "description": "Read and write PHP Code config files",
+        "github_url": "https://github.com/horde/PhpConfigFile"
+    },
+    {
+        "name": "horde/Pirum",
+        "version": "unknown",
+        "description": "The simple PEAR Channel Server Manager",
+        "github_url": "https://github.com/horde/Pirum"
+    },
+    {
+        "name": "horde/Prefs",
+        "version": "unknown",
+        "description": "Horde Preferences API",
+        "github_url": "https://github.com/horde/Prefs"
+    },
+    {
+        "name": "horde/PubSub",
+        "version": "unknown",
+        "description": "Horde Publish/Subscribe library",
+        "github_url": "https://github.com/horde/PubSub"
+    },
+    {
+        "name": "horde/Push",
+        "version": "unknown",
+        "description": "A package for broadcasting status updates and content to various social network services.",
+        "github_url": "https://github.com/horde/Push"
+    },
+    {
+        "name": "horde/Queue",
+        "version": "unknown",
+        "description": "Horde Queue",
+        "github_url": "https://github.com/horde/Queue"
+    },
+    {
+        "name": "horde/Rampage",
+        "version": "unknown",
+        "description": "Horde Rampage Application Server",
+        "github_url": "https://github.com/horde/Rampage"
+    },
+    {
+        "name": "horde/Rdo",
+        "version": "unknown",
+        "description": "Rampage Data Objects",
+        "github_url": "https://github.com/horde/Rdo"
+    },
+    {
+        "name": "horde/Refactor",
+        "version": "unknown",
+        "description": "PHP code refactoring library",
+        "github_url": "https://github.com/horde/Refactor"
+    },
+    {
+        "name": "horde/Reflection",
+        "version": "unknown",
+        "description": "Method reflection and documentation package",
+        "github_url": "https://github.com/horde/Reflection"
+    },
+    {
+        "name": "horde/ReflectionDocBlock",
+        "version": "unknown",
+        "description": "No description available",
+        "github_url": "https://github.com/horde/ReflectionDocBlock"
+    },
+    {
+        "name": "horde/Release",
+        "version": "unknown",
+        "description": "Horde Release generation library",
+        "github_url": "https://github.com/horde/Release"
+    },
+    {
+        "name": "horde/Role",
+        "version": "unknown",
+        "description": "PEAR installer role used to install Horde components",
+        "github_url": "https://github.com/horde/Role"
+    },
+    {
+        "name": "horde/Routes",
+        "version": "unknown",
+        "description": "Horde Routes URL mapping system",
+        "github_url": "https://github.com/horde/Routes"
+    },
+    {
+        "name": "horde/Rpc",
+        "version": "unknown",
+        "description": "Horde RPC API",
+        "github_url": "https://github.com/horde/Rpc"
+    },
+    {
+        "name": "horde/sam",
+        "version": "unknown",
+        "description": "Sam is short for Spam Assassin Module.",
+        "github_url": "https://github.com/horde/sam"
+    },
+    {
+        "name": "horde/Scheduler",
+        "version": "unknown",
+        "description": "Horde Scheduler System",
+        "github_url": "https://github.com/horde/Scheduler"
+    },
+    {
+        "name": "horde/Scribe",
+        "version": "unknown",
+        "description": "Scribe",
+        "github_url": "https://github.com/horde/Scribe"
+    },
+    {
+        "name": "horde/Secret",
+        "version": "unknown",
+        "description": "Secret Encryption API",
+        "github_url": "https://github.com/horde/Secret"
+    },
+    {
+        "name": "horde/Serialize",
+        "version": "unknown",
+        "description": "Data Encapulation API",
+        "github_url": "https://github.com/horde/Serialize"
+    },
+    {
+        "name": "horde/Service_Facebook",
+        "version": "unknown",
+        "description": "Horde Facebook client",
+        "github_url": "https://github.com/horde/Service_Facebook"
+    },
+    {
+        "name": "horde/Service_Gravatar",
+        "version": "unknown",
+        "description": "API accessor for gravatar.com",
+        "github_url": "https://github.com/horde/Service_Gravatar"
+    },
+    {
+        "name": "horde/Service_Scribd",
+        "version": "unknown",
+        "description": "Horde Scribd client",
+        "github_url": "https://github.com/horde/Service_Scribd"
+    },
+    {
+        "name": "horde/Service_Twitter",
+        "version": "unknown",
+        "description": "Horde Twitter client",
+        "github_url": "https://github.com/horde/Service_Twitter"
+    },
+    {
+        "name": "horde/Service_UrlShortener",
+        "version": "unknown",
+        "description": "Horde_Service_UrlShortener Class",
+        "github_url": "https://github.com/horde/Service_UrlShortener"
+    },
+    {
+        "name": "horde/Service_Vimeo",
+        "version": "unknown",
+        "description": "Horde Vimeo client",
+        "github_url": "https://github.com/horde/Service_Vimeo"
+    },
+    {
+        "name": "horde/Service_Weather",
+        "version": "unknown",
+        "description": "Horde Weather Provider.",
+        "github_url": "https://github.com/horde/Service_Weather"
+    },
+    {
+        "name": "horde/sesha",
+        "version": "unknown",
+        "description": "A simple Inventory App for Horde",
+        "github_url": "https://github.com/horde/sesha"
+    },
+    {
+        "name": "horde/SessionHandler",
+        "version": "unknown",
+        "description": "Horde Session Handler API",
+        "github_url": "https://github.com/horde/SessionHandler"
+    },
+    {
+        "name": "horde/Share",
+        "version": "unknown",
+        "description": "Horde Shared Permissions System",
+        "github_url": "https://github.com/horde/Share"
+    },
+    {
+        "name": "horde/shout",
+        "version": "unknown",
+        "description": "No description available",
+        "github_url": "https://github.com/horde/shout"
+    },
+    {
+        "name": "horde/skeleton",
+        "version": "unknown",
+        "description": "No description available",
+        "github_url": "https://github.com/horde/skeleton"
+    },
+    {
+        "name": "horde/Smtp",
+        "version": "unknown",
+        "description": "Horde SMTP Client",
+        "github_url": "https://github.com/horde/Smtp"
+    },
+    {
+        "name": "horde/Socket_Client",
+        "version": "unknown",
+        "description": "Horde Socket Client",
+        "github_url": "https://github.com/horde/Socket_Client"
+    },
+    {
+        "name": "horde/Spam",
+        "version": "unknown",
+        "description": "Spam reporting abstraction",
+        "github_url": "https://github.com/horde/Spam"
+    },
+    {
+        "name": "horde/SpellChecker",
+        "version": "unknown",
+        "description": "Spellcheck API",
+        "github_url": "https://github.com/horde/SpellChecker"
+    },
+    {
+        "name": "horde/Stream",
+        "version": "unknown",
+        "description": "Horde stream handler",
+        "github_url": "https://github.com/horde/Stream"
+    },
+    {
+        "name": "horde/Stream_Filter",
+        "version": "unknown",
+        "description": "Horde Stream filters",
+        "github_url": "https://github.com/horde/Stream_Filter"
+    },
+    {
+        "name": "horde/Stream_Wrapper",
+        "version": "unknown",
+        "description": "Horde Stream wrappers",
+        "github_url": "https://github.com/horde/Stream_Wrapper"
+    },
+    {
+        "name": "horde/Stringprep",
+        "version": "unknown",
+        "description": "PHP implementation of RFC 3454 - Preparation of Internationalized Strings (\"stringprep\").",
+        "github_url": "https://github.com/horde/Stringprep"
+    },
+    {
+        "name": "horde/Support",
+        "version": "unknown",
+        "description": "Horde support package",
+        "github_url": "https://github.com/horde/Support"
+    },
+    {
+        "name": "horde/SyncMl",
+        "version": "unknown",
+        "description": "Horde_SyncMl provides an API for processing SyncML requests",
+        "github_url": "https://github.com/horde/SyncMl"
+    },
+    {
+        "name": "horde/Template",
+        "version": "unknown",
+        "description": "Horde Template System",
+        "github_url": "https://github.com/horde/Template"
+    },
+    {
+        "name": "horde/Test",
+        "version": "unknown",
+        "description": "Horde testing base classes",
+        "github_url": "https://github.com/horde/Test"
+    },
+    {
+        "name": "horde/Text_Diff",
+        "version": "unknown",
+        "description": "Engine for performing and rendering text diffs",
+        "github_url": "https://github.com/horde/Text_Diff"
+    },
+    {
+        "name": "horde/Text_Filter",
+        "version": "unknown",
+        "description": "Horde Text Filter API",
+        "github_url": "https://github.com/horde/Text_Filter"
+    },
+    {
+        "name": "horde/Text_Filter_Jsmin",
+        "version": "unknown",
+        "description": "Horde Text Filter - Jsmin PHP Driver",
+        "github_url": "https://github.com/horde/Text_Filter_Jsmin"
+    },
+    {
+        "name": "horde/Text_Flowed",
+        "version": "unknown",
+        "description": "Horde API for flowed text as per RFC 3676",
+        "github_url": "https://github.com/horde/Text_Flowed"
+    },
+    {
+        "name": "horde/Text_Textile",
+        "version": "unknown",
+        "description": "Textile formatting library",
+        "github_url": "https://github.com/horde/Text_Textile"
+    },
+    {
+        "name": "horde/Text_Wiki",
+        "version": "unknown",
+        "description": "No description available",
+        "github_url": "https://github.com/horde/Text_Wiki"
+    },
+    {
+        "name": "horde/theme-material",
+        "version": "unknown",
+        "description": "Horde Theme in Material UI style",
+        "github_url": "https://github.com/horde/theme-material"
+    },
+    {
+        "name": "horde/Thrift",
+        "version": "unknown",
+        "description": "Thrift",
+        "github_url": "https://github.com/horde/Thrift"
+    },
+    {
+        "name": "horde/timeobjects",
+        "version": "unknown",
+        "description": "Horde timeobjects application",
+        "github_url": "https://github.com/horde/timeobjects"
+    },
+    {
+        "name": "horde/Timezone",
+        "version": "unknown",
+        "description": "Timezone library",
+        "github_url": "https://github.com/horde/Timezone"
+    },
+    {
+        "name": "horde/Token",
+        "version": "unknown",
+        "description": "Horde Token API",
+        "github_url": "https://github.com/horde/Token"
+    },
+    {
+        "name": "horde/Translation",
+        "version": "unknown",
+        "description": "Horde translation library",
+        "github_url": "https://github.com/horde/Translation"
+    },
+    {
+        "name": "horde/trean",
+        "version": "unknown",
+        "description": "Web-based bookmarks application",
+        "github_url": "https://github.com/horde/trean"
+    },
+    {
+        "name": "horde/Tree",
+        "version": "unknown",
+        "description": "Horde Tree API",
+        "github_url": "https://github.com/horde/Tree"
+    },
+    {
+        "name": "horde/turba",
+        "version": "unknown",
+        "description": "A web based address book",
+        "github_url": "https://github.com/horde/turba"
+    },
+    {
+        "name": "horde/ulaform",
+        "version": "unknown",
+        "description": "An HTML form generation/processing tool",
+        "github_url": "https://github.com/horde/ulaform"
+    },
+    {
+        "name": "horde/Url",
+        "version": "unknown",
+        "description": "Horde Url class",
+        "github_url": "https://github.com/horde/Url"
+    },
+    {
+        "name": "horde/Util",
+        "version": "unknown",
+        "description": "Horde Utility Libraries",
+        "github_url": "https://github.com/horde/Util"
+    },
+    {
+        "name": "horde/Vcs",
+        "version": "unknown",
+        "description": "Version Control API",
+        "github_url": "https://github.com/horde/Vcs"
+    },
+    {
+        "name": "horde/Version",
+        "version": "unknown",
+        "description": "Handle strict semver.org 2.0.0 and relaxed semantic version formats",
+        "github_url": "https://github.com/horde/Version"
+    },
+    {
+        "name": "horde/Vfs",
+        "version": "unknown",
+        "description": "Virtual File System API",
+        "github_url": "https://github.com/horde/Vfs"
+    },
+    {
+        "name": "horde/View",
+        "version": "unknown",
+        "description": "Horde View API",
+        "github_url": "https://github.com/horde/View"
+    },
+    {
+        "name": "horde/vilma",
+        "version": "unknown",
+        "description": "Domain and User Administration",
+        "github_url": "https://github.com/horde/vilma"
+    },
+    {
+        "name": "horde/webmail",
+        "version": "unknown",
+        "description": "Horde Groupware Webmail Edition",
+        "github_url": "https://github.com/horde/webmail"
+    },
+    {
+        "name": "horde/whups",
+        "version": "unknown",
+        "description": "Ticket-tracking application",
+        "github_url": "https://github.com/horde/whups"
+    },
+    {
+        "name": "horde/wicked",
+        "version": "unknown",
+        "description": "Wiki application",
+        "github_url": "https://github.com/horde/wicked"
+    },
+    {
+        "name": "horde/Xml_Element",
+        "version": "unknown",
+        "description": "Horde Xml Element object",
+        "github_url": "https://github.com/horde/Xml_Element"
+    },
+    {
+        "name": "horde/Xml_Wbxml",
+        "version": "unknown",
+        "description": "Horde_Xml_Wbxml provides an API for encoding and decoding WBXML documents used in SyncML and other wireless applications",
+        "github_url": "https://github.com/horde/Xml_Wbxml"
+    },
+    {
+        "name": "horde/Yaml",
+        "version": "unknown",
+        "description": "Horde YAML parsing and dumping routines",
+        "github_url": "https://github.com/horde/Yaml"
+    }
+]
