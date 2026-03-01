@@ -163,11 +163,15 @@ class PageGenerator
         $urlEsc = $this->esc($event->url);
         $timestampEsc = $this->esc($event->timestamp->format('Y-m-d H:i'));
 
+        // Generate safe filename for component link
+        $safeName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $event->repo);
+        $componentLink = "components/{$safeName}.html";
+
         return <<<HTML
                     <div class="event-item type-{$event->type}">
                         <div class="event-title">{$titleEsc}</div>
                         <div class="event-meta">
-                            <span class="event-repo">{$repoEsc}</span>
+                            <a href="{$componentLink}" class="event-repo">{$repoEsc}</a>
                             <span class="event-badge">{$actionEsc}</span>
                             <span>{$timestampEsc}</span>
                             <span>by {$actorEsc}</span>
