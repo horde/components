@@ -212,7 +212,13 @@ class HordeRelease
         }
         // TODO: Run any document pulls from Wiki or other sources
         // commit for release using Conventional Commit format
-        $this->gitHelper->add((string) $this->directory . '/lib/Application.php');
+
+        // Add lib/Application.php only if it exists (applications only, not libraries)
+        $applicationPath = (string) $this->directory . '/lib/Application.php';
+        if (file_exists($applicationPath)) {
+            $this->gitHelper->add($applicationPath);
+        }
+
         $this->gitHelper->add((string) $this->directory . '/doc/changelog.yml');
         $this->gitHelper->add((string) $this->directory . '/.horde.yml');
         $this->gitHelper->add((string) $this->directory . '/composer.json');
