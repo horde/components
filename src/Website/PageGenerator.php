@@ -266,8 +266,8 @@ HTML;
 
                 <div class="component-links">
                     <a href="{$githubUrl}" target="_blank" class="component-link">GitHub →</a>
-                    <a href="/api/{$safeName}/" class="component-link">API Docs →</a>
-                    <a href="/components/{$safeName}.html" class="component-link">Full Details →</a>
+                    <a href="api/{$safeName}/" class="component-link">API Docs →</a>
+                    <a href="components/{$safeName}.html" class="component-link">Full Details →</a>
                 </div>
             </div>
 
