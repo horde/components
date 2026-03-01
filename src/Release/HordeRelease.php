@@ -217,6 +217,12 @@ class HordeRelease
         $this->gitHelper->add((string) $this->directory . '/.horde.yml');
         $this->gitHelper->add((string) $this->directory . '/composer.json');
 
+        // Add .gitignore if it exists
+        $gitignorePath = (string) $this->directory . '/.gitignore';
+        if (file_exists($gitignorePath)) {
+            $this->gitHelper->add($gitignorePath);
+        }
+
         $releaseVersion = $hordeYml->getReleaseVersion()->toFullSemverV2();
         $apiVersion = $hordeYml->getApiVersion()->toFullSemverV2();
 
@@ -296,6 +302,13 @@ class HordeRelease
         }
 
         $this->output->info('Building PHAR with Box...');
+
+        // Ensure build directory exists
+        $buildDir = $this->directory . '/build';
+        if (!is_dir($buildDir)) {
+            $this->output->info('Creating build/ directory');
+            mkdir($buildDir, 0755, true);
+        }
 
         // Build the PHAR
         $buildCommand = sprintf(
