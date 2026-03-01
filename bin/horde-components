@@ -1,5 +1,14 @@
 #!/usr/bin/env php
 <?php
+/**
+ * Horde Components CLI Tool / GitHub Webhook Handler
+ *
+ * When run via CLI: Components development tool
+ * When run via web server: GitHub webhook handler
+ *
+ * Copyright 2026 Horde LLC (http://www.horde.org/)
+ */
+
 // horde-components standalone run in composer setups
 $autoloaders = [
     __DIR__ . '/../config/autoload.php', // custom autoload config
@@ -22,5 +31,37 @@ if (!class_exists('Horde\Components\Components')) {
     exit;
 }
 
-// in case of calling components via git-tools, this file plays no role
-Horde\Components\Components::main();
+// Detect execution mode
+if (php_sapi_name() === 'cli' || php_sapi_name() === 'cli-server') {
+    // CLI mode - normal components operation
+    Horde\Components\Components::main();
+} else {
+    // Web server mode - webhook handler
+
+    // Read configuration from environment or defaults
+    $dataDir = getenv('WEBHOOK_DATA_DIR') ?: '/horde/json';
+    $secret = getenv('WEBHOOK_SECRET') ?: null;
+
+    // Extract headers
+    $headers = [
+        'X-GitHub-Event' => $_SERVER['HTTP_X_GITHUB_EVENT'] ?? '',
+        'X-Hub-Signature-256' => $_SERVER['HTTP_X_HUB_SIGNATURE_256'] ?? '',
+        'X-GitHub-Delivery' => $_SERVER['HTTP_X_GITHUB_DELIVERY'] ?? '',
+    ];
+
+    // Read payload
+    $json = file_get_contents('php://input');
+
+    try {
+        // Process webhook
+        $handler = new \Horde\Components\Website\WebhookHandler($dataDir, $secret);
+        $handler->handle($json, $headers);
+        $handler->sendResponse(200, 'ok');
+    } catch (Exception $e) {
+        error_log("Webhook handler error: " . $e->getMessage());
+        http_response_code(500);
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'error', 'message' => 'Internal server error']);
+    }
+}
+
