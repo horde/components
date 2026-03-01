@@ -72,8 +72,7 @@
     "bin": [
         "bin/generate-dev-horde-org.php",
         "bin/generate-github-activity-html.php",
-        "bin/horde-components",
-        "bin/web-catalog-github"
+        "bin/horde-components"
     ],
     "config": {
         "allow-plugins": {

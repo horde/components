@@ -8,8 +8,7 @@
     "LICENSE",
     "bin/horde-components",
     "bin/generate-dev-horde-org.php",
-    "bin/generate-github-activity-html.php",
-    "bin/web-catalog-github"
+    "bin/generate-github-activity-html.php"
   ],
   "finder": [
     {
