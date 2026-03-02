@@ -57,6 +57,18 @@ class Change
             $log = null;
         }
 
+        // Show usage if no log message provided
+        if ($log === null) {
+            $this->output->warn('No changelog entry provided.');
+            $this->output->plain('');
+            $this->output->help('Usage: horde-components changed "Your changelog message"');
+            $this->output->help('       horde-components changed "[component] Fixed issue #123"');
+            $this->output->plain('');
+            $this->output->help('Use --commit to commit the change immediately:');
+            $this->output->help('       horde-components changed --commit "Your message"');
+            return;
+        }
+
         $options = $this->options;
         if ($log && !empty($options['commit'])) {
             $options['commit'] = new HelperCommit(
