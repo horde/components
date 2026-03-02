@@ -83,7 +83,7 @@ class Status
             $this->output->warn("Config file does not exist or is not readable.");
         };
         $this->output->info("Git Tree root path: $this->localCheckoutDir");
-        if (is_readable($this->localCheckoutDir)) {
+        if ($this->localCheckoutDir->exists()) {
             $componentsCount = count($this->localCheckoutDir->getHordeYmlDirs());
             $gitCount = count($this->localCheckoutDir->getGitDirs());
             if ($gitCount) {

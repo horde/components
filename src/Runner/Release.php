@@ -24,6 +24,8 @@ use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Helper\Composer as ComposerHelper;
 use Horde\Components\Release\HordeRelease;
+use Horde\Components\Config\MinimalConfig;
+use Horde\GithubApiClient\GithubApiConfig;
 
 /**
  * Components_Runner_Release:: releases a new version for a package.
@@ -91,7 +93,16 @@ class Release
 
             // Get GitHubChecker and GitHubReleaseCreator from dependencies
             $githubChecker = new \Horde\Components\Helper\GitHubChecker($gitHelper);
-            $githubReleaseCreator = new \Horde\Components\Helper\GitHubReleaseCreator($githubChecker, $this->output);
+
+            // Get GitHub token from environment
+            $githubToken = getenv('GITHUB_TOKEN') ?: '';
+            $githubApiConfig = new GithubApiConfig(accessToken: $githubToken);
+
+            $githubReleaseCreator = new \Horde\Components\Helper\GitHubReleaseCreator(
+                $githubChecker,
+                $this->output,
+                $githubApiConfig
+            );
 
             $release = new HordeRelease(
                 $composerHelper,
@@ -103,24 +114,11 @@ class Release
                 $this->qcTasks
             );
 
-            // Create a minimal Config-like object for HordeRelease
-            // TODO: Refactor HordeRelease to not need Config
-            $configLike = new class($this->component, $this->options) {
-                public function __construct(
-                    private readonly Component $component,
-                    private readonly array $options
-                ) {}
+            // Create a Config object for HordeRelease
+            $config = new MinimalConfig($this->options, $this->arguments);
+            $config->setComponent($this->component);
 
-                public function getComponent(): Component {
-                    return $this->component;
-                }
-
-                public function getOptions(): array {
-                    return $this->options;
-                }
-            };
-
-            $release->run($configLike);
+            $release->run($config);
             return;
         } else {
             $this->output->warn('Run "horde-components release for <pipeline>"');

@@ -1273,9 +1273,15 @@ class Source extends Base
                     );
                     break;
                 case 'ChangelogYml':
-                    $this->_wrappers[$file] = new WrapperChangelogYml(
-                        $this->getDocDirectory()
-                    );
+                    // changelog.yml is always in the root doc/ directory, not in library-specific subdirs
+                    if (is_dir($this->directory . '/doc')) {
+                        $baseDocDir = $this->directory . '/doc';
+                    } elseif (is_dir($this->directory . '/docs')) {
+                        $baseDocDir = $this->directory . '/docs';
+                    } else {
+                        $baseDocDir = $this->directory . '/doc';
+                    }
+                    $this->_wrappers[$file] = new WrapperChangelogYml($baseDocDir);
                     break;
                 case 'Changes':
                     $this->_wrappers[$file] = new WrapperChanges(

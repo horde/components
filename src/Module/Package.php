@@ -136,7 +136,7 @@ For checking a specific directory
     {
         if ((isset($arguments[0]) && $arguments[0] == 'package')) {
             $cli = $this->dependencies->get(Cli::class);
-            $cli->writeln(print_r($options, 1));
+            $cli->writeln(print_r($options, true));
             return true;
         }
         return false;
