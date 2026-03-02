@@ -3,8 +3,6 @@
 /**
  * Components_Helper_DocOrigin:: deals with a DOCS_ORIGIN file.
  *
- * PHP Version 7
- *
  * @category Horde
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>
@@ -18,7 +16,7 @@ use Horde\Components\Output;
 /**
  * Components_Helper_DocOrigin:: deals with a DOCS_ORIGIN file.
  *
- * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2011-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.

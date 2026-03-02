@@ -3,8 +3,6 @@
 /**
  * Components_Qc_Task_Base:: provides core functionality for qc tasks.
  *
- * PHP Version 7
- *
  * @category Horde
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>

@@ -3,8 +3,6 @@
 /**
  * Test the current sentinel release task.
  *
- * PHP Version 7
- *
  * @category   Horde
  * @package    Components
  * @subpackage UnitTests
@@ -20,7 +18,7 @@ use Horde\Components\Test\TestCase;
 /**
  * Test the current sentinel release task.
  *
- * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2011-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.

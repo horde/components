@@ -5,8 +5,6 @@
  * specific configuration values by combining defaults and options provided at
  * runtime.
  *
- * PHP Version 7
- *
  * @category Horde
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>
@@ -23,7 +21,7 @@ use Horde\Components\Constants;
  * specific configuration values by combining defaults and options provided at
  * runtime.
  *
- * Copyright 2010-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2010-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.

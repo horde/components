@@ -4,8 +4,6 @@
  * The Components_Dependencies:: interface is a central broker for
  * providing the dependencies to the different application parts.
  *
- * PHP Version 7
- *
  * @category Horde
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>
@@ -33,7 +31,7 @@ use Psr\Container\ContainerInterface;
  * The Components_Dependencies:: interface is a central broker for
  * providing the dependencies to the different application parts.
  *
- * Copyright 2010-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2010-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
