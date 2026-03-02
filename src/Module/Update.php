@@ -4,7 +4,7 @@
  * Components_Module_Update:: can update the package.xml of
  * a Horde element.
  *
- * PHP Version 7
+ * PHP version 8.2+
  *
  * @category Horde
  * @package  Components
@@ -12,15 +12,17 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Module;
 
-use Horde\Components\Config;
+use Horde\Components\Component;
 
 /**
  * Components_Module_Update:: can update the package.xml of
  * a Horde element.
  *
- * Copyright 2010-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2010-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -132,14 +134,14 @@ class Update extends Base
      * Determine if this module should act. Run all required actions if it has
      * been instructed to do so.
      *
-     * @param Config $config The configuration.
+     * @param array $options CLI options
+     * @param array $arguments CLI arguments
+     * @param Component|null $component The selected component (if any)
      *
      * @return bool True if the module performed some action.
      */
-    public function handle(Config $config): bool
+    public function handle(array $options, array $arguments, ?Component $component = null): bool
     {
-        $options = $config->getOptions();
-        $arguments = $config->getArguments();
         if (!empty($options['updatexml'])
             || (isset($arguments[0]) && $arguments[0] == 'update')) {
             $this->dependencies->getRunnerUpdate()->run();

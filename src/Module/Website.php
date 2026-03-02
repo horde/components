@@ -15,9 +15,12 @@ declare(strict_types=1);
 
 namespace Horde\Components\Module;
 
-use Horde\Components\Config;
+use Horde\Components\Component;
+use Horde\Components\ConfigProvider\ConfigProviderFactory;
 use Horde\Components\Runner\Website as WebsiteRunner;
-use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
+use Horde\Components\Runner\WebsiteConfig;
+use Horde\Components\Output;
+use Horde\GithubApiClient\GithubApiConfig;
 
 /**
  * Website module - Generate dev.horde.org from webhook events
@@ -160,25 +163,48 @@ COMPONENT CATALOG:
 
     /**
      * Determine if this module should act.
+     *
+     * @param array $options CLI options
+     * @param array $arguments CLI arguments
+     * @param Component|null $component The selected component (if any)
+     *
+     * @return bool True if the module performed some action.
      */
-    public function handle(Config $config): bool
+    public function handle(array $options, array $arguments, ?Component $component = null): bool
     {
-        $options = $config->getOptions();
-        $arguments = $config->getArguments();
+        // Detect components root for default paths
+        $componentsRoot = dirname(__DIR__, 2);
+
+        // Get ConfigProvider
+        $effectiveConfig = $this->dependencies->get(ConfigProviderFactory::class)->createDefault();
+
+        // Get fallback token from GithubApiConfig (set from GITHUB_TOKEN env)
+        $githubApiConfig = $this->dependencies->get(GithubApiConfig::class);
+        $fallbackToken = !empty($githubApiConfig->accessToken) ? $githubApiConfig->accessToken : null;
+
+        // Create website configuration from ConfigProvider
+        $websiteConfig = WebsiteConfig::fromConfigProvider(
+            $effectiveConfig,
+            $componentsRoot,
+            $fallbackToken
+        );
+
+        // Get output for runner
+        $output = $this->dependencies->get(Output::class);
 
         // Check for "web catalog" subcommand
         if ((isset($arguments[0]) && $arguments[0] == 'web' && isset($arguments[1]) && $arguments[1] == 'catalog')) {
-            $runner = $this->dependencies->get(WebsiteRunner::class);
-            $runner->runCatalog($config);
+            $runner = new WebsiteRunner($websiteConfig, $output);
+            $runner->runCatalog();
             return true;
         }
 
         // Check for "web" command
-        if (!empty($options['web'])
+        if ($effectiveConfig->hasSetting('web')
             || (isset($arguments[0]) && $arguments[0] == 'web')) {
 
-            $runner = $this->dependencies->get(WebsiteRunner::class);
-            $runner->run($config);
+            $runner = new WebsiteRunner($websiteConfig, $output);
+            $runner->run();
 
             return true;
         }

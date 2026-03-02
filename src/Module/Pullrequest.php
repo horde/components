@@ -18,9 +18,13 @@ declare(strict_types=1);
 
 namespace Horde\Components\Module;
 
-use Horde\Components\Config;
+use Horde\Components\Component;
 use Horde\Argv\Option;
 use Horde\Components\Runner\Pullrequest as RunnerPullrequest;
+use Horde\Components\Output;
+use Horde\Components\Helper\Git as GitHelper;
+use Horde\Components\Helper\GitHubChecker;
+use Horde\Components\Helper\PullRequestManager;
 
 /**
  * Components_Module_Pullrequest:: manages GitHub pull requests.
@@ -150,21 +154,39 @@ Note: The shell interprets # as a comment. Use quotes: pr checkout "#123"';
      * Determine if this module should act. Run all required actions if it has
      * been instructed to do so.
      *
-     * @param Config $config The configuration.
+     * @param array $options CLI options
+     * @param array $arguments CLI arguments
+     * @param Component|null $component The selected component (if any)
      *
      * @return bool True if the module performed some action.
      */
-    public function handle(Config $config): bool
+    public function handle(array $options, array $arguments, ?Component $component = null): bool
     {
-        $arguments = $config->getArguments();
-        $options = $config->getOptions();
-
         // Check if this module should handle the request
-        if (!empty($options['pr'])
-            || !empty($options['pullrequest'])
-            || (isset($arguments[0]) && in_array($arguments[0], ['pr', 'pullrequest']))) {
-            // Delegate to the PR runner
-            $this->dependencies->get(RunnerPullrequest::class)->run();
+        if (isset($arguments[0]) && in_array($arguments[0], ['pr', 'pullrequest'])) {
+            // Get dependencies
+            $output = $this->dependencies->get(Output::class);
+            $gitHelper = $this->dependencies->get(GitHelper::class);
+            $githubChecker = $this->dependencies->get(GitHubChecker::class);
+            $prManager = $this->dependencies->get(PullRequestManager::class);
+
+            // Working directory defaults to current working directory
+            $workingDir = getcwd();
+            if ($workingDir === false) {
+                $output->error('Could not determine current working directory');
+                return false;
+            }
+
+            // Instantiate and run runner
+            $runner = new RunnerPullrequest(
+                $arguments,
+                $workingDir,
+                $output,
+                $gitHelper,
+                $githubChecker,
+                $prManager
+            );
+            $runner->run();
             return true;
         }
 

@@ -3,7 +3,7 @@
 /**
  * Components_Module_Qc:: checks the component for quality.
  *
- * PHP Version 7
+ * PHP Version 8.2+
  *
  * @category Horde
  * @package  Components
@@ -11,17 +11,21 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Module;
 
-use Horde\Components\Config;
+use Horde\Components\Component;
 use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
 use Horde\Components\Runner\Qc as RunnerQc;
+use Horde\Components\Output;
+use Horde\Components\Qc\Tasks as QcTasks;
 
 /**
  * Components_Module_Qc:: checks the component for quality.
  *
- * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2011-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -269,22 +273,34 @@ NOTE:
      * Determine if this module should act. Run all required actions if it has
      * been instructed to do so.
      *
-     * @param Config $config The configuration.
+     * @param array $options CLI options
+     * @param array $arguments CLI arguments
+     * @param Component|null $component The selected component (if any)
      *
      * @return bool True if the module performed some action.
      */
-    public function handle(Config $config): bool
+    public function handle(array $options, array $arguments, ?Component $component = null): bool
     {
-        $options = $config->getOptions();
-        $arguments = $config->getArguments();
-        if (!empty($options['qc'])
-            || (isset($arguments[0]) && $arguments[0] == 'qc')) {
-            $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory());
+        if (isset($arguments[0]) && $arguments[0] == 'qc') {
+            // Resolve component from working directory
+            $componentDirectory = new ComponentDirectory(new CurrentWorkingDirectory());
             $component = $this->dependencies
                 ->getComponentFactory()
                 ->createSource($componentDirectory);
-            $config->setComponent($component);
-            $this->dependencies->get(RunnerQc::class)->run($config);
+
+            // Get dependencies
+            $output = $this->dependencies->get(Output::class);
+            $qcTasks = $this->dependencies->get(QcTasks::class);
+
+            // Instantiate and run runner
+            $runner = new RunnerQc(
+                $component,
+                $arguments,
+                $options,
+                $output,
+                $qcTasks
+            );
+            $runner->run();
             return true;
         }
         return false;

@@ -3,7 +3,7 @@
 /**
  * Components_Module_Help:: provides information for a single action.
  *
- * PHP Version 7
+ * PHP version 8.2+
  *
  * @category Horde
  * @package  Components
@@ -11,10 +11,12 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Module;
 
 use Horde\Argv\IndentedHelpFormatter;
-use Horde\Components\Config;
+use Horde\Components\Component;
 use Horde\Components\Components;
 use Horde\Cli\Modular\ModularCli;
 use Horde\Components\Cli\ArgvParserBuilder;
@@ -23,7 +25,7 @@ use Horde\Util\HordeString;
 /**
  * Components_Module_Help:: provides information for a single action.
  *
- * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2011-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -94,13 +96,14 @@ class Help extends Base
      * Determine if this module should act. Run all required actions if it has
      * been instructed to do so.
      *
-     * @param Config $config The configuration.
+     * @param array $options CLI options
+     * @param array $arguments CLI arguments
+     * @param Component|null $component The selected component (if any)
      *
      * @return bool True if the module performed some action.
      */
-    public function handle(Config $config): bool
+    public function handle(array $options, array $arguments, ?Component $component = null): bool
     {
-        $arguments = $config->getArguments();
         if (isset($arguments[0]) && $arguments[0] == 'help') {
             if (isset($arguments[1])) {
                 return $this->handleWithAction($arguments[1]);

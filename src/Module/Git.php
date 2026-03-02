@@ -6,7 +6,7 @@
  * Some code inherited from the Commit helper by Gunnar Wrobel
  * and the horde/git-tools codebase by Michael Rubinsky
  *
- * PHP Version 7
+ * PHP version 8.2+
  *
  * @category Horde
  * @package  Components
@@ -14,16 +14,23 @@
  * @license  http://www.fsf.org/copyleft/lgpl.html LGPL
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Module;
 
-use Horde\Components\Config;
+use Horde\Components\Component;
+use Horde\Components\ConfigProvider\ConfigProviderFactory;
 use Horde\Components\Runner\Git as RunnerGit;
 use Horde\Components\Runner\Github as RunnerGithub;
+use Horde\Components\Output;
+use Horde\Components\Helper\Git as GitHelper;
+use Horde\GithubApiClient\GithubApiClient;
+use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 
 /**
  * Horde\Components\Module\Git:: Useful git command wrappers for CI
  *
- * Copyright 2020-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2020-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.fsf.org/copyleft/lgpl.html.
@@ -146,28 +153,48 @@ Push a component to a remote
      * Determine if this module should act. Run all required actions if it has
      * been instructed to do so.
      *
-     * @param Config $config The configuration.
+     * @param array $options CLI options
+     * @param array $arguments CLI arguments
+     * @param Component|null $component The selected component (if any)
      *
      * @return bool True if the module performed some action.
      */
-    public function handle(Config $config): bool
+    public function handle(array $options, array $arguments, ?Component $component = null): bool
     {
-        $options = $config->getOptions();
-        $arguments = $config->getArguments();
-        if (!empty($options['github-clone-org'])
-            || (isset($arguments[0]) && $arguments[0] == 'github-clone-org')) {
-            $this->dependencies->get(RunnerGithub::class)->run();
+        $effectiveConfig = $this->dependencies->get(ConfigProviderFactory::class)->createDefault();
+        $output = $this->dependencies->get(Output::class);
+        $gitHelper = $this->dependencies->get(GitHelper::class);
+
+        // Handle github-clone-org and github commands
+        if ((isset($arguments[0]) && $arguments[0] == 'github-clone-org')
+            || (isset($arguments[0]) && $arguments[0] == 'github')) {
+            $client = $this->dependencies->get(GithubApiClient::class);
+            $checkoutDir = $this->dependencies->get(GitCheckoutDirectory::class);
+
+            $runner = new RunnerGithub(
+                $effectiveConfig,
+                $arguments,
+                $output,
+                $gitHelper,
+                $client,
+                $checkoutDir
+            );
+            $runner->run();
             return true;
         }
-        if (isset($arguments[0]) && $arguments[0] == 'github') {
-            $this->dependencies->get(RunnerGithub::class)->run();
+
+        // Handle git commands
+        if (isset($arguments[0]) && $arguments[0] == 'git') {
+            $runner = new RunnerGit(
+                $effectiveConfig,
+                $arguments,
+                $output,
+                $gitHelper
+            );
+            $runner->run();
             return true;
         }
-        if (!empty($options['git'])
-            || (isset($arguments[0]) && $arguments[0] == 'git')) {
-            $this->dependencies->get(RunnerGit::class)->run();
-            return true;
-        }
+
         return false;
     }
 }

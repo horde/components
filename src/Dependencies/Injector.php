@@ -16,8 +16,6 @@ namespace Horde\Components\Dependencies;
 
 use Horde\Components\Component\Factory as ComponentFactory;
 use Horde\Components\Composer\InstallationDirectory;
-use Horde\Components\Config;
-use Horde\Components\Config\Bootstrap as ConfigBootstrap;
 use Horde\Components\ConfigProvider\EnvironmentConfigProvider;
 use Horde\Components\Dependencies;
 use Horde\Components\Output;
@@ -152,16 +150,6 @@ class Injector extends HordeInjector implements Dependencies
             PullRequestManagerFactory::class,
             '__invoke'
         );
-    }
-
-    /**
-     * Initial configuration setup.
-     *
-     * @param Config $config The configuration.
-     */
-    public function initConfig(Config $config): void
-    {
-        $this->setInstance(Config::class, $config);
     }
 
     /**
@@ -459,9 +447,15 @@ class Injector extends HordeInjector implements Dependencies
      */
     public function createOutput(Injector $injector): \Horde\Components\Output
     {
+        // Get parsed options from DI if available, otherwise use empty array
+        $options = [];
+        if ($injector->has('parsed_options')) {
+            $options = $injector->getInstance('parsed_options');
+        }
+
         return new Output(
             $injector->getInstance(\Horde_Cli::class),
-            $injector->getInstance(Config::class)->getOptions()
+            $options
         );
     }
 }
