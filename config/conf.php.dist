@@ -28,6 +28,31 @@ $conf['horde_pass'] = '';
 /* From: address for announcements. */
 $conf['from'] = 'Full name <user@horde.org>';
 
+/**
+ * GitHub API Personal Access Token
+ *
+ * Used for GitHub API operations including:
+ * - Creating releases
+ * - Managing pull requests
+ * - Checking CI status
+ * - Uploading release assets
+ *
+ * Generate a token at: https://github.com/settings/tokens
+ * Required scopes: repo, read:org
+ *
+ * SECURITY NOTE: This token grants access to your GitHub repositories.
+ * Keep it secure and never commit it to version control.
+ *
+ * PRECEDENCE: This setting can be overridden by:
+ * 1. CLI argument: --github-token=ghp_xxx (highest precedence)
+ * 2. Environment variable: GITHUB_TOKEN
+ * 3. User config: ~/.config/horde/components.php
+ * 4. This file: config/conf.php (if copied from .dist)
+ *
+ * Leave empty to disable GitHub integration or rely on GITHUB_TOKEN env var.
+ */
+$conf['github.token'] = '';
+
 /* Path to a checkout of the horde-web repository. */
 $conf['web_dir'] = '/var/www/horde-web';
 
