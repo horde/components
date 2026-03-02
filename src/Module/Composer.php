@@ -1,32 +1,34 @@
 <?php
 
 /**
- * Copyright 2013-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2013-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
  *
  * @category  Horde
- * @copyright 2013-2024 Horde LLC
+ * @copyright 2013-2026 Horde LLC
  * @license   http://www.horde.org/licenses/lgpl21 LGPL 2.1
  * @package   Components
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Module;
 
 use Horde\Argv\Option;
+use Horde\Components\Component;
 use Horde\Components\Component\ComponentDirectory;
-use Horde\Components\Component\Source as SourceComponent;
-use Horde\Components\Config;
 use Horde\Components\Runner\Composer as RunnerComposer;
 use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
+use Horde\Components\Output;
 
 /**
  * Creates a config file for use with PHP Composer.
  *
  * @author    Michael Slusarz <slusarz@horde.org>
  * @category  Horde
- * @copyright 2013-2024 Horde LLC
+ * @copyright 2013-2026 Horde LLC
  * @license   http://www.horde.org/licenses/lgpl21 LGPL 2.1
  * @package   Components
  */
@@ -117,22 +119,31 @@ class Composer extends Base
      * Determine if this module should act. Run all required actions if it has
      * been instructed to do so.
      *
-     * @param Config $config The configuration.
+     * @param array $options CLI options
+     * @param array $arguments CLI arguments
+     * @param Component|null $component The selected component (if any)
      *
      * @return bool True if the module performed some action.
      */
-    public function handle(Config $config): bool
+    public function handle(array $options, array $arguments, ?Component $component = null): bool
     {
-        $options = $config->getOptions();
-        $arguments = $config->getArguments();
-        $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory());
-        $component = $this->dependencies
-        ->getComponentFactory()
-        ->createSource($componentDirectory);
-        $config->setComponent($component);
-        if (!empty($options['composer'])
-            || (isset($arguments[0]) && $arguments[0] == 'composer')) {
-            $this->dependencies->get(RunnerComposer::class)->run($config);
+        if (isset($arguments[0]) && $arguments[0] == 'composer') {
+            // Resolve component from working directory
+            $componentDirectory = new ComponentDirectory(new CurrentWorkingDirectory());
+            $component = $this->dependencies
+                ->getComponentFactory()
+                ->createSource($componentDirectory);
+
+            // Get dependencies
+            $output = $this->dependencies->get(Output::class);
+
+            // Instantiate and run runner
+            $runner = new RunnerComposer(
+                $component,
+                $options,
+                $output
+            );
+            $runner->run();
             return true;
         }
         return false;

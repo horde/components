@@ -3,7 +3,7 @@
 /**
  * Components_Module_Release:: generates a release.
  *
- * PHP Version 7
+ * PHP Version 8.2+
  *
  * @category Horde
  * @package  Components
@@ -11,18 +11,24 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Module;
 
-use Horde\Components\Config;
+use Horde\Components\Component;
 use Horde\Components\Exception;
 use Horde\Argv\Option;
 use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
+use Horde\Components\Runner\Release as RunnerRelease;
+use Horde\Components\Output;
+use Horde\Components\Release\Tasks as ReleaseTasks;
+use Horde\Components\Qc\Tasks as QcTasks;
 
 /**
  * Components_Module_Release:: generates a release.
  *
- * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2011-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -176,26 +182,42 @@ The following example would generate the package and add the release tag to git 
      * Determine if this module should act. Run all required actions if it has
      * been instructed to do so.
      *
-     * @param Config $config The configuration.
+     * @param array $options CLI options
+     * @param array $arguments CLI arguments
+     * @param Component|null $component The selected component (if any)
      *
      * @return bool True if the module performed some action.
      * @throws Exception
      */
-    public function handle(Config $config): bool
+    public function handle(array $options, array $arguments, ?Component $component = null): bool
     {
-        $options = $config->getOptions();
-        if (!empty($options['dump'])) {
-            $config->setOption('pretend', true);
-        }
-        $arguments = $config->getArguments();
-        if (!empty($options['release'])
-            || (isset($arguments[0]) && $arguments[0] == 'release')) {
-            $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory());
+        if (isset($arguments[0]) && $arguments[0] == 'release') {
+            // Resolve component from working directory
+            $componentDirectory = new ComponentDirectory(new CurrentWorkingDirectory());
             $component = $this->dependencies
-            ->getComponentFactory()
-            ->createSource($componentDirectory);
-            $config->setComponent($component);
-            $this->dependencies->getRunnerRelease()->run($config);
+                ->getComponentFactory()
+                ->createSource($componentDirectory);
+
+            // Get dependencies
+            $output = $this->dependencies->get(Output::class);
+            $releaseTasks = $this->dependencies->get(ReleaseTasks::class);
+            $qcTasks = $this->dependencies->get(QcTasks::class);
+
+            // Handle --dump option (sets pretend mode)
+            if (!empty($options['dump'])) {
+                $options['pretend'] = true;
+            }
+
+            // Instantiate and run runner
+            $runner = new RunnerRelease(
+                $component,
+                $arguments,
+                $options,
+                $output,
+                $releaseTasks,
+                $qcTasks
+            );
+            $runner->run();
             return true;
         }
         return false;

@@ -16,13 +16,14 @@ namespace Horde\Components;
 
 use Horde\Cli\Modular\ModularCli;
 use Horde\Components\Component\Identify;
-use Horde\Components\Config\CliConfig;
-use Horde\Components\Config\File as ConfigFile;
+use Horde\Components\Config;
+use Horde\Components\Config\MinimalConfig;
 use Horde\Components\ConfigProvider\BuiltinConfigProvider;
+use Horde\Components\ConfigProvider\CliConfigProvider;
 use Horde\Components\ConfigProvider\EnvironmentConfigProvider;
 use Horde\Components\ConfigProvider\PhpConfigFileProvider;
+use Horde\Components\ConfigProvider\ConfigProviderFactory;
 use Horde\Components\Module;
-//use Horde\Components\Dependencies\Injector;
 use Horde\Injector\TopLevel;
 use Horde\Injector\Injector;
 use Horde\EventDispatcher\EventDispatcher;
@@ -117,15 +118,74 @@ class Components
         $configFileLocation = $finder->find();
         $phpConfig = new PhpConfigFileProvider($configFileLocation);
         $injector->setInstance(PhpConfigFileProvider::class, $phpConfig);
+
+        // Check for legacy config file (config/conf.php)
+        $legacyConfigPath = dirname(__DIR__) . '/config/conf.php';
+        $legacyConfig = null;
+        if (file_exists($legacyConfigPath) && is_readable($legacyConfigPath)) {
+            $legacyConfig = new PhpConfigFileProvider($legacyConfigPath);
+        }
+
+        // Set up ConfigProviderFactory with all layers
+        // Note: CLI provider will be added in _prepareModular after parser is ready
+        $configFactory = new ConfigProviderFactory(
+            $environmentConfig,
+            $phpConfig,
+            $legacyConfig,
+            $injector->get(BuiltinConfigProvider::class),
+            null  // CLI provider added later
+        );
+        $injector->setInstance(ConfigProviderFactory::class, $configFactory);
+
         Dependencies\Injector::registerAppDependencies($injector);
         // Identify if we are in a component dir or have provided one with variable
         $modular = self::_prepareModular($injector, $parameters);
         // If we don't do this, help introspection is broken.
         $injector->setInstance(ModularCli::class, $modular);
-        // TODO: Get rid of this "config" here.
-        $argv = $injector->get(ArgvWrapper::class);
-        $config = self::_prepareConfig($argv);
-        $injector->setInstance(Config::class, $config);
+
+        // NOW that parser is ready, we can create CliConfigProvider and update factory
+        $parser = $modular->getParser();
+        list($parsedOptions, $parsedArgs) = $parser->parseArgs();
+
+        // Convert Horde\Argv\Values object to array
+        $optionsArray = [];
+        foreach ($parsedOptions as $key => $value) {
+            $optionsArray[$key] = $value;
+        }
+
+        $cliProvider = new CliConfigProvider($optionsArray);
+
+        // Create new factory WITH CLI provider
+        $configFactoryWithCli = new ConfigProviderFactory(
+            $environmentConfig,
+            $phpConfig,
+            $legacyConfig,
+            $injector->get(BuiltinConfigProvider::class),
+            $cliProvider  // NOW we have CLI options!
+        );
+        // Replace the old factory
+        $injector->setInstance(ConfigProviderFactory::class, $configFactoryWithCli);
+
+        // Store parsed options for Output factory
+        $injector->setInstance('parsed_options', $optionsArray);
+
+        // Create minimal Config for Component classes (legacy compatibility)
+        $minimalConfig = new MinimalConfig($optionsArray, $parsedArgs);
+        $injector->setInstance(Config::class, $minimalConfig);
+
+        // Always set path to current working directory
+        $minimalConfig->setPath(getcwd());
+
+        // Identify component if working in a component directory
+        $component = null;
+        try {
+            $identify = $injector->getInstance(Identify::class);
+            $component = $identify->identifyComponent(getcwd());
+            // Set component in Config for legacy compatibility
+            $minimalConfig->setComponent($component);
+        } catch (\Exception $e) {
+            // No component in current directory - that's fine for many commands
+        }
 
         /**
          * By this point the modular CLI is setup to cycle through "handle"
@@ -133,9 +193,7 @@ class Components
         try {
             $ran = false;
             foreach (clone $modular->getModules() as $module) {
-                // Re-initialize the config for each module to avoid spill
-                $config = self::_prepareConfig($argv, $module);
-                $ran |= $module->handle($config);
+                $ran |= $module->handle($optionsArray, $parsedArgs, $component);
             }
         } catch (Exception $e) {
             $injector->getInstance(Output::class)->fail($e);
@@ -177,8 +235,23 @@ This is a list of available actions (use "help ACTION" to get additional informa
         $injector->setInstance(Horde_Argv_Parser::class, $parser);
         $injector->setInstance(ClientInterface::class, new CurlClient(new ResponseFactory(), new StreamFactory(), new Options()));
         $injector->setInstance(RequestFactoryInterface::class, new RequestFactory());
-        $strGithubApiToken = (string) getenv('GITHUB_TOKEN') ?? '';
-        $injector->setInstance(GithubApiConfig::class, new GithubApiConfig(accessToken: $strGithubApiToken));
+
+        // Get GitHub token from ConfigProvider hierarchy
+        // Precedence: CLI args > GITHUB_TOKEN env var > github.token config key
+        $configFactory = $injector->getInstance(ConfigProviderFactory::class);
+        $config = $configFactory->createDefault();
+
+        $githubToken = '';
+        // First check GITHUB_TOKEN environment variable (backward compatibility)
+        if ($config->hasSetting('GITHUB_TOKEN')) {
+            $githubToken = $config->getSetting('GITHUB_TOKEN');
+        }
+        // Then check github.token config key (new way)
+        elseif ($config->hasSetting('github.token')) {
+            $githubToken = $config->getSetting('github.token');
+        }
+
+        $injector->setInstance(GithubApiConfig::class, new GithubApiConfig(accessToken: $githubToken));
         return $modularCli;
     }
 
@@ -199,27 +272,8 @@ This is a list of available actions (use "help ACTION" to get additional informa
         }
     }
 
-    protected static function _prepareConfig(ArgvWrapper $argv, ?Module $module = null): \Horde\Components\Configs
-    {
-        $config = new Configs();
-        $config->addConfigurationType(
-            new CliConfig(
-                $argv,
-                $module
-            )
-        );
-        $config->unshiftConfigurationType(
-            new ConfigFile(
-                $config->getOption('config')
-            )
-        );
-        return $config;
-    }
-
     /**
      * Provide a list of available action arguments.
-     *
-     * @param Config $config The active configuration.
      */
     protected static function _getActionArguments(\Horde_Cli_Modular $modular): array
     {

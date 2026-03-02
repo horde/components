@@ -3,21 +3,25 @@
 /**
  * Horde\Components\Module\Package:: Frontend to check various aspects of the package under test
  *
+ * PHP version 8.2+
+ *
  * @category Horde
  * @package  Components
  * @author   Ralf Lang <ralf.lang@ralf-lang.de>
  * @license  http://www.fsf.org/copyleft/lgpl.html LGPL
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Module;
 
-use Horde\Components\Config;
+use Horde\Components\Component;
 use Horde\Cli\Cli;
 
 /**
  * Horde\Components\Module\Package:: Frontend to check various aspects of the package under test
  *
- * Copyright 2023-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2023-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.fsf.org/copyleft/lgpl.html.
@@ -122,14 +126,14 @@ For checking a specific directory
      * Determine if this module should act. Run all required actions if it has
      * been instructed to do so.
      *
-     * @param Config $config The configuration.
+     * @param array $options CLI options
+     * @param array $arguments CLI arguments
+     * @param Component|null $component The selected component (if any)
      *
      * @return bool True if the module performed some action.
      */
-    public function handle(Config $config): bool
+    public function handle(array $options, array $arguments, ?Component $component = null): bool
     {
-        $options = $config->getOptions();
-        $arguments = $config->getArguments();
         if ((isset($arguments[0]) && $arguments[0] == 'package')) {
             $cli = $this->dependencies->get(Cli::class);
             $cli->writeln(print_r($options, 1));

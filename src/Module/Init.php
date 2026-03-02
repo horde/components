@@ -3,7 +3,7 @@
 /**
  * Horde\Components\Module\Init:: initializes component metadata.
  *
- * PHP version 7
+ * PHP Version 8.2+
  *
  * @category Horde
  * @package  Components
@@ -11,16 +11,23 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Module;
 
-use Horde\Components\Config;
-use Horde\Components\Exception;
+use Horde\Components\Component;
+use Horde\Components\ConfigProvider\ConfigProviderFactory;
+use Horde\Components\Component\Factory as ComponentFactory;
+use Horde\Components\Component\ComponentDirectory;
+use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
+use Horde\Components\Runner\Init as InitRunner;
 use Horde\Components\Output;
+use Horde\Components\Exception;
 
 /**
  * Horde\Components\Module\Init:: initializes component metadata.
  *
- * Copyright 2018-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2018-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -123,24 +130,34 @@ or
      * Determine if this module should act. Run all required actions if it has
      * been instructed to do so.
      *
-     * @param Config $config The configuration.
+     * @param array $options CLI options
+     * @param array $arguments CLI arguments
+     * @param Component|null $component The selected component (if any)
      *
      * @return bool True if the module performed some action.
      */
-    public function handle(Config $config): bool
+    public function handle(array $options, array $arguments, ?Component $component = null): bool
     {
-        $options = $config->getOptions();
-        $arguments = $config->getArguments();
-
         if (!empty($arguments[0]) && $arguments[0] == 'init') {
-            switch ($arguments[1]) {
+            switch ($arguments[1] ?? null) {
                 case 'application':
-                    $this->dependencies->getRunnerInit()->run();
+                case 'library':
+                    // Get ConfigProvider
+                    $effectiveConfig = $this->dependencies->get(ConfigProviderFactory::class)->createDefault();
+
+                    // Resolve component from current working directory
+                    $componentDirectory = new ComponentDirectory(new CurrentWorkingDirectory());
+                    $componentFactory = $this->dependencies->get(ComponentFactory::class);
+                    $component = $componentFactory->createSource($componentDirectory);
+
+                    // Get output
+                    $output = $this->dependencies->get(Output::class);
+
+                    // Instantiate and run InitRunner with explicit dependencies
+                    $runner = new InitRunner($effectiveConfig, $component, $arguments, $output);
+                    $runner->run();
                     return true;
 
-                case 'library':
-                    $this->dependencies->getRunnerInit()->run();
-                    return true;
                 default:
                     return false;
             }

@@ -55,15 +55,6 @@ interface Dependencies extends ContainerInterface
     public function getInstance(string $interface);
 
     /**
-     * Initial configuration setup.
-     *
-     * @param Config $config The configuration.
-     *
-     * @return void
-     */
-    public function initConfig(Config $config);
-
-    /**
      * Set the list of modules.
      *
      * @param \Horde_Cli_Modular $modules The list of modules.
