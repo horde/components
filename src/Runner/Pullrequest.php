@@ -569,11 +569,8 @@ class Pullrequest
      */
     private function handleApprove(?string $prNumber): void
     {
-        $options = $this->config->getOptions();
-        $localDir = $options['working_dir'] ?? getcwd();
-
         // Initialize the PR manager
-        if (!$this->prManager->initialize($localDir)) {
+        if (!$this->prManager->initialize($this->workingDir)) {
             return;
         }
 
@@ -619,11 +616,8 @@ class Pullrequest
      */
     private function handleBlock(?string $prNumber): void
     {
-        $options = $this->config->getOptions();
-        $localDir = $options['working_dir'] ?? getcwd();
-
         // Initialize the PR manager
-        if (!$this->prManager->initialize($localDir)) {
+        if (!$this->prManager->initialize($this->workingDir)) {
             return;
         }
 
@@ -685,11 +679,8 @@ class Pullrequest
      */
     private function handleMerge(?string $prNumber): void
     {
-        $options = $this->config->getOptions();
-        $localDir = $options['working_dir'] ?? getcwd();
-
         // Initialize the PR manager
-        if (!$this->prManager->initialize($localDir)) {
+        if (!$this->prManager->initialize($this->workingDir)) {
             return;
         }
 
@@ -735,11 +726,8 @@ class Pullrequest
      */
     private function handleClose(?string $prNumber): void
     {
-        $options = $this->config->getOptions();
-        $localDir = $options['working_dir'] ?? getcwd();
-
         // Initialize the PR manager
-        if (!$this->prManager->initialize($localDir)) {
+        if (!$this->prManager->initialize($this->workingDir)) {
             return;
         }
 

@@ -18,8 +18,12 @@ namespace Horde\Components\Module;
 use Horde\Components\Component;
 use Horde\Components\Dependencies;
 use Horde\Components\Component\ComponentDirectory;
-use Horde\Components\Dependencies\GitCheckoutDirectoryFactory;
+use Horde\Components\Composer\InstallationDirectory;
+use Horde\Components\ConfigProvider\ConfigProviderFactory;
+use Horde\Components\ConfigProvider\PhpConfigFileProvider;
+use Horde\Components\Output;
 use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
+use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 use Horde\Components\Runner\Status as RunnerStatus;
 
 /**
@@ -205,12 +209,33 @@ SEE ALSO:
     {
         if (!empty($options['status'])
             || (isset($arguments[0]) && $arguments[0] == 'status')) {
-            $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory());
-            $component = $this->dependencies
-            ->getComponentFactory()
-            ->createSource($componentDirectory);
-            // @todo: RunnerStatus still needs Config, needs refactoring
-            // For now, this module is not fully migrated
+
+            // Get dependencies
+            $output = $this->dependencies->get(Output::class);
+            $configProviderFactory = $this->dependencies->get(ConfigProviderFactory::class);
+            $config = $configProviderFactory->createDefault();
+            $gitCheckoutDir = $this->dependencies->get(GitCheckoutDirectory::class);
+            $installDir = $this->dependencies->get(InstallationDirectory::class);
+
+            // Get config file path from PhpConfigFileProvider
+            $phpConfigProvider = $this->dependencies->get(PhpConfigFileProvider::class);
+            // Access the private location property via reflection
+            $reflection = new \ReflectionClass($phpConfigProvider);
+            $locationProperty = $reflection->getProperty('location');
+            $locationProperty->setAccessible(true);
+            $configFilePath = $locationProperty->getValue($phpConfigProvider);
+
+            // Instantiate and run runner
+            $runner = new RunnerStatus(
+                $arguments,
+                $config,
+                $configFilePath,
+                $output,
+                $gitCheckoutDir,
+                $installDir
+            );
+            $runner->run();
+
             return true;
         }
         return false;

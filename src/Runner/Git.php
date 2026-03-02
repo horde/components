@@ -63,9 +63,12 @@ class Git
             ? $this->config->getSetting('git_repo_base')
             : 'https://github.com/horde/';
 
-        $this->localCheckoutDir = $this->config->hasSetting('checkout.dir')
+        $checkoutDir = $this->config->hasSetting('checkout.dir')
             ? $this->config->getSetting('checkout.dir')
             : '/srv/git/horde';
+
+        // Normalize path: remove trailing slash to avoid double slashes when concatenating
+        $this->localCheckoutDir = rtrim($checkoutDir, '/');
     }
 
     public function run(): void
@@ -86,7 +89,7 @@ class Git
             }
             $component = $this->arguments[2];
             $branch = $this->arguments[4] ?? '';
-            $componentDir = $this->localCheckoutDir . $component . '/';
+            $componentDir = $this->localCheckoutDir . '/' . $component . '/';
             $cloneUrl = $this->gitRepoBase . '/' . $component . '.git';
             // Achieved fixed format, delegate to helper
             $this->gitHelper->workflowClone(
@@ -103,7 +106,7 @@ class Git
                 $this->output->help('checkout component branch');
             }
             [$git, $action, $component, $branch] = $this->arguments;
-            $componentDir = $this->localCheckoutDir . $component . '/';
+            $componentDir = $this->localCheckoutDir . '/' . $component . '/';
             $this->gitHelper->workflowCheckout(
                 $this->output,
                 $componentDir,
@@ -118,8 +121,9 @@ class Git
                 return;
             }
             [$git, $action, $component] = $this->arguments;
-            $componentDir = $this->localCheckoutDir . $component . '/';
+            $componentDir = $this->localCheckoutDir . '/' . $component . '/';
             $this->gitHelper->fetch($componentDir);
+            return;
         }
         if ($this->arguments[1] == 'branch') {
             if (count($this->arguments) != 5) {
@@ -128,7 +132,7 @@ class Git
                 return;
             }
             [$git, $action, $component, $branch, $source] = $this->arguments;
-            $componentDir = $this->localCheckoutDir . $component . '/';
+            $componentDir = $this->localCheckoutDir . '/' . $component . '/';
             $this->gitHelper->workflowBranch(
                 $this->output,
                 $componentDir,
@@ -143,7 +147,7 @@ class Git
                 $this->output->help('tag component branch tagname comment');
             }
             [$git, $action, $component, $branch, $tag, $comment] = $this->arguments;
-            $componentDir = $this->localCheckoutDir . $component . '/';
+            $componentDir = $this->localCheckoutDir . '/' . $component . '/';
             if (!$this->gitHelper->localBranchExists($componentDir, $branch)) {
                 $this->output->warn("Cannot tag, local branch does not exist");
                 return;
@@ -160,7 +164,7 @@ class Git
                 exit();
             }
             [$git, $action, $component] = $this->arguments;
-            $componentDir = $this->localCheckoutDir . $component . '/';
+            $componentDir = $this->localCheckoutDir . '/' . $component . '/';
             $this->gitHelper->push($componentDir);
             return;
         }
