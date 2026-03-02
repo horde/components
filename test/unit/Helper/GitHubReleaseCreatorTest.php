@@ -7,6 +7,7 @@ namespace Horde\Components\Test\Unit\Helper;
 use Horde\Components\Helper\GitHubChecker;
 use Horde\Components\Helper\GitHubReleaseCreator;
 use Horde\Components\Output;
+use Horde\GithubApiClient\GithubApiConfig;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 
@@ -113,7 +114,8 @@ class GitHubReleaseCreatorTest extends TestCase
             ->method('info')
             ->with('Not a GitHub repository, skipping GitHub release creation');
 
-        $creator = new GitHubReleaseCreator($githubChecker, $output);
+        $githubApiConfig = $this->createMock(GithubApiConfig::class);
+        $creator = new GitHubReleaseCreator($githubChecker, $output, $githubApiConfig);
 
         $result = $creator->createRelease(
             localDir: '/tmp/test',
@@ -140,11 +142,12 @@ class GitHubReleaseCreatorTest extends TestCase
         $githubChecker->method('isOnGitHub')->willReturn(true);
         $output->expects($this->once())
             ->method('warn')
-            ->with('GITHUB_TOKEN environment variable not set, skipping GitHub release creation');
-        $output->expects($this->once())
+            ->with('GitHub token not configured, skipping GitHub release creation');
+        $output->expects($this->exactly(4))
             ->method('help');
 
-        $creator = new GitHubReleaseCreator($githubChecker, $output);
+        $githubApiConfig = new GithubApiConfig(accessToken: '');
+        $creator = new GitHubReleaseCreator($githubChecker, $output, $githubApiConfig);
 
         $result = $creator->createRelease(
             localDir: '/tmp/test',
@@ -177,7 +180,8 @@ class GitHubReleaseCreatorTest extends TestCase
             ->method('warn')
             ->with('Could not determine GitHub repository, skipping release creation');
 
-        $creator = new GitHubReleaseCreator($githubChecker, $output);
+        $githubApiConfig = new GithubApiConfig(accessToken: 'test-token');
+        $creator = new GitHubReleaseCreator($githubChecker, $output, $githubApiConfig);
 
         $result = $creator->createRelease(
             localDir: '/tmp/test',

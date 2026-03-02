@@ -3,7 +3,7 @@
 /**
  * Components_Runner_Snapshot:: packages a snapshot.
  *
- * PHP Version 7
+ * PHP Version 8.2+
  *
  * @category Horde
  * @package  Components
@@ -11,16 +11,17 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Runner;
 
-use Horde\Components\Config;
+use Horde\Components\Component;
 use Horde\Components\Output;
-use Horde\Components\Pear\Factory as PearFactory;
 
 /**
  * Components_Runner_Snapshot:: packages a snapshot.
  *
- * Copyright 2010-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2010-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -35,43 +36,38 @@ class Snapshot
     /**
      * Constructor.
      *
-     * @param Config $_config The current job's configuration
-     * @param PearFactory $_factory The factory for PEAR dependencies.
-     * @param Output $_output The output handler.
+     * @param Component $component The component
+     * @param array $options CLI options
+     * @param Output $output The output handler
      */
     public function __construct(
-        private readonly Config $_config,
-        private readonly PearFactory $_factory,
-        /**
-         * The output handler.
-         *
-         * @param Output
-         */
-        private readonly Output $_output
+        private readonly Component $component,
+        private readonly array $options,
+        private readonly Output $output
     ) {}
 
     public function run(): void
     {
-        $options = $this->_config->getOptions();
-        if (!empty($options['destination'])) {
-            $archivedir = $options['destination'];
+        if (!empty($this->options['destination'])) {
+            $archivedir = $this->options['destination'];
         } else {
             $archivedir = getcwd();
         }
-        $options['logger'] = $this->_output;
-        $result = $this->_config->getComponent()->placeArchive(
+        $options = $this->options;
+        $options['logger'] = $this->output;
+        $result = $this->component->placeArchive(
             $archivedir,
             $options
         );
         if (isset($result[2])) {
-            $this->_output->pear($result[2]);
+            $this->output->pear($result[2]);
         }
         if (!empty($result[1])) {
-            $this->_output->fail(
+            $this->output->fail(
                 'Generating snapshot failed with:' . "\n\n" . join("\n", $result[1])
             );
         } else {
-            $this->_output->ok('Generated snapshot ' . $result[0]);
+            $this->output->ok('Generated snapshot ' . $result[0]);
         }
     }
 }

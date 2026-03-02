@@ -7,6 +7,7 @@ namespace Horde\Components\Dependencies;
 use Horde\Components\Helper\GitHubChecker;
 use Horde\Components\Helper\GitHubReleaseCreator;
 use Horde\Components\Output;
+use Horde\GithubApiClient\GithubApiConfig;
 use Horde\Injector\Injector;
 
 /**
@@ -28,6 +29,7 @@ class GitHubReleaseCreatorFactory
     {
         $githubChecker = $injector->getInstance(GitHubChecker::class);
         $output = $injector->getInstance(Output::class);
-        return new GitHubReleaseCreator($githubChecker, $output);
+        $githubApiConfig = $injector->getInstance(GithubApiConfig::class);
+        return new GitHubReleaseCreator($githubChecker, $output, $githubApiConfig);
     }
 }

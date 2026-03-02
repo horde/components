@@ -3,7 +3,7 @@
 /**
  * Components_Runner_Qc:: checks the component for quality.
  *
- * PHP Version 7
+ * PHP Version 8.2+
  *
  * @category Horde
  * @package  Components
@@ -11,16 +11,18 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Runner;
 
-use Horde\Components\Config;
+use Horde\Components\Component;
 use Horde\Components\Output;
 use Horde\Components\Qc\Tasks as QcTasks;
 
 /**
  * Components_Runner_Qc:: checks the component for quality.
  *
- * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2011-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -35,73 +37,76 @@ class Qc
     /**
      * Constructor.
      *
-     * @param Output $_output The output handler.
-     * @param QcTasks $_qc The qc handler.
+     * @param Component $component The component to check
+     * @param array $arguments CLI arguments for task selection
+     * @param array $options CLI options (e.g., fix-qc-issues)
+     * @param Output $output The output handler
+     * @param QcTasks $qc The qc handler
      */
     public function __construct(
-        private readonly Output $_output,
-        private readonly QcTasks $_qc
+        private readonly Component $component,
+        private readonly array $arguments,
+        private readonly array $options,
+        private readonly Output $output,
+        private readonly QcTasks $qc
     ) {}
 
-    public function run(Config $config): void
+    public function run(): void
     {
-        $arguments = $config->getArguments();
-        $options = $config->getOptions();
-
         $sequence = [];
 
         // Gitignore check runs early - ensures proper VCS configuration
-        if ($this->_doTask('gitignore', $arguments)) {
+        if ($this->_doTask('gitignore', $this->arguments)) {
             $sequence[] = 'gitignore';
         }
 
-        if ($this->_doTask('lint', $arguments)) {
+        if ($this->_doTask('lint', $this->arguments)) {
             $sequence[] = 'lint';
         }
 
         // PHP CS Fixer runs after lint (valid PHP) but before cs (fixes many PHPCS issues)
-        if ($this->_doTask('phpcsfixer', $arguments)) {
+        if ($this->_doTask('phpcsfixer', $this->arguments)) {
             $sequence[] = 'phpcsfixer';
         }
 
-        if ($this->_doTask('unit', $arguments)) {
+        if ($this->_doTask('unit', $this->arguments)) {
             $sequence[] = 'unit';
         }
 
         // PHPStan runs after unit tests - comprehensive static analysis
-        if ($this->_doTask('phpstan', $arguments)) {
+        if ($this->_doTask('phpstan', $this->arguments)) {
             $sequence[] = 'phpstan';
         }
 
         // Metrics (phpmetrics) provides code quality insights
-        if ($this->_doTask('metrics', $arguments)) {
+        if ($this->_doTask('metrics', $this->arguments)) {
             $sequence[] = 'metrics';
         }
 
         // PHPMD (md) is only run when explicitly requested, not in default pipeline
-        if ($this->_doTask('md', $arguments, false)) {
+        if ($this->_doTask('md', $this->arguments, false)) {
             $sequence[] = 'md';
         }
 
         // PHPCS (cs) is only run when explicitly requested, not in default pipeline
-        if ($this->_doTask('cs', $arguments, false)) {
+        if ($this->_doTask('cs', $this->arguments, false)) {
             $sequence[] = 'cs';
         }
 
         // LOC (phploc) is only run when explicitly requested, not in default pipeline
         // Deprecated: Use 'metrics' task (PHPMetrics) instead for modern metrics
-        if ($this->_doTask('loc', $arguments, false)) {
+        if ($this->_doTask('loc', $this->arguments, false)) {
             $sequence[] = 'loc';
         }
 
         if (!empty($sequence)) {
-            $this->_qc->run(
+            $this->qc->run(
                 $sequence,
-                $config->getComponent(),
-                $options
+                $this->component,
+                $this->options
             );
         } else {
-            $this->_output->warn('Huh?! No tasks selected... All done!');
+            $this->output->warn('Huh?! No tasks selected... All done!');
         }
     }
 

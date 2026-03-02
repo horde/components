@@ -1,39 +1,40 @@
 <?php
 
 /**
- * Minimal test stub for Config interface compatibility
+ * Minimal Config implementation for Component class compatibility
  *
  * PHP version 8.2+
  *
- * @category   Horde
- * @package    Components
- * @subpackage UnitTests
- * @author     Ralf Lang <ralf.lang@ralf-lang.de>
- * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ * @category Horde
+ * @package  Components
+ * @author   Ralf Lang <ralf.lang@ralf-lang.de>
+ * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
 declare(strict_types=1);
 
-namespace Horde\Components\Test\Stub;
+namespace Horde\Components\Config;
 
 use Horde\Components\Component;
-use Horde\Components\Config as ConfigInterface;
+use Horde\Components\Config;
 
 /**
- * Minimal Config stub for tests - Component classes still use Config but
- * it's being phased out. This stub allows tests to continue working.
+ * Minimal Config implementation for runtime use.
+ *
+ * Component classes still depend on Config but it's being phased out.
+ * This provides the minimal implementation needed for Components to work.
  */
-class Config implements ConfigInterface
+class MinimalConfig implements Config
 {
     private array $options;
     private array $arguments;
     private ?Component $component = null;
     private ?string $path = null;
 
-    public function __construct(array $arguments = [], array $options = [])
+    public function __construct(array $options = [], array $arguments = [])
     {
-        $this->arguments = $arguments;
         $this->options = $options;
+        $this->arguments = $arguments;
     }
 
     public function setOption($key, $value): void

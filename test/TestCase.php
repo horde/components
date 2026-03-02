@@ -59,8 +59,9 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $options = []
     ) {
         $dependencies = new Injector();
+        // Register Config for Component classes
         $config = new Config($arguments, $options);
-        $dependencies->initConfig($config);
+        $dependencies->setInstance(\Horde\Components\Config::class, $config);
         return $dependencies->getComponentFactory();
     }
 
@@ -71,7 +72,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
     ) {
         $dependencies = new Injector();
         $config = new Config($arguments, $options);
-        $dependencies->initConfig($config);
+        $dependencies->setInstance(\Horde\Components\Config::class, $config);
         $factory = $dependencies->getComponentFactory();
         return new Source(
             new ComponentDirectory($directory),

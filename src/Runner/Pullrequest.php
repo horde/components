@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 namespace Horde\Components\Runner;
 
-use Horde\Components\Config;
 use Horde\Components\Output;
 use Horde\Components\Helper\GitHubChecker;
 use Horde\Components\Helper\Git as GitHelper;
@@ -37,14 +36,16 @@ class Pullrequest
     /**
      * Constructor.
      *
-     * @param Config $config The configuration for the current job.
-     * @param Output $output The output handler.
-     * @param GitHelper $gitHelper The git helper.
-     * @param GitHubChecker $githubChecker The GitHub checker helper.
-     * @param PullRequestManager $prManager The pull request manager.
+     * @param array $arguments CLI arguments for subcommand routing
+     * @param string $workingDir The working directory
+     * @param Output $output The output handler
+     * @param GitHelper $gitHelper The git helper
+     * @param GitHubChecker $githubChecker The GitHub checker helper
+     * @param PullRequestManager $prManager The pull request manager
      */
     public function __construct(
-        private readonly Config $config,
+        private readonly array $arguments,
+        private readonly string $workingDir,
         private readonly Output $output,
         private readonly GitHelper $gitHelper,
         private readonly GitHubChecker $githubChecker,
@@ -56,9 +57,6 @@ class Pullrequest
      */
     public function run(): void
     {
-        $arguments = $this->config->getArguments();
-        $options = $this->config->getOptions();
-
         // Extract subcommand from arguments
         // Expected formats:
         //   pr list
@@ -67,18 +65,18 @@ class Pullrequest
         //   pr merge 456
 
         $commandIndex = 0;
-        if (isset($arguments[0]) && in_array($arguments[0], ['pr', 'pullrequest'])) {
+        if (isset($this->arguments[0]) && in_array($this->arguments[0], ['pr', 'pullrequest'])) {
             $commandIndex = 1;  // Subcommand is at index 1
         }
 
-        if (!isset($arguments[$commandIndex])) {
+        if (!isset($this->arguments[$commandIndex])) {
             $this->output->warn('No subcommand specified');
             $this->showHelp();
             return;
         }
 
-        $subcommand = $arguments[$commandIndex];
-        $prNumber = $arguments[$commandIndex + 1] ?? null;
+        $subcommand = $this->arguments[$commandIndex];
+        $prNumber = $this->arguments[$commandIndex + 1] ?? null;
 
         // Dispatch to appropriate handler
         match ($subcommand) {
@@ -98,11 +96,8 @@ class Pullrequest
      */
     private function handleList(): void
     {
-        $options = $this->config->getOptions();
-        $localDir = $options['working_dir'] ?? getcwd();
-
         // Initialize the PR manager with the current directory
-        if (!$this->prManager->initialize($localDir)) {
+        if (!$this->prManager->initialize($this->workingDir)) {
             return;
         }
 
@@ -292,11 +287,9 @@ class Pullrequest
         }
 
         $prNumber = (int)$prNumber;
-        $options = $this->config->getOptions();
-        $localDir = $options['working_dir'] ?? getcwd();
 
         // Initialize the PR manager
-        if (!$this->prManager->initialize($localDir)) {
+        if (!$this->prManager->initialize($this->workingDir)) {
             return;
         }
 
@@ -324,7 +317,7 @@ class Pullrequest
         $this->output->plain('');
 
         // Check if working directory is clean
-        if (!$this->isWorkingDirectoryClean($localDir)) {
+        if (!$this->isWorkingDirectoryClean($this->workingDir)) {
             $this->output->error('Working directory is not clean');
             $this->output->help('Commit, stash, or discard your changes before checking out a PR');
             return;
@@ -335,9 +328,9 @@ class Pullrequest
                        $pr->headRepo->name === $pr->baseRepo->name);
 
         if ($isSameRepo) {
-            $this->checkoutSameRepoPR($localDir, $pr);
+            $this->checkoutSameRepoPR($this->workingDir, $pr);
         } else {
-            $this->checkoutCrossRepoPR($localDir, $pr);
+            $this->checkoutCrossRepoPR($this->workingDir, $pr);
         }
     }
 
@@ -518,14 +511,13 @@ class Pullrequest
      * It checks for PRs where the head branch matches the current branch name,
      * handling both same-repo branches and cross-repo (fork) branches.
      *
-     * @param string $localDir The local directory
      * @return string|null The PR number as a string, or null if not found
      */
-    private function deducePRFromCurrentBranch(string $localDir): ?string
+    private function deducePRFromCurrentBranch(): ?string
     {
         try {
             // Get current branch name
-            $currentBranch = $this->gitHelper->getCurrentBranch($localDir);
+            $currentBranch = $this->gitHelper->getCurrentBranch($this->workingDir);
             if (!$currentBranch) {
                 $this->output->error('Not on a branch');
                 return null;
@@ -587,7 +579,7 @@ class Pullrequest
 
         // If no PR number provided, deduce from current branch
         if (!$prNumber) {
-            $prNumber = $this->deducePRFromCurrentBranch($localDir);
+            $prNumber = $this->deducePRFromCurrentBranch();
             if (!$prNumber) {
                 return;
             }
@@ -637,7 +629,7 @@ class Pullrequest
 
         // If no PR number provided, deduce from current branch
         if (!$prNumber) {
-            $prNumber = $this->deducePRFromCurrentBranch($localDir);
+            $prNumber = $this->deducePRFromCurrentBranch();
             if (!$prNumber) {
                 return;
             }
@@ -703,7 +695,7 @@ class Pullrequest
 
         // If no PR number provided, deduce from current branch
         if (!$prNumber) {
-            $prNumber = $this->deducePRFromCurrentBranch($localDir);
+            $prNumber = $this->deducePRFromCurrentBranch();
             if (!$prNumber) {
                 return;
             }
@@ -753,7 +745,7 @@ class Pullrequest
 
         // If no PR number provided, deduce from current branch
         if (!$prNumber) {
-            $prNumber = $this->deducePRFromCurrentBranch($localDir);
+            $prNumber = $this->deducePRFromCurrentBranch();
             if (!$prNumber) {
                 return;
             }
@@ -809,11 +801,9 @@ class Pullrequest
         }
 
         $prNumber = (int)$prNumber;
-        $options = $this->config->getOptions();
-        $localDir = $options['working_dir'] ?? getcwd();
 
         // Initialize the PR manager
-        if (!$this->prManager->initialize($localDir)) {
+        if (!$this->prManager->initialize($this->workingDir)) {
             return;
         }
 

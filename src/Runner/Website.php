@@ -15,11 +15,8 @@ declare(strict_types=1);
 
 namespace Horde\Components\Runner;
 
-use Horde\Components\Config;
 use Horde\Components\Output;
 use Horde\Components\Website\CatalogGenerator;
-use Horde\GithubApiClient\GithubApiConfig;
-use Horde\Injector\Injector;
 use RuntimeException;
 
 /**
@@ -40,50 +37,41 @@ class Website
     private string $componentsRoot;
 
     public function __construct(
-        private Injector $injector,
-        private Output $output
+        private readonly WebsiteConfig $config,
+        private readonly Output $output
     ) {
         // Detect components root directory
         $this->componentsRoot = dirname(__DIR__, 2);
     }
 
-    public function run(Config $config): void
+    public function run(): void
     {
-        $options = $config->getOptions();
-
-        // Resolve paths relative to components root
-        $inputDir = $options['web_input'] ?? $this->componentsRoot . '/data/webhooks';
-        $outputDir = $options['web_output'] ?? $this->componentsRoot . '/build/dev.horde.org';
-        $templatesDir = $options['web_templates'] ?? $this->componentsRoot . '/data/website';
-        $componentsFile = $options['web_components'] ?? $templatesDir . '/components.json';
-        $cssFilename = 'dev.horde.org-black.css';
-
         $this->output->info("Generating dev.horde.org website");
-        $this->output->info("  Input:      $inputDir");
-        $this->output->info("  Output:     $outputDir");
-        $this->output->info("  Templates:  $templatesDir");
-        $this->output->info("  Components: $componentsFile");
+        $this->output->info("  Input:      {$this->config->inputDir}");
+        $this->output->info("  Output:     {$this->config->outputDir}");
+        $this->output->info("  Templates:  {$this->config->templatesDir}");
+        $this->output->info("  Components: {$this->config->componentsFile}");
 
         // Validate paths
-        if (!is_dir($inputDir)) {
-            throw new RuntimeException("Input directory not found: $inputDir");
+        if (!is_dir($this->config->inputDir)) {
+            throw new RuntimeException("Input directory not found: {$this->config->inputDir}");
         }
-        if (!is_dir($templatesDir)) {
-            throw new RuntimeException("Templates directory not found: $templatesDir");
+        if (!is_dir($this->config->templatesDir)) {
+            throw new RuntimeException("Templates directory not found: {$this->config->templatesDir}");
         }
-        if (!file_exists($componentsFile)) {
-            throw new RuntimeException("Component catalog not found: $componentsFile");
+        if (!file_exists($this->config->componentsFile)) {
+            throw new RuntimeException("Component catalog not found: {$this->config->componentsFile}");
         }
 
         // Create output directory
-        if (!is_dir($outputDir)) {
-            mkdir($outputDir, 0755, true);
+        if (!is_dir($this->config->outputDir)) {
+            mkdir($this->config->outputDir, 0755, true);
             $this->output->ok("Created output directory");
         }
 
         // Scan and normalize webhook events
-        $this->output->info("Scanning webhook events from $inputDir...");
-        $scanner = new \Horde\Components\Website\EventScanner($inputDir);
+        $this->output->info("Scanning webhook events from {$this->config->inputDir}...");
+        $scanner = new \Horde\Components\Website\EventScanner($this->config->inputDir);
         $rawEvents = $scanner->scan();
         $this->output->plain(sprintf("Found %d raw events.", count($rawEvents)));
 
@@ -99,21 +87,22 @@ class Website
 
         // Generate website
         $this->output->info("Generating complete dev.horde.org page...");
+        $cssFilename = 'dev.horde.org-black.css';
         $generator = new \Horde\Components\Website\PageGenerator(
-            $templatesDir,
+            $this->config->templatesDir,
             $cssFilename,
-            $componentsFile
+            $this->config->componentsFile
         );
         $generator->generatePage(
             $events,
-            $outputDir . '/index.html',
+            $this->config->outputDir . '/index.html',
             10,  // max events per section
             2    // max events per component card
         );
 
         // Copy CSS to output
-        $cssSource = $templatesDir . '/' . $cssFilename;
-        $cssDest = $outputDir . '/' . $cssFilename;
+        $cssSource = $this->config->templatesDir . '/' . $cssFilename;
+        $cssDest = $this->config->outputDir . '/' . $cssFilename;
 
         if (file_exists($cssSource)) {
             copy($cssSource, $cssDest);
@@ -121,47 +110,36 @@ class Website
         }
 
         $this->output->ok("Website generated successfully!");
-        $this->output->info("  Main page: $outputDir/index.html");
-        $this->output->info("  Components: $outputDir/components/");
+        $this->output->info("  Main page: {$this->config->outputDir}/index.html");
+        $this->output->info("  Components: {$this->config->outputDir}/components/");
     }
 
-    public function runCatalog(Config $config): void
+    public function runCatalog(): void
     {
-        $options = $config->getOptions();
-
-        // Resolve paths relative to components root
-        $componentsFile = $options['web_components'] ?? $this->componentsRoot . '/data/website/components.json';
-        $org = $options['web_org'] ?? 'horde';
-        $gitRepoDir = $options['web_git_dir'] ?? null;
-
-        // Token priority: --web-token > GITHUB_TOKEN env > injector config
-        $token = $options['web_token'] ?? null;
-        if ($token === null) {
-            // Try to get from injector (already set from GITHUB_TOKEN env)
-            $githubConfig = $this->injector->get(GithubApiConfig::class);
-            $token = !empty($githubConfig->accessToken) ? $githubConfig->accessToken : null;
-        }
-
         $this->output->info("Updating component catalog");
-        $this->output->info("  Organization: $org");
-        $this->output->info("  Output file: $componentsFile");
-        if ($gitRepoDir) {
-            $this->output->info("  Git directory: $gitRepoDir");
+        $this->output->info("  Organization: {$this->config->organization}");
+        $this->output->info("  Output file: {$this->config->componentsFile}");
+        if ($this->config->gitDir) {
+            $this->output->info("  Git directory: {$this->config->gitDir}");
         }
-        if ($token !== null) {
+        if ($this->config->token !== null) {
             $this->output->info("  Using authenticated GitHub API (higher rate limits)");
         }
 
         // Ensure output directory exists
-        $outputDir = dirname($componentsFile);
+        $outputDir = dirname($this->config->componentsFile);
         if (!is_dir($outputDir)) {
             mkdir($outputDir, 0755, true);
             $this->output->ok("Created output directory");
         }
 
         // Generate catalog
-        $generator = new CatalogGenerator($this->output, $token);
-        $exitCode = $generator->generate($org, $componentsFile, $gitRepoDir);
+        $generator = new CatalogGenerator($this->output, $this->config->token);
+        $exitCode = $generator->generate(
+            $this->config->organization,
+            $this->config->componentsFile,
+            $this->config->gitDir
+        );
 
         if ($exitCode !== 0) {
             throw new RuntimeException("Catalog generation failed");

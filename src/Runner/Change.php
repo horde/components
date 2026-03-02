@@ -3,7 +3,7 @@
 /**
  * Components_Runner_Change:: adds a new change log entry.
  *
- * PHP Version 7
+ * PHP Version 8.2+
  *
  * @category Horde
  * @package  Components
@@ -11,16 +11,18 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Runner;
 
-use Horde\Components\Config;
+use Horde\Components\Component;
 use Horde\Components\Helper\Commit as HelperCommit;
 use Horde\Components\Output;
 
 /**
  * Components_Runner_Change:: adds a new change log entry.
  *
- * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2011-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -35,42 +37,39 @@ class Change
     /**
      * Constructor.
      *
-     * @param Config $_config The configuration for the current job.
-     * @param Output $_output The output handler.
+     * @param Component $component The component
+     * @param array $arguments CLI arguments
+     * @param array $options CLI options
+     * @param Output $output The output handler
      */
     public function __construct(
-        private readonly Config $_config,
-        /**
-         * The output handler.
-         *
-         * @param Output
-         */
-        private readonly Output $_output
+        private readonly Component $component,
+        private readonly array $arguments,
+        private readonly array $options,
+        private readonly Output $output
     ) {}
 
-    public function run(Config $config): void
+    public function run(): void
     {
-        $options = $this->_config->getOptions();
-        $arguments = $this->_config->getArguments();
-
-        if (count($arguments) > 1 && $arguments[0] == 'changed') {
-            $log = $arguments[1];
+        if (count($this->arguments) > 1 && $this->arguments[0] == 'changed') {
+            $log = $this->arguments[1];
         } else {
             $log = null;
         }
 
+        $options = $this->options;
         if ($log && !empty($options['commit'])) {
             $options['commit'] = new HelperCommit(
-                $this->_output,
+                $this->output,
                 $options
             );
         }
-        $output = $config->getComponent()->changed($log, $options);
+        $output = $this->component->changed($log, $options);
         if ($log && !empty($options['commit'])) {
             $options['commit']->commit($log);
         }
         foreach ($output as $message) {
-            $this->_output->plain($message);
+            $this->output->plain($message);
         }
     }
 }

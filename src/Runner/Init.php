@@ -3,7 +3,7 @@
 /**
  * Horde\Components\Runner\Init:: create new metadata.
  *
- * PHP version 7
+ * PHP Version 8.2+
  *
  * @category Horde
  * @package  Components
@@ -11,16 +11,19 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Runner;
 
-use Horde\Components\Config;
+use Horde\Components\Component;
+use Horde\Components\ConfigProvider\EffectiveConfigProvider;
 use Horde\Components\Exception;
 use Horde\Components\Output;
 
 /**
  * Horde\Components\Runner\Init:: create new metadata.
  *
- * Copyright 2018-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2018-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -35,30 +38,32 @@ class Init
     /**
      * Constructor.
      *
-     * @param Config $_config The configuration for the current job.
-     * @param Output $_output The output handler.
+     * @param EffectiveConfigProvider $config The configuration provider
+     * @param Component $component The component to initialize
+     * @param array $arguments CLI arguments
+     * @param Output $output The output handler
      */
     public function __construct(
-        private readonly Config $_config,
-        /**
-         * The output handler.
-         *
-         * @param Output
-         */
-        private readonly Output $_output
+        private readonly EffectiveConfigProvider $config,
+        private readonly Component $component,
+        private readonly array $arguments,
+        private readonly Output $output
     ) {}
 
     public function run(): void
     {
-        $options = $this->_config->getOptions();
-        $arguments = $this->_config->getArguments();
-
         // Use parameter values or defaults
-        $authorName = !empty($options['author']) ? $options['author'] : 'Some Person';
-        $authorEmail = !empty($options['email']) ? $options['email'] : 'some.person@example.com';
+        $authorName = $this->config->hasSetting('author')
+            ? $this->config->getSetting('author')
+            : 'Some Person';
+
+        $authorEmail = $this->config->hasSetting('email')
+            ? $this->config->getSetting('email')
+            : 'some.person@example.com';
+
         $list = 'horde';
         $user = 'tbd';
-        $type = $arguments[1] ?: 'library';
+        $type = $this->arguments[1] ?? 'library';
         $path = explode('/', getcwd());
         $id = array_pop($path);
         if ($type == 'library') {
@@ -75,7 +80,7 @@ class Init
         $description = "Long, detailed description of $id which may span multiple lines";
         $summary = "Short headline for $id";
         // First create a .horde.yml
-        //$yaml = $this->_config->getComponent()->getWrapper('HordeYml');
+        //$yaml = $this->component->getWrapper('HordeYml');
         // Doesn't currently work, create a plain Horde_Yaml instead
         $yaml = [];
         $yaml['id'] = $id;
@@ -219,10 +224,10 @@ class Init
             $docdir = 'doc/Horde/' . str_replace('_', '/', $id);
         }
         mkdir($docdir, 0o755, true);
-        $yaml = $this->_config->getComponent()->getWrapper('ChangelogYml');
+        $yaml = $this->component->getWrapper('ChangelogYml');
         $yaml[$version['release']] = ['api' => $version['api'], 'state' => $state, 'date' => $dt->format('Y-m-d'), 'license' => $license, 'notes' => $changelog];
         $yaml->save();
-        $changes = $this->_config->getComponent()->getWrapper('Changes');
+        $changes = $this->component->getWrapper('Changes');
         // The changes helper seems to have no option to create a changes file
         $head = str_repeat('-', 12) . "\n";
         $changeEntry = sprintf(

@@ -56,9 +56,9 @@ class IdentifyTest extends TestCase
 
     public function testHelp()
     {
-        $this->expectException(Exception::class);
         $this->_initIdentify(['help']);
-        $this->config->getComponent();
+        // 'help' is in missing_argument list, so no component should be set
+        $this->assertNull($this->config->getComponent());
     }
 
     public function testNoArgument()
@@ -145,7 +145,8 @@ class IdentifyTest extends TestCase
             $dependencies = new Injector();
         }
         $this->config = new Config($arguments, $options);
-        $dependencies->initConfig($this->config);
+        // Note: initConfig() removed - Config is registered directly in DI now
+        $dependencies->setInstance(\Horde\Components\Config::class, $this->config);
         $identify = new Identify(
             $this->config,
             [

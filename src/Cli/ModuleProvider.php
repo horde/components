@@ -15,6 +15,7 @@ use Horde\Cli\Modular\Modules;
 use Horde\Components\Module\Composer;
 use Horde\Components\Module\ConventionalCommit;
 use Horde\Components\Module\Change;
+use Horde\Components\Module\Init;
 use Horde\Components\Module\InstallModule;
 use Horde\Components\Module\Package;
 use Horde\Components\Module\Pullrequest;
@@ -54,6 +55,7 @@ class ModuleProvider implements CliModuleProvider
             $this->injector->get(Git::class),
             $this->injector->get(ConventionalCommit::class),
             $this->injector->get(Help::class),
+            $this->injector->get(Init::class),
             $this->injector->get(InstallModule::class),
             $this->injector->get(Package::class),
             $this->injector->get(Pullrequest::class),
