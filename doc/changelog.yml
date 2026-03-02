@@ -1,4 +1,21 @@
 ---
+1.0.0-alpha26:
+  api: 1.0.0-alpha1
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-03-02
+  license:
+    identifier: LGPL-2.1-only
+    uri: http://www.horde.org/licenses/lgpl21
+  notes: |
+    style(website): add card styling for component details
+    feat(website): add component detail pages for all catalog entries
+    feat(website): make component names clickable in event cards
+    fix(website): use relative links for API docs and component pages
+    feat(website): add support for pull requests and new event types
+    refactor(website): extract classes to PSR-4 and remove redundancy
+    chore: remove standalone web-catalog-github script
 1.0.0-alpha25:
   api: 1.0.0-alpha1
   state:

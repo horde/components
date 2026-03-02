@@ -21,7 +21,7 @@
             "role": "contributor"
         }
     ],
-    "time": "2026-03-01",
+    "time": "2026-03-02",
     "repositories": [],
     "require": {
         "horde/horde-installer-plugin": "^2.6 || dev-FRAMEWORK_6_0",
@@ -70,8 +70,6 @@
         }
     },
     "bin": [
-        "bin/generate-dev-horde-org.php",
-        "bin/generate-github-activity-html.php",
         "bin/horde-components"
     ],
     "config": {
