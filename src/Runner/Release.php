@@ -24,7 +24,6 @@ use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Helper\Composer as ComposerHelper;
 use Horde\Components\Release\HordeRelease;
-use Horde\Components\Config\MinimalConfig;
 use Horde\GithubApiClient\GithubApiConfig;
 
 /**
@@ -114,11 +113,7 @@ class Release
                 $this->qcTasks
             );
 
-            // Create a Config object for HordeRelease
-            $config = new MinimalConfig($this->options, $this->arguments);
-            $config->setComponent($this->component);
-
-            $release->run($config);
+            $release->run($this->component, $this->options);
             return;
         } else {
             $this->output->warn('Run "horde-components release for <pipeline>"');

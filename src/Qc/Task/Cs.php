@@ -70,7 +70,7 @@ class Cs extends Base
      */
     public function run(array &$options = []): int
     {
-        $lib_dir = realpath($this->_config->getPath() . '/lib');
+        $lib_dir = realpath($this->getPath() . '/lib');
 
         $cli_args = [
             '--basepath=' . $lib_dir,

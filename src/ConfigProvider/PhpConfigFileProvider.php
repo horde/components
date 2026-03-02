@@ -63,7 +63,7 @@ class PhpConfigFileProvider implements ConfigProvider
         if (!$this->hasSetting($id)) {
             throw new Exception("Setting '$id' not found in PhpConfigFileProvider");
         }
-        return $this->settings[$id];
+        return (string) $this->settings[$id];
     }
 
     public function isUnset(string $id): bool

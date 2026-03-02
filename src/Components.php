@@ -16,10 +16,9 @@ namespace Horde\Components;
 
 use Horde\Cli\Modular\ModularCli;
 use Horde\Components\Component\Identify;
-use Horde\Components\Config;
-use Horde\Components\Config\MinimalConfig;
 use Horde\Components\ConfigProvider\BuiltinConfigProvider;
 use Horde\Components\ConfigProvider\CliConfigProvider;
+use Horde\Components\ConfigProvider\ConfigProvider;
 use Horde\Components\ConfigProvider\EnvironmentConfigProvider;
 use Horde\Components\ConfigProvider\PhpConfigFileProvider;
 use Horde\Components\ConfigProvider\ConfigProviderFactory;
@@ -48,6 +47,7 @@ use Horde\GithubApiClient\GithubApiClient;
 use Horde\GithubApiClient\GithubApiConfig;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 
 /**
  * The Components:: class is the entry point for the various component actions
@@ -145,7 +145,7 @@ class Components
 
         // NOW that parser is ready, we can create CliConfigProvider and update factory
         $parser = $modular->getParser();
-        list($parsedOptions, $parsedArgs) = $parser->parseArgs();
+        [$parsedOptions, $parsedArgs] = $parser->parseArgs();
 
         // Convert Horde\Argv\Values object to array
         $optionsArray = [];
@@ -166,23 +166,22 @@ class Components
         // Replace the old factory
         $injector->setInstance(ConfigProviderFactory::class, $configFactoryWithCli);
 
+        // Get ConfigProvider and register it
+        $configProvider = $configFactoryWithCli->createDefault();
+        $injector->setInstance(ConfigProvider::class, $configProvider);
+
         // Store parsed options for Output factory
         $injector->setInstance('parsed_options', $optionsArray);
 
-        // Create minimal Config for Component classes (legacy compatibility)
-        $minimalConfig = new MinimalConfig($optionsArray, $parsedArgs);
-        $injector->setInstance(Config::class, $minimalConfig);
-
-        // Always set path to current working directory
-        $minimalConfig->setPath(getcwd());
-
         // Identify component if working in a component directory
         $component = null;
+        $componentPath = null;
         try {
             $identify = $injector->getInstance(Identify::class);
-            $component = $identify->identifyComponent(getcwd());
-            // Set component in Config for legacy compatibility
-            $minimalConfig->setComponent($component);
+            [$component, $componentPath, $parsedArgs] = $identify->identifyComponent(
+                $parsedArgs,  // Pass by reference, will be modified
+                getcwd()
+            );
         } catch (\Exception $e) {
             // No component in current directory - that's fine for many commands
         }
@@ -233,8 +232,15 @@ This is a list of available actions (use "help ACTION" to get additional informa
         $parser->ignoreUnknownArgs = true;
         $parser->allowUnknownArgs = true;
         $injector->setInstance(Horde_Argv_Parser::class, $parser);
-        $injector->setInstance(ClientInterface::class, new CurlClient(new ResponseFactory(), new StreamFactory(), new Options()));
-        $injector->setInstance(RequestFactoryInterface::class, new RequestFactory());
+
+        // HTTP/PSR-17 factories
+        $streamFactory = new StreamFactory();
+        $responseFactory = new ResponseFactory();
+        $requestFactory = new RequestFactory();
+
+        $injector->setInstance(StreamFactoryInterface::class, $streamFactory);
+        $injector->setInstance(RequestFactoryInterface::class, $requestFactory);
+        $injector->setInstance(ClientInterface::class, new CurlClient($responseFactory, $streamFactory, new Options()));
 
         // Get GitHub token from ConfigProvider hierarchy
         // Precedence: CLI args > GITHUB_TOKEN env var > github.token config key
@@ -285,24 +291,5 @@ This is a list of available actions (use "help ACTION" to get additional informa
             );
         }
         return ['list' => $actions, 'missing_argument' => ['help']];
-    }
-
-    /**
-     * Identify the selected component based on the command arguments.
-     *
-     * @param Config $config  The active configuration.
-     * @param array             $actions The list of available actions.
-     */
-    protected static function _identifyComponent(
-        Config $config,
-        $actions,
-        Injector $dependencies
-    ): void {
-        $identify = new Identify(
-            $config,
-            $actions,
-            $dependencies
-        );
-        $identify->setComponentInConfiguration();
     }
 }

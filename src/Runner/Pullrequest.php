@@ -199,8 +199,8 @@ class Pullrequest
         } elseif ($available >= $minAuthor + $minBranch + $minTitle) {
             // Scale proportionally from minimum to preferred
             $remaining = $available - $minAuthor - $minBranch - $minTitle;
-            $authorWidth = $minAuthor + (int)($remaining * 0.2);
-            $branchWidth = $minBranch + (int)($remaining * 0.3);
+            $authorWidth = $minAuthor + (int) ($remaining * 0.2);
+            $branchWidth = $minBranch + (int) ($remaining * 0.3);
             $titleWidth = $available - $authorWidth - $branchWidth;
         } else {
             // Terminal too narrow, use minimums
@@ -286,7 +286,7 @@ class Pullrequest
             return;
         }
 
-        $prNumber = (int)$prNumber;
+        $prNumber = (int) $prNumber;
 
         // Initialize the PR manager
         if (!$this->prManager->initialize($this->workingDir)) {
@@ -324,8 +324,8 @@ class Pullrequest
         }
 
         // Determine if this is same-repo or cross-repo PR
-        $isSameRepo = ($pr->headRepo->owner === $pr->baseRepo->owner &&
-                       $pr->headRepo->name === $pr->baseRepo->name);
+        $isSameRepo = ($pr->headRepo->owner === $pr->baseRepo->owner
+                       && $pr->headRepo->name === $pr->baseRepo->name);
 
         if ($isSameRepo) {
             $this->checkoutSameRepoPR($this->workingDir, $pr);
@@ -536,19 +536,19 @@ class Pullrequest
             // For same-repo PRs: branch name matches directly
             // For cross-repo PRs: branch name is {owner}_{branch}, so we need to check the pattern
             foreach ($prs as $pr) {
-                $isSameRepo = ($pr->headRepo->owner === $pr->baseRepo->owner &&
-                               $pr->headRepo->name === $pr->baseRepo->name);
+                $isSameRepo = ($pr->headRepo->owner === $pr->baseRepo->owner
+                               && $pr->headRepo->name === $pr->baseRepo->name);
 
                 if ($isSameRepo && $pr->headBranch === $currentBranch) {
                     // Same-repo PR: branch name matches directly
                     $this->output->ok("Found PR #{$pr->number}: {$pr->title}");
-                    return (string)$pr->number;
+                    return (string) $pr->number;
                 } elseif (!$isSameRepo) {
                     // Cross-repo PR: check if current branch is {owner}_{branch}
                     $expectedBranchName = "{$pr->headRepo->owner}_{$pr->headBranch}";
                     if ($expectedBranchName === $currentBranch) {
                         $this->output->ok("Found PR #{$pr->number}: {$pr->title}");
-                        return (string)$pr->number;
+                        return (string) $pr->number;
                     }
                 }
             }
@@ -589,7 +589,7 @@ class Pullrequest
             }
         }
 
-        $prNumber = (int)$prNumber;
+        $prNumber = (int) $prNumber;
 
         // Get PR details first
         try {
@@ -636,7 +636,7 @@ class Pullrequest
             }
         }
 
-        $prNumber = (int)$prNumber;
+        $prNumber = (int) $prNumber;
 
         // Get PR details first
         try {
@@ -699,7 +699,7 @@ class Pullrequest
             }
         }
 
-        $prNumber = (int)$prNumber;
+        $prNumber = (int) $prNumber;
 
         // Get PR details first
         try {
@@ -746,7 +746,7 @@ class Pullrequest
             }
         }
 
-        $prNumber = (int)$prNumber;
+        $prNumber = (int) $prNumber;
 
         // Get PR details first
         try {
@@ -788,7 +788,7 @@ class Pullrequest
             return;
         }
 
-        $prNumber = (int)$prNumber;
+        $prNumber = (int) $prNumber;
 
         // Initialize the PR manager
         if (!$this->prManager->initialize($this->workingDir)) {

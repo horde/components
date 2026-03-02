@@ -14,7 +14,6 @@
 
 namespace Horde\Components\Component;
 
-use Horde\Components\Config;
 use Horde\Components\Exception;
 use Horde\Components\Pear\Environment as PearEnvironment;
 use Horde\Components\Wrapper\PackageXml;
@@ -40,23 +39,17 @@ class Archive extends Base
     /**
      * Constructor.
      *
-     * @param string                  $directory Path to the source directory.
-     * @param boolean                 $shift     Did identification of the
-     *                                           component consume an argument?
-     * @param Config       $config    The configuration for the
-     *                                           current job.
-     * @param Factory $factory Generator for additional
-     *                                              helpers.
+     * @param string  $_archive Path to the archive file.
+     * @param Factory $factory  Generator for additional helpers.
      */
     public function __construct(
         /**
          * Path to the archive.
          */
         private readonly string $_archive,
-        Config $config,
         Factory $factory
     ) {
-        parent::__construct($config, $factory);
+        parent::__construct($factory);
     }
 
     /**

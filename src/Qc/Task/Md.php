@@ -71,7 +71,7 @@ class Md extends Base
      */
     public function run(array &$options = []): int
     {
-        $src = realpath($this->_config->getPath() . '/src');
+        $src = realpath($this->getPath() . '/src');
 
         $renderer = new PHPMDRendererTextRenderer();
         $renderer->setWriter(new PHPMDWriterStreamWriter(\STDOUT));

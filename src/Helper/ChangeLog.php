@@ -16,7 +16,6 @@
 namespace Horde\Components\Helper;
 
 use Horde\Components\Component;
-use Horde\Components\Config;
 use Horde\Components\Exception;
 use Horde\Components\Helper\Version as HelperVersion;
 
@@ -41,12 +40,11 @@ class ChangeLog
     /**
      * Constructor.
      *
-     * @param Config $config        The configuration.
      * @param Component $_component A component object.
      */
-    public function __construct(Config $config, protected Component $_component)
+    public function __construct(protected Component $_component)
     {
-        $this->directory = $config->getPath();
+        $this->directory = $_component->getComponentDirectory();
     }
 
     /* changelog.yml methods */

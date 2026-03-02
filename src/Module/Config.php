@@ -17,7 +17,6 @@ namespace Horde\Components\Module;
 
 use Horde\Cli\Cli;
 use Horde\Components\Component;
-use Horde\Components\Config as ComponentsConfig;
 use Horde\Components\ConfigProvider\BuiltinConfigProvider;
 use Horde\Components\ConfigProvider\PhpConfigFileProvider;
 

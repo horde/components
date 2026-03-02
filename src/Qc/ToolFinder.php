@@ -37,8 +37,7 @@ class ToolFinder
      */
     public function __construct(
         private readonly ?string $componentPath
-    ) {
-    }
+    ) {}
 
     /**
      * Get the component path, falling back to current directory if null.

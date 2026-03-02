@@ -17,7 +17,6 @@ declare(strict_types=1);
 
 namespace Horde\Components\Test\Stub;
 
-use Horde\Components\Config;
 use Horde\Components\Exception;
 use Horde\Components\Output as ComponentsOutput;
 
@@ -104,5 +103,3 @@ class Output extends ComponentsOutput
         $this->messages[] = $text;
     }
 }
-
-

@@ -16,7 +16,8 @@ declare(strict_types=1);
 
 namespace Horde\Components\Runner;
 
-use Horde\Components\Config\Application as ConfigApplication;
+use Horde\Components\ConfigProvider\ConfigProvider;
+use Horde\Components\Constants;
 use Horde\Components\Helper\Templates\RecursiveDirectory as HelperTemplatesRecursiveDirectory;
 
 /**
@@ -39,19 +40,32 @@ class CiPrebuild
      * Constructor.
      *
      * @param array $options CLI options including ciprebuild path
-     * @param ConfigApplication $configApplication The application configuration
+     * @param ConfigProvider $configProvider The configuration provider
      */
     public function __construct(
         private readonly array $options,
-        private readonly ConfigApplication $configApplication
+        private readonly ConfigProvider $configProvider
     ) {}
 
     public function run(): void
     {
         $templates = new HelperTemplatesRecursiveDirectory(
-            $this->configApplication->getTemplateDirectory(),
+            $this->getTemplateDirectory(),
             $this->options['ciprebuild']
         );
         $templates->write(['config' => $this->options]);
+    }
+
+    /**
+     * Get the template directory path.
+     *
+     * @return string The template directory path
+     */
+    private function getTemplateDirectory(): string
+    {
+        if ($this->configProvider->hasSetting('templatedir')) {
+            return $this->configProvider->getSetting('templatedir');
+        }
+        return Constants::getDataDirectory();
     }
 }

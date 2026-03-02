@@ -14,10 +14,11 @@
 
 namespace Horde\Components\Unit\Components\Component;
 
+use Horde\Components\Component;
 use Horde\Components\Component\Identify;
+use Horde\Components\ConfigProvider\BuiltinConfigProvider;
 use Horde\Components\Dependencies\Injector;
 use Horde\Components\Exception;
-use Horde\Components\Test\Stub\Config;
 use Horde\Components\Test\TestCase;
 
 /**
@@ -43,9 +44,14 @@ class IdentifyTest extends TestCase
     private $oldcwd;
 
     /**
-     * @var Config|null
+     * @var Component|null
      */
-    private $config;
+    private $component;
+
+    /**
+     * @var string|null
+     */
+    private $componentPath;
 
     public function tearDown(): void
     {
@@ -58,7 +64,7 @@ class IdentifyTest extends TestCase
     {
         $this->_initIdentify(['help']);
         // 'help' is in missing_argument list, so no component should be set
-        $this->assertNull($this->config->getComponent());
+        $this->assertNull($this->component);
     }
 
     public function testNoArgument()
@@ -78,7 +84,7 @@ class IdentifyTest extends TestCase
         );
         $this->assertInstanceOf(
             'Horde\Components\Component\Source',
-            $this->config->getComponent()
+            $this->component
         );
     }
 
@@ -89,7 +95,7 @@ class IdentifyTest extends TestCase
         );
         $this->assertInstanceOf(
             'Horde\Components\Component\Source',
-            $this->config->getComponent()
+            $this->component
         );
     }
 
@@ -100,7 +106,7 @@ class IdentifyTest extends TestCase
         );
         $this->assertInstanceOf(
             'Horde\Components\Component\Source',
-            $this->config->getComponent()
+            $this->component
         );
     }
 
@@ -112,7 +118,7 @@ class IdentifyTest extends TestCase
         chdir($this->oldcwd);
         $this->assertInstanceOf(
             'Horde\Components\Component\Source',
-            $this->config->getComponent()
+            $this->component
         );
     }
 
@@ -124,7 +130,7 @@ class IdentifyTest extends TestCase
         chdir($this->oldcwd);
         $this->assertInstanceOf(
             'Horde\Components\Component\Source',
-            $this->config->getComponent()
+            $this->component
         );
     }
 
@@ -144,17 +150,23 @@ class IdentifyTest extends TestCase
         if ($dependencies === null) {
             $dependencies = new Injector();
         }
-        $this->config = new Config($arguments, $options);
-        // Note: initConfig() removed - Config is registered directly in DI now
-        $dependencies->setInstance(\Horde\Components\Config::class, $this->config);
+
+        // Create a minimal ConfigProvider for testing
+        $configProvider = new BuiltinConfigProvider($options);
+        $componentFactory = $dependencies->getComponentFactory();
+
         $identify = new Identify(
-            $this->config,
+            $configProvider,
             [
                 'list' => ['test'],
                 'missing_argument' => ['help'],
             ],
-            $dependencies
+            $componentFactory
         );
-        $identify->setComponentInConfiguration();
+
+        [$this->component, $this->componentPath, $remainingArgs] = $identify->identifyComponent(
+            $arguments,
+            getcwd()
+        );
     }
 }

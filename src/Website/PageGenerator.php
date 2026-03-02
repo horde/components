@@ -205,18 +205,18 @@ class PageGenerator
         $componentLink = "components/{$safeName}.html";
 
         return <<<HTML
-                    <div class="event-item type-{$event->type}">
-                        <div class="event-title">{$titleEsc}</div>
-                        <div class="event-meta">
-                            <a href="{$componentLink}" class="event-repo">{$repoEsc}</a>
-                            <span class="event-badge">{$actionEsc}</span>
-                            <span>{$timestampEsc}</span>
-                            <span>by {$actorEsc}</span>
-                            <a href="{$urlEsc}" target="_blank">view →</a>
-                        </div>
-                    </div>
+                                <div class="event-item type-{$event->type}">
+                                    <div class="event-title">{$titleEsc}</div>
+                                    <div class="event-meta">
+                                        <a href="{$componentLink}" class="event-repo">{$repoEsc}</a>
+                                        <span class="event-badge">{$actionEsc}</span>
+                                        <span>{$timestampEsc}</span>
+                                        <span>by {$actorEsc}</span>
+                                        <a href="{$urlEsc}" target="_blank">view →</a>
+                                    </div>
+                                </div>
 
-HTML;
+            HTML;
     }
 
     private function renderComponentDirectory(array $components, array $eventsByComponent, int $maxEvents): string
@@ -224,17 +224,17 @@ HTML;
         $totalCount = count($components);
 
         $html = <<<HTML
-        <!-- Component Directory Section -->
-        <h2>Component Directory</h2>
+                    <!-- Component Directory Section -->
+                    <h2>Component Directory</h2>
 
-        <div class="component-search">
-            <input type="text" id="componentFilter" placeholder="Search components... (e.g., 'hordectl', 'core', 'mail')" class="search-input">
-            <span class="search-info" id="searchInfo">Showing <strong>{$totalCount}</strong> of <strong>{$totalCount}</strong> components</span>
-        </div>
+                    <div class="component-search">
+                        <input type="text" id="componentFilter" placeholder="Search components... (e.g., 'hordectl', 'core', 'mail')" class="search-input">
+                        <span class="search-info" id="searchInfo">Showing <strong>{$totalCount}</strong> of <strong>{$totalCount}</strong> components</span>
+                    </div>
 
-        <div class="component-directory" id="componentDirectory">
+                    <div class="component-directory" id="componentDirectory">
 
-HTML;
+            HTML;
 
         foreach ($components as $component) {
             $html .= $this->renderComponentCard($component, $eventsByComponent[$component['name']] ?? [], $maxEvents);
@@ -263,7 +263,7 @@ HTML;
             $activityHtml .= "                    </div>\n";
         } else {
             foreach ($displayEvents as $event) {
-                $icon = match($event->type) {
+                $icon = match ($event->type) {
                     'issue' => '📝',
                     'release' => '📦',
                     'push' => '🔀',
@@ -294,25 +294,25 @@ HTML;
         $safeName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $component['name']);
 
         return <<<HTML
-            <div class="component-card" data-component="{$dataComponent}">
-                <div class="component-header">
-                    <h3 class="component-name">{$nameEsc}</h3>
-                    <span class="component-version">{$versionEsc}</span>
-                </div>
-                <p class="component-description">{$descEsc}</p>
+                        <div class="component-card" data-component="{$dataComponent}">
+                            <div class="component-header">
+                                <h3 class="component-name">{$nameEsc}</h3>
+                                <span class="component-version">{$versionEsc}</span>
+                            </div>
+                            <p class="component-description">{$descEsc}</p>
 
-                <div class="component-recent">
-                    <h4>Recent Activity</h4>
-{$activityHtml}                </div>
+                            <div class="component-recent">
+                                <h4>Recent Activity</h4>
+            {$activityHtml}                </div>
 
-                <div class="component-links">
-                    <a href="{$githubUrl}" target="_blank" class="component-link">GitHub →</a>
-                    <a href="api/{$safeName}/" class="component-link">API Docs →</a>
-                    <a href="components/{$safeName}.html" class="component-link">Full Details →</a>
-                </div>
-            </div>
+                            <div class="component-links">
+                                <a href="{$githubUrl}" target="_blank" class="component-link">GitHub →</a>
+                                <a href="api/{$safeName}/" class="component-link">API Docs →</a>
+                                <a href="components/{$safeName}.html" class="component-link">Full Details →</a>
+                            </div>
+                        </div>
 
-HTML;
+            HTML;
     }
 
     private function buildFullPage(
@@ -330,67 +330,67 @@ HTML;
         $cssEsc = $this->esc($this->cssFilename);
 
         return <<<HTML
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horde Development Resources</title>
-    <link rel="stylesheet" type="text/css" href="{$cssEsc}">
-</head>
-<body>
-{$topbar}
-    <div class="container">
-        <h1>Horde Development Resources</h1>
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Horde Development Resources</title>
+                <link rel="stylesheet" type="text/css" href="{$cssEsc}">
+            </head>
+            <body>
+            {$topbar}
+                <div class="container">
+                    <h1>Horde Development Resources</h1>
 
-        <!-- Activity Section -->
-        <h2>Activities</h2>
-        <div class="activity-updated">Last updated: {$timestamp}</div>
+                    <!-- Activity Section -->
+                    <h2>Activities</h2>
+                    <div class="activity-updated">Last updated: {$timestamp}</div>
 
-        <!-- Responsive Grid: 1 column mobile, 2 columns tablet+, 3/4 columns large screens -->
-        <div class="activity-grid">
-            <div class="activity-section">
-                <h2>📝 Last 10 Issues</h2>
-                <div class="event-list">
-{$issuesHtml}                </div>
-            </div>
+                    <!-- Responsive Grid: 1 column mobile, 2 columns tablet+, 3/4 columns large screens -->
+                    <div class="activity-grid">
+                        <div class="activity-section">
+                            <h2>📝 Last 10 Issues</h2>
+                            <div class="event-list">
+            {$issuesHtml}                </div>
+                        </div>
 
-            <div class="activity-section">
-                <h2>📦 Last 10 Releases</h2>
-                <div class="event-list">
-{$releasesHtml}                </div>
-            </div>
+                        <div class="activity-section">
+                            <h2>📦 Last 10 Releases</h2>
+                            <div class="event-list">
+            {$releasesHtml}                </div>
+                        </div>
 
-            <div class="activity-section">
-                <h2>🔀 Last 10 Pushes</h2>
-                <div class="event-list">
-{$pushesHtml}                </div>
-            </div>
+                        <div class="activity-section">
+                            <h2>🔀 Last 10 Pushes</h2>
+                            <div class="event-list">
+            {$pushesHtml}                </div>
+                        </div>
 
-            <div class="activity-section">
-                <h2>🔁 Last 10 Pull Requests</h2>
-                <div class="event-list">
-{$prsHtml}                </div>
-            </div>
-        </div>
+                        <div class="activity-section">
+                            <h2>🔁 Last 10 Pull Requests</h2>
+                            <div class="event-list">
+            {$prsHtml}                </div>
+                        </div>
+                    </div>
 
-{$staticSections}
+            {$staticSections}
 
-{$archiveSection}
+            {$archiveSection}
 
-{$componentDirectory}    </div>
+            {$componentDirectory}    </div>
 
-{$searchScript}
-</body>
-</html>
-HTML;
+            {$searchScript}
+            </body>
+            </html>
+            HTML;
     }
 
     private function generateComponentPages(string $outputDir, array $components, array $byComponent): void
     {
         $componentDir = $outputDir . '/components';
         if (!is_dir($componentDir)) {
-            mkdir($componentDir, 0755, true);
+            mkdir($componentDir, 0o755, true);
         }
 
         // Generate page for EVERY component in catalog, not just those with events
@@ -431,30 +431,30 @@ HTML;
         }
 
         return <<<HTML
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{$componentEsc} - Horde Development</title>
-    <link rel="stylesheet" type="text/css" href="../{$this->cssFilename}">
-</head>
-<body>
-    <div class="container">
-        <div class="back-link"><a href="../index.html">← Back to dev.horde.org</a></div>
-        <h1>{$componentEsc}</h1>
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>{$componentEsc} - Horde Development</title>
+                <link rel="stylesheet" type="text/css" href="../{$this->cssFilename}">
+            </head>
+            <body>
+                <div class="container">
+                    <div class="back-link"><a href="../index.html">← Back to dev.horde.org</a></div>
+                    <h1>{$componentEsc}</h1>
 
-{$detailsCard}
+            {$detailsCard}
 
-        <div class="activity-section">
-            <h2>Recent Activity</h2>
-            <div class="event-list">
-{$eventsHtml}            </div>
-        </div>
-    </div>
-</body>
-</html>
-HTML;
+                    <div class="activity-section">
+                        <h2>Recent Activity</h2>
+                        <div class="event-list">
+            {$eventsHtml}            </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            HTML;
     }
 
     private function renderComponentDetailsCard(array $componentMeta, ?array $hordeYml): string
@@ -493,8 +493,8 @@ HTML;
             if (isset($hordeYml['authors']) && is_array($hordeYml['authors'])) {
                 foreach ($hordeYml['authors'] as $author) {
                     if (isset($author['name'])) {
-                        $authors[] = $this->esc($author['name']) .
-                            (isset($author['role']) ? ' (' . $this->esc($author['role']) . ')' : '');
+                        $authors[] = $this->esc($author['name'])
+                            . (isset($author['role']) ? ' (' . $this->esc($author['role']) . ')' : '');
                     }
                 }
             }

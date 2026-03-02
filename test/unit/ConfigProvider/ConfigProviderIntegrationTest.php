@@ -56,17 +56,17 @@ class ConfigProviderIntegrationTest extends TestCase
         // Build full hierarchy
         $cli = new CliConfigProvider([
             'cli-only' => 'cli-value',
-            'override-me' => 'from-cli'
+            'override-me' => 'from-cli',
         ]);
 
         $env = new EnvironmentConfigProvider([
             'env.only' => 'env-value',
-            'override.me' => 'from-env'
+            'override.me' => 'from-env',
         ]);
 
         $builtin = new BuiltinConfigProvider([
             'builtin.only' => 'builtin-value',
-            'override.me' => 'from-builtin'
+            'override.me' => 'from-builtin',
         ]);
 
         $effective = new EffectiveConfigProvider($cli, $env, $builtin);
@@ -96,7 +96,7 @@ class ConfigProviderIntegrationTest extends TestCase
             'null-value' => null,
             'false-value' => false,
             'empty-string' => '',  // Empty string IS a value
-            'zero-value' => '0'    // Zero IS a value
+            'zero-value' => '0',    // Zero IS a value
         ]);
 
         $builtin = new BuiltinConfigProvider([
@@ -120,12 +120,12 @@ class ConfigProviderIntegrationTest extends TestCase
         // Real-world scenario: init command with --author and --email
         $cli = new CliConfigProvider([
             'author' => 'Jane Doe',
-            'email' => 'jane@example.com'
+            'email' => 'jane@example.com',
         ]);
 
         $builtin = new BuiltinConfigProvider([
             'author' => 'Default Author',
-            'email' => 'default@example.com'
+            'email' => 'default@example.com',
         ]);
 
         $effective = new EffectiveConfigProvider($cli, $builtin);
@@ -139,11 +139,11 @@ class ConfigProviderIntegrationTest extends TestCase
     {
         // Real-world scenario: web command with --web-token
         $cli = new CliConfigProvider([
-            'web-token' => 'ghp_from_cli'
+            'web-token' => 'ghp_from_cli',
         ]);
 
         $env = new EnvironmentConfigProvider([
-            'GITHUB_TOKEN' => 'ghp_from_env'
+            'GITHUB_TOKEN' => 'ghp_from_env',
         ]);
 
         $effective = new EffectiveConfigProvider($cli, $env);

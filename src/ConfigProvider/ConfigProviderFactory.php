@@ -60,7 +60,7 @@ class ConfigProviderFactory
             $this->env,
             $this->userConfig,
             $this->legacyConfig,
-            $this->builtin        // Lowest precedence
+            $this->builtin,        // Lowest precedence
         ], fn($p) => $p !== null);
 
         return new EffectiveConfigProvider(...$providers);

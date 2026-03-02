@@ -6,7 +6,6 @@ namespace Horde\Components\Runner;
 
 use Horde\Components\Composer\InstallationDirectory;
 use Horde\Components\Composer\PathRepositoryDefinition;
-use Horde\Components\Config;
 use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 use Horde\Components\Output;
 use Horde\Components\Wrapper\HordeYml;
@@ -21,7 +20,7 @@ class InstallRunner
         private readonly Output $output,
     ) {}
 
-    public function run(Config $config)
+    public function run()
     {
 
         // TODO: Make this more flexbible

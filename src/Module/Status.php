@@ -225,6 +225,9 @@ SEE ALSO:
             $locationProperty->setAccessible(true);
             $configFilePath = $locationProperty->getValue($phpConfigProvider);
 
+            // Get authentication factory from DI
+            $authFactory = $this->dependencies->get(\Horde\Components\Auth\AuthenticationFactory::class);
+
             // Instantiate and run runner
             $runner = new RunnerStatus(
                 $arguments,
@@ -232,7 +235,8 @@ SEE ALSO:
                 $configFilePath,
                 $output,
                 $gitCheckoutDir,
-                $installDir
+                $installDir,
+                $authFactory
             );
             $runner->run();
 

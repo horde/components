@@ -14,7 +14,6 @@
 namespace Horde\Components\Component;
 
 use Horde\Components\Component;
-use Horde\Components\Config;
 use Horde\Components\Exception;
 use Horde\Components\Exception\Pear as PearException;
 use Horde\Components\Helper\Commit as HelperCommit;
@@ -48,12 +47,9 @@ abstract class Base implements Component
     /**
     * Constructor.
     *
-     * @param Config $_config The configuration for the
-                                            current job.
-     * @param Factory $_factory Generator for additional
-                                            helpers.
+     * @param Factory $_factory Generator for additional helpers.
     */
-    public function __construct(protected Config $_config, private readonly Factory $_factory) {}
+    public function __construct(private readonly Factory $_factory) {}
 
     /**
      * Return the name of the component.
@@ -422,16 +418,6 @@ abstract class Base implements Component
                 sprintf(' [required by %s]', $this->getName())
             );
         }
-    }
-
-    /**
-     * Return the application options.
-     *
-     * @return array The options.
-     */
-    protected function getOptions()
-    {
-        return $this->_config->getOptions();
     }
 
     /**

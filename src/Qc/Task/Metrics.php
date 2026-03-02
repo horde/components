@@ -78,7 +78,7 @@ class Metrics extends Base
      */
     public function run(array &$options = []): int
     {
-        $path = $this->_config->getPath();
+        $path = $this->getPath();
         if ($path === null || $path === '') {
             $this->getOutput()->error('Component path not configured');
             return 1;
@@ -100,7 +100,7 @@ class Metrics extends Base
 
         // Ensure build directory exists
         if (!is_dir($buildDir)) {
-            mkdir($buildDir, 0755, true);
+            mkdir($buildDir, 0o755, true);
         }
 
         // Detect source directories
@@ -167,7 +167,7 @@ class Metrics extends Base
      */
     private function findPhpMetrics(): ?string
     {
-        $path = $this->_config->getPath();
+        $path = $this->getPath();
         $componentDir = ($path !== null && $path !== '') ? realpath($path) : false;
 
         // Search order: local vendor, global composer, system paths, PATH

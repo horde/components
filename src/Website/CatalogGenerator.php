@@ -158,7 +158,7 @@ class CatalogGenerator
             'http' => [
                 'header' => implode("\r\n", $headers),
                 'timeout' => 30,
-            ]
+            ],
         ]);
 
         $response = @file_get_contents($url, false, $context);
@@ -308,7 +308,7 @@ class CatalogGenerator
      */
     private function simplifyForOutput(array $components): array
     {
-        return array_map(function($component) {
+        return array_map(function ($component) {
             return [
                 'name' => $component['name'],
                 'version' => $component['version'],

@@ -90,7 +90,7 @@ class Bugs extends Base
             new Options([
                 'request.username' => $options['horde_user'],
                 'request.password' => $options['horde_pass'],
-                'request.timeout' => 10
+                'request.timeout' => 10,
             ])
         );
         $client = new HordeClientWrapper(
@@ -101,7 +101,7 @@ class Bugs extends Base
         return new \Horde_Release_Whups(
             [
                 'client' => $client,
-                'url' => 'https://dev.horde.org/horde/rpc.php'
+                'url' => 'https://dev.horde.org/horde/rpc.php',
             ]
         );
     }

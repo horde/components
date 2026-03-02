@@ -65,7 +65,7 @@ class Loc extends Base
     {
         $files = [];
         // We should probably factor out the component php file finder and reuse it.
-        $componentDir = realpath($this->_config->getPath());
+        $componentDir = realpath($this->getPath());
         $vendorDir = $componentDir . DIRECTORY_SEPARATOR . 'vendor';
         $recursion = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($componentDir)

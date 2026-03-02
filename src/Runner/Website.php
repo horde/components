@@ -65,7 +65,7 @@ class Website
 
         // Create output directory
         if (!is_dir($this->config->outputDir)) {
-            mkdir($this->config->outputDir, 0755, true);
+            mkdir($this->config->outputDir, 0o755, true);
             $this->output->ok("Created output directory");
         }
 
@@ -129,7 +129,7 @@ class Website
         // Ensure output directory exists
         $outputDir = dirname($this->config->componentsFile);
         if (!is_dir($outputDir)) {
-            mkdir($outputDir, 0755, true);
+            mkdir($outputDir, 0o755, true);
             $this->output->ok("Created output directory");
         }
 

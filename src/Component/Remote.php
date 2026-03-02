@@ -13,7 +13,6 @@
 
 namespace Horde\Components\Component;
 
-use Horde\Components\Config;
 use Horde\Components\Exception;
 use stdClass;
 use Horde\Components\Pear\Environment as PearEnvironment;
@@ -58,12 +57,8 @@ class Remote extends Base
      * @param string $_stability Component stability.
      * @param string $_channel Component channel.
      * @param \Horde_Pear_Remote $_remote Remote channel handler.
-     * @param \Horde_Http_Client $_client The HTTP client for remote
-                                         access.
-    * @param Config       $config    The configuration for the
-    *                                           current job.
-    * @param Horde\Components\Component\Factory $factory Generator for additional
-    *                                              helpers.
+     * @param \Horde_Http_Client $_client The HTTP client for remote access.
+    * @param Factory $factory Generator for additional helpers.
     */
     public function __construct(
         private $_name,
@@ -71,10 +66,9 @@ class Remote extends Base
         private $_channel,
         private readonly \Horde_Pear_Remote $_remote,
         private readonly \Horde_Http_Client $_client,
-        Config $config,
         Factory $factory
     ) {
-        parent::__construct($config, $factory);
+        parent::__construct($factory);
     }
 
     /**

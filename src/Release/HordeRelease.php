@@ -14,7 +14,7 @@ use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\Exception;
 use Horde\Components\Wrapper\ComposerJson;
 use Horde\Components\Output;
-use Horde\Components\Config;
+use Horde\Components\Component;
 use Horde\Components\Qc\Tasks as QcTasks;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -62,11 +62,11 @@ class HordeRelease
     /**
      * Run the release flow. Most steps should be idempotent.
      *
-     * @param Config $config Configuration object containing options
+     * @param Component $component The component to release
+     * @param array $options Options array
      */
-    public function run(Config $config)
+    public function run(Component $component, array $options = [])
     {
-        $options = $config->getOptions();
         $currentBranch = $this->gitHelper->getCurrentBranch($this->directory);
         // Check if we are on release branch
         if ($currentBranch !== 'FRAMEWORK_6_0') {
@@ -75,7 +75,6 @@ class HordeRelease
 
         // Early QC: Check and fix .gitignore before starting release process
         $this->output->ok('Running pre-release QC checks...');
-        $component = $config->getComponent();
         $gitignoreTask = $this->qcTasks->getTask('gitignore', $component);
 
         // Enable auto-fix for gitignore during release
@@ -313,7 +312,7 @@ class HordeRelease
         $buildDir = $this->directory . '/build';
         if (!is_dir($buildDir)) {
             $this->output->info('Creating build/ directory');
-            mkdir($buildDir, 0755, true);
+            mkdir($buildDir, 0o755, true);
         }
 
         // Build the PHAR

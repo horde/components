@@ -19,6 +19,7 @@ use Horde\Components\Composer\InstallationDirectory;
 use Horde\Components\ConfigProvider\EnvironmentConfigProvider;
 use Horde\Components\Dependencies;
 use Horde\Components\Output;
+use Horde\Components\Auth\AuthenticationFactory;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Helper\GitHubChecker;
 use Horde\Components\Helper\GitHubReleaseCreator;
@@ -81,6 +82,11 @@ class Injector extends HordeInjector implements Dependencies
         $this->setInstance(Dependencies::class, $this);
         $this->setInstance(EnvironmentConfigProvider::class, new EnvironmentConfigProvider(getenv()));
         $this->bindFactory(
+            ComponentFactory::class,
+            Dependencies::class,
+            'createComponentFactory'
+        );
+        $this->bindFactory(
             \Horde_Cli::class,
             Dependencies::class,
             'createCli'
@@ -101,6 +107,13 @@ class Injector extends HordeInjector implements Dependencies
             'createOutput'
         );
         $this->setInstance(GitHelper::class, new GitHelper());
+
+        // Authentication - use factory for lazy initialization
+        $this->bindFactory(
+            AuthenticationFactory::class,
+            AuthenticationFactoryFactory::class,
+            '__invoke'
+        );
 
         // GitHub integration dependencies - use factories for lazy initialization
         $this->bindFactory(
@@ -133,6 +146,13 @@ class Injector extends HordeInjector implements Dependencies
             'createOutput'
         );
         $injector->setInstance(GitHelper::class, new GitHelper());
+
+        // Authentication - use factory for lazy initialization
+        $injector->bindFactory(
+            AuthenticationFactory::class,
+            AuthenticationFactoryFactory::class,
+            '__invoke'
+        );
 
         // GitHub integration dependencies - use factories for lazy initialization
         $injector->bindFactory(
@@ -413,6 +433,35 @@ class Injector extends HordeInjector implements Dependencies
     }
 
     /**
+     * Creates a component instance factory.
+     *
+     * @return ComponentFactory The component factory.
+     */
+    public function createComponentFactory(): ComponentFactory
+    {
+        // Get options from ConfigProvider if available, or empty array as fallback
+        try {
+            $configProvider = $this->getInstance(\Horde\Components\ConfigProvider\ConfigProvider::class);
+            $options = [];
+            foreach ($configProvider->getAvailableKeys() as $key) {
+                if ($configProvider->hasSetting($key)) {
+                    $options[$key] = $configProvider->getSetting($key);
+                }
+            }
+        } catch (\Exception $e) {
+            $options = [];
+        }
+
+        return new ComponentFactory(
+            $options,
+            $this->getInstance(\Horde\Components\Pear\Factory::class),
+            $this->getInstance(\Horde_Http_Client::class),
+            $this->getInstance(Output::class),
+            $this->getInstance(ReleaseNotes::class)
+        );
+    }
+
+    /**
      * Create the CLI handler.
      *
      * Horde_Cli::init() sets a global exception handler which can interfere
@@ -424,9 +473,9 @@ class Injector extends HordeInjector implements Dependencies
     public function createCli(): \Horde_Cli
     {
         // Check if running under PHPUnit
-        $isTestEnvironment = defined('PHPUNIT_COMPOSER_INSTALL') ||
-                           defined('__PHPUNIT_PHAR__') ||
-                           class_exists('PHPUnit\\Framework\\TestCase', false);
+        $isTestEnvironment = defined('PHPUNIT_COMPOSER_INSTALL')
+                           || defined('__PHPUNIT_PHAR__')
+                           || class_exists('PHPUnit\\Framework\\TestCase', false);
 
         if ($isTestEnvironment) {
             // In test environment, use constructor directly to avoid

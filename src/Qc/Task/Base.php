@@ -15,7 +15,6 @@ namespace Horde\Components\Qc\Task;
 
 use Horde\Components\Component;
 use Horde\Components\Component\Task\SystemCall;
-use Horde\Components\Config;
 use Horde\Components\Output;
 use Horde\Components\Qc\Tasks as QcTasks;
 use Horde\Components\Release\Tasks as ReleaseTasks;
@@ -47,14 +46,17 @@ class Base
     private ?string $_name = null;
 
     /**
+     * The component path
+     */
+    private ?string $_path = null;
+
+    /**
      * Constructor.
      *
-     * @param Config $_config The configuration for the current job.
      * @param QcTasks $_tasks The task handler.
      * @param Output $_output Accepts output.
      */
     public function __construct(
-        protected Config $_config,
         private readonly QcTasks $_tasks,
         private readonly Output $_output
     ) {
@@ -73,6 +75,17 @@ class Base
     public function setComponent(Component $component): void
     {
         $this->_component = $component;
+        $this->_path = $component->getComponentDirectory();
+    }
+
+    /**
+     * Get the component path.
+     *
+     * @return string|null The component path.
+     */
+    protected function getPath(): ?string
+    {
+        return $this->_path;
     }
 
     /**

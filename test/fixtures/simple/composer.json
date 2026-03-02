@@ -29,5 +29,10 @@
         "allow-plugins": {
             "horde/horde-installer-plugin": true
         }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-FRAMEWORK_6_0": "0.x-dev"
+        }
     }
 }

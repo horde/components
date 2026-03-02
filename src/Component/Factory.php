@@ -17,7 +17,6 @@ namespace Horde\Components\Component;
 
 use Horde\Components\Component;
 use Horde\Components\Component\ComponentDirectory;
-use Horde\Components\Config;
 use Horde\Components\Exception;
 use Horde\Components\Helper\ChangeLog as HelperChangeLog;
 use Horde\Components\Helper\Root as HelperRoot;
@@ -60,16 +59,13 @@ class Factory
     /**
     * Constructor.
     *
-     * @param Config $_config The configuration for the
-                                       current job.
-     * @param PearFactory $_factory Generator for all required PEAR
-                                       components.
-     * @param \Horde_Http_Client $_client The HTTP client for remote
-                                       access.
+     * @param array $_options Options for the current job.
+     * @param PearFactory $_factory Generator for all required PEAR components.
+     * @param \Horde_Http_Client $_client The HTTP client for remote access.
      * @param Output $_output The output handler.
      * @param ReleaseNotes $_notes The release notes.
     */
-    public function __construct(protected Config $_config, protected PearFactory $_factory, protected \Horde_Http_Client $_client, protected Output $_output, protected ReleaseNotes $_notes) {}
+    public function __construct(protected array $_options, protected PearFactory $_factory, protected \Horde_Http_Client $_client, protected Output $_output, protected ReleaseNotes $_notes) {}
 
     /**
      * Create a representation for a source component.
@@ -82,7 +78,6 @@ class Factory
     {
         $component = new Source(
             new ComponentDirectory($directory),
-            $this->_config,
             $this->_notes,
             $this
         );
@@ -103,7 +98,6 @@ class Factory
     {
         $component = new Archive(
             $archive,
-            $this->_config,
             $this
         );
         return $component;
@@ -131,7 +125,6 @@ class Factory
             $channel,
             $remote,
             $this->_client,
-            $this->_config,
             $this
         );
     }
@@ -145,7 +138,7 @@ class Factory
      */
     public function createChangelog(Source $component): HelperChangeLog
     {
-        return new HelperChangeLog($this->_config, $component);
+        return new HelperChangeLog($component);
     }
 
     /**
@@ -254,12 +247,12 @@ class Factory
     {
         if (isset($this->_first_source)) {
             return new HelperRoot(
-                $this->_config->getOptions(),
+                $this->_options,
                 $this->_first_source
             );
         } else {
             return new HelperRoot(
-                $this->_config->getOptions()
+                $this->_options
             );
         }
     }

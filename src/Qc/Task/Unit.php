@@ -98,7 +98,7 @@ class Unit extends Base
             return;
         }
 
-        $componentPath = $this->_config->getPath();
+        $componentPath = $this->getPath();
 
         // Get the actual component path (handles null/empty)
         if (empty($componentPath)) {
@@ -185,7 +185,7 @@ class Unit extends Base
                 return;
             }
 
-            $componentPath = $this->_config->getPath();
+            $componentPath = $this->getPath();
 
             // Determine which location category this belongs to
             if (str_contains($filename, $componentPath . '/vendor/')) {
@@ -286,7 +286,7 @@ class Unit extends Base
         // Ensure PHPUnit is loaded (handles PHAR installations)
         $this->loadPhpUnit();
 
-        $componentPath = $this->_config->getPath();
+        $componentPath = $this->getPath();
         if (empty($componentPath)) {
             $componentPath = getcwd() ?: '.';
         }

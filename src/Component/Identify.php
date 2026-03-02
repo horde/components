@@ -16,8 +16,7 @@ namespace Horde\Components\Component;
 
 use Horde\Components\Component;
 use Horde\Components\Components;
-use Horde\Components\Config;
-use Horde\Components\Dependencies;
+use Horde\Components\ConfigProvider\ConfigProvider;
 use Horde\Components\Exception;
 
 /**
@@ -39,65 +38,79 @@ class Identify
     /**
      * Constructor.
      *
-     * @param Config $_config The active configuration.
-     * @param array $_actions The list of available actions.
-     * @param Dependencies $_dependencies The dependency handler.
+     * @param ConfigProvider $configProvider The configuration provider.
+     * @param array $actions The list of available actions.
+     * @param Factory $componentFactory The component factory.
      */
-    public function __construct(private readonly Config $_config, private $_actions, private readonly Dependencies $_dependencies) {}
+    public function __construct(
+        private readonly ConfigProvider $configProvider,
+        private readonly array $actions,
+        private readonly Factory $componentFactory
+    ) {}
 
     /**
-     * Inject the component selected based on the command arguments into the
-     * configuration.
+     * Identify component from CLI arguments.
      *
-     * @return null
+     * @param array &$arguments CLI arguments (modified by reference as args are consumed)
+     * @param string $workingDir Current working directory
+     * @return array{0: Component|null, 1: string|null, 2: array} [component, path, remaining args]
      */
-    public function setComponentInConfiguration()
+    public function identifyComponent(array &$arguments, string $workingDir): array
     {
-        $arguments = $this->_config->getArguments();
-        if ([$component, $path] = $this->_determineComponent($arguments)) {
-            if (str_starts_with((string) $path, './') || str_starts_with((string) $path, '../')) {
-                $path = realpath(getcwd() . '/' . $path);
+        [$component, $path] = $this->_determineComponent($arguments, $workingDir);
+
+        if ($component && $path !== null) {
+            // Resolve relative paths
+            if (str_starts_with($path, './') || str_starts_with($path, '../')) {
+                $path = realpath($workingDir . '/' . $path);
             }
-            $this->_config->setComponent($component);
-            $this->_config->setPath($path);
+            return [$component, $path, $arguments];
         }
+
+        return [null, null, $arguments];
     }
 
     /**
      * Determine the requested component.
      *
-     * @param array $arguments The arguments.
+     * @param array &$arguments The arguments (modified by reference)
+     * @param string $workingDir Current working directory
      *
-     * @return array Two elements: The selected component as
+     * @return ?array Two elements: The selected component as
      *               Components_Component instance and optionally a string
      *               representing the path to the specified source component.
      */
-    private function _determineComponent($arguments)
+    private function _determineComponent(array &$arguments, string $workingDir): ?array
     {
         if (isset($arguments[0])) {
-            if (in_array($arguments[0], $this->_actions['missing_argument'])) {
-                return;
+            if (in_array($arguments[0], $this->actions['missing_argument'])) {
+                return null;
             }
 
             if ($this->_isPackageXml($arguments[0]) || $this->_isHordeYml($arguments[0])) {
-                $this->_config->shiftArgument();
-                return [$this->_dependencies
-                ->getComponentFactory()
-                ->createSource(dirname((string) $arguments[0])), dirname((string) $arguments[0])];
+                $path = dirname($arguments[0]);
+                array_shift($arguments);  // Consume argument
+                return [$this->componentFactory->createSource($path), $path];
             }
 
-            if (!in_array($arguments[0], $this->_actions['list'])) {
+            if (!in_array($arguments[0], $this->actions['list'])) {
                 if ($this->_isDirectory($arguments[0])) {
-                    $this->_config->shiftArgument();
-                    return [$this->_dependencies
-                    ->getComponentFactory()
-                    ->createSource($arguments[0]), $arguments[0]];
+                    $path = $arguments[0];
+                    array_shift($arguments);  // Consume argument
+                    return [$this->componentFactory->createSource($path), $path];
                 }
 
-                $options = $this->_config->getOptions();
-                if (!empty($options['allow_remote'])) {
-                    $result = $this->_dependencies
-                        ->getComponentFactory()
+                if ($this->configProvider->hasSetting('allow_remote')
+                    && $this->configProvider->getSetting('allow_remote')) {
+                    // Get all options for resolver
+                    $options = [];
+                    foreach ($this->configProvider->getAvailableKeys() as $key) {
+                        if ($this->configProvider->hasSetting($key)) {
+                            $options[$key] = $this->configProvider->getSetting($key);
+                        }
+                    }
+
+                    $result = $this->componentFactory
                         ->getResolver()
                         ->resolveName(
                             $arguments[0],
@@ -105,7 +118,7 @@ class Identify
                             $options
                         );
                     if ($result !== false) {
-                        $this->_config->shiftArgument();
+                        array_shift($arguments);  // Consume argument
                         return [$result, ''];
                     }
                 }
@@ -116,16 +129,15 @@ class Identify
             }
         }
 
-        $cwd = getcwd();
+        // Try current working directory and parent directories
+        $cwd = $workingDir;
         // Usability: check if we are in a subdir of a component
         do {
             if (
                 $this->_isDirectory($cwd)
                 && ($this->_containsPackageXml($cwd) || $this->_containsHordeYml($cwd))
             ) {
-                return [$this->_dependencies
-                ->getComponentFactory()
-                ->createSource($cwd), $cwd];
+                return [$this->componentFactory->createSource($cwd), $cwd];
             }
             $cwd = dirname($cwd, 1);
         } while ($cwd != '/');
@@ -156,9 +168,7 @@ class Identify
                 }
             }
             // Tuple successfully checked
-            return [$this->_dependencies
-            ->getComponentFactory()
-            ->createSource($cwd), $cwd];
+            return [$this->componentFactory->createSource($cwd), $cwd];
         }
         // Finally fail, all good options gone
         throw new Exception(Components::ERROR_NO_COMPONENT);

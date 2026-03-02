@@ -206,7 +206,7 @@ class PullRequestManager
         }
 
         try {
-            $params = $params ?? new MergePullRequestParams();
+            $params ??= new MergePullRequestParams();
             $result = $this->apiClient->mergePullRequest($this->repository, $number, $params);
 
             if ($result->merged) {

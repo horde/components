@@ -47,7 +47,7 @@ class Lint extends Base
      */
     public function run(array &$options = []): int
     {
-        $lib = realpath($this->_config->getPath());
+        $lib = realpath($this->getPath());
         $recursion = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($lib)
         );

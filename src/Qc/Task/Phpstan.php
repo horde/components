@@ -96,7 +96,7 @@ class Phpstan extends Base
         }
 
         try {
-            $componentPath = $this->_config->getPath();
+            $componentPath = $this->getPath();
 
             if (empty($componentPath)) {
                 $componentPath = getcwd();
@@ -229,7 +229,7 @@ class Phpstan extends Base
      */
     private function findPhpStanBinary(): ?string
     {
-        $componentPath = $this->_config->getPath();
+        $componentPath = $this->getPath();
 
         if (empty($componentPath)) {
             $componentPath = getcwd();
@@ -350,7 +350,7 @@ class Phpstan extends Base
      */
     private function updateWatermarkInHordeYml(int $newLevel, int $oldLevel): void
     {
-        $componentPath = $this->_config->getPath();
+        $componentPath = $this->getPath();
 
         if (empty($componentPath)) {
             $componentPath = getcwd();

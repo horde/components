@@ -7,7 +7,8 @@ use Horde\Components\Helper\Git;
 use Horde\Components\Release\Tasks as ReleaseTasks;
 use Horde\Components\Release\Notes as ReleaseNotes;
 use Horde\Components\Output;
-use Horde\Components\Config\Application as ConfigApplication;
+use Horde\Components\ConfigProvider\ConfigProvider;
+use Horde\Components\Constants;
 use Horde\Components\Helper\Version;
 use RuntimeException;
 
@@ -37,9 +38,22 @@ class Transpile extends Base
         Output $_output,
         protected Git $git,
         protected Composer $composer,
-        private readonly ConfigApplication $configApplication
+        private readonly ConfigProvider $configProvider
     ) {
         parent::__construct($_tasks, $_notes, $_output);
+    }
+
+    /**
+     * Get the template directory path.
+     *
+     * @return string The template directory path
+     */
+    private function getTemplateDirectory(): string
+    {
+        if ($this->configProvider->hasSetting('templatedir')) {
+            return $this->configProvider->getSetting('templatedir');
+        }
+        return Constants::getDataDirectory();
     }
     /**
      * Validate the preconditions required for this release task.
@@ -57,12 +71,12 @@ class Transpile extends Base
             $issues[] = 'No target platform version was provided.';
         }
         // Check if we have a transpiler template for the target platform
-        $templateDir = $this->configApplication->getTemplateDirectory();
+        $templateDir = $this->getTemplateDirectory();
         if (empty($templateDir)) {
             $issues[] = 'No data directory configured';
         }
 
-        $transpilerFile = $this->configApplication->getTemplateDirectory() . '/rector/transpile-' . $options['target_platform'] . '.php';
+        $transpilerFile = $this->getTemplateDirectory() . '/rector/transpile-' . $options['target_platform'] . '.php';
         if (!file_exists($transpilerFile) || !is_readable($transpilerFile)) {
             $issues[] = 'Could not read transpiler config file ' . $transpilerFile;
         }
@@ -139,7 +153,7 @@ class Transpile extends Base
         $this->composer->setMinimumStability($componentDir, 'dev');
         $this->composer->update($componentDir);
         $this->getOutput()->info('Installed Rector Transpiler');
-        $transpilerFile = $this->configApplication->getTemplateDirectory() . '/rector/transpile-' . $options['target_platform'] . '.php';
+        $transpilerFile = $this->getTemplateDirectory() . '/rector/transpile-' . $options['target_platform'] . '.php';
         copy($transpilerFile, $componentDir . '/rector-transpile.php');
         $transpileCmd = sprintf('%s/vendor/bin/rector -c %s --clear-cache process', $componentDir, 'rector-transpile.php');
         $this->execInDirectory($transpileCmd, $componentDir);

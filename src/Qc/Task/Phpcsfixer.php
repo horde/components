@@ -93,7 +93,7 @@ class Phpcsfixer extends Base
         $this->getOutput()->info("Running PHP CS Fixer in $mode mode...");
         $this->detectVersion($binary);
 
-        $componentPath = $this->_config->getPath();
+        $componentPath = $this->getPath();
 
         if (empty($componentPath)) {
             $componentPath = getcwd();
@@ -130,7 +130,7 @@ class Phpcsfixer extends Base
      */
     private function findPhpCsFixerBinary(): ?string
     {
-        $componentPath = $this->_config->getPath();
+        $componentPath = $this->getPath();
 
         // Order of preference (matching PHPUnit task):
         // 1. vendor/bin (Composer)

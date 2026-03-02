@@ -105,7 +105,7 @@ class WebhookHandler
             }
 
             // Use value objects for type safety
-            $repository = GithubRepository::fromApiArray((array)$payload->repository);
+            $repository = GithubRepository::fromApiArray((array) $payload->repository);
             $sender = isset($payload->sender)
                 ? GithubUser::fromApiResponse($payload->sender)
                 : null;
@@ -152,7 +152,7 @@ class WebhookHandler
         );
 
         if (!is_dir($targetDir)) {
-            mkdir($targetDir, 0755, true);
+            mkdir($targetDir, 0o755, true);
         }
 
         // Use delivery ID + timestamp for idempotent storage

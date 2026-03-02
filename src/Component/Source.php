@@ -16,7 +16,6 @@
 namespace Horde\Components\Component;
 
 use Horde\Components\Component\Factory;
-use Horde\Components\Config;
 use Horde\Components\Exception;
 use Horde\Components\Exception\Pear as ExceptionPear;
 use Horde\Components\Helper\Composer as HelperComposer;
@@ -63,21 +62,16 @@ class Source extends Base
     /**
      * Constructor.
      *
-     * @param string $directory                     Path to the source
-     *                                              directory.
-     * @param Config $config             The configuration for the
-     *                                              current job.
+     * @param ComponentDirectory $directory Path to the source directory.
      * @param ReleaseNotes $_notes The release notes.
-     * @param Factory $factory Generator for additional
-     *                                              helpers.
+     * @param Factory $factory Generator for additional helpers.
      */
     public function __construct(
         protected ComponentDirectory $directory,
-        Config $config,
         protected ReleaseNotes $_notes,
         Factory $factory
     ) {
-        parent::__construct($config, $factory);
+        parent::__construct($factory);
     }
 
     /**
@@ -565,13 +559,14 @@ class Source extends Base
      * Rebuilds the basic information in a composer.json file from the
      * .horde.yml definition.
      *
+     * @param array $options Options for the operation.
+     *
      * @return WrapperComposerJson  The updated composer.json content.
      * @throws Exception
      */
-    public function updateComposerFromHordeYml(): WrapperComposerJson
+    public function updateComposerFromHordeYml(array $options = []): WrapperComposerJson
     {
         $yaml = $this->getHordeYml();
-        $options = $this->_config->getOptions();
         $composer = new HelperComposer();
         $json = $composer->generateComposerJson($yaml, $options);
         $wrapper = $this->getWrapper('ComposerJson');
@@ -1053,7 +1048,7 @@ class Source extends Base
 
         $this->createDestination($destination);
 
-        $package = $this->_getPackageFile();
+        $package = $this->_getPackageFile($options);
         $pkg = $this->getFactory()->pear()->getPackageFile(
             $this->getPackageXmlPath(),
             $package->getEnvironment()
@@ -1168,12 +1163,13 @@ class Source extends Base
     /**
      * Return a PEAR PackageFile representation for the component.
      *
+     * @param array $options Options for the operation.
+     *
      * @return PearPackage The package representation.
      * @throws Exception
      */
-    private function _getPackageFile(): PearPackage
+    private function _getPackageFile(array $options = []): PearPackage
     {
-        $options = $this->getOptions();
         if (isset($options['pearrc'])) {
             return $this->getFactory()->pear()
                 ->createPackageForPearConfig(
