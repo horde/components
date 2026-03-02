@@ -3,8 +3,6 @@
 /**
  * Components_Output:: handles output from the components application.
  *
- * PHP Version 8
- *
  * @category Horde
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>

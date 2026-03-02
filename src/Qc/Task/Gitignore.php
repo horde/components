@@ -3,8 +3,6 @@
 /**
  * Components_Qc_Task_Gitignore:: checks .gitignore for required entries.
  *
- * PHP Version 7
- *
  * @category Horde
  * @package  Components
  * @author   Ralf Lang <ralf.lang@ralf-lang.de>

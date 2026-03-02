@@ -3,8 +3,6 @@
 /**
  * Components_Release_Task_Base:: provides core functionality for release tasks.
  *
- * PHP Version 7
- *
  * @category Horde
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>
@@ -24,7 +22,7 @@ use Horde\Components\Release\Tasks as ReleaseTasks;
 /**
  * Common interface for tasks used in Release, Qc and Pipeline
  *
- * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2011-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.

@@ -4,8 +4,6 @@
  * The Components_Dependencies_Injector:: class provides the
  * Components dependencies based on the Horde injector.
  *
- * PHP Version 7
- *
  * @category Horde
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>
@@ -52,7 +50,7 @@ use Horde\Injector\TopLevel;
  * The Components_Dependencies_Injector:: class provides the
  * Components dependencies based on the Horde injector.
  *
- * Copyright 2010-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2010-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.

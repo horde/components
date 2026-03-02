@@ -3,8 +3,6 @@
 /**
  * Components_Qc_Task_Unit:: runs the test suite of the component.
  *
- * PHP Version 7
- *
  * @category Horde
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>

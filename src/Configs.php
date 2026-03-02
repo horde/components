@@ -4,8 +4,6 @@
  * Components_Configs:: class represents configuration for the
  * Horde component tool.
  *
- * PHP Version 7
- *
  * @category Horde
  * @package  Components
  * @author   Gunnar Wrobel <wrobel@pardus.de>
@@ -20,7 +18,7 @@ use Horde\Components\Config\Base;
  * Components_Configs:: class represents configuration for the
  * Horde component tool.
  *
- * Copyright 2009-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2009-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
