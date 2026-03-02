@@ -6,7 +6,8 @@
   ],
   "files": [
     "LICENSE",
-    "bin/horde-components"
+    "bin/horde-components",
+    ".php-cs-fixer.dist.php"
   ],
   "finder": [
     {
