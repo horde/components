@@ -3,8 +3,6 @@
 /**
  * Base for story based package testing.
  *
- * PHP Version 7
- *
  * @category   Horde
  * @package    Components
  * @subpackage UnitTests
@@ -21,7 +19,7 @@ use Horde\Components\Dependencies\Injector;
 /**
  * Base for story based package testing.
  *
- * Copyright 2010-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2010-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.

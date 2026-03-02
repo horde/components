@@ -525,7 +525,7 @@ class Phpcsfixer extends Base
 
         // Create temp directory
         $tempDir = sys_get_temp_dir() . '/horde-cs-fixer-' . uniqid();
-        if (!mkdir($tempDir, 0755, true)) {
+        if (!mkdir($tempDir, 0o755, true)) {
             $this->getOutput()->warn('Failed to create temp directory for config extraction');
             return null;
         }
@@ -534,7 +534,7 @@ class Phpcsfixer extends Base
 
         // Create subdirectory for custom fixers
         $fixerDir = $tempDir . '/src/PhpCsFixer';
-        if (!mkdir($fixerDir, 0755, true)) {
+        if (!mkdir($fixerDir, 0o755, true)) {
             $this->getOutput()->warn('Failed to create fixer directory');
             $this->cleanupTempConfig();
             return null;
