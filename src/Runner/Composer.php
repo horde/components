@@ -1,20 +1,22 @@
 <?php
 
 /**
- * Copyright 2013-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2013-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
  *
  * @category  Horde
- * @copyright 2013-2024 Horde LLC
+ * @copyright 2013-2026 Horde LLC
  * @license   http://www.horde.org/licenses/lgpl21 LGPL 2.1
  * @package   Components
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Runner;
 
-use Horde\Components\Config;
+use Horde\Components\Component;
 use Horde\Components\Helper\Composer as HelperComposer;
 use Horde\Components\Output;
 
@@ -23,7 +25,7 @@ use Horde\Components\Output;
  *
  * @author    Michael Slusarz <slusarz@horde.org>
  * @category  Horde
- * @copyright 2013-2024 Horde LLC
+ * @copyright 2013-2026 Horde LLC
  * @license   http://www.horde.org/licenses/lgpl21 LGPL 2.1
  * @package   Components
  */
@@ -32,21 +34,25 @@ class Composer
     /**
     * Constructor.
     *
-     * @param Config $_config The configuration for the current
-                                 job.
-     * @param Output $_output The output handler.
+     * @param Component $component The component
+     * @param array $options CLI options
+     * @param Output $output The output handler
     */
-    public function __construct(private readonly Output $_output) {}
+    public function __construct(
+        private readonly Component $component,
+        private readonly array $options,
+        private readonly Output $output
+    ) {}
 
-    public function run(Config $config): void
+    public function run(): void
     {
         $composer = new HelperComposer();
-        $options = $config->getOptions();
+        $options = $this->options;
 
-        $options['logger'] = $this->_output;
+        $options['logger'] = $this->output;
         // We need to set the component first
         $composer->generateComposerJson(
-            $config->getComponent()->getHordeYml(),
+            $this->component->getHordeYml(),
             $options
         );
     }

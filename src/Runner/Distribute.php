@@ -4,7 +4,7 @@
  * Components_Runner_Distribute:: prepares a distribution package for a
  * component.
  *
- * PHP Version 7
+ * PHP version 8.2+
  *
  * @category Horde
  * @package  Components
@@ -12,19 +12,19 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Runner;
 
-use Horde\Components\Config;
 use Horde\Components\Config\Application as ConfigApplication;
 use Horde\Components\Exception;
-use Horde\Components\Helper\Dependencies as HelperDependencies;
 use Horde\Components\Output;
 
 /**
  * Components_Runner_Distribute:: prepares a distribution package for a
  * component.
  *
- * Copyright 2010-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2010-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -37,26 +37,21 @@ use Horde\Components\Output;
 class Distribute
 {
     /**
-    * Constructor.
-    *
-     * @param Config $_config The configuration for the current job.
-     * @param ConfigApplication $_config_application The application
-                                             configuration.
-    */
+     * Constructor.
+     *
+     * @param array $options CLI options
+     * @param ConfigApplication $configApplication The application configuration
+     * @param Output $output The output handler
+     */
     public function __construct(
-        private readonly Config $_config,
-        private readonly ConfigApplication $_config_application,
-        /**
-         * The output handler.
-         *
-         * @param Component_Output
-         */
-        private readonly Output $_output
+        private readonly array $options,
+        private readonly ConfigApplication $configApplication,
+        private readonly Output $output
     ) {}
 
     public function run(): void
     {
-        $script = $this->_config_application->getTemplateDirectory() . '/components.php';
+        $script = $this->configApplication->getTemplateDirectory() . '/components.php';
         if (file_exists($script)) {
             include $script;
         } else {

@@ -4,7 +4,7 @@
  * Components_Runner_Installer:: installs a Horde component including its
  * dependencies.
  *
- * PHP Version 7
+ * PHP Version 8.2+
  *
  * @category Horde
  * @package  Components
@@ -12,9 +12,11 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Runner;
 
-use Horde\Components\Config;
+use Horde\Components\Component;
 use Horde\Components\Exception;
 use Horde\Components\Exception\Pear as ExceptionPear;
 use Horde\Components\Helper\Installer as HelperInstaller;
@@ -25,7 +27,7 @@ use Horde\Components\Pear\Factory as PearFactory;
  * Components_Runner_Installer:: installs a Horde component including its
  * dependencies.
  *
- * Copyright 2010-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2010-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -40,28 +42,23 @@ class Installer
     /**
     * Constructor.
     *
-     * @param Config $_config The configuration
-                                             for the current job.
-     * @param HelperInstaller $_installer The install helper.
-     * @param PearFactory $_factory The factory for PEAR
-                                             dependencies.
-     * @param Output $_output The output handler.
+     * @param Component $component The component
+     * @param array $options CLI options
+     * @param HelperInstaller $installer The install helper
+     * @param PearFactory $factory The factory for PEAR dependencies
+     * @param Output $output The output handler
     */
     public function __construct(
-        private readonly Config $_config,
-        private readonly HelperInstaller $_installer,
-        private readonly PearFactory $_factory,
-        /**
-         * The output handler.
-         *
-         * @param Output
-         */
-        private readonly Output $_output
+        private readonly Component $component,
+        private readonly array $options,
+        private readonly HelperInstaller $installer,
+        private readonly PearFactory $factory,
+        private readonly Output $output
     ) {}
 
     public function run(): void
     {
-        $options = $this->_config->getOptions();
+        $options = $this->options;
         if (!empty($options['destination'])) {
             $environment = realpath($options['destination']);
             if (!$environment) {
@@ -73,7 +70,7 @@ class Installer
 
         if (empty($options['pearrc'])) {
             $options['pearrc'] = $environment . '/pear.conf';
-            $this->_output->info(
+            $this->output->info(
                 sprintf(
                     'Undefined path to PEAR configuration file (--pearrc). Assuming %s for this installation.',
                     $options['pearrc']
@@ -83,7 +80,7 @@ class Installer
 
         if (empty($options['horde_dir'])) {
             $options['horde_dir'] = $environment;
-            $this->_output->info(
+            $this->output->info(
                 sprintf(
                     'Undefined path to horde web root (--horde-dir). Assuming %s for this installation.',
                     $options['horde_dir']
@@ -117,7 +114,7 @@ class Installer
             $options['instructions'] = $result;
         }
 
-        $target = $this->_factory->createEnvironment(
+        $target = $this->factory->createEnvironment(
             $environment,
             $options['pearrc']
         );
@@ -128,9 +125,9 @@ class Installer
         $target->getPearConfig()->setChannels(['pear.horde.org', true]);
         $target->getPearConfig()->set('horde_dir', $options['horde_dir'], 'user', 'pear.horde.org');
         ExceptionPear::catchError($target->getPearConfig()->store());
-        $this->_installer->installTree(
+        $this->installer->installTree(
             $target,
-            $this->_config->getComponent(),
+            $this->component,
             $options
         );
     }

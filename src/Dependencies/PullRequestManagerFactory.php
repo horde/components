@@ -7,6 +7,7 @@ namespace Horde\Components\Dependencies;
 use Horde\Components\Helper\GitHubChecker;
 use Horde\Components\Helper\PullRequestManager;
 use Horde\Components\Output;
+use Horde\GithubApiClient\GithubApiConfig;
 use Horde\Injector\Injector;
 
 /**
@@ -28,6 +29,7 @@ class PullRequestManagerFactory
     {
         $githubChecker = $injector->getInstance(GitHubChecker::class);
         $output = $injector->getInstance(Output::class);
-        return new PullRequestManager($githubChecker, $output);
+        $githubApiConfig = $injector->getInstance(GithubApiConfig::class);
+        return new PullRequestManager($githubChecker, $output, $githubApiConfig);
     }
 }

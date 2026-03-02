@@ -45,7 +45,8 @@ class PullRequestManager
 
     public function __construct(
         private readonly GitHubChecker $githubChecker,
-        private readonly Output $output
+        private readonly Output $output,
+        private readonly GithubApiConfig $githubApiConfig
     ) {}
 
     /**
@@ -62,11 +63,14 @@ class PullRequestManager
             return false;
         }
 
-        // Get GitHub token from environment
-        $githubToken = getenv('GITHUB_TOKEN');
-        if (!$githubToken || $githubToken === '') {
-            $this->output->warn('GITHUB_TOKEN environment variable not set');
-            $this->output->help("Set GITHUB_TOKEN in your shell: export GITHUB_TOKEN=ghp_your_token_here");
+        // Get GitHub token from DI-provided config
+        $githubToken = $this->githubApiConfig->accessToken;
+        if ($githubToken === '') {
+            $this->output->warn('GitHub token not configured');
+            $this->output->help("Configure token via:");
+            $this->output->help("  1. CLI: --github-token=ghp_xxx");
+            $this->output->help("  2. Environment: export GITHUB_TOKEN=ghp_xxx");
+            $this->output->help("  3. Config file: \$conf['github.token'] = 'ghp_xxx'");
             return false;
         }
 

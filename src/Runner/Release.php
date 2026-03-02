@@ -3,7 +3,7 @@
 /**
  * Components_Runner_Release:: releases a new version for a package.
  *
- * PHP Version 7
+ * PHP Version 8.2+
  *
  * @category Horde
  * @package  Components
@@ -11,9 +11,11 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Runner;
 
-use Horde\Components\Config;
+use Horde\Components\Component;
 use Horde\Components\Output;
 use Horde\Components\Qc\Tasks as QcTasks;
 use Horde\Components\Release\Tasks as ReleaseTasks;
@@ -26,7 +28,7 @@ use Horde\Components\Release\HordeRelease;
 /**
  * Components_Runner_Release:: releases a new version for a package.
  *
- * Copyright 2011-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2011-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -41,109 +43,88 @@ class Release
     /**
      * Constructor.
      *
-     * @param Config $_config The current job's configuration
-     * @param Output $_output The output handler.
-     * @param ReleaseTasks $_release The tasks handler.
-     * @param QcTasks $_qc QC tasks handler.
+     * @param Component $component The component to release
+     * @param array $arguments CLI arguments for subcommand routing
+     * @param array $options CLI options (pipelines, release settings)
+     * @param Output $output The output handler
+     * @param ReleaseTasks $releaseTasks The tasks handler
+     * @param QcTasks $qcTasks QC tasks handler
      */
     public function __construct(
-        private readonly Config $_config,
-        /**
-         * The output handler.
-         *
-         * @param Output $_output
-         */
-        private readonly Output $_output,
-        /**
-         * The release tasks handler.
-         *
-         * @param ReleaseTasks
-         */
-        private readonly ReleaseTasks $_release,
-        /**
-         * The QC tasks handler.
-         *
-         * @param QcTasks
-         */
-        private readonly QcTasks $_qc
+        private readonly Component $component,
+        private readonly array $arguments,
+        private readonly array $options,
+        private readonly Output $output,
+        private readonly ReleaseTasks $releaseTasks,
+        private readonly QcTasks $qcTasks
     ) {}
 
     /**
      * @throws Exception
      */
-    public function run(Config $config): void
+    public function run(): void
     {
-        $component = $config->getComponent();
-        $options = $config->getOptions();
-
-        $sequence = [];
-
-        $pre_commit = false;
-
         /**
          * Catch predefined release pipelines
          */
-        $arguments = $config->getArguments();
-        if ((count($arguments) == 3)
-            && $arguments[0] == 'release'
-            && $arguments[1] == 'for') {
-            $pipeline = $arguments[2];
-            if (empty($options['pipeline']['release'][$pipeline])) {
-                $this->_output->warn("Pipeline $pipeline not defined in config");
+        if ((count($this->arguments) == 3)
+            && $this->arguments[0] == 'release'
+            && $this->arguments[1] == 'for') {
+            $pipeline = $this->arguments[2];
+            if (empty($this->options['pipeline']['release'][$pipeline])) {
+                $this->output->warn("Pipeline $pipeline not defined in config");
                 return;
             }
-            $this->_release->run(
+            $this->releaseTasks->run(
                 ['pipeline:', $pipeline],
-                $component,
-                $options
+                $this->component,
+                $this->options
             );
             return;
-        } elseif ((count($arguments) == 2)
-        && $arguments[0] == 'release'
-        && $arguments[1] == 'h6') {
-            $this->_output->warn('H6 Release Pipeline');
-            $path = new ComponentDirectory($component->getComponentDirectory());
+        } elseif ((count($this->arguments) == 2)
+        && $this->arguments[0] == 'release'
+        && $this->arguments[1] == 'h6') {
+            $this->output->warn('H6 Release Pipeline');
+            $path = new ComponentDirectory($this->component->getComponentDirectory());
             $gitHelper = new GitHelper();
             $composerHelper = new ComposerHelper();
 
             // Get GitHubChecker and GitHubReleaseCreator from dependencies
             $githubChecker = new \Horde\Components\Helper\GitHubChecker($gitHelper);
-            $githubReleaseCreator = new \Horde\Components\Helper\GitHubReleaseCreator($githubChecker, $this->_output);
+            $githubReleaseCreator = new \Horde\Components\Helper\GitHubReleaseCreator($githubChecker, $this->output);
 
             $release = new HordeRelease(
                 $composerHelper,
                 $gitHelper,
                 $path,
-                $this->_output,
+                $this->output,
                 $githubChecker,
                 $githubReleaseCreator,
-                $this->_qc
+                $this->qcTasks
             );
-            $release->run($config);
+
+            // Create a minimal Config-like object for HordeRelease
+            // TODO: Refactor HordeRelease to not need Config
+            $configLike = new class($this->component, $this->options) {
+                public function __construct(
+                    private readonly Component $component,
+                    private readonly array $options
+                ) {}
+
+                public function getComponent(): Component {
+                    return $this->component;
+                }
+
+                public function getOptions(): array {
+                    return $this->options;
+                }
+            };
+
+            $release->run($configLike);
             return;
         } else {
-            $this->_output->warn('Run "horde-components release for <pipeline>"');
-            $this->_output->info("Available pipelines from your configuration: \n" . implode("\n", array_keys($options['pipeline']['release'] ?? [])));
+            $this->output->warn('Run "horde-components release for <pipeline>"');
+            $this->output->info("Available pipelines from your configuration: \n" . implode("\n", array_keys($this->options['pipeline']['release'] ?? [])));
         }
-    }
-
-    /**
-     * Did the user activate the given task?
-     *
-     * @param string $task The task name.
-     *
-     * @return bool True if the task is active.
-     */
-    private function _doTask($task): bool
-    {
-        $arguments = $this->_config->getArguments();
-        if ((count($arguments) == 1 && $arguments[0] == 'release')
-            || in_array($task, $arguments)) {
-            if ($this->_config->getOption('dump') && $task != 'announce') {
-                return false;
-            }
-            return true;
-        }
-        return false;
     }
 }

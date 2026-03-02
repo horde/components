@@ -3,7 +3,7 @@
 /**
  * Horde\Components\Runner\Status:: runner for status output.
  *
- * PHP Version 7
+ * PHP Version 8.2+
  *
  * @category Horde
  * @package  Components
@@ -11,9 +11,11 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Runner;
 
-use Horde\Components\Config;
+use Horde\Components\ConfigProvider\EffectiveConfigProvider;
 use Horde\Components\Exception;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Output;
@@ -31,7 +33,7 @@ use Psr\Http\Client\ClientInterface;
 /**
  * Horde\Components\Runner\Status:: runner for status output.
  *
- * Copyright 2020-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2020-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -51,29 +53,31 @@ class Status
     /**
      * Constructor.
      *
-     * @param Config    $config  The configuration for the current job.
-     * @param Output    $output  The output handler.
-     * @param GitHelper $git     The output handler.
+     * @param array $arguments CLI arguments
+     * @param EffectiveConfigProvider $config Configuration provider
+     * @param string $configFilePath Path to config file
+     * @param Output $output The output handler
+     * @param GitCheckoutDirectory $localCheckoutDir Local checkout directory
+     * @param InstallationDirectory $installDir Installation directory
      */
     public function __construct(
-        private readonly Config $config,
+        private readonly array $arguments,
+        private readonly EffectiveConfigProvider $config,
+        private readonly string $configFilePath,
         private readonly Output $output,
         private readonly GitCheckoutDirectory $localCheckoutDir,
         private readonly InstallationDirectory $installDir,
     ) {
-        //        $this->gitHelper = $git;
-        $options = $this->config->getOptions();
-        $this->gitRepoBase = $options['git_repo_base']
-        ?? 'https://github.com/horde/';
+        $this->gitRepoBase = $this->config->hasSetting('git_repo_base')
+            ? $this->config->getSetting('git_repo_base')
+            : 'https://github.com/horde/';
     }
 
-    public function run()
+    public function run(): void
     {
-        $arguments = $this->config->getArguments();
         $this->output->plain("horde-components status -- minding any CLI switches, current working directory and config file content");
-        $configFilePath = $this->config->getOptions()['config'];
-        $this->output->info("Config file path: $configFilePath");
-        if (is_readable($configFilePath)) {
+        $this->output->info("Config file path: $this->configFilePath");
+        if (is_readable($this->configFilePath)) {
             $this->output->ok("Config file exists and is readable.");
         } else {
             $this->output->warn("Config file does not exist or is not readable.");
@@ -84,10 +88,6 @@ class Status
             $gitCount = count($this->localCheckoutDir->getGitDirs());
             if ($gitCount) {
                 $this->output->ok("Git Tree dir exists and has $gitCount repos checked out ($componentsCount components)");
-                // TODO Verbose:
-                /*foreach ($this->localCheckoutDir->getGitDirs() as $dir) {
-                    $this->output->plain($dir);
-                }*/
             } else {
                 $this->output->warn("Git Tree dir exists but no components are checked out\nRun:    horde-components github-clone-org");
             }
@@ -108,7 +108,13 @@ class Status
         };
 
         // Check GitHub API token
-        $githubToken = getenv('GITHUB_TOKEN');
+        $githubToken = '';
+        if ($this->config->hasSetting('GITHUB_TOKEN')) {
+            $githubToken = $this->config->getSetting('GITHUB_TOKEN');
+        } elseif ($this->config->hasSetting('github.token')) {
+            $githubToken = $this->config->getSetting('github.token');
+        }
+
         $this->output->info("GitHub API Token:");
         if ($githubToken && mb_strlen($githubToken) > 0) {
             $maskedToken = substr($githubToken, 0, 8) . str_repeat('*', max(0, mb_strlen($githubToken) - 8));

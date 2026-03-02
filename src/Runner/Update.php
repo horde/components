@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2010-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2010-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -13,9 +13,11 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Runner;
 
-use Horde\Components\Config;
+use Horde\Components\Component;
 use Horde\Components\Helper\Commit as HelperCommit;
 use Horde\Components\Helper\Version as HelperVersion;
 use Horde\Components\Output;
@@ -36,17 +38,16 @@ class Update
     /**
      * Constructor.
      *
-     * @param Config $_config The configuration for the current job.
-     * @param Output $_output The output handler.
+     * @param Component $component The component
+     * @param array $arguments CLI arguments
+     * @param array $options CLI options
+     * @param Output $output The output handler
      */
     public function __construct(
-        private readonly Config $_config,
-        /**
-         * The output handler.
-         *
-         * @param Output
-         */
-        private readonly Output $_output
+        private readonly Component $component,
+        private readonly array $arguments,
+        private readonly array $options,
+        private readonly Output $output
     ) {}
 
     /**
@@ -55,14 +56,13 @@ class Update
      */
     public function run(): void
     {
-        $arguments = $this->_config->getArguments();
         $options = array_merge(
             ['new_version' => false, 'new_api' => false, 'new_state' => false, 'new_apistate' => false, 'theme' => false],
-            $this->_config->getOptions()
+            $this->options
         );
 
         if (!empty($options['updatexml'])
-            || (isset($arguments[0]) && $arguments[0] == 'update')) {
+            || (isset($this->arguments[0]) && $this->arguments[0] == 'update')) {
             $action = !empty($options['action'])
                 ? $options['action']
                 : 'update';
@@ -72,12 +72,12 @@ class Update
             $options['action'] = $action;
             if (!empty($options['commit'])) {
                 $options['commit'] = new HelperCommit(
-                    $this->_output,
+                    $this->output,
                     $options
                 );
             }
             /** @var Source $component */
-            $component = $this->_config->getComponent();
+            $component = $this->component;
             if (!empty($options['new_version'])
                 || !empty($options['new_api'])) {
                 $result = $component->setVersion(
@@ -86,11 +86,11 @@ class Update
                     $options
                 );
                 if ($action != 'print' && $action != 'diff') {
-                    $this->_output->ok($result);
+                    $this->output->ok($result);
                 }
                 if (!empty($options['new_version'])
                     && !empty($options['sentinel'])) {
-                    $notes = new ReleaseNotes($this->_output);
+                    $notes = new ReleaseNotes($this->output);
                     $notes->setComponent($component);
                     $application_version
                         = HelperVersion::pearToHordeWithBranch(
@@ -103,7 +103,7 @@ class Update
                         $options
                     );
                     foreach ($sentinel_result as $file) {
-                        $this->_output->ok($file);
+                        $this->output->ok($file);
                     }
                 }
             }
@@ -115,9 +115,9 @@ class Update
                     $options
                 );
                 if ($action != 'print' && $action != 'diff') {
-                    $this->_output->ok($result);
+                    $this->output->ok($result);
                 } else {
-                    $this->_output->info($result);
+                    $this->output->info($result);
                 }
             }
             $result = $component->updatePackage($action, $options);
@@ -127,12 +127,12 @@ class Update
                 );
             }
             if ($result === true) {
-                $this->_output->ok(
+                $this->output->ok(
                     'Successfully updated package files of '
                     . $component->getName() . '.'
                 );
             } else {
-                $this->_output->plain($result);
+                $this->output->plain($result);
             }
         }
     }

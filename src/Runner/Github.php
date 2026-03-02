@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Horde\Components\Runner\Git:: runner for git operations.
+ * Horde\Components\Runner\Github:: runner for github operations.
  *
- * PHP Version 7
+ * PHP Version 8.2+
  *
  * @category Horde
  * @package  Components
@@ -11,22 +11,23 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Runner;
 
-use Horde\Components\Config;
+use Horde\Components\ConfigProvider\EffectiveConfigProvider;
 use Horde\Components\Exception;
 use RuntimeException;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Output;
 use Horde\GithubApiClient\GithubApiClient;
 use Horde\GithubApiClient\GithubOrganizationId;
-use Horde\Components\ConfigProvider\EnvironmentConfigProvider;
 use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 
 /**
- * Horde\Components\Runner\Github:: runner for git operations.
+ * Horde\Components\Runner\Github:: runner for github operations.
  *
- * Copyright 2020-2024 Horde LLC (http://www.horde.org/)
+ * Copyright 2020-2026 Horde LLC (http://www.horde.org/)
  *
  * See the enclosed file LICENSE for license information (LGPL). If you
  * did not receive this file, see http://www.horde.org/licenses/lgpl21.
@@ -51,31 +52,33 @@ class Github
     /**
      * Constructor.
      *
-     * @param Config    $config  The configuration for the current job.
-     * @param Output    $output  The output handler.
-     * @param GitHelper $git     The output handler.
+     * @param EffectiveConfigProvider $config Configuration provider
+     * @param array $arguments CLI arguments
+     * @param Output $output The output handler
+     * @param GitHelper $gitHelper Git helper for operations
+     * @param GithubApiClient $client Github API client
+     * @param GitCheckoutDirectory $gitCheckoutDirectory Default checkout directory
      */
     public function __construct(
-        private readonly Config $config,
+        private readonly EffectiveConfigProvider $config,
+        private readonly array $arguments,
         private readonly Output $output,
-        private GitHelper $gitHelper,
-        private GithubApiClient $client,
-        private GitCheckoutDirectory $gitCheckoutDirectory,
-        private ?EnvironmentConfigProvider $environmentConfig = null
+        private readonly GitHelper $gitHelper,
+        private readonly GithubApiClient $client,
+        private readonly GitCheckoutDirectory $gitCheckoutDirectory
     ) {
-        //        $this->gitHelper = $git;
-        $this->environmentConfig ??= new EnvironmentConfigProvider(getenv());
-        $options = $this->config->getOptions();
-        $this->gitRepoBase = $options['git_repo_base']
-        ?? 'https://github.com/horde/';
-        $this->localCheckoutDir = $options['checkout_dir'] ?? $gitCheckoutDirectory;
+        $this->gitRepoBase = $this->config->hasSetting('git_repo_base')
+            ? $this->config->getSetting('git_repo_base')
+            : 'https://github.com/horde/';
+
+        $this->localCheckoutDir = $this->config->hasSetting('checkout.dir')
+            ? $this->config->getSetting('checkout.dir')
+            : (string) $this->gitCheckoutDirectory;
     }
 
-    public function run()
+    public function run(): void
     {
-        $arguments = $this->config->getArguments();
-
-        if (count($arguments) == 1 && $arguments[0] == 'github-clone-org') {
+        if (count($this->arguments) == 1 && $this->arguments[0] == 'github-clone-org') {
             // TODO: Configure this
             $headBranch = 'FRAMEWORK_6_0';
             $this->output->ok('About the clone a complete github org.');
@@ -113,9 +116,8 @@ class Github
             }
             file_put_contents($this->localCheckoutDir . '/repos.json', json_encode($catalog, JSON_PRETTY_PRINT));
             return;
-        } elseif (count($arguments) == 1) {
+        } elseif (count($this->arguments) == 1) {
             $this->output->help('For usage help, run: horde-components help git');
-            $this->config->unshiftArgument('help');
             return;
         }
     }
