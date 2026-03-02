@@ -199,6 +199,9 @@ class Phpcsfixer extends Base
      */
     private function executePhpCsFixer(string $binary, string $componentPath, bool $isDryRun): int
     {
+        // First, get total file count using list-files
+        $this->stats['files_checked'] = $this->getTotalFileCount($binary, $componentPath);
+
         // Build command
         $cmd = [
             escapeshellarg($binary),
@@ -255,6 +258,37 @@ class Phpcsfixer extends Base
         }
 
         return $exitCode;
+    }
+
+    /**
+     * Get total file count that PHP CS Fixer will check.
+     *
+     * @param string $binary Path to PHP CS Fixer binary.
+     * @param string $componentPath Path to component.
+     *
+     * @return int Total number of files to be checked.
+     */
+    private function getTotalFileCount(string $binary, string $componentPath): int
+    {
+        $cmd = [
+            'cd',
+            escapeshellarg($componentPath),
+            '&&',
+            escapeshellarg($binary),
+            'list-files',
+            '2>/dev/null',
+        ];
+
+        $command = implode(' ', $cmd);
+        $output = shell_exec($command);
+
+        if ($output === null || $output === '') {
+            return 0;
+        }
+
+        // Count non-empty lines in output
+        $lines = explode("\n", trim($output));
+        return count(array_filter($lines, fn($line) => !empty(trim($line))));
     }
 
     /**
@@ -326,9 +360,8 @@ class Phpcsfixer extends Base
             return;
         }
 
+        // Count files with issues (files_checked is already set in executePhpCsFixer)
         foreach ($this->nativeResults['files'] as $file) {
-            $this->stats['files_checked']++;
-
             if (isset($file['appliedFixers']) && is_array($file['appliedFixers']) && count($file['appliedFixers']) > 0) {
                 $this->stats['files_with_issues']++;
                 $this->stats['files_fixed']++;
