@@ -43,6 +43,11 @@ class Phpcsfixer extends Base
     private ?array $nativeResults = null;
 
     /**
+     * Temporary directory created for PHAR config extraction.
+     */
+    private ?string $tempConfigDir = null;
+
+    /**
      * Get the name of this task.
      *
      * @return string The task name.
@@ -108,8 +113,11 @@ class Phpcsfixer extends Base
             'files_skipped' => 0,
         ];
 
+        // Setup config extraction for PHAR context
+        $configPath = $this->setupConfigForPhar($componentPath);
+
         // Execute PHP CS Fixer
-        $exitCode = $this->executePhpCsFixer($binary, $componentPath, $isDryRun);
+        $exitCode = $this->executePhpCsFixer($binary, $componentPath, $isDryRun, $configPath);
 
         // Parse and output results
         if ($this->nativeResults !== null) {
@@ -119,8 +127,19 @@ class Phpcsfixer extends Base
 
         $this->outputStatistics($isDryRun);
 
+        // Cleanup temp config if created
+        $this->cleanupTempConfig();
+
         // Return number of files with issues as error count
         return $this->stats['files_with_issues'];
+    }
+
+    /**
+     * Destructor - ensure temp config is cleaned up.
+     */
+    public function __destruct()
+    {
+        $this->cleanupTempConfig();
     }
 
     /**
@@ -194,10 +213,11 @@ class Phpcsfixer extends Base
      * @param string $binary Path to PHP CS Fixer binary.
      * @param string $componentPath Path to component.
      * @param bool $isDryRun Whether to run in check mode.
+     * @param string|null $configPath Optional path to config file.
      *
      * @return int Exit code.
      */
-    private function executePhpCsFixer(string $binary, string $componentPath, bool $isDryRun): int
+    private function executePhpCsFixer(string $binary, string $componentPath, bool $isDryRun, ?string $configPath = null): int
     {
         // First, get total file count using list-files
         $this->stats['files_checked'] = $this->getTotalFileCount($binary, $componentPath);
@@ -211,6 +231,11 @@ class Phpcsfixer extends Base
 
         if ($isDryRun) {
             $cmd[] = '--dry-run';
+        }
+
+        // Use explicit config if provided (for PHAR context)
+        if ($configPath !== null) {
+            $cmd[] = '--config=' . escapeshellarg($configPath);
         }
 
         // Use JSON format for machine-readable output
@@ -478,5 +503,125 @@ class Phpcsfixer extends Base
                 $this->getOutput()->ok($message);
             }
         }
+    }
+
+    /**
+     * Setup config for PHAR context by extracting config and custom fixers.
+     *
+     * @param string $componentPath Path to component being checked.
+     *
+     * @return string|null Path to config file (null if not in PHAR).
+     */
+    private function setupConfigForPhar(string $componentPath): ?string
+    {
+        $pharPath = \Phar::running(false);
+
+        // Not running from PHAR - use default config discovery
+        if ($pharPath === '') {
+            return null;
+        }
+
+        $this->getOutput()->info('Running from PHAR - extracting custom fixers...');
+
+        // Create temp directory
+        $tempDir = sys_get_temp_dir() . '/horde-cs-fixer-' . uniqid();
+        if (!mkdir($tempDir, 0755, true)) {
+            $this->getOutput()->warn('Failed to create temp directory for config extraction');
+            return null;
+        }
+
+        $this->tempConfigDir = $tempDir;
+
+        // Create subdirectory for custom fixers
+        $fixerDir = $tempDir . '/src/PhpCsFixer';
+        if (!mkdir($fixerDir, 0755, true)) {
+            $this->getOutput()->warn('Failed to create fixer directory');
+            $this->cleanupTempConfig();
+            return null;
+        }
+
+        // Extract custom fixers
+        $fixerFiles = [
+            'RemovePhpVersionCommentFixer.php',
+            'UpdateCopyrightYearFixer.php',
+        ];
+
+        foreach ($fixerFiles as $file) {
+            $source = $pharPath . '/src/PhpCsFixer/' . $file;
+            $dest = $fixerDir . '/' . $file;
+
+            if (!copy($source, $dest)) {
+                $this->getOutput()->warn("Failed to extract fixer: $file");
+                $this->cleanupTempConfig();
+                return null;
+            }
+        }
+
+        // Extract config file
+        $configSource = $pharPath . '/.php-cs-fixer.dist.php';
+        $configDest = $tempDir . '/.php-cs-fixer.dist.php';
+
+        if (!copy($configSource, $configDest)) {
+            $this->getOutput()->warn('Failed to extract config file');
+            $this->cleanupTempConfig();
+            return null;
+        }
+
+        if ($this->getOutput()->isVerbose()) {
+            $this->getOutput()->info('Extracted config to: ' . $configDest);
+        }
+
+        return $configDest;
+    }
+
+    /**
+     * Cleanup temporary config directory.
+     *
+     * @return void
+     */
+    private function cleanupTempConfig(): void
+    {
+        if ($this->tempConfigDir === null || !is_dir($this->tempConfigDir)) {
+            return;
+        }
+
+        // Recursively remove directory
+        $this->recursiveRemoveDirectory($this->tempConfigDir);
+        $this->tempConfigDir = null;
+    }
+
+    /**
+     * Recursively remove a directory and its contents.
+     *
+     * @param string $dir Directory to remove.
+     *
+     * @return bool Success status.
+     */
+    private function recursiveRemoveDirectory(string $dir): bool
+    {
+        if (!is_dir($dir)) {
+            return false;
+        }
+
+        $items = scandir($dir);
+        if ($items === false) {
+            return false;
+        }
+
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+
+            $path = $dir . '/' . $item;
+
+            if (is_dir($path)) {
+                $this->recursiveRemoveDirectory($path);
+            } else {
+                unlink($path);
+            }
+        }
+
+        return rmdir($dir);
     }
 }
