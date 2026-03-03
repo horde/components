@@ -109,7 +109,7 @@ log_info "horde-components.phar downloaded successfully"
 log_info "Bootstrap complete. Handing off to horde-components ci setup"
 
 php "$COMPONENTS_PHAR" ci setup \
-    --mode=github \
+    --ci-mode=github \
     --work-dir="$WORK_DIR" \
     --component="$COMPONENT_NAME"
 
