@@ -26,6 +26,8 @@ use Horde\Components\Ci\Setup\LaneCopier;
 use Horde\Components\Ci\Setup\ComposerInstaller;
 use Horde\Components\Ci\Init\InitCommand;
 use Horde\Components\Ci\Config\CiConfig;
+use Horde\Components\Ci\Run\RunCommand;
+use Horde\Components\Ci\Run\ResultCollector;
 
 /**
  * Components_Module_Ci:: manages CI setup and execution for components.
@@ -363,9 +365,7 @@ MORE INFO:
                     return $this->handleSetup($options, $output);
 
                 case 'run':
-                    $output->warn('CI run is not yet implemented (Phase 2)');
-                    $output->info('Current phase: Phase 1 - Setup only');
-                    return false;
+                    return $this->handleRun($options, $output);
 
                 default:
                     $output->error("Unknown subcommand: {$subcommand}");
@@ -465,5 +465,43 @@ MORE INFO:
         );
 
         return $setupCommand->execute($config);
+    }
+
+    /**
+     * Handle ci run subcommand.
+     *
+     * @param array $options CLI options
+     * @param Output $output Output handler
+     * @return bool True if successful
+     */
+    private function handleRun(array $options, Output $output): bool
+    {
+        // Get work directory
+        $workDir = $options['work-dir'] ?? '/tmp/horde-ci';
+
+        if (!is_dir($workDir)) {
+            $output->fail("Work directory does not exist: {$workDir}");
+            $output->info("Run 'horde-components ci setup' first to prepare test lanes.");
+            return false;
+        }
+
+        // Determine horde-components path
+        $componentsPath = realpath(__DIR__ . '/../../bin/horde-components');
+        if ($componentsPath === false) {
+            $output->fail("Could not locate horde-components binary");
+            return false;
+        }
+
+        // Create RunCommand with dependencies
+        $collector = new ResultCollector($output);
+        $runCommand = new RunCommand($output, $collector, $componentsPath);
+
+        try {
+            $exitCode = $runCommand->execute($workDir);
+            return $exitCode === 0;
+        } catch (Exception $e) {
+            $output->fail("CI run failed: " . $e->getMessage());
+            return false;
+        }
     }
 }
