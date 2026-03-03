@@ -1,0 +1,288 @@
+<?php
+
+/**
+ * Copyright 2013-2026 The Horde Project (http://www.horde.org/)
+ *
+ * See the enclosed file LICENSE for license information (LGPL). If you
+ * did not receive this file, see http://www.horde.org/licenses/lgpl21.
+ *
+ * @category Horde
+ * @package  Components
+ * @author   Ralf Lang <ralf.lang@ralf-lang.de>
+ * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ */
+
+declare(strict_types=1);
+
+namespace Horde\Components\Ci\Setup;
+
+use Horde\Components\Exception;
+use Horde\Components\Output;
+
+/**
+ * Installs multiple PHP versions via ondrej PPA.
+ *
+ * Uses apt-get to install PHP versions 8.2, 8.3, 8.4, 8.5 from
+ * the ondrej/php PPA on Ubuntu systems.
+ *
+ * @category Horde
+ * @package  Components
+ * @author   Ralf Lang <ralf.lang@ralf-lang.de>
+ * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
+ */
+class PhpInstaller
+{
+    /**
+     * ondrej PPA URL.
+     */
+    private const ONDREJ_PPA = 'ppa:ondrej/php';
+
+    /**
+     * Constructor.
+     *
+     * @param Output $output Output handler
+     */
+    public function __construct(
+        private readonly Output $output
+    ) {}
+
+    /**
+     * Install multiple PHP versions.
+     *
+     * @param array<string> $versions PHP versions to install (e.g., ['8.2', '8.3'])
+     * @return bool True if successful
+     * @throws Exception If installation fails
+     */
+    public function install(array $versions): bool
+    {
+        if (empty($versions)) {
+            $this->output->warn('No PHP versions specified for installation');
+            return true;
+        }
+
+        $this->output->info('Installing PHP versions: ' . implode(', ', $versions));
+
+        // Check if we're on a Debian/Ubuntu system
+        if (!$this->isDebianBased()) {
+            throw new Exception('PHP installation via ondrej PPA only works on Debian/Ubuntu systems');
+        }
+
+        // Check if we have sudo
+        if (!$this->hasSudo()) {
+            throw new Exception('sudo access required for PHP installation');
+        }
+
+        // Add ondrej PPA if not already added
+        if (!$this->isPpaAdded()) {
+            $this->output->info('Adding ondrej/php PPA...');
+            if (!$this->addPpa()) {
+                throw new Exception('Failed to add ondrej/php PPA');
+            }
+        }
+
+        // Update package list
+        $this->output->info('Updating package list...');
+        if (!$this->updatePackageList()) {
+            throw new Exception('Failed to update package list');
+        }
+
+        // Install each PHP version
+        foreach ($versions as $version) {
+            if ($this->isPhpVersionInstalled($version)) {
+                $this->output->info("PHP {$version} already installed");
+                continue;
+            }
+
+            $this->output->info("Installing PHP {$version}...");
+            if (!$this->installPhpVersion($version)) {
+                throw new Exception("Failed to install PHP {$version}");
+            }
+        }
+
+        $this->output->ok('All PHP versions installed successfully');
+        return true;
+    }
+
+    /**
+     * Check if system is Debian-based.
+     *
+     * @return bool
+     */
+    private function isDebianBased(): bool
+    {
+        return file_exists('/etc/debian_version') ||
+               file_exists('/etc/lsb-release') ||
+               is_executable('/usr/bin/apt-get');
+    }
+
+    /**
+     * Check if we have sudo access.
+     *
+     * @return bool
+     */
+    private function hasSudo(): bool
+    {
+        // Check if running as root
+        if (posix_geteuid() === 0) {
+            return true;
+        }
+
+        // Check if sudo is available and we can use it
+        $result = shell_exec('sudo -n true 2>&1');
+        return $result !== null && strpos($result, 'password') === false;
+    }
+
+    /**
+     * Check if ondrej PPA is already added.
+     *
+     * @return bool
+     */
+    private function isPpaAdded(): bool
+    {
+        $sources = '/etc/apt/sources.list.d/';
+        if (!is_dir($sources)) {
+            return false;
+        }
+
+        $files = glob($sources . '*ondrej*');
+        return $files !== false && count($files) > 0;
+    }
+
+    /**
+     * Add ondrej PPA.
+     *
+     * @return bool
+     */
+    private function addPpa(): bool
+    {
+        $commands = [
+            'sudo apt-get install -y software-properties-common',
+            'sudo add-apt-repository -y ' . escapeshellarg(self::ONDREJ_PPA),
+        ];
+
+        foreach ($commands as $command) {
+            $output = [];
+            $exitCode = 0;
+            exec($command . ' 2>&1', $output, $exitCode);
+
+            if ($exitCode !== 0) {
+                $this->output->error('Command failed: ' . $command);
+                $this->output->plain(implode("\n", $output));
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Update package list.
+     *
+     * @return bool
+     */
+    private function updatePackageList(): bool
+    {
+        $output = [];
+        $exitCode = 0;
+        exec('sudo apt-get update 2>&1', $output, $exitCode);
+
+        if ($exitCode !== 0) {
+            $this->output->error('apt-get update failed');
+            $this->output->plain(implode("\n", $output));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if PHP version is already installed.
+     *
+     * @param string $version PHP version (e.g., '8.4')
+     * @return bool
+     */
+    private function isPhpVersionInstalled(string $version): bool
+    {
+        $binary = "/usr/bin/php{$version}";
+        return file_exists($binary) && is_executable($binary);
+    }
+
+    /**
+     * Install a specific PHP version.
+     *
+     * @param string $version PHP version (e.g., '8.4')
+     * @return bool
+     */
+    private function installPhpVersion(string $version): bool
+    {
+        // Install CLI package
+        $package = "php{$version}-cli";
+        $command = 'sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ' . escapeshellarg($package);
+
+        $output = [];
+        $exitCode = 0;
+        exec($command . ' 2>&1', $output, $exitCode);
+
+        if ($exitCode !== 0) {
+            $this->output->error("Failed to install {$package}");
+            $this->output->plain(implode("\n", $output));
+            return false;
+        }
+
+        // Verify installation
+        if (!$this->isPhpVersionInstalled($version)) {
+            $this->output->error("PHP {$version} installation succeeded but binary not found");
+            return false;
+        }
+
+        // Show installed version
+        $versionOutput = shell_exec("/usr/bin/php{$version} -v 2>&1");
+        if ($versionOutput !== null) {
+            $this->output->plain($versionOutput);
+        }
+
+        return true;
+    }
+
+    /**
+     * Get installed PHP versions.
+     *
+     * @return array<string> Installed PHP versions
+     */
+    public function getInstalledVersions(): array
+    {
+        $versions = [];
+        $binaries = glob('/usr/bin/php[0-9].[0-9]');
+
+        if ($binaries === false) {
+            return [];
+        }
+
+        foreach ($binaries as $binary) {
+            if (preg_match('/php(\d+\.\d+)$/', $binary, $matches)) {
+                $versions[] = $matches[1];
+            }
+        }
+
+        sort($versions);
+        return $versions;
+    }
+
+    /**
+     * Get path to PHP binary for version.
+     *
+     * @param string $version PHP version (e.g., '8.4')
+     * @return string Path to binary
+     * @throws Exception If version not installed
+     */
+    public function getPhpBinary(string $version): string
+    {
+        $binary = "/usr/bin/php{$version}";
+
+        if (!file_exists($binary) || !is_executable($binary)) {
+            throw new Exception("PHP {$version} is not installed");
+        }
+
+        return $binary;
+    }
+}
