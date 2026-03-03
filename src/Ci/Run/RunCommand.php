@@ -92,7 +92,7 @@ class RunCommand
      * Discover test lanes in work directory.
      *
      * @param string $lanesDir Lanes directory
-     * @return array<array{name: string, dir: string, php_version: string, stability: string}> Lane info
+     * @return array<array{name: string, dir: string, component_dir: string, php_version: string, stability: string}> Lane info
      */
     private function discoverLanes(string $lanesDir): array
     {
@@ -111,9 +111,16 @@ class RunCommand
                 continue; // Skip invalid lane names
             }
 
+            // Find component subdirectory (first directory in lane)
+            $componentDirs = glob($dir . '/*', GLOB_ONLYDIR);
+            if (empty($componentDirs)) {
+                continue; // Skip lanes without component
+            }
+
             $lanes[] = [
                 'name' => $name,
                 'dir' => $dir,
+                'component_dir' => $componentDirs[0], // e.g., /path/lanes/php8.4-dev/Http
                 'php_version' => $matches[1],
                 'stability' => $matches[2],
             ];
@@ -135,7 +142,7 @@ class RunCommand
     /**
      * Run QC in a single lane using self-invocation.
      *
-     * @param array{name: string, dir: string, php_version: string, stability: string} $lane Lane info
+     * @param array{name: string, dir: string, component_dir: string, php_version: string, stability: string} $lane Lane info
      */
     private function runQcInLane(array $lane): void
     {
@@ -152,15 +159,16 @@ class RunCommand
         }
 
         // Determine QC tasks for this lane
-        $tasks = '--unit --phpstan';
+        $tasks = 'unit phpstan';
         if ($lane['name'] === 'php8.4-dev') {
-            $tasks .= ' --phpcsfixer';
+            $tasks .= ' phpcsfixer';
         }
 
         // Build command to invoke horde-components qc with specific PHP version
+        // Note: cd to component_dir (not lane dir) since QC expects to be in component root
         $command = sprintf(
             'cd %s && %s %s qc %s 2>&1',
-            escapeshellarg($lane['dir']),
+            escapeshellarg($lane['component_dir']),
             escapeshellarg($phpBinary),
             escapeshellarg($this->componentsPath),
             $tasks
@@ -179,7 +187,7 @@ class RunCommand
     /**
      * Aggregate results from JSON files written by QC.
      *
-     * @param array<array{name: string, dir: string, php_version: string, stability: string}> $lanes Lane info
+     * @param array<array{name: string, dir: string, component_dir: string, php_version: string, stability: string}> $lanes Lane info
      */
     private function aggregateResults(array $lanes): void
     {
@@ -187,7 +195,7 @@ class RunCommand
         $this->output->info('Aggregating results...');
 
         foreach ($lanes as $lane) {
-            $buildDir = $lane['dir'] . '/build';
+            $buildDir = $lane['component_dir'] . '/build';
 
             // Read PHPUnit results
             $phpunitFile = $buildDir . '/phpunit-results-summary.json';
