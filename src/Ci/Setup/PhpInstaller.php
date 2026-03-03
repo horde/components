@@ -67,9 +67,9 @@ class PhpInstaller
             throw new Exception('PHP installation via ondrej PPA only works on Debian/Ubuntu systems');
         }
 
-        // Check if we have sudo
-        if (!$this->hasSudo()) {
-            throw new Exception('sudo access required for PHP installation');
+        // Check if we have root access or sudo
+        if (!SudoHelper::isRoot() && !$this->hasSudo()) {
+            throw new Exception('root or sudo access required for PHP installation');
         }
 
         // Add ondrej PPA if not already added
