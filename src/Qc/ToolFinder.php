@@ -79,14 +79,26 @@ class ToolFinder
 
         // 0. Tools directory (highest priority - for CI mode)
         if (!empty($this->toolsDir)) {
+            // For PHPUnit, prefer version-specific PHARs based on PHP version
+            if ($toolName === 'phpunit' && $checkPhar) {
+                $phpVersion = PHP_VERSION_ID;
+
+                // PHPUnit 11.x for PHP 8.2-8.3, PHPUnit 12.x for PHP 8.4+
+                if ($phpVersion < 80400) {
+                    // PHP 8.2-8.3: Try PHPUnit 11.5 first
+                    $locations[] = $this->toolsDir . '/phpunit-11.5.phar';
+                    $locations[] = $this->toolsDir . '/phpunit-11.phar';
+                } else {
+                    // PHP 8.4+: Try PHPUnit 12.5 first
+                    $locations[] = $this->toolsDir . '/phpunit-12.5.phar';
+                    $locations[] = $this->toolsDir . '/phpunit-12.phar';
+                }
+            }
+
+            // Standard tool names
             $locations[] = $this->toolsDir . '/' . $toolName;
             if ($checkPhar) {
                 $locations[] = $this->toolsDir . '/' . $toolName . '.phar';
-            }
-            // Check for version-specific PHPUnit (phpunit-11.5.phar, phpunit-12.5.phar)
-            if ($toolName === 'phpunit' && $checkPhar) {
-                $locations[] = $this->toolsDir . '/phpunit-11.5.phar';
-                $locations[] = $this->toolsDir . '/phpunit-12.5.phar';
             }
         }
 

@@ -74,7 +74,8 @@
     "config": {
         "allow-plugins": {
             "horde/horde-installer-plugin": true
-        }
+        },
+        "platform-check": false
     },
     "extra": {
         "branch-alias": {
