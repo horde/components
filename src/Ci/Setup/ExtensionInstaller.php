@@ -223,20 +223,8 @@ class ExtensionInstaller
             return null; // Skip
         }
 
-        // Try to install
-        $command = 'sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ' . escapeshellarg($package) . ' 2>&1';
-        $output = [];
-        $exitCode = 0;
-        exec($command, $output, $exitCode);
-
-        if ($exitCode !== 0) {
-            // Check if package doesn't exist (expected for some extensions)
-            $outputStr = implode("\n", $output);
-            if (strpos($outputStr, 'Unable to locate package') !== false) {
-                $this->output->plain("Package {$package} not available (may be built-in)");
-                return null; // Skip
-            }
-
+        // Try to install using sudo helper
+        if (!SudoHelper::installExtension($phpVersion, $extension)) {
             $this->output->warn("Failed to install {$package}");
             return false;
         }
