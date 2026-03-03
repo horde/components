@@ -101,6 +101,9 @@ class ComposerInstaller
     /**
      * Set minimum-stability in composer.json.
      *
+     * Uses stdClass objects to preserve empty objects as {} instead of [].
+     * This matches the approach used in Helper/Composer.php.
+     *
      * @param string $composerFile Path to composer.json
      * @param string $stability Minimum stability
      * @return bool True if successful
@@ -113,29 +116,18 @@ class ComposerInstaller
             throw new Exception("Failed to read {$composerFile}");
         }
 
-        $data = json_decode($content, true);
-        if (!is_array($data)) {
+        // Decode as objects (stdClass) to preserve empty objects
+        $data = json_decode($content, false);
+        if ($data === null) {
             throw new Exception("Invalid JSON in {$composerFile}");
         }
 
         // Set minimum-stability
-        $data['minimum-stability'] = $stability;
+        $data->{'minimum-stability'} = $stability;
 
-        // Write back with pretty print and JSON_FORCE_OBJECT to preserve empty objects
-        $newContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_FORCE_OBJECT);
-
-        // Fix: JSON_FORCE_OBJECT makes everything an object, so we need to fix arrays
-        // Better approach: preserve original structure by not using JSON_FORCE_OBJECT
-        // and instead fix empty arrays manually
+        // Write back with pretty print
+        // Empty stdClass objects will be encoded as {} instead of []
         $newContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-
-        // Fix empty arrays that should be objects (like allow-plugins)
-        // Replace "allow-plugins": [] with "allow-plugins": {}
-        $newContent = preg_replace(
-            '/"allow-plugins":\s*\[\s*\]/',
-            '"allow-plugins": {}',
-            $newContent
-        );
 
         if (file_put_contents($composerFile, $newContent) === false) {
             throw new Exception("Failed to write {$composerFile}");
