@@ -200,6 +200,11 @@ class InitCommand
     /**
      * Get components PHAR URL.
      *
+     * Priority:
+     * 1. COMPONENTS_PHAR_URL environment variable
+     * 2. Config file setting
+     * 3. Default to latest GitHub release
+     *
      * @return string PHAR URL
      */
     private function getComponentsPharUrl(): string
@@ -211,8 +216,10 @@ class InitCommand
         }
 
         // Try from config (would need to access config system)
-        // For now, use default
-        return 'https://dev.horde.org/ci/horde-components.phar';
+        // For now, use default pointing to latest GitHub release
+        // Note: Users should set organization variable COMPONENTS_PHAR_URL
+        // pointing to specific version for production use
+        return 'https://github.com/horde/components/releases/latest/download/horde-components.phar';
     }
 
     /**
