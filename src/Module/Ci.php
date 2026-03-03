@@ -476,8 +476,8 @@ MORE INFO:
      */
     private function handleRun(array $options, Output $output): bool
     {
-        // Get work directory
-        $workDir = $options['work-dir'] ?? '/tmp/horde-ci';
+        // Get work directory (Horde_Argv converts dashes to underscores)
+        $workDir = $options['work_dir'] ?? '/tmp/horde-ci';
 
         if (!is_dir($workDir)) {
             $output->fail("Work directory does not exist: {$workDir}");

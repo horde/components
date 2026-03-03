@@ -153,7 +153,7 @@ class ResultCollector
         }
 
         if ($summary['failed'] > 0) {
-            $this->output->fail("❌ Failed: {$summary['failed']}/{$summary['total']} lanes");
+            $this->output->error("❌ Failed: {$summary['failed']}/{$summary['total']} lanes");
             foreach ($summary['failed_lanes'] as $laneName) {
                 $this->output->plain("  - {$laneName}");
             }
@@ -182,7 +182,7 @@ class ResultCollector
 
         // Handle errors
         if (isset($result['error'])) {
-            $this->output->fail("  ✗ {$toolName}: {$result['error']}");
+            $this->output->error("  ✗ {$toolName}: {$result['error']}");
             return;
         }
 
@@ -193,7 +193,7 @@ class ResultCollector
         if ($result['success']) {
             $this->output->ok("  ✓ {$toolName}: Passed{$statsStr}");
         } else {
-            $this->output->fail("  ✗ {$toolName}: FAILED{$statsStr}");
+            $this->output->error("  ✗ {$toolName}: FAILED{$statsStr}");
         }
     }
 
