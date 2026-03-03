@@ -1,4 +1,42 @@
 ---
+1.0.0-alpha27:
+  api: 1.0.0-alpha1
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-03-03
+  license:
+    identifier: LGPL-2.1-only
+    uri: http://www.horde.org/licenses/lgpl21
+  notes: |
+    feat(ci): complete GitHub Actions workflow template integration
+    feat(ci): disable platform check and prioritize version-specific PHPUnit
+    fix(ci): remove phpunit from components dev dependencies
+    feat(ci): add tools cache system for QC binaries
+    fix(ci): correct QC command syntax and path handling
+    feat(ci): implement CI run command (Phase 2)
+    refactor(ci): use Horde\Composer\ComposerJsonFile for JSON manipulation
+    refactor(ci): use stdClass for JSON manipulation in ComposerInstaller
+    docs(ci): add TODO for JSON empty object/array handling
+    fix(ci): preserve empty objects in composer.json during stability modification
+    refactor(ci): integrate SudoHelper for all privileged operations
+    feat(ci): register Ci module in ModuleProvider
+    feat(ci): add CLI module for ci commands
+    feat(ci): add SetupCommand and InitCommand orchestrators
+    feat(ci): add Phase 1 core infrastructure classes
+    feat(ci): add Phase 0 template infrastructure
+    style: php-cs-fixer removes outdated 'PHP Version 7' comments
+    chore(build): include PHP CS Fixer config in PHAR build
+    feat(qc): add PHAR support for PHP CS Fixer custom fixers
+    fix(qc): report correct total file count for PHP CS Fixer task
+    feat(cs-fixer): add custom fixers for PHP version comments and copyright years
+    feat: Finalize migration from old Configs interface to new ConfigProvider interface
+    feat: Implement authentication flow using Github App
+    feat(changed): add helpful usage message when run without arguments
+    fix: restore broken commands after config refactoring
+    refactor(config)!: remove legacy Config system and update runners
+    refactor(modules)!: remove Config dependency from Module system
+    feat(config): add ConfigProvider system with layered configuration
 1.0.0-alpha26:
   api: 1.0.0-alpha1
   state:

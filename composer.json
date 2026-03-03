@@ -21,7 +21,7 @@
             "role": "contributor"
         }
     ],
-    "time": "2026-03-02",
+    "time": "2026-03-03",
     "repositories": [],
     "require": {
         "horde/horde-installer-plugin": "^2.6 || dev-FRAMEWORK_6_0",
@@ -44,7 +44,8 @@
         "horde/phpconfigfile": "^0.0.1-alpha4 || dev-FRAMEWORK_6_0"
     },
     "require-dev": {
-        "horde/test": "^3 || dev-FRAMEWORK_6_0"
+        "horde/test": "^3 || dev-FRAMEWORK_6_0",
+        "phpunit/phpunit": "^12 || ^11 || ^10 || ^9"
     },
     "suggest": {
         "horde/test": "^3 || dev-FRAMEWORK_6_0",
@@ -74,8 +75,7 @@
     "config": {
         "allow-plugins": {
             "horde/horde-installer-plugin": true
-        },
-        "platform-check": false
+        }
     },
     "extra": {
         "branch-alias": {
