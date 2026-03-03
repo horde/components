@@ -121,8 +121,22 @@ class ComposerInstaller
         // Set minimum-stability
         $data['minimum-stability'] = $stability;
 
-        // Write back with pretty print
+        // Write back with pretty print and JSON_FORCE_OBJECT to preserve empty objects
+        $newContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_FORCE_OBJECT);
+
+        // Fix: JSON_FORCE_OBJECT makes everything an object, so we need to fix arrays
+        // Better approach: preserve original structure by not using JSON_FORCE_OBJECT
+        // and instead fix empty arrays manually
         $newContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        // Fix empty arrays that should be objects (like allow-plugins)
+        // Replace "allow-plugins": [] with "allow-plugins": {}
+        $newContent = preg_replace(
+            '/"allow-plugins":\s*\[\s*\]/',
+            '"allow-plugins": {}',
+            $newContent
+        );
+
         if (file_put_contents($composerFile, $newContent) === false) {
             throw new Exception("Failed to write {$composerFile}");
         }
@@ -142,16 +156,20 @@ class ComposerInstaller
         // Find composer binary
         $composer = $this->findComposer();
 
-        // Build command
-        $command = sprintf(
+        // Build command - wrap in bash -c for timeout to work with cd &&
+        $innerCommand = sprintf(
             'cd %s && %s %s install --no-interaction --no-progress --prefer-dist 2>&1',
             escapeshellarg($laneDir),
             escapeshellarg($phpBinary),
             escapeshellarg($composer)
         );
 
-        // Add timeout
-        $command = "timeout " . self::TIMEOUT . " " . $command;
+        // Wrap with timeout and bash
+        $command = sprintf(
+            'timeout %d bash -c %s',
+            self::TIMEOUT,
+            escapeshellarg($innerCommand)
+        );
 
         // Execute
         $output = [];
