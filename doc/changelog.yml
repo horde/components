@@ -1,4 +1,15 @@
 ---
+1.0.0-alpha28:
+  api: 1.0.0-alpha1
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-03-03
+  license:
+    identifier: LGPL-2.1-only
+    uri: http://www.horde.org/licenses/lgpl21
+  notes: |
+    fix(ci): Fix bootstrap script and sudo helper for GitHub Actions (#16)
 1.0.0-alpha27:
   api: 1.0.0-alpha1
   state:
