@@ -105,7 +105,21 @@ fi
 
 log_info "horde-components.phar downloaded successfully"
 
-# Stage 4: Handoff to PHP (horde-components ci setup)
+# Stage 4: Install sudo helper script
+log_info "Installing sudo helper script"
+
+# Extract and install the helper script from PHAR
+php "$COMPONENTS_PHAR" -r "copy('phar://' . '$COMPONENTS_PHAR' . '/data/ci/sudo-helper.sh', '$WORK_DIR/sudo-helper.sh');" 2>/dev/null || \
+  log_warn "Could not extract sudo helper from PHAR (older version?)"
+
+if [ -f "$WORK_DIR/sudo-helper.sh" ]; then
+    sudo install -m 755 "$WORK_DIR/sudo-helper.sh" /usr/local/bin/horde-ci-sudo-helper
+    log_info "Sudo helper installed successfully"
+else
+    log_warn "Sudo helper not found, will try to proceed without it"
+fi
+
+# Stage 5: Handoff to PHP (horde-components ci setup)
 log_info "Bootstrap complete. Handing off to horde-components ci setup"
 
 php "$COMPONENTS_PHAR" ci setup \
