@@ -18,6 +18,7 @@ namespace Horde\Components\Ci\Setup;
 
 use Horde\Components\Exception;
 use Horde\Components\Output;
+use Horde\Composer\ComposerJsonFile;
 
 /**
  * Runs composer install for test lanes with stability control.
@@ -101,8 +102,7 @@ class ComposerInstaller
     /**
      * Set minimum-stability in composer.json.
      *
-     * Uses stdClass objects to preserve empty objects as {} instead of [].
-     * This matches the approach used in Helper/Composer.php.
+     * Uses Horde\Composer\ComposerJsonFile for proper JSON manipulation.
      *
      * @param string $composerFile Path to composer.json
      * @param string $stability Minimum stability
@@ -111,29 +111,14 @@ class ComposerInstaller
      */
     private function setMinimumStability(string $composerFile, string $stability): bool
     {
-        $content = file_get_contents($composerFile);
-        if ($content === false) {
-            throw new Exception("Failed to read {$composerFile}");
+        try {
+            $composer = new ComposerJsonFile($composerFile);
+            $composer->setMinimumStability($stability);
+            $composer->save();
+            return true;
+        } catch (\Exception $e) {
+            throw new Exception("Failed to set minimum-stability in {$composerFile}: " . $e->getMessage());
         }
-
-        // Decode as objects (stdClass) to preserve empty objects
-        $data = json_decode($content, false);
-        if ($data === null) {
-            throw new Exception("Invalid JSON in {$composerFile}");
-        }
-
-        // Set minimum-stability
-        $data->{'minimum-stability'} = $stability;
-
-        // Write back with pretty print
-        // Empty stdClass objects will be encoded as {} instead of []
-        $newContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-
-        if (file_put_contents($composerFile, $newContent) === false) {
-            throw new Exception("Failed to write {$composerFile}");
-        }
-
-        return true;
     }
 
     /**
