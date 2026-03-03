@@ -104,48 +104,31 @@ class Unit extends Base
             $componentPath = getcwd() ?: '.';
         }
 
-        // Build list of possible locations
-        $possibleLocations = [
-            // Local component installations
-            $componentPath . '/vendor/bin/phpunit.phar',
-            $componentPath . '/vendor/bin/phpunit',
-            $componentPath . '/vendor/phpunit/phpunit/phpunit',
-            $componentPath . '/tools/phpunit.phar',
-            $componentPath . '/tools/phpunit',
-            // Global user installations
-            $_SERVER['HOME'] . '/.config/composer/vendor/bin/phpunit',
-            $_SERVER['HOME'] . '/.composer/vendor/bin/phpunit',
-            $_SERVER['HOME'] . '/.phive/phpunit.phar',
-            $_SERVER['HOME'] . '/.phive/phpunit',
-            // System installations
-            '/usr/local/bin/phpunit.phar',
-            '/usr/local/bin/phpunit',
-            '/usr/bin/phpunit.phar',
-            '/usr/bin/phpunit',
-        ];
-
+        // Use ToolFinder to locate PHPUnit
         $toolFinder = new ToolFinder($componentPath, $toolsDir);
+        $phpunitPath = $toolFinder->findBinary('phpunit');
 
-        foreach ($possibleLocations as $toolPath) {
-            if (!file_exists($toolPath) || !is_readable($toolPath)) {
-                continue;
-            }
+        if ($phpunitPath === null) {
+            // PHPUnit not found - will fail later during run()
+            return;
+        }
 
-            // Try to load PHPUnit using ToolFinder
-            if ($toolFinder->loadTool($toolPath)) {
-                // Check if PHPUnit classes are now available
-                if (class_exists('PHPUnit\TextUI\Application')) {
-                    if (!$this->sourceReported) {
-                        $version = $this->getPhpUnitVersion();
-                        $versionStr = $version ? ' version ' . $version : '';
-                        $type = $toolFinder->isPhar($toolPath) ? 'PHAR' : 'Composer';
-                        $this->getOutput()->info('Using PHPUnit' . $versionStr . ' from: ' . $toolPath . ' (' . $type . ')');
-                        $this->sourceReported = true;
-                    }
-                    return;
+        // Try to load PHPUnit
+        if ($toolFinder->loadTool($phpunitPath)) {
+            // Check if PHPUnit classes are now available
+            if (class_exists('PHPUnit\TextUI\Application')) {
+                if (!$this->sourceReported) {
+                    $version = $this->getPhpUnitVersion();
+                    $versionStr = $version ? ' version ' . $version : '';
+                    $type = $toolFinder->isPhar($phpunitPath) ? 'PHAR' : 'Composer';
+                    $this->getOutput()->info('Using PHPUnit' . $versionStr . ' from: ' . $phpunitPath . ' (' . $type . ')');
+                    $this->sourceReported = true;
                 }
+                return;
             }
         }
+
+        // If we get here, loading failed - will error during run()
     }
 
     /**
