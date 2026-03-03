@@ -20,7 +20,7 @@ $finder->exclude(['fixtures']);
 $config = (new PhpCsFixer\Config())
     ->setRules([
         '@PER-CS' => true,
-        '@PHP8x3Migration' => true,
+        '@PHP8x2Migration' => true,
         'php_unit_test_class_requires_covers' => true,
         'nullable_type_declaration_for_default_null_value' => true,
         'Horde/remove_php_version_comment' => true,
