@@ -2,12 +2,6 @@
  Components TODO List
 ======================
 
- - CI Setup (Phase 2):
-    - Improve JSON handling in ComposerInstaller to properly preserve empty objects vs arrays
-      (currently using regex workaround for allow-plugins field)
-    - Consider using stdClass for JSON manipulation or a proper JSON library
-    - Test with other composer.json structures that may have similar empty object fields
-
  - Installation:
     - Ensure that PEAR gets all required dependencies installed (probably a package.xml v1 problem).
     - Ensure Horde_Role gets installed.
