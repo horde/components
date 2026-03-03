@@ -23,6 +23,7 @@ use Horde\Components\Module\Qc;
 use Horde\Components\Module\Release;
 use Horde\Components\Module\Status;
 use Horde\Components\Module\Website;
+use Horde\Components\Module\Ci;
 
 /**
  * Components tool specific, context aware module provider
@@ -50,6 +51,7 @@ class ModuleProvider implements CliModuleProvider
     {
         return new Modules([
             $this->injector->get(Change::class),
+            $this->injector->get(Ci::class),
             $this->injector->get(ConfigModule::class),
             $this->injector->get(Composer::class),
             $this->injector->get(Git::class),
