@@ -70,7 +70,7 @@ class Unit extends Base
     public function validate(array $options = []): array
     {
         // Try to load PHPUnit if not already available
-        $this->loadPhpUnit();
+        $this->loadPhpUnit($options['tools_dir'] ?? null);
 
         if (!class_exists('PHPUnit\TextUI\Application')) {
             return ['PHPUnit is not installed!'];
