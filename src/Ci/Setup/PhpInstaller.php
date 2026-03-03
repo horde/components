@@ -127,9 +127,8 @@ class PhpInstaller
             return true;
         }
 
-        // Check if sudo is available and we can use it
-        $result = shell_exec('sudo -n true 2>&1');
-        return $result !== null && strpos($result, 'password') === false;
+        // Check if sudo helper is available and can run passwordless
+        return SudoHelper::isAvailable() && SudoHelper::canRunPasswordless();
     }
 
     /**
@@ -155,24 +154,7 @@ class PhpInstaller
      */
     private function addPpa(): bool
     {
-        $commands = [
-            'sudo apt-get install -y software-properties-common',
-            'sudo add-apt-repository -y ' . escapeshellarg(self::ONDREJ_PPA),
-        ];
-
-        foreach ($commands as $command) {
-            $output = [];
-            $exitCode = 0;
-            exec($command . ' 2>&1', $output, $exitCode);
-
-            if ($exitCode !== 0) {
-                $this->output->error('Command failed: ' . $command);
-                $this->output->plain(implode("\n", $output));
-                return false;
-            }
-        }
-
-        return true;
+        return SudoHelper::addPpa();
     }
 
     /**
@@ -182,16 +164,8 @@ class PhpInstaller
      */
     private function updatePackageList(): bool
     {
-        $output = [];
-        $exitCode = 0;
-        exec('sudo apt-get update 2>&1', $output, $exitCode);
-
-        if ($exitCode !== 0) {
-            $this->output->error('apt-get update failed');
-            $this->output->plain(implode("\n", $output));
-            return false;
-        }
-
+        // The sudo helper's add-ppa command already runs apt-get update
+        // So this method is no longer needed when using SudoHelper
         return true;
     }
 
@@ -203,8 +177,7 @@ class PhpInstaller
      */
     private function isPhpVersionInstalled(string $version): bool
     {
-        $binary = "/usr/bin/php{$version}";
-        return file_exists($binary) && is_executable($binary);
+        return SudoHelper::isPhpInstalled($version);
     }
 
     /**
@@ -215,17 +188,9 @@ class PhpInstaller
      */
     private function installPhpVersion(string $version): bool
     {
-        // Install CLI package
-        $package = "php{$version}-cli";
-        $command = 'sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ' . escapeshellarg($package);
-
-        $output = [];
-        $exitCode = 0;
-        exec($command . ' 2>&1', $output, $exitCode);
-
-        if ($exitCode !== 0) {
-            $this->output->error("Failed to install {$package}");
-            $this->output->plain(implode("\n", $output));
+        // Use sudo helper to install PHP
+        if (!SudoHelper::installPhp($version)) {
+            $this->output->error("Failed to install PHP {$version}");
             return false;
         }
 
