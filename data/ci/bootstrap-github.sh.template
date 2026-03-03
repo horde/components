@@ -11,7 +11,7 @@ set -o pipefail
 
 # Configuration
 BOOTSTRAP_PHP_VERSION="{{PHP_VERSION}}"
-COMPONENTS_PHAR_URL="{{COMPONENTS_PHAR_URL}}"
+COMPONENTS_PHAR_URL="${COMPONENTS_PHAR_URL:-{{COMPONENTS_PHAR_URL}}}"
 COMPONENT_NAME="{{COMPONENT_NAME}}"
 WORK_DIR="{{WORK_DIR}}"
 
@@ -98,19 +98,18 @@ if ! curl -sS -L -o "$COMPONENTS_PHAR" "$COMPONENTS_PHAR_URL"; then
 fi
 
 # Validate it's a valid phar
-if ! php "$COMPONENTS_PHAR" --version &> /dev/null; then
+if ! php "$COMPONENTS_PHAR" help &> /dev/null; then
     log_error "Downloaded phar is not valid or not executable"
     exit 1
 fi
 
 log_info "horde-components.phar downloaded successfully"
-php "$COMPONENTS_PHAR" --version
 
 # Stage 4: Handoff to PHP (horde-components ci setup)
 log_info "Bootstrap complete. Handing off to horde-components ci setup"
 
 php "$COMPONENTS_PHAR" ci setup \
-    --mode=github \
+    --ci-mode=github \
     --work-dir="$WORK_DIR" \
     --component="$COMPONENT_NAME"
 
