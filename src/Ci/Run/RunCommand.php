@@ -35,11 +35,13 @@ class RunCommand
      * @param Output $output Output handler
      * @param ResultCollector $collector Result collector
      * @param string $componentsPath Path to horde-components binary
+     * @param string $workDir Work directory (for tools path)
      */
     public function __construct(
         private readonly Output $output,
         private readonly ResultCollector $collector,
-        private readonly string $componentsPath
+        private readonly string $componentsPath,
+        private readonly string $workDir
     ) {}
 
     /**
@@ -164,14 +166,18 @@ class RunCommand
             $tasks .= ' phpcsfixer';
         }
 
+        // Tools directory
+        $toolsDir = $this->workDir . '/tools';
+
         // Build command to invoke horde-components qc with specific PHP version
         // Note: cd to component_dir (not lane dir) since QC expects to be in component root
         $command = sprintf(
-            'cd %s && %s %s qc %s 2>&1',
+            'cd %s && %s %s qc %s --tools-dir=%s 2>&1',
             escapeshellarg($lane['component_dir']),
             escapeshellarg($phpBinary),
             escapeshellarg($this->componentsPath),
-            $tasks
+            $tasks,
+            escapeshellarg($toolsDir)
         );
 
         // Execute QC

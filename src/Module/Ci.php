@@ -24,6 +24,7 @@ use Horde\Components\Ci\Setup\PhpInstaller;
 use Horde\Components\Ci\Setup\ExtensionInstaller;
 use Horde\Components\Ci\Setup\LaneCopier;
 use Horde\Components\Ci\Setup\ComposerInstaller;
+use Horde\Components\Ci\Setup\ToolCache;
 use Horde\Components\Ci\Init\InitCommand;
 use Horde\Components\Ci\Config\CiConfig;
 use Horde\Components\Ci\Run\RunCommand;
@@ -455,13 +456,18 @@ MORE INFO:
 
         $config = new CiConfig($configArray);
 
+        // Create tools cache
+        $toolsDir = $config->workDir . '/tools';
+        $toolCache = new ToolCache($toolsDir, $output);
+
         // Create setup command
         $setupCommand = new SetupCommand(
             $output,
             new PhpInstaller($output),
             new ExtensionInstaller($output),
             new LaneCopier($output),
-            new ComposerInstaller($output)
+            new ComposerInstaller($output),
+            $toolCache
         );
 
         return $setupCommand->execute($config);
@@ -494,7 +500,7 @@ MORE INFO:
 
         // Create RunCommand with dependencies
         $collector = new ResultCollector($output);
-        $runCommand = new RunCommand($output, $collector, $componentsPath);
+        $runCommand = new RunCommand($output, $collector, $componentsPath, $workDir);
 
         try {
             $exitCode = $runCommand->execute($workDir);

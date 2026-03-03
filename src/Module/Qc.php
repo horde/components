@@ -59,6 +59,13 @@ class Qc extends Base
                 '--fix-qc-issues',
                 ['action' => 'store_true', 'help' => 'Automatically fix QC issues where possible.']
             ),
+            new \Horde\Argv\Option(
+                '--tools-dir',
+                [
+                    'action' => 'store',
+                    'help' => 'Directory containing QC tool binaries (PHPUnit, PHPStan, etc.)',
+                ]
+            ),
         ];
     }
 

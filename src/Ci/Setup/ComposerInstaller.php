@@ -134,6 +134,7 @@ class ComposerInstaller
         $composer = $this->findComposer();
 
         // Build command - wrap in bash -c for timeout to work with cd &&
+        // Note: Composer 2.x installs dev dependencies by default (no --dev flag needed)
         $innerCommand = sprintf(
             'cd %s && %s %s install --no-interaction --no-progress --prefer-dist 2>&1',
             escapeshellarg($laneDir),

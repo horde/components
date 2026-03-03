@@ -34,9 +34,11 @@ class ToolFinder
      *
      * @param string|null $componentPath Path to the component directory.
      *                                   If null or empty, uses current working directory.
+     * @param string|null $toolsDir Optional directory containing tool binaries (highest priority).
      */
     public function __construct(
-        private readonly ?string $componentPath
+        private readonly ?string $componentPath,
+        private readonly ?string $toolsDir = null
     ) {}
 
     /**
@@ -56,11 +58,12 @@ class ToolFinder
      * Find a tool binary in standard locations.
      *
      * Searches in this order:
-     * 1. Component vendor/bin directory
-     * 2. Component tools directory
-     * 3. User's Phive directory (~/.phive)
-     * 4. System directories (/usr/local/bin, /usr/bin)
-     * 5. System PATH (using 'which' command)
+     * 1. Tools directory (if provided via constructor)
+     * 2. Component vendor/bin directory
+     * 3. Component tools directory
+     * 4. User's Phive directory (~/.phive)
+     * 5. System directories (/usr/local/bin, /usr/bin)
+     * 6. System PATH (using 'which' command)
      *
      * @param string $toolName Name of the tool (e.g., 'phpunit', 'phpstan')
      * @param bool $checkPhar Also check for .phar variants (default: true)
@@ -73,6 +76,19 @@ class ToolFinder
 
         // Build list of possible locations
         $locations = [];
+
+        // 0. Tools directory (highest priority - for CI mode)
+        if (!empty($this->toolsDir)) {
+            $locations[] = $this->toolsDir . '/' . $toolName;
+            if ($checkPhar) {
+                $locations[] = $this->toolsDir . '/' . $toolName . '.phar';
+            }
+            // Check for version-specific PHPUnit (phpunit-11.5.phar, phpunit-12.5.phar)
+            if ($toolName === 'phpunit' && $checkPhar) {
+                $locations[] = $this->toolsDir . '/phpunit-11.5.phar';
+                $locations[] = $this->toolsDir . '/phpunit-12.5.phar';
+            }
+        }
 
         // 1. Component vendor/bin
         $locations[] = $componentPath . '/vendor/bin/' . $toolName;
