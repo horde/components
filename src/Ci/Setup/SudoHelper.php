@@ -36,6 +36,24 @@ class SudoHelper
     private const HELPER_SCRIPT = '/usr/local/bin/horde-ci-sudo-helper';
 
     /**
+     * Cached result of isRoot() check.
+     */
+    private static ?bool $isRoot = null;
+
+    /**
+     * Check if running as root user.
+     *
+     * @return bool
+     */
+    public static function isRoot(): bool
+    {
+        if (self::$isRoot === null) {
+            self::$isRoot = posix_geteuid() === 0;
+        }
+        return self::$isRoot;
+    }
+
+    /**
      * Check if sudo helper is available.
      *
      * @return bool
@@ -52,6 +70,11 @@ class SudoHelper
      */
     public static function canRunPasswordless(): bool
     {
+        // Root doesn't need sudo
+        if (self::isRoot()) {
+            return true;
+        }
+
         if (!self::isAvailable()) {
             return false;
         }
@@ -72,7 +95,8 @@ class SudoHelper
             throw new Exception('Sudo helper not found: ' . self::HELPER_SCRIPT);
         }
 
-        $command = 'sudo ' . escapeshellarg(self::HELPER_SCRIPT) . ' add-ppa 2>&1';
+        $sudo = self::isRoot() ? '' : 'sudo ';
+        $command = $sudo . escapeshellarg(self::HELPER_SCRIPT) . ' add-ppa 2>&1';
         $output = [];
         $exitCode = 0;
         exec($command, $output, $exitCode);
@@ -93,8 +117,10 @@ class SudoHelper
             throw new Exception('Sudo helper not found: ' . self::HELPER_SCRIPT);
         }
 
+        $sudo = self::isRoot() ? '' : 'sudo ';
         $command = sprintf(
-            'sudo %s install-php %s 2>&1',
+            '%s%s install-php %s 2>&1',
+            $sudo,
             escapeshellarg(self::HELPER_SCRIPT),
             escapeshellarg($version)
         );
@@ -120,8 +146,10 @@ class SudoHelper
             throw new Exception('Sudo helper not found: ' . self::HELPER_SCRIPT);
         }
 
+        $sudo = self::isRoot() ? '' : 'sudo ';
         $command = sprintf(
-            'sudo %s install-extension %s %s 2>&1',
+            '%s%s install-extension %s %s 2>&1',
+            $sudo,
             escapeshellarg(self::HELPER_SCRIPT),
             escapeshellarg($phpVersion),
             escapeshellarg($extension)
@@ -147,8 +175,10 @@ class SudoHelper
             return file_exists("/usr/bin/php{$version}");
         }
 
+        $sudo = self::isRoot() ? '' : 'sudo ';
         $command = sprintf(
-            'sudo %s check-php %s 2>&1',
+            '%s%s check-php %s 2>&1',
+            $sudo,
             escapeshellarg(self::HELPER_SCRIPT),
             escapeshellarg($version)
         );
