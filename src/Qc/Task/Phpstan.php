@@ -88,7 +88,7 @@ class Phpstan extends Base
      */
     public function run(array &$options = []): int
     {
-        $binary = $this->findPhpStanBinary();
+        $binary = $this->findPhpStanBinary($options['tools_dir'] ?? null);
 
         if ($binary === null) {
             $this->getOutput()->warn('PHPStan not found - skipping');
@@ -225,9 +225,10 @@ class Phpstan extends Base
     /**
      * Find PHPStan binary in standard locations.
      *
+     * @param string|null $toolsDir Optional tools directory to check first
      * @return string|null Path to binary or null if not found.
      */
-    private function findPhpStanBinary(): ?string
+    private function findPhpStanBinary(?string $toolsDir = null): ?string
     {
         $componentPath = $this->getPath();
 
@@ -235,35 +236,9 @@ class Phpstan extends Base
             $componentPath = getcwd();
         }
 
-        // Order of preference (matching other tasks):
-        // 1. vendor/bin (Composer)
-        // 2. tools/ (local tools)
-        // 3. ~/.phive/ (Phive)
-        // 4. system PATH
-        $locations = [
-            $componentPath . '/vendor/bin/phpstan',
-            $componentPath . '/vendor/bin/phpstan.phar',
-            $componentPath . '/tools/phpstan',
-            $componentPath . '/tools/phpstan.phar',
-            $_SERVER['HOME'] . '/.phive/phpstan',
-            $_SERVER['HOME'] . '/.phive/phpstan.phar',
-            '/usr/local/bin/phpstan',
-            '/usr/bin/phpstan',
-        ];
-
-        foreach ($locations as $path) {
-            if (file_exists($path) && is_executable($path)) {
-                return $path;
-            }
-        }
-
-        // Fallback: check PATH
-        $which = trim((string) shell_exec('which phpstan 2>/dev/null'));
-        if (!empty($which) && file_exists($which)) {
-            return $which;
-        }
-
-        return null;
+        // Use ToolFinder for consistent tool discovery
+        $toolFinder = new \Horde\Components\Qc\ToolFinder($componentPath, $toolsDir);
+        return $toolFinder->findBinary('phpstan');
     }
 
     /**

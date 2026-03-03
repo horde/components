@@ -46,13 +46,15 @@ class SetupCommand
      * @param ExtensionInstaller $extensionInstaller Extension installer
      * @param LaneCopier $laneCopier Lane copier
      * @param ComposerInstaller $composerInstaller Composer installer
+     * @param ToolCache $toolCache Tool cache manager
      */
     public function __construct(
         private readonly Output $output,
         private readonly PhpInstaller $phpInstaller,
         private readonly ExtensionInstaller $extensionInstaller,
         private readonly LaneCopier $laneCopier,
-        private readonly ComposerInstaller $composerInstaller
+        private readonly ComposerInstaller $composerInstaller,
+        private readonly ToolCache $toolCache
     ) {}
 
     /**
@@ -183,8 +185,21 @@ class SetupCommand
         }
 
         $this->output->plain('');
+
+        // Download QC tools to cache
+        $this->output->bold('=== Downloading QC Tools ===');
+        try {
+            $this->toolCache->ensureAllTools($testableVersions);
+            $this->output->ok('All tools downloaded');
+        } catch (Exception $e) {
+            $this->output->error("Tool download failed: " . $e->getMessage());
+            return false;
+        }
+
+        $this->output->plain('');
         $this->output->bold('Setup complete!');
         $this->output->info("Workspace: {$config->workDir}");
+        $this->output->info("Tools cache: {$config->workDir}/tools");
         $this->output->info("Next step: horde-components ci run --work-dir={$config->workDir}");
 
         return $failed === 0;

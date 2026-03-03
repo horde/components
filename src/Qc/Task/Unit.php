@@ -83,9 +83,10 @@ class Unit extends Base
      *
      * Outputs information about the detected PHPUnit installation.
      *
+     * @param string|null $toolsDir Optional tools directory to check first
      * @return void
      */
-    private function loadPhpUnit(): void
+    private function loadPhpUnit(?string $toolsDir = null): void
     {
         // Already loaded via Composer autoloader
         if (class_exists('PHPUnit\TextUI\Application')) {
@@ -123,7 +124,7 @@ class Unit extends Base
             '/usr/bin/phpunit',
         ];
 
-        $toolFinder = new ToolFinder($componentPath);
+        $toolFinder = new ToolFinder($componentPath, $toolsDir);
 
         foreach ($possibleLocations as $toolPath) {
             if (!file_exists($toolPath) || !is_readable($toolPath)) {
@@ -282,7 +283,7 @@ class Unit extends Base
     public function run(array &$options = []): int
     {
         // Ensure PHPUnit is loaded (handles PHAR installations)
-        $this->loadPhpUnit();
+        $this->loadPhpUnit($options['tools_dir'] ?? null);
 
         $componentPath = $this->getPath();
         if (empty($componentPath)) {

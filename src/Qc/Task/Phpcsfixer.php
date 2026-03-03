@@ -85,7 +85,7 @@ class Phpcsfixer extends Base
      */
     public function run(array &$options = []): int
     {
-        $binary = $this->findPhpCsFixerBinary();
+        $binary = $this->findPhpCsFixerBinary($options['tools_dir'] ?? null);
 
         if ($binary === null) {
             $this->getOutput()->warn('PHP CS Fixer not found - skipping');
@@ -147,39 +147,17 @@ class Phpcsfixer extends Base
      *
      * @return string|null Path to binary or null if not found.
      */
-    private function findPhpCsFixerBinary(): ?string
+    private function findPhpCsFixerBinary(?string $toolsDir = null): ?string
     {
         $componentPath = $this->getPath();
 
-        // Order of preference (matching PHPUnit task):
-        // 1. vendor/bin (Composer)
-        // 2. tools/ (local tools)
-        // 3. ~/.phive/ (Phive)
-        // 4. system PATH
-        $locations = [
-            $componentPath . '/vendor/bin/php-cs-fixer',
-            $componentPath . '/vendor/bin/php-cs-fixer.phar',
-            $componentPath . '/tools/php-cs-fixer',
-            $componentPath . '/tools/php-cs-fixer.phar',
-            $_SERVER['HOME'] . '/.phive/php-cs-fixer',
-            $_SERVER['HOME'] . '/.phive/php-cs-fixer.phar',
-            '/usr/local/bin/php-cs-fixer',
-            '/usr/bin/php-cs-fixer',
-        ];
-
-        foreach ($locations as $path) {
-            if (file_exists($path) && is_executable($path)) {
-                return $path;
-            }
+        if (empty($componentPath)) {
+            $componentPath = getcwd();
         }
 
-        // Fallback: check PATH
-        $which = trim((string) shell_exec('which php-cs-fixer 2>/dev/null'));
-        if (!empty($which) && file_exists($which)) {
-            return $which;
-        }
-
-        return null;
+        // Use ToolFinder for consistent tool discovery
+        $toolFinder = new \Horde\Components\Qc\ToolFinder($componentPath, $toolsDir);
+        return $toolFinder->findBinary('php-cs-fixer');
     }
 
     /**
