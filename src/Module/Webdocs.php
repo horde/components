@@ -16,6 +16,7 @@ declare(strict_types=1);
 namespace Horde\Components\Module;
 
 use Horde\Components\Component;
+use Horde_Argv_IndentedHelpFormatter;
 
 /**
  * Webdocs:: generates the www.horde.org data for a component.
@@ -90,6 +91,16 @@ class Webdocs extends Base
     }
 
     /**
+     * Get a short one-line description for command listings.
+     *
+     * @return string The short description.
+     */
+    public function getShortDescription(): string
+    {
+        return 'Generate dev.horde.org website';
+    }
+
+    /**
      * Return the action arguments supported by this module.
      *
      * @return array A list of supported action arguments.
@@ -108,7 +119,7 @@ class Webdocs extends Base
      */
     public function getHelp($action): string
     {
-        $formatter = new \Horde_Argv_IndentedHelpFormatter();
+        $formatter = new Horde_Argv_IndentedHelpFormatter();
         return 'This module generates the required set of data to publish information about this component on www.horde.org. The operation will only work with an already relased package! Make sure you enter the name of the package on the PEAR server rather than using a local path and ensure you added the "' . $formatter->highlightOption('--allow-remote') . '" flag as well.';
     }
 

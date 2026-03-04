@@ -17,9 +17,10 @@ namespace Horde\Components\Module;
 
 use Horde\Components\Component;
 use Horde\Components\Dependencies;
-use Horde\Components\Component\ComponentDirectory;
+use Horde\Components\Composer\InstallationDirectory;
+use Horde\Components\Output;
 use Horde\Components\Runner\InstallRunner;
-use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
+use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 
 /**
  * InstallModule:: Setup a horde installation from a git checkout
@@ -68,7 +69,72 @@ class InstallModule extends Base
      */
     public function getUsage(): string
     {
-        return 'install';
+        return <<<'HELP'
+            Install Horde from a git checkout into a web-accessible directory.
+
+            This command sets up a complete Horde development environment by:
+            1. Copying the horde/bundle component from your git checkout
+            2. Configuring composer.json to use local path repositories for all Horde components
+            3. Setting up the installation directory ready for composer install
+
+            USAGE:
+                horde-components install
+
+            CONFIGURATION:
+                This command uses two configuration settings:
+
+                checkout.dir      Your Horde git checkout directory (parent of vendor directories)
+                                  Components are located at: checkout.dir/horde/component
+                                  (default: ~/git or /srv/git)
+                                  Set with: horde-components config checkout.dir /path/to/git
+
+                install.dir       Target installation directory (web tree)
+                                  (default: ~/www/horde-dev or /srv/www/horde-dev)
+                                  Set with: horde-components config install.dir /srv/www/horde
+                                  Or set HORDE_INSTALL_DIR environment variable
+
+            PREREQUISITES:
+                1. Complete git checkout with Horde components
+                   Run: horde-components github clone-org horde
+
+                2. Empty or non-existent installation directory
+                   The command will create it if needed
+
+            WORKFLOW:
+                1. Copies horde/bundle from git checkout to installation directory
+                2. Adds all Horde components as composer path repositories
+                3. Configures composer to prefer stable packages
+                4. You then run: composer install (in the installation directory)
+
+            EXAMPLE:
+                # Set up directories
+                horde-components config checkout.dir ~/git
+                horde-components config install.dir /srv/www/horde-dev
+
+                # Clone all Horde repositories (if not done yet)
+                horde-components github clone-org horde
+
+                # Install Horde
+                horde-components install
+
+                # Complete the installation
+                cd /srv/www/horde-dev
+                composer install
+
+            SEE ALSO:
+                horde-components github clone-org    Clone all Horde repositories
+                horde-components status              Check directory configuration
+            HELP;
+    }
+
+    /**
+     * Get a short one-line description for command listings.
+     *
+     * @return string The short description.
+     */
+    public function getShortDescription(): string
+    {
+        return 'Install Horde from git checkout to web directory';
     }
 
     /**
@@ -90,7 +156,7 @@ class InstallModule extends Base
      */
     public function getHelp($action): string
     {
-        return 'horde-components install';
+        return $this->getUsage();
     }
 
     /**
@@ -117,12 +183,20 @@ class InstallModule extends Base
     {
         if (!empty($options['install'])
             || (isset($arguments[0]) && $arguments[0] == 'install')) {
-            $componentDirectory = new ComponentDirectory($options['working_dir'] ?? new CurrentWorkingDirectory());
-            $component = $this->dependencies
-            ->getComponentFactory()
-            ->createSource($componentDirectory);
-            // @todo: InstallRunner still needs Config, needs refactoring
-            // For now, this module is not fully migrated
+
+            // Get dependencies
+            $output = $this->dependencies->get(Output::class);
+            $gitCheckoutDir = $this->dependencies->get(GitCheckoutDirectory::class);
+            $installDir = $this->dependencies->get(InstallationDirectory::class);
+
+            // Instantiate and run runner
+            $runner = new InstallRunner(
+                $gitCheckoutDir,
+                $installDir,
+                $output
+            );
+            $runner->run();
+
             return true;
         }
         return false;

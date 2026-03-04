@@ -49,7 +49,7 @@ abstract class Base implements Config
     /**
      * The selected component.
      */
-    private ?\Horde\Components\Component $_component = null;
+    private ?Component $_component = null;
 
     /**
      * The path to component in case the selected one is a source component.

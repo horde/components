@@ -262,7 +262,7 @@ class InitCommand
             // Create directory if needed
             $dir = dirname($outputFile);
             if (!is_dir($dir)) {
-                if (!mkdir($dir, 0755, true)) {
+                if (!mkdir($dir, 0o755, true)) {
                     throw new Exception("Failed to create directory: {$dir}");
                 }
             }
@@ -273,7 +273,7 @@ class InitCommand
             }
 
             // Make executable
-            chmod($outputFile, 0755);
+            chmod($outputFile, 0o755);
 
             $this->output->ok("Created: {$outputFile}");
             return true;
@@ -321,7 +321,7 @@ class InitCommand
             // Create directory if needed
             $dir = dirname($outputFile);
             if (!is_dir($dir)) {
-                if (!mkdir($dir, 0755, true)) {
+                if (!mkdir($dir, 0o755, true)) {
                     throw new Exception("Failed to create directory: {$dir}");
                 }
             }

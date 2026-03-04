@@ -19,6 +19,7 @@ use Horde\Components\Component;
 use Horde\Components\Exception;
 use Horde\Components\Helper\DocsOrigin as HelperDocsOrigin;
 use Horde\Components\Output;
+use Horde_Http_Client;
 
 /**
  * Components_Runner_Fetchdocs:: fetches documentation for a component.
@@ -41,13 +42,13 @@ class Fetchdocs
      * @param Component $component The component
      * @param array $options CLI options
      * @param Output $output The output handler
-     * @param \Horde_Http_Client $client A HTTP client
+     * @param Horde_Http_Client $client A HTTP client
      */
     public function __construct(
         private readonly Component $component,
         private readonly array $options,
         private readonly Output $output,
-        private readonly \Horde_Http_Client $client
+        private readonly Horde_Http_Client $client
     ) {}
 
     public function run(): void

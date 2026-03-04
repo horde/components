@@ -19,6 +19,11 @@ namespace Horde\Components\Helper;
 use Horde\Components\Output;
 use Horde\Components\Component\Task\SystemCallResult;
 
+use function exec;
+use function shell_exec;
+use function sprintf;
+use function system;
+
 /**
  * Universal shell command executor.
  *
@@ -56,7 +61,7 @@ class Shell
         if ($this->pretend) {
             if ($this->output) {
                 $dir = $workingDir ? " (in {$workingDir})" : '';
-                $this->output->info(\sprintf('Would run: "%s"%s', $command, $dir));
+                $this->output->info(sprintf('Would run: "%s"%s', $command, $dir));
             }
             return new SystemCallResult([], 0);
         }
@@ -67,7 +72,7 @@ class Shell
             chdir($workingDir);
         }
 
-        \exec($command, $output, $exitCode);
+        exec($command, $output, $exitCode);
 
         if ($oldDir !== null) {
             chdir($oldDir);
@@ -88,7 +93,7 @@ class Shell
         if ($this->pretend) {
             if ($this->output) {
                 $dir = $workingDir ? " (in {$workingDir})" : '';
-                $this->output->info(\sprintf('Would run: "%s"%s', $command, $dir));
+                $this->output->info(sprintf('Would run: "%s"%s', $command, $dir));
             }
             return '';
         }
@@ -99,7 +104,7 @@ class Shell
             chdir($workingDir);
         }
 
-        $result = \system($command);
+        $result = system($command);
 
         if ($oldDir !== null) {
             chdir($oldDir);
@@ -122,7 +127,7 @@ class Shell
         if ($this->pretend) {
             if ($this->output) {
                 $dir = $workingDir ? " (in {$workingDir})" : '';
-                $this->output->info(\sprintf('Would run: "%s"%s', $command, $dir));
+                $this->output->info(sprintf('Would run: "%s"%s', $command, $dir));
             }
             return '';
         }
@@ -133,7 +138,7 @@ class Shell
             chdir($workingDir);
         }
 
-        $result = \shell_exec($command);
+        $result = shell_exec($command);
 
         if ($oldDir !== null) {
             chdir($oldDir);

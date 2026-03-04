@@ -19,6 +19,10 @@ use Horde\Components\Component;
 use Horde\Components\Exception;
 use Horde\Components\Helper\Version as HelperVersion;
 use Horde\Components\Helper\Shell;
+use Horde_Pear_Package_Xml;
+use Horde_String;
+
+use function array_walk;
 
 /**
  * Helper for adding entries to the change log(s).
@@ -135,7 +139,7 @@ class ChangeLog
          */
         $changelogArr = $changelog->getArrayCopy();
         $newChangelog = [];
-        \array_walk(
+        array_walk(
             $changelogArr,
             function ($entry, $ver) use (&$newChangelog, $oldVersion, $version, $api) {
                 if ($ver == $oldVersion) {
@@ -174,7 +178,7 @@ class ChangeLog
     /**
      * Builds a changelog.yml from an existing package.xml.
      *
-     * @param \Horde_Pear_Package_Xml $xml  The package xml handler.
+     * @param Horde_Pear_Package_Xml $xml  The package xml handler.
      */
     public function migrateToChangelogYml($xml): void
     {
@@ -259,7 +263,7 @@ class ChangeLog
      * Update package.xml file.
      *
      * @param string                 $log  The log entry.
-     * @param \Horde_Pear_Package_Xml $xml  The package xml handler.
+     * @param Horde_Pear_Package_Xml $xml  The package xml handler.
      *
      * @return string  Path to the updated package.xml file.
      */
@@ -275,7 +279,7 @@ class ChangeLog
     /**
      * Updates package.xml from changelog.yml.
      *
-     * @param \Horde_Pear_Package_Xml $xml  The package xml handler.
+     * @param Horde_Pear_Package_Xml $xml  The package xml handler.
      *
      * @return string  Path to the updated package.xml file.
      */
@@ -400,7 +404,7 @@ class ChangeLog
                 } else {
                     $indent = 6;
                 }
-                $entry = \Horde_String::wrap($entry, 79, "\n" . str_repeat(' ', $indent));
+                $entry = Horde_String::wrap($entry, 79, "\n" . str_repeat(' ', $indent));
                 $changes->add("\n" . $entry);
             }
         }

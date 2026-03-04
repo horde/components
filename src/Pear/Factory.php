@@ -15,6 +15,8 @@ use Horde\Components\Dependencies;
 use Horde\Components\Exception;
 use Horde\Components\Exception\Pear as ExceptionPear;
 use Horde\Components\Pear\Environment as PearEnvironment;
+use PEAR_PackageFile;
+use PEAR_PackageFile_v2;
 
 /**
  * Components_Pear_Factory:: generates PEAR specific handlers.
@@ -51,9 +53,9 @@ class Factory
      * @param string $environment The path to the PEAR environment.
      * @param string $config_file The path to the configuration file.
      *
-     * @return Environment The PEAR environment
+     * @return PearEnvironment The PEAR environment
      */
-    public function createEnvironment($environment, $config_file): \Horde\Components\Pear\Environment
+    public function createEnvironment($environment, $config_file): PearEnvironment
     {
         $instance = $this->_dependencies->createInstance(PearEnvironment::class);
         $instance->setFactory($this);
@@ -68,14 +70,14 @@ class Factory
      * Create a package representation for a specific PEAR environment.
      *
      * @param string                          $package_file The path of the package XML file.
-     * @param Environment $environment  The PEAR environment.
+     * @param PearEnvironment $environment  The PEAR environment.
      *
      * @return Package The PEAR package.
      */
     public function createPackageForEnvironment(
         $package_file,
-        Environment $environment
-    ): \Horde\Components\Pear\Package {
+        PearEnvironment $environment
+    ): Package {
         $package = $this->_createPackage($environment);
         $package->setPackageXml($package_file);
         return $package;
@@ -89,7 +91,7 @@ class Factory
      *
      * @return Package The PEAR package.
      */
-    public function createPackageForPearConfig($package_file, $config_file): \Horde\Components\Pear\Package
+    public function createPackageForPearConfig($package_file, $config_file): Package
     {
         return $this->createPackageForEnvironment(
             $package_file,
@@ -104,7 +106,7 @@ class Factory
      *
      * @return Package The PEAR package.
      */
-    public function createPackageForDefaultLocation($package_file): \Horde\Components\Pear\Package
+    public function createPackageForDefaultLocation($package_file): Package
     {
         return $this->createPackageForEnvironment(
             $package_file,
@@ -116,14 +118,14 @@ class Factory
      * Create a package representation for a specific PEAR environment based on a *.tgz archive.
      *
      * @param string                          $package_file The path of the package *.tgz file.
-     * @param Environment $environment  The environment for the package file.
+     * @param PearEnvironment $environment  The environment for the package file.
      *
      * @return Package The PEAR package.
      */
     public function createTgzPackageForEnvironment(
         $package_file,
-        Environment $environment
-    ): \Horde\Components\Pear\Package {
+        PearEnvironment $environment
+    ): Package {
         $package = $this->_createPackage($environment);
         $package->setPackageTgz($package_file);
         return $package;
@@ -132,11 +134,11 @@ class Factory
     /**
      * Create a generic package representation for a specific PEAR environment.
      *
-     * @param Environment $environment  The PEAR environment.
+     * @param PearEnvironment $environment  The PEAR environment.
      *
      * @return Package The generic PEAR package.
      */
-    private function _createPackage(Environment $environment): \Horde\Components\Pear\Package
+    private function _createPackage(PearEnvironment $environment): Package
     {
         $package = $this->_dependencies->createInstance(Package::class);
         $package->setFactory($this);
@@ -148,14 +150,14 @@ class Factory
      * Return the PEAR Package representation.
      *
      * @param string                          $package_xml_path Path to the package.xml file.
-     * @param Environment $environment      The PEAR environment.
+     * @param PearEnvironment $environment      The PEAR environment.
      */
     public function getPackageFile(
         $package_xml_path,
-        Environment $environment
-    ): \PEAR_PackageFile_v2 {
+        PearEnvironment $environment
+    ): PEAR_PackageFile_v2 {
         $config = $environment->getPearConfig();
-        $pkg = new \PEAR_PackageFile($config);
+        $pkg = new PEAR_PackageFile($config);
         return ExceptionPear::catchError(
             $pkg->fromPackageFile($package_xml_path, PEAR_VALIDATE_NORMAL)
         );
@@ -165,13 +167,13 @@ class Factory
      * Return the PEAR Package representation based on a local *.tgz archive.
      *
      * @param string                          $package_tgz_path Path to the *.tgz file.
-     * @param Environment $environment      The PEAR environment.
+     * @param PearEnvironment $environment      The PEAR environment.
      */
     public function getPackageFileFromTgz(
         $package_tgz_path,
         PearEnvironment $environment
-    ): \PEAR_PackageFile {
-        $pkg = new \PEAR_PackageFile($environment->getPearConfig());
+    ): PEAR_PackageFile {
+        $pkg = new PEAR_PackageFile($environment->getPearConfig());
         return ExceptionPear::catchError(
             $pkg->fromTgzFile($package_tgz_path, PEAR_VALIDATE_NORMAL)
         );

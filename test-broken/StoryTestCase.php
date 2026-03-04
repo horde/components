@@ -15,6 +15,9 @@ namespace Horde\Components;
 use Horde\Components\Exception\Pear as ExceptionPear;
 use Horde\Components\Components;
 use Horde\Components\Dependencies\Injector;
+use DirectoryIterator;
+use Horde_Test_Stub_Cli;
+use PHPUnit_Extensions_Story_TestCase;
 
 /**
  * Base for story based package testing.
@@ -31,7 +34,7 @@ use Horde\Components\Dependencies\Injector;
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  * @coversNothing
  */
-class StoryTestCase extends \PHPUnit_Extensions_Story_TestCase
+class StoryTestCase extends PHPUnit_Extensions_Story_TestCase
 {
     public function tearDown()
     {
@@ -653,7 +656,7 @@ class StoryTestCase extends \PHPUnit_Extensions_Story_TestCase
                 break;
             case 'a package snapshot will be generated at the indicated archive directory':
                 $found = false;
-                foreach (new \DirectoryIterator($this->_temp_dir) as $file) {
+                foreach (new DirectoryIterator($this->_temp_dir) as $file) {
                     if (preg_match('/Install-[0-9]+(\.[0-9]+)+([a-z0-9]+)?/', $file->getBasename('.tgz'), $matches)) {
                         $found = true;
                     }
@@ -662,7 +665,7 @@ class StoryTestCase extends \PHPUnit_Extensions_Story_TestCase
                 break;
             case 'a package release will be generated in the current directory':
                 $found = false;
-                foreach (new \DirectoryIterator($this->_temp_dir) as $file) {
+                foreach (new DirectoryIterator($this->_temp_dir) as $file) {
                     if (preg_match('/Install-0.0.1/', $file->getBasename('.tgz'), $matches)) {
                         $found = true;
                     }
@@ -752,7 +755,7 @@ class StoryTestCase extends \PHPUnit_Extensions_Story_TestCase
         $parameters['dependencies'] = new Injector();
         $parameters['dependencies']->setInstance(
             'Horde_Cli',
-            new \Horde_Test_Stub_Cli(['output' => $stream])
+            new Horde_Test_Stub_Cli(['output' => $stream])
         );
         call_user_func_array($callback, [$parameters]);
         rewind($stream);

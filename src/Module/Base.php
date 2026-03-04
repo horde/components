@@ -19,6 +19,7 @@ namespace Horde\Components\Module;
 use Horde\Components\Dependencies;
 use Horde\Injector\Injector;
 use Horde\Components\Module;
+use Horde_Cli_Modular_ModuleUsage;
 
 /**
  * Components_Module_Base:: provides core functionality for the
@@ -34,7 +35,7 @@ use Horde\Components\Module;
  * @author   Gunnar Wrobel <wrobel@pardus.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-abstract class Base implements Module, \Horde_Cli_Modular_ModuleUsage
+abstract class Base implements Module, Horde_Cli_Modular_ModuleUsage
 {
     /**
      * Constructor.
@@ -63,6 +64,20 @@ abstract class Base implements Module, \Horde_Cli_Modular_ModuleUsage
     public function getUsage(): string
     {
         return '';
+    }
+
+    /**
+     * Get a short one-line description for command listings.
+     *
+     * This is used in the main help output to keep it concise.
+     * Override this in subclasses to provide a brief description.
+     *
+     * @return string The short description.
+     */
+    public function getShortDescription(): string
+    {
+        // Default: return the title (subclasses should override)
+        return $this->getTitle() . ' command';
     }
 
     /**

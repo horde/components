@@ -59,16 +59,34 @@ class Git
         private readonly Output $output,
         private readonly GitHelper $gitHelper
     ) {
-        $this->gitRepoBase = $this->config->hasSetting('git_repo_base')
-            ? $this->config->getSetting('git_repo_base')
-            : 'https://github.com/horde/';
+        // Try new name first, then fall back to old name for backwards compatibility
+        $this->gitRepoBase = $this->config->hasSetting('scm.repo.base')
+            ? $this->config->getSetting('scm.repo.base')
+            : ($this->config->hasSetting('git_repo_base')
+                ? $this->config->getSetting('git_repo_base')
+                : 'https://github.com/horde/');
 
         $checkoutDir = $this->config->hasSetting('checkout.dir')
             ? $this->config->getSetting('checkout.dir')
-            : '/srv/git/horde';
+            : '/srv/git';
 
         // Normalize path: remove trailing slash to avoid double slashes when concatenating
         $this->localCheckoutDir = rtrim($checkoutDir, '/');
+    }
+
+    /**
+     * Normalize component name to include vendor prefix
+     *
+     * @param string $component Component name (e.g., "bundle" or "horde/bundle")
+     * @return string Component with vendor prefix (e.g., "horde/bundle")
+     */
+    private function normalizeComponentName(string $component): string
+    {
+        // Add vendor prefix if not present (assume horde)
+        if (!str_contains($component, '/')) {
+            return 'horde/' . $component;
+        }
+        return $component;
     }
 
     public function run(): void
@@ -87,10 +105,12 @@ class Git
                 $this->output->help('Cloning all components has not yet been ported from git-tools');
                 return;
             }
-            $component = $this->arguments[2];
+            $component = $this->normalizeComponentName($this->arguments[2]);
             $branch = $this->arguments[4] ?? '';
             $componentDir = $this->localCheckoutDir . '/' . $component . '/';
-            $cloneUrl = $this->gitRepoBase . '/' . $component . '.git';
+            // Extract component name for clone URL (without vendor prefix)
+            $componentName = basename($component);
+            $cloneUrl = $this->gitRepoBase . '/' . $componentName . '.git';
             // Achieved fixed format, delegate to helper
             $this->gitHelper->workflowClone(
                 $this->output,
@@ -106,6 +126,7 @@ class Git
                 $this->output->help('checkout component branch');
             }
             [$git, $action, $component, $branch] = $this->arguments;
+            $component = $this->normalizeComponentName($component);
             $componentDir = $this->localCheckoutDir . '/' . $component . '/';
             $this->gitHelper->workflowCheckout(
                 $this->output,
@@ -121,6 +142,7 @@ class Git
                 return;
             }
             [$git, $action, $component] = $this->arguments;
+            $component = $this->normalizeComponentName($component);
             $componentDir = $this->localCheckoutDir . '/' . $component . '/';
             $this->gitHelper->fetch($componentDir);
             return;
@@ -132,6 +154,7 @@ class Git
                 return;
             }
             [$git, $action, $component, $branch, $source] = $this->arguments;
+            $component = $this->normalizeComponentName($component);
             $componentDir = $this->localCheckoutDir . '/' . $component . '/';
             $this->gitHelper->workflowBranch(
                 $this->output,
@@ -147,6 +170,7 @@ class Git
                 $this->output->help('tag component branch tagname comment');
             }
             [$git, $action, $component, $branch, $tag, $comment] = $this->arguments;
+            $component = $this->normalizeComponentName($component);
             $componentDir = $this->localCheckoutDir . '/' . $component . '/';
             if (!$this->gitHelper->localBranchExists($componentDir, $branch)) {
                 $this->output->warn("Cannot tag, local branch does not exist");
@@ -164,6 +188,7 @@ class Git
                 exit();
             }
             [$git, $action, $component] = $this->arguments;
+            $component = $this->normalizeComponentName($component);
             $componentDir = $this->localCheckoutDir . '/' . $component . '/';
             $this->gitHelper->push($componentDir);
             return;

@@ -19,6 +19,9 @@ use Horde\Components\Helper\Version as HelperVersion;
 use Horde\Components\Output;
 use Horde\Components\Exception;
 use Horde\Components\Util\YamlLoader;
+use Horde;
+use Horde_String;
+use NumberFormatter;
 
 /**
  * This class deals with the information associated to a release.
@@ -75,7 +78,7 @@ class Notes
             $version = HelperVersion::parsePearVersion(
                 $this->_component->getVersion()
             );
-            $description = \Horde_String::lower($version->description);
+            $description = Horde_String::lower($version->description);
             if (!str_contains($description, 'release')) {
                 $description .= ' release';
             }
@@ -143,7 +146,7 @@ http://www.horde.org/apps/%s/docs/INSTALL
 %s
 The major changes compared to the %s version %s are:%s',
                 $version->subversion
-                    ? \NumberFormatter::create('en_US', \NumberFormatter::ORDINAL)
+                    ? NumberFormatter::create('en_US', NumberFormatter::ORDINAL)
                         ->format($version->subversion) . ' '
                     : '',
                 $description,
@@ -175,7 +178,7 @@ The major changes compared to the %s version %s are:%s',
     public function getBranch(): string
     {
         if (!empty($this->_notes['branch'])
-            && $this->_notes['name'] != \Horde::class) {
+            && $this->_notes['name'] != Horde::class) {
             return strtr($this->_notes['branch'], ['Horde ' => 'H']);
         }
         return '';

@@ -26,6 +26,7 @@ use Horde\Components\Auth\GitHubAppAuthenticationStrategy;
 use Horde\Components\Auth\GitHubAppAuthenticationService;
 use Horde\GithubApiClient\GithubApiClient;
 use Horde\GithubApiClient\GithubApiConfig;
+use Throwable;
 
 /**
  * Horde\Components\Runner\Status:: runner for status output.
@@ -67,9 +68,12 @@ class Status
         private readonly InstallationDirectory $installDir,
         private readonly AuthenticationFactory $authFactory,
     ) {
-        $this->gitRepoBase = $this->config->hasSetting('git_repo_base')
-            ? $this->config->getSetting('git_repo_base')
-            : 'https://github.com/horde/';
+        // Try new name first, then fall back to old name for backwards compatibility
+        $this->gitRepoBase = $this->config->hasSetting('scm.repo.base')
+            ? $this->config->getSetting('scm.repo.base')
+            : ($this->config->hasSetting('git_repo_base')
+                ? $this->config->getSetting('git_repo_base')
+                : 'https://github.com/horde/');
     }
 
     public function run(): void
@@ -178,7 +182,7 @@ class Status
             } catch (\Exception $e) {
                 $this->output->warn("Authentication failed: " . $e->getMessage());
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->output->warn("Error checking GitHub authentication: " . $e->getMessage());
         }
     }
@@ -279,7 +283,7 @@ class Status
             if ($scopes->canReadOrganizations()) {
                 $this->output->ok("Token can read organizations");
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->output->warn("Failed to verify token scopes: " . $e->getMessage());
             if (str_contains($e->getMessage(), '401')) {
                 $this->output->warn("Token appears to be invalid, expired, or revoked");
@@ -328,7 +332,7 @@ class Status
             } else {
                 $this->output->info("Rate limit reset time: $resetTime");
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->output->warn("Failed to check rate limit: " . $e->getMessage());
         }
     }
@@ -396,7 +400,7 @@ class Status
                 $this->showTroubleshootingHelp($e);
             }
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->output->warn("Error during verification: " . $e->getMessage());
         }
     }

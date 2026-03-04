@@ -20,6 +20,7 @@ use PHPUnit\Framework\TestCase;
 use Horde\Components\Output;
 use Horde\Components\Output\Presenter;
 use Horde_Cli;
+use Exception;
 
 /**
  * Test the Output class.
@@ -198,7 +199,7 @@ class OutputTest extends TestCase
 
         try {
             $output->fail('Fatal error');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // fatal() might throw, that's fine
         }
     }

@@ -99,7 +99,7 @@ class Base
      *
      * @return Component The component to be checked.
      */
-    protected function getComponent(): ?\Horde\Components\Component
+    protected function getComponent(): ?Component
     {
         return $this->_component;
     }
@@ -139,7 +139,7 @@ class Base
      *
      * @return Output The output handler.
      */
-    protected function getOutput(): \Horde\Components\Output
+    protected function getOutput(): Output
     {
         return $this->_output;
     }

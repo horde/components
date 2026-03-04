@@ -12,6 +12,12 @@
 namespace Horde\Components\Helper;
 
 use Horde\Components\Output;
+use Horde_Http_Client;
+
+use function file_get_contents;
+use function preg_match;
+use function preg_match_all;
+use function trim;
 
 /**
  * Components_Helper_DocOrigin:: deals with a DOCS_ORIGIN file.
@@ -51,7 +57,7 @@ class DocsOrigin
     public function __construct($docs_origin, /**
      * The HTTP client for remote access.
      */
-        private readonly \Horde_Http_Client $_client)
+        private readonly Horde_Http_Client $_client)
     {
         if (!is_array($docs_origin)) {
             $docs_origin = [$docs_origin];
@@ -66,11 +72,11 @@ class DocsOrigin
     {
         if ($this->_documents === null) {
             $this->_documents = [];
-            $rst = \file_get_contents($this->_docs_origin[0]);
-            if (\preg_match_all('/^:`([^:]*)`_:(.*)$/m', $rst, $matches)) {
+            $rst = file_get_contents($this->_docs_origin[0]);
+            if (preg_match_all('/^:`([^:]*)`_:(.*)$/m', $rst, $matches)) {
                 foreach ($matches[1] as $match) {
-                    if (\preg_match('#^.. _' . $match . ':(.*)$#m', $rst, $url)) {
-                        $this->_documents[$match] = \trim((string) $url[1]);
+                    if (preg_match('#^.. _' . $match . ':(.*)$#m', $rst, $url)) {
+                        $this->_documents[$match] = trim((string) $url[1]);
                     }
                 }
             }

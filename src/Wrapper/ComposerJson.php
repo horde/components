@@ -17,6 +17,8 @@ namespace Horde\Components\Wrapper;
 use Horde\Components\Exception;
 use Horde\Components\Wrapper;
 use Horde\Components\WrapperTrait;
+use ArrayObject;
+use Stringable;
 
 /**
  * Wrapper for the composer.json file.
@@ -26,7 +28,7 @@ use Horde\Components\WrapperTrait;
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class ComposerJson extends \ArrayObject implements Wrapper, \Stringable
+class ComposerJson extends ArrayObject implements Wrapper, Stringable
 {
     use WrapperTrait;
 

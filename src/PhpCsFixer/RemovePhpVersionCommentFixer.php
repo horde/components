@@ -24,6 +24,7 @@ use PhpCsFixer\FixerDefinition\FixerDefinitionInterface;
 use PhpCsFixer\FixerDefinition\CodeSample;
 use PhpCsFixer\Tokenizer\Tokens;
 use PhpCsFixer\Tokenizer\Token;
+use SplFileInfo;
 
 /**
  * Removes "PHP Version X" lines from docblocks.
@@ -77,7 +78,7 @@ class Foo {}
         return 10;
     }
 
-    protected function applyFix(\SplFileInfo $file, Tokens $tokens): void
+    protected function applyFix(SplFileInfo $file, Tokens $tokens): void
     {
         foreach ($tokens as $index => $token) {
             if (!$token->isGivenKind(T_DOC_COMMENT)) {

@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Horde\Components\Ci\Config;
 
+use InvalidArgumentException;
+
 /**
  * CI configuration container.
  *
@@ -126,7 +128,7 @@ class CiConfig
 
         // Components path must be provided - no guessing
         if (!isset($config['components_path'])) {
-            throw new \InvalidArgumentException('components_path must be provided in configuration');
+            throw new InvalidArgumentException('components_path must be provided in configuration');
         }
         $this->componentsPath = $config['components_path'];
     }

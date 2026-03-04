@@ -46,6 +46,7 @@ use Horde\GithubApiClient\GithubApiConfig;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Horde_Cli_Modular;
 
 /**
  * The Components:: class is the entry point for the various component actions
@@ -86,7 +87,7 @@ class Components
         $dispatcher = new EventDispatcher($provider);
         // Setup the DI system and feed the container - whatever needs the event system will get it
         $injector = new Dependencies\Injector(new TopLevel());
-        $injector->setInstance(EventDispatcherInterface::class, $dispatcher);
+        $injector->setInstance(EventdispatcherInterface::class, $dispatcher);
         $injector->setInstance(ListenerProviderInterface::class, $provider);
         $injector->setInstance(ArgvWrapper::class, ArgvWrapper::fromGlobal());
         $app = new Components($injector, $parameters);
@@ -106,7 +107,7 @@ class Components
         $injector->setInstance(EnvironmentConfigProvider::class, $environmentConfig);
         $injector->setInstance(BuiltinConfigProvider::class, new BuiltinConfigProvider(
             [
-                'checkout.dir' => $environmentConfig->hasSetting('HOME') ? $environmentConfig->getSetting('HOME') . '/git/horde' : '/srv/git/horde',
+                'checkout.dir' => $environmentConfig->hasSetting('HOME') ? $environmentConfig->getSetting('HOME') . '/git' : '/srv/git',
                 'repo.org' => 'horde',
                 'scm.domain' => 'https://github.com',
                 'scm.type' => 'github',
@@ -198,7 +199,19 @@ class Components
         }
 
         if (!$ran) {
-            $modular->getParser()->parserError(self::ERROR_NO_ACTION);
+            // Show brief help instead of parser error
+            $helpModule = null;
+            foreach ($modular->getModules() as $module) {
+                if ($module instanceof Module\Help) {
+                    $helpModule = $module;
+                    break;
+                }
+            }
+            if ($helpModule) {
+                $helpModule->showBriefHelp();
+            } else {
+                $modular->getParser()->parserError(self::ERROR_NO_ACTION);
+            }
         }
     }
 
@@ -279,7 +292,7 @@ This is a list of available actions (use "help ACTION" to get additional informa
     /**
      * Provide a list of available action arguments.
      */
-    protected static function _getActionArguments(\Horde_Cli_Modular $modular): array
+    protected static function _getActionArguments(Horde_Cli_Modular $modular): array
     {
         $actions = [];
         foreach ($modular->getModules() as $module) {

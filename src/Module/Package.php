@@ -84,6 +84,16 @@ class Package extends Base
     }
 
     /**
+     * Get a short one-line description for command listings.
+     *
+     * @return string The short description.
+     */
+    public function getShortDescription(): string
+    {
+        return 'Check package information';
+    }
+
+    /**
      * Return the action arguments supported by this module.
      *
      * @return array A list of supported action arguments.

@@ -16,6 +16,7 @@ use Horde\Components\Exception;
 use Horde\Components\Pear\Environment as PearEnvironment;
 use Horde\Components\Wrapper\PackageXml;
 use Horde_Pear_Package_Xml;
+use Horde_Util;
 
 /**
  * Represents a component archive.
@@ -99,7 +100,7 @@ class Archive extends Base
     /**
      * Return a PEAR package representation for the component.
      *
-     * @return \Horde_Pear_Package_Xml The package representation.
+     * @return Horde_Pear_Package_Xml The package representation.
      */
     protected function getPackageXml(): PackageXml
     {
@@ -123,7 +124,7 @@ class Archive extends Base
     private function _loadPackageFromArchive(): string
     {
         if (!function_exists('gzopen')) {
-            $tmpDir = \Horde_Util::createTempDir();
+            $tmpDir = Horde_Util::createTempDir();
             copy($this->_archive, $tmpDir . '/archive.tgz');
             system('cd ' . $tmpDir . ' && tar zxpf archive.tgz');
             if (!is_file($tmpDir . '/package.xml')) {
@@ -171,7 +172,7 @@ class Archive extends Base
             }
 
             $package = substr($tar, 512, $filesize);
-            $tmpFile = \Horde_Util::getTempFile();
+            $tmpFile = Horde_Util::getTempFile();
             file_put_contents($tmpFile, $package);
             return $tmpFile;
         }

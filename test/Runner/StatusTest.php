@@ -19,6 +19,7 @@ use Horde\GithubApiClient\GithubInstallationList;
 use Horde\GithubApiClient\RateLimit;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use RuntimeException;
 
 /**
  * Copyright 2026 The Horde Project (http://www.horde.org/)
@@ -258,7 +259,7 @@ class StatusTest extends TestCase
 
         // Simulate authentication failure
         $strategy->method('authenticate')
-            ->willThrowException(new \RuntimeException('Authentication failed: Invalid credentials'));
+            ->willThrowException(new RuntimeException('Authentication failed: Invalid credentials'));
 
         // Expect failure warning
         $output->expects($this->atLeastOnce())

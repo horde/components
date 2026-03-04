@@ -30,6 +30,7 @@ use Horde\Components\Ci\Init\InitCommand;
 use Horde\Components\Ci\Config\CiConfig;
 use Horde\Components\Ci\Run\RunCommand;
 use Horde\Components\Ci\Run\ResultCollector;
+use Phar;
 
 /**
  * Components_Module_Ci:: manages CI setup and execution for components.
@@ -122,6 +123,16 @@ class Ci extends Base
     public function getUsage(): string
     {
         return 'Manage CI setup and execution.';
+    }
+
+    /**
+     * Get a short one-line description for command listings.
+     *
+     * @return string The short description.
+     */
+    public function getShortDescription(): string
+    {
+        return 'Manage continuous integration';
     }
 
     /**
@@ -495,9 +506,9 @@ MORE INFO:
 
         // Determine horde-components path
         // Check if we're running from a phar
-        if (strlen(\Phar::running()) > 0) {
+        if (strlen(Phar::running()) > 0) {
             // We're inside a phar - use the phar path
-            $componentsPath = \Phar::running(false);
+            $componentsPath = Phar::running(false);
         } else {
             // Normal file system - use relative path to bin/horde-components
             $componentsPath = realpath(__DIR__ . '/../../bin/horde-components');
@@ -507,9 +518,19 @@ MORE INFO:
             }
         }
 
+        // Get GitHub API client (if available)
+        $apiClient = null;
+        if (getenv('GITHUB_TOKEN') !== false) {
+            try {
+                $apiClient = $this->dependencies->getGithubClient();
+            } catch (\Exception $e) {
+                // GitHub client not available, continue without it
+            }
+        }
+
         // Create RunCommand with dependencies
         $collector = new ResultCollector($output);
-        $runCommand = new RunCommand($output, $collector, $componentsPath, $workDir);
+        $runCommand = new RunCommand($output, $collector, $componentsPath, $workDir, $apiClient);
 
         try {
             $exitCode = $runCommand->execute($workDir);

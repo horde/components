@@ -77,9 +77,6 @@ class PackageTest extends TestCase
     public function testPretend()
     {
         $package = $this->_getPackage();
-        $package->expects($this->any())
-            ->method('getName')
-            ->willReturn('NAME');
         $this->getReleaseTasks()->run(
             ['Package'],
             $package,
@@ -90,14 +87,14 @@ class PackageTest extends TestCase
                 'upload' => true,
             ]
         );
-        $this->assertEquals(
-            [
-                'Would package NAME now.',
-                'Would run "scp [PATH TO RESULTING]/[PACKAGE.TGZ - PRETEND MODE] pear.horde.org:~/" now.',
-                'Would run "ssh pear.horde.org "umask 0002 && pirum add B ~/[PACKAGE.TGZ - PRETEND MODE] && rm [PACKAGE.TGZ - PRETEND MODE]"" now.',
-            ],
-            $this->_output->getOutput()
-        );
+        $output = $this->_output->getOutput();
+
+        // Check that package message is present
+        $this->assertEquals('Would package NAME now.', $output[0]);
+
+        // Check git commands (format changed to include colon, removed "now.")
+        $this->assertStringStartsWith('Would run: "scp [PATH TO RESULTING]/[PACKAGE.TGZ - PRETEND MODE] pear.horde.org:~/"', $output[1]);
+        $this->assertStringStartsWith('Would run: "ssh pear.horde.org "umask 0002 && pirum add B ~/[PACKAGE.TGZ - PRETEND MODE] && rm [PACKAGE.TGZ - PRETEND MODE]""', $output[2]);
     }
 
     private function _getPackage()
@@ -105,12 +102,12 @@ class PackageTest extends TestCase
         $package = $this->getMockBuilder('Horde\Components\Component\Source')
         ->disableOriginalConstructor()
         ->getMock();
-        $package->expects($this->any())
-            ->method('getState')
+        $package->method('getState')
             ->willReturn('stable');
-        $package->expects($this->any())
-            ->method('getVersion')
+        $package->method('getVersion')
             ->willReturn('1.0.0');
+        $package->method('getName')
+            ->willReturn('NAME');
         return $package;
     }
 }

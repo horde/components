@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Processes template files by copying and replacing placeholders.
  *
@@ -103,7 +104,7 @@ class TemplateProcessor
             if ($item->isDir()) {
                 // Create directory
                 if (!is_dir($targetItemPath)) {
-                    mkdir($targetItemPath, 0755, true);
+                    mkdir($targetItemPath, 0o755, true);
                     $directoriesCreated++;
                 }
             } else {
@@ -141,7 +142,7 @@ class TemplateProcessor
         // Ensure target directory exists
         $targetDir = dirname($targetPath);
         if (!is_dir($targetDir)) {
-            mkdir($targetDir, 0755, true);
+            mkdir($targetDir, 0o755, true);
         }
 
         // Check if file is binary
@@ -212,8 +213,8 @@ class TemplateProcessor
         ];
 
         foreach ($skipPatterns as $pattern) {
-            if (str_starts_with($relativePath, $pattern) ||
-                str_contains($relativePath, '/' . $pattern)) {
+            if (str_starts_with($relativePath, $pattern)
+                || str_contains($relativePath, '/' . $pattern)) {
                 return true;
             }
         }

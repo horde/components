@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Example class for Skeleton library.
  *

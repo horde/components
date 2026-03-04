@@ -33,6 +33,17 @@ use Horde\Components\Wrapper\ComposerJson as WrapperComposerJson;
 use Horde\Components\Wrapper\HordeYml as WrapperHordeYml;
 use Horde\Components\Wrapper\PackageXml as WrapperPackageXml;
 use stdClass;
+use DOMElement;
+use Horde_Pear_Exception;
+use Horde_Pear_Package_Xml;
+use Horde_Release_Sentinel;
+use InvalidArgumentException;
+use PEAR_Common;
+use PEAR_PackageFile;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+
+use function version_compare;
 
 /**
  * Represents a source component.
@@ -48,7 +59,7 @@ class Source extends Base
     /**
      * The PEAR package file representing the component.
      *
-     * @var \PEAR_PackageFile
+     * @var PEAR_PackageFile
      */
     protected $_package_file;
 
@@ -134,7 +145,7 @@ class Source extends Base
                     && $info['state']['release'] != 'stable') {
                     continue;
                 }
-                if (\version_compare($version, $currentVersion, '>=')) {
+                if (version_compare($version, $currentVersion, '>=')) {
                     return $previousVersion;
                 }
                 $previousVersion = $version;
@@ -312,7 +323,7 @@ class Source extends Base
             if (!is_dir($path)) {
                 continue;
             }
-            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path)) as $file) {
+            foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path)) as $file) {
                 if ($file->isFile()
                     && $file->getFilename() == 'DOCS_ORIGIN') {
                     return [$file->getPathname(), $this->directory];
@@ -331,7 +342,7 @@ class Source extends Base
      *
      * @return string  The result of the action.
      * @throws Exception
-     * @throws \Horde_Pear_Exception
+     * @throws Horde_Pear_Exception
      * @throws NotFound
      */
     public function updatePackage($action, $options): string
@@ -381,7 +392,7 @@ class Source extends Base
      *
      * @return WrapperPackageXml  The updated package.xml handler.
      * @throws Exception
-     * @throws \Horde_Pear_Exception
+     * @throws Horde_Pear_Exception
      * @throws NotFound
      */
     public function updatePackageFromHordeYml(): WrapperPackageXml
@@ -428,7 +439,7 @@ class Source extends Base
             $yaml['license']['identifier']
         );
         if ($yaml['license']['uri']) {
-            /** @var \DOMElement $node */
+            /** @var DOMElement $node */
             $node = $xml->findNode('/p:package/p:license');
             $node->setAttribute('uri', $yaml['license']['uri']);
         }
@@ -461,7 +472,7 @@ class Source extends Base
     /**
      * Update dependencies.
      *
-     * @param \Horde_Pear_Package_Xml $xml A package.xml handler.
+     * @param Horde_Pear_Package_Xml $xml A package.xml handler.
      * @param array $dependencies         A list of dependencies.
      *
      * @throws Exception
@@ -501,7 +512,7 @@ class Source extends Base
     /**
      * Adds a number of dependencies of the same kind.
      *
-     * @param \Horde_Pear_Package_Xml $xml  A package.xml handler.
+     * @param Horde_Pear_Package_Xml $xml  A package.xml handler.
      * @param string $required             A required dependency? Either
      *                                     'required' or 'optional'.
      * @param string $type                 A dependency type from .horde.yml.
@@ -669,7 +680,7 @@ class Source extends Base
      *
      * @return string The success message.
      * @throws Exception
-     * @throws \Horde_Pear_Exception
+     * @throws Horde_Pear_Exception
      */
     public function sync($options): string
     {
@@ -726,7 +737,7 @@ class Source extends Base
      *
      * @return string  Result message.
      * @throws Exception
-     * @throws \Horde_Pear_Exception
+     * @throws Horde_Pear_Exception
      */
     public function setVersion(
         $rel_version = null,
@@ -779,7 +790,7 @@ class Source extends Base
      *
      * @return Wrapper[]  Wrappers of updated files.
      * @throws Exception
-     * @throws \Horde_Pear_Exception
+     * @throws Horde_Pear_Exception
      */
     public function _setVersion($rel_version = null, $api_version = null): array
     {
@@ -834,7 +845,7 @@ class Source extends Base
      *
      * @return string The success message.
      * @throws Exception
-     * @throws \Horde_Pear_Exception
+     * @throws Horde_Pear_Exception
      */
     public function setState(
         $rel_state = null,
@@ -884,7 +895,7 @@ class Source extends Base
      *
      * @return string The success message.
      * @throws Exception
-     * @throws \Horde_Pear_Exception
+     * @throws Horde_Pear_Exception
      */
     public function nextVersion(
         $version,
@@ -915,7 +926,7 @@ class Source extends Base
         }
         $changelog[$version] = $nextVersion;
         $changelog->uksort(
-            fn($a, $b) => \version_compare($b, $a)
+            fn($a, $b) => version_compare($b, $a)
         );
 
         $updated = $this->_setVersion($version);
@@ -972,7 +983,7 @@ class Source extends Base
      */
     public function currentSentinel($changes, $app, $options): array
     {
-        /** @var \Horde_Release_Sentinel $sentinel */
+        /** @var Horde_Release_Sentinel $sentinel */
         $sentinel = $this->getFactory()->createSentinel($this->directory);
         if (empty($options['pretend'])) {
             $sentinel->replaceChanges($changes);
@@ -1064,7 +1075,7 @@ class Source extends Base
         $old_dir = getcwd();
         chdir($destination);
         try {
-            $pear_common = new \PEAR_Common();
+            $pear_common = new PEAR_Common();
             $result = ExceptionPear::catchError(
                 $pkg->getDefaultGenerator()->toTgz($pear_common)
             );
@@ -1290,7 +1301,7 @@ class Source extends Base
                     );
                     break;
                 default:
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         $file . ' is not a supported file wrapper'
                     );
             }

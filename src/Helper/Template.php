@@ -11,6 +11,12 @@
 
 namespace Horde\Components\Helper;
 
+use function basename;
+use function dirname;
+use function file_put_contents;
+use function ob_get_clean;
+use function ob_start;
+
 /**
  * Components_Helper_Template:: converts a template into a target file.
  *
@@ -44,10 +50,10 @@ class Template
         foreach ($parameters as $key => $value) {
             ${$key} = $value;
         }
-        $tdir = \dirname($this->_target);
-        $target = \basename($this->_target);
-        \ob_start();
+        $tdir = dirname($this->_target);
+        $target = basename($this->_target);
+        ob_start();
         include $this->_source;
-        \file_put_contents($tdir . DIRECTORY_SEPARATOR . $target, \ob_get_clean());
+        file_put_contents($tdir . DIRECTORY_SEPARATOR . $target, ob_get_clean());
     }
 }

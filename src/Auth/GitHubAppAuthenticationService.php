@@ -12,6 +12,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use RuntimeException;
+use Exception;
 
 /**
  * GitHub App authentication service
@@ -160,7 +161,7 @@ class GitHubAppAuthenticationService
                 $this->config->installationId,
                 new CreateInstallationAccessTokenParams()
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new RuntimeException(
                 "Failed to create installation access token: {$e->getMessage()}",
                 0,

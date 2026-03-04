@@ -38,7 +38,7 @@ class TemplateRendererTest extends TestCase
     {
         parent::setUp();
         $this->tempDir = sys_get_temp_dir() . '/horde-test-' . uniqid();
-        mkdir($this->tempDir, 0755, true);
+        mkdir($this->tempDir, 0o755, true);
     }
 
     protected function tearDown(): void
@@ -113,10 +113,10 @@ class TemplateRendererTest extends TestCase
     public function testReplacesMultipleVariables(): void
     {
         $templateContent = <<<'TEMPLATE'
-Component: {{COMPONENT}}
-Version: {{VERSION}}
-Path: {{PATH}}
-TEMPLATE;
+            Component: {{COMPONENT}}
+            Version: {{VERSION}}
+            Path: {{PATH}}
+            TEMPLATE;
         file_put_contents($this->tempDir . '/multi.template', $templateContent);
 
         $renderer = new TemplateRenderer($this->tempDir);

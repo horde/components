@@ -67,9 +67,12 @@ class Github
         private readonly GithubApiClient $client,
         private readonly GitCheckoutDirectory $gitCheckoutDirectory
     ) {
-        $this->gitRepoBase = $this->config->hasSetting('git_repo_base')
-            ? $this->config->getSetting('git_repo_base')
-            : 'https://github.com/horde/';
+        // Try new name first, then fall back to old name for backwards compatibility
+        $this->gitRepoBase = $this->config->hasSetting('scm.repo.base')
+            ? $this->config->getSetting('scm.repo.base')
+            : ($this->config->hasSetting('git_repo_base')
+                ? $this->config->getSetting('git_repo_base')
+                : 'https://github.com/horde/');
 
         $this->localCheckoutDir = $this->config->hasSetting('checkout.dir')
             ? $this->config->getSetting('checkout.dir')

@@ -11,6 +11,8 @@
 
 namespace Horde\Components\Qc\Task;
 
+use Throwable;
+
 /**
  * Horde\Components\Qc\Task\Phpstan runs PHPStan static analysis on the component.
  *
@@ -119,7 +121,7 @@ class Phpstan extends Base
 
             // Run at watermark level (MUST PASS)
             $this->getOutput()->running('Testing watermark level ' . $watermark . '...');
-            $watermarkResult = $this->testLevel($binary, $componentPath, $watermark);
+            $watermarkResult = $this->testLevel($binary, $componentPath, $watermark, $options);
 
             if (!$watermarkResult['passed']) {
                 // CODE REGRESSION - fails at watermark!
@@ -148,7 +150,7 @@ class Phpstan extends Base
 
             while ($testLevel <= 9) {
                 $this->getOutput()->info('Testing level ' . $testLevel . '...');
-                $result = $this->testLevel($binary, $componentPath, $testLevel);
+                $result = $this->testLevel($binary, $componentPath, $testLevel, $options);
 
                 if ($result['passed']) {
                     $this->getOutput()->ok('✓ Level ' . $testLevel . ' passes');
@@ -179,7 +181,7 @@ class Phpstan extends Base
                 $this->getOutput()->info('Commit .horde.yml to persist this improvement');
 
                 // Re-run at highest level to get final results
-                $finalResult = $this->testLevel($binary, $componentPath, $highestPassing);
+                $finalResult = $this->testLevel($binary, $componentPath, $highestPassing, $options);
                 $this->nativeResults = $finalResult['results'];
                 $this->level = $highestPassing;
             } elseif ($highestPassing === 9) {
@@ -190,7 +192,7 @@ class Phpstan extends Base
             } else {
                 // At watermark, cannot raise yet
                 $nextLevel = $watermark + 1;
-                $nextResult = $this->testLevel($binary, $componentPath, $nextLevel);
+                $nextResult = $this->testLevel($binary, $componentPath, $nextLevel, $options);
 
                 $this->getOutput()->ok(
                     '✓ Code passes watermark level ' . $watermark
@@ -216,7 +218,7 @@ class Phpstan extends Base
             // Always return 0 if watermark passes (even if we cannot raise)
             return 0;
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->getOutput()->warn('PHPStan execution failed: ' . $e->getMessage());
             return 1;
         }
@@ -269,12 +271,72 @@ class Phpstan extends Base
     /**
      * Find PHPStan configuration file.
      *
+     * Supports --prefer-config-from option:
+     * - "tool": Use horde-components phpstan.neon
+     * - "uut": Only use component's config (no fallback)
+     * - path: Use explicit config path
+     * - default: Component config first, then horde-components fallback
+     *
      * @param string $componentPath Path to component.
+     * @param array $options CLI options including prefer_config_from.
      *
      * @return string|null Path to config file or null if not found.
      */
-    private function findConfiguration(string $componentPath): ?string
+    private function findConfiguration(string $componentPath, array $options = []): ?string
     {
+        $preference = $options['prefer_config_from'] ?? null;
+
+        // If explicit path provided, use it
+        if ($preference !== null && $preference !== 'tool' && $preference !== 'uut') {
+            $explicitPath = $preference;
+            if (file_exists($explicitPath)) {
+                $resolvedPath = realpath($explicitPath);
+                $this->getOutput()->info("Using explicit config: {$resolvedPath}");
+                return $resolvedPath;
+            }
+            $this->getOutput()->warn("Config path not found: {$explicitPath} - falling back to default");
+            $preference = null; // Fall through to default behavior
+        }
+
+        // "tool" preference - use horde-components config
+        if ($preference === 'tool') {
+            $componentsConfig = __DIR__ . '/../../../phpstan.neon';
+            if (file_exists($componentsConfig)) {
+                $resolvedPath = realpath($componentsConfig);
+                $this->getOutput()->info('Using horde-components config (--prefer-config-from=tool)');
+                if ($this->getOutput()->isVerbose()) {
+                    $this->getOutput()->info('Config path: ' . $resolvedPath);
+                }
+                return $resolvedPath;
+            }
+            $this->getOutput()->warn('horde-components phpstan.neon not found');
+            return null;
+        }
+
+        // "uut" preference - only use component's own config
+        if ($preference === 'uut') {
+            $componentConfigs = [
+                $componentPath . '/phpstan.neon',
+                $componentPath . '/phpstan.neon.dist',
+                $componentPath . '/phpstan.dist.neon',
+                $componentPath . '/.phpstan.neon',
+                $componentPath . '/.phpstan.neon.dist',
+            ];
+
+            foreach ($componentConfigs as $config) {
+                if (file_exists($config)) {
+                    if ($this->getOutput()->isVerbose()) {
+                        $this->getOutput()->info('Using component config (--prefer-config-from=uut)');
+                    }
+                    return $config;
+                }
+            }
+
+            $this->getOutput()->warn('Component has no phpstan.neon - no config will be used');
+            return null;
+        }
+
+        // Default behavior: component config first
         $possibleConfigs = [
             $componentPath . '/phpstan.neon',
             $componentPath . '/phpstan.neon.dist',
@@ -285,10 +347,25 @@ class Phpstan extends Base
 
         foreach ($possibleConfigs as $config) {
             if (file_exists($config)) {
+                if ($this->getOutput()->isVerbose()) {
+                    $this->getOutput()->info('Using component\'s own PHPStan config');
+                }
                 return $config;
             }
         }
 
+        // No component config - use horde-components config as fallback
+        $componentsConfig = __DIR__ . '/../../../phpstan.neon';
+        if (file_exists($componentsConfig)) {
+            $resolvedPath = realpath($componentsConfig);
+            $this->getOutput()->info('Using horde-components PHPStan config (component has no own config)');
+            if ($this->getOutput()->isVerbose()) {
+                $this->getOutput()->info('Config path: ' . $resolvedPath);
+            }
+            return $resolvedPath;
+        }
+
+        // No config found
         return null;
     }
 
@@ -307,7 +384,7 @@ class Phpstan extends Base
             if (isset($hordeYml['quality']['phpstan']['level'])) {
                 return (int) $hordeYml['quality']['phpstan']['level'];
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Fall through to default
         }
 
@@ -377,7 +454,7 @@ class Phpstan extends Base
 
             $this->getOutput()->info('Updated .horde.yml watermark: ' . $oldLevel . ' → ' . $newLevel);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->getOutput()->warn('Failed to update .horde.yml: ' . $e->getMessage());
         }
     }
@@ -388,10 +465,11 @@ class Phpstan extends Base
      * @param string $binary Path to PHPStan binary.
      * @param string $componentPath Path to component.
      * @param int $level Level to test (0-9).
+     * @param array $options CLI options.
      *
      * @return array ['passed' => bool, 'errors' => int, 'exit_code' => int, 'results' => array|null]
      */
-    private function testLevel(string $binary, string $componentPath, int $level): array
+    private function testLevel(string $binary, string $componentPath, int $level, array $options = []): array
     {
         $cmd = [
             escapeshellarg($binary),
@@ -406,7 +484,7 @@ class Phpstan extends Base
         // Do NOT use config file when testing levels
         // Config files may contain level settings that override --level argument
         // Always explicitly specify paths instead
-        $configPath = $this->findConfiguration($componentPath);
+        $configPath = $this->findConfiguration($componentPath, $options);
         if ($configPath !== null) {
             // Parse paths from config, but don't use config file
             $paths = $this->getPathsFromConfig($configPath);

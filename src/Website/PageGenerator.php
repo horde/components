@@ -15,6 +15,7 @@ namespace Horde\Components\Website;
 
 use RuntimeException;
 use Horde\HordeYmlFile\HordeYmlFile;
+use Exception;
 
 /**
  * Full page generator for dev.horde.org
@@ -126,7 +127,7 @@ class PageGenerator
         if (file_exists($path)) {
             try {
                 return new HordeYmlFile($path);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Ignore parse errors, return null
                 return null;
             }

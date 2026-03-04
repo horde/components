@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Locates skeleton/template directories for component scaffolding.
  *

@@ -43,7 +43,7 @@ class LaneScriptGeneratorTest extends TestCase
 
         // Create temp directory for test scripts
         $this->tempDir = sys_get_temp_dir() . '/horde-ci-test-' . uniqid();
-        mkdir($this->tempDir, 0755, true);
+        mkdir($this->tempDir, 0o755, true);
     }
 
     protected function tearDown(): void
@@ -129,7 +129,7 @@ class LaneScriptGeneratorTest extends TestCase
 
         // Check actual permissions
         $perms = fileperms($scriptPath);
-        $this->assertTrue(($perms & 0100) !== 0, 'Owner should have execute permission');
+        $this->assertTrue(($perms & 0o100) !== 0, 'Owner should have execute permission');
     }
 
     public function testScriptContainsCorrectShebang(): void
@@ -188,6 +188,7 @@ class LaneScriptGeneratorTest extends TestCase
             'component_dir' => '/tmp/horde-ci/lanes/php8.4-dev/Http',
             'tools_dir' => '/custom/tools/path',
             'build_dir' => '/tmp/horde-ci/lanes/php8.4-dev/Http/build',
+            'components_path' => '/usr/bin/horde-components',
         ];
 
         $this->generator->generate($scriptPath, $config);
@@ -195,8 +196,7 @@ class LaneScriptGeneratorTest extends TestCase
         $content = file_get_contents($scriptPath);
 
         $this->assertStringContainsString('TOOLS_DIR="/custom/tools/path"', $content, 'Should set correct tools directory');
-        $this->assertStringContainsString('$TOOLS_DIR/phpunit-', $content, 'Should use tools directory for PHPUnit');
-        $this->assertStringContainsString('$TOOLS_DIR/phpstan.phar', $content, 'Should use tools directory for PHPStan');
+        $this->assertStringContainsString('--tools-dir="$TOOLS_DIR"', $content, 'Should pass tools directory to qc commands');
     }
 
     public function testScriptCreatesBuilDirectory(): void

@@ -26,6 +26,7 @@ use Horde\Http\StreamFactory;
 use Horde\Http\ResponseFactory;
 use Horde\Http\ClientException;
 use stdClass;
+use Horde_Pear_Package_Xml;
 
 /**
  * Represents base functionality for a component.
@@ -443,7 +444,7 @@ abstract class Base implements Component
     /**
      * Return a PEAR package representation for the component.
      *
-     * @return \Horde_Pear_Package_Xml The package representation.
+     * @return Horde_Pear_Package_Xml The package representation.
      * @throws Exception
      */
     protected function getPackageXml(): WrapperPackageXml

@@ -14,6 +14,9 @@
 
 namespace Horde\Components\Release\Task;
 
+use Horde_Release_Website;
+use PDO;
+
 /**
  * Components_Release_Task_Website adds the new release to the Horde website.
  *
@@ -27,7 +30,7 @@ class Website extends Base
     /**
      * Database handle.
      *
-     * @var \PDO
+     * @var PDO
      */
     protected $_db;
 
@@ -42,13 +45,16 @@ class Website extends Base
     public function preValidate($options): array
     {
         $errors = [];
-        if (empty($options['web_dir'])) {
-            $errors[] = 'The "web" option has no value. Where is the local checkout of the horde-web repository?';
-        } elseif (!file_exists($options['web_dir'] . '/config/versions.sqlite')
-            || !is_writable($options['web_dir'] . '/config/versions.sqlite')) {
-            $errors[] = 'The database at ' . $options['web_dir'] . '/config/versions.sqlite doesn\'t exist or is not writable';
+        // Try new name first, then fall back to old name for backwards compatibility
+        $webDir = $options['hordeweb.dir'] ?? $options['web_dir'] ?? null;
+
+        if (empty($webDir)) {
+            $errors[] = 'The "hordeweb.dir" option has no value. Where is the local checkout of the horde-web repository?';
+        } elseif (!file_exists($webDir . '/config/versions.sqlite')
+            || !is_writable($webDir . '/config/versions.sqlite')) {
+            $errors[] = 'The database at ' . $webDir . '/config/versions.sqlite doesn\'t exist or is not writable';
         } else {
-            $this->_db = new \PDO('sqlite:' . $options['web_dir'] . '/config/versions.sqlite');
+            $this->_db = new PDO('sqlite:' . $webDir . '/config/versions.sqlite');
         }
         return $errors;
     }
@@ -79,7 +85,7 @@ class Website extends Base
                 )
             );
         } else {
-            $website = new \Horde_Release_Website($this->_db);
+            $website = new Horde_Release_Website($this->_db);
             $website->addNewVersion(['application' => $module, 'version' => $version]);
         }
     }

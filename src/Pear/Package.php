@@ -13,6 +13,9 @@ namespace Horde\Components\Pear;
 
 use Horde\Components\Exception;
 use Horde\Components\Output;
+use Horde_Pear_Package_Xml;
+use PEAR_PackageFile;
+use PEAR_PackageFile_v2;
 
 /**
  * Components_Pear_Package:: provides package handling mechanisms.
@@ -60,7 +63,7 @@ class Package
     /**
      * The package representation.
      *
-     * @param \PEAR_PackageFile_v2
+     * @param PEAR_PackageFile_v2
      */
     private $_package_file;
 
@@ -165,7 +168,7 @@ class Package
     /**
      * Return the package.xml handler.
      *
-     * @return \Horde_Pear_Package_Xml
+     * @return Horde_Pear_Package_Xml
      */
     private function _getPackageXml()
     {
@@ -177,7 +180,7 @@ class Package
     /**
      * Return the PEAR Package representation.
      *
-     * @return \PEAR_PackageFile
+     * @return PEAR_PackageFile
      */
     private function _getPackageFile()
     {

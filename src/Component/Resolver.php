@@ -15,6 +15,8 @@ namespace Horde\Components\Component;
 use Horde\Components\Component;
 use Horde\Components\Exception;
 use Horde\Components\Helper\Root as HelperRoot;
+use DirectoryIterator;
+use Horde_Pear_Remote;
 
 /**
  * Horde\Components\Component\Resolver:: resolves component names and dependencies
@@ -58,7 +60,7 @@ class Resolver
      * @return Component|boolean The component if the name could be
      *                                      resolved.
      */
-    public function resolveDependency(Dependency $dependency, $options): \Horde\Components\Component|bool
+    public function resolveDependency(Dependency $dependency, $options): Component|bool
     {
         return $this->resolveName(
             $dependency->getName(),
@@ -77,7 +79,7 @@ class Resolver
      * @return Component|boolean The component if the name could be
      *                                      resolved.
      */
-    public function resolveName($name, $channel, $options): \Horde\Components\Component|bool
+    public function resolveName($name, $channel, $options): Component|bool
     {
         foreach ($this->_getAttempts($options) as $attempt) {
             if ($attempt == 'git' && $channel == 'pear.horde.org') {
@@ -154,9 +156,9 @@ class Resolver
      *
      * @param string $channel The channel name.
      *
-     * @return \Horde_Pear_Remote The remote handler.
+     * @return Horde_Pear_Remote The remote handler.
      */
-    private function _getRemote($channel): \Horde_Pear_Remote
+    private function _getRemote($channel): Horde_Pear_Remote
     {
         if (!isset($this->_remotes[$channel])) {
             $this->_remotes[$channel] = $this->_factory->createRemoteChannel(
@@ -184,7 +186,7 @@ class Resolver
         if (!file_exists($source)) {
             return false;
         }
-        foreach (new \DirectoryIterator($source) as $file) {
+        foreach (new DirectoryIterator($source) as $file) {
             if (preg_match('/' . $name . '-[0-9]+(\.[0-9]+)+([a-z0-9]+)?/', $file->getBasename('.tgz'), $matches)) {
                 return $file->getPathname();
             }

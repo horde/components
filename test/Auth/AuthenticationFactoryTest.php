@@ -14,6 +14,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Exception;
 
 /**
  * Copyright 2026 The Horde Project (http://www.horde.org/)
@@ -61,7 +62,7 @@ class AuthenticationFactoryTest extends TestCase
                 'github.app.id' => '123456',
                 'github.app.installation_id' => '789012',
                 'github.app.private_key_path' => $this->testKeyPath,
-                default => throw new \Exception("Setting not found")
+                default => throw new Exception("Setting not found")
             };
         });
 
@@ -128,7 +129,7 @@ class AuthenticationFactoryTest extends TestCase
         $config->method('getSetting')->willReturnCallback(function ($key) {
             return match ($key) {
                 'github.token' => 'ghp_config_token_456',
-                default => throw new \Exception("Setting not found")
+                default => throw new Exception("Setting not found")
             };
         });
 
@@ -180,7 +181,7 @@ class AuthenticationFactoryTest extends TestCase
                 'github.app.installation_id' => '456',
                 'github.app.private_key_path' => $this->testKeyPath,
                 'github.token' => 'ghp_should_be_ignored',
-                default => throw new \Exception("Setting not found")
+                default => throw new Exception("Setting not found")
             };
         });
 
@@ -248,7 +249,7 @@ class AuthenticationFactoryTest extends TestCase
                 'github.app.id' => '123',
                 'github.app.installation_id' => '456',
                 'github.app.private_key_path' => $this->testKeyPath,
-                default => throw new \Exception("Setting not found")
+                default => throw new Exception("Setting not found")
             };
         });
 
@@ -288,7 +289,7 @@ class AuthenticationFactoryTest extends TestCase
                 'github.app.id' => '123',
                 'github.app.installation_id' => '456',
                 'github.app.private_key_path' => $this->testKeyPath,
-                default => throw new \Exception("Setting not found")
+                default => throw new Exception("Setting not found")
             };
         });
 
@@ -363,7 +364,7 @@ class AuthenticationFactoryTest extends TestCase
                 'github.app.id' => '123',
                 'github.app.installation_id' => '456',
                 'github.app.private_key_path' => $this->testKeyPath,
-                default => throw new \Exception("Setting not found")
+                default => throw new Exception("Setting not found")
             };
         });
 

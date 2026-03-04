@@ -16,6 +16,7 @@ namespace Horde\Components\Wrapper;
 
 use Horde\Components\Wrapper;
 use Horde\Components\WrapperTrait;
+use Stringable;
 
 /**
  * Wrapper for the Application.php/Bundle.php files.
@@ -25,7 +26,7 @@ use Horde\Components\WrapperTrait;
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class ApplicationPhp implements Wrapper, \Stringable
+class ApplicationPhp implements Wrapper, Stringable
 {
     use WrapperTrait;
 

@@ -8,6 +8,8 @@ use Horde\Components\Auth\PrivateKey;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use OpenSSLAsymmetricKey;
+use ReflectionClass;
 
 /**
  * Copyright 2026 The Horde Project (http://www.horde.org/)
@@ -104,7 +106,7 @@ class PrivateKeyTest extends TestCase
         // In PHP 8+, openssl_pkey_get_private returns OpenSSLAsymmetricKey object
         // In PHP 7, it returns a resource
         $this->assertTrue(
-            is_resource($resource) || $resource instanceof \OpenSSLAsymmetricKey,
+            is_resource($resource) || $resource instanceof OpenSSLAsymmetricKey,
             'Expected OpenSSL key resource or OpenSSLAsymmetricKey object'
         );
 
@@ -119,7 +121,7 @@ class PrivateKeyTest extends TestCase
     {
         $key = PrivateKey::fromString($this->testKeyContent);
 
-        $reflection = new \ReflectionClass($key);
+        $reflection = new ReflectionClass($key);
         $property = $reflection->getProperty('content');
 
         $this->assertTrue($property->isReadOnly());

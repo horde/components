@@ -13,6 +13,10 @@ namespace Horde\Components\Release\Task;
 
 use Horde\Components\Exception;
 use Horde\Components\Helper\Version as HelperVersion;
+use Archive_Tar;
+use Horde_Http_Exception;
+use Horde_Pear_Remote;
+use Horde_Util;
 
 /**
  * Components_Release_Task_Package:: prepares and uploads a release package.
@@ -54,8 +58,8 @@ class Package extends Base
     public function preValidate($options): array
     {
         $errors = [];
-        $testpkg = \Horde_Util::getTempFile();
-        $archive = new \Archive_Tar($testpkg, 'gz');
+        $testpkg = Horde_Util::getTempFile();
+        $archive = new Archive_Tar($testpkg, 'gz');
         $archive->addString('a', 'a');
         $archive->addString('b', 'b');
         $results = exec('tar tzvf ' . $testpkg . ' 2>&1');
@@ -75,7 +79,7 @@ class Package extends Base
             return $errors;
         }
 
-        $remote = new \Horde_Pear_Remote($options['releaseserver']);
+        $remote = new Horde_Pear_Remote($options['releaseserver']);
         try {
             $exists = $remote->releaseExists(
                 $this->getComponent()->getName(),
@@ -88,7 +92,7 @@ class Package extends Base
                     $this->getComponent()->getName()
                 );
             }
-        } catch (\Horde_Http_Exception $e) {
+        } catch (Horde_Http_Exception $e) {
             $errors[] = 'Failed accessing the remote PEAR server.';
         }
         try {

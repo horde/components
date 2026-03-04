@@ -10,7 +10,11 @@ use RuntimeException;
 use Horde\Components\Component\ComponentDirectory;
 
 /**
- * Represents the supposed root directory of a flat git tree checkout
+ * Represents the supposed root directory of a git checkout tree
+ *
+ * The checkout directory contains vendor subdirectories (e.g., horde/)
+ * with components nested inside: checkout.dir/vendor/component/
+ * Example: /home/user/git/horde/ActiveSync
  */
 class GitCheckoutDirectory implements Stringable
 {
@@ -28,8 +32,15 @@ class GitCheckoutDirectory implements Stringable
 
     public function getGitDir(string $component): ComponentDirectory
     {
+        // Component can be "horde/bundle" or just "bundle"
+        // If no vendor prefix, assume "horde" for backwards compatibility
+        if (!str_contains($component, '/')) {
+            $component = 'horde/' . $component;
+        }
+
         foreach ($this->getGitDirs() as $gitDir) {
-            if (str_ends_with(mb_strtolower((string) $gitDir), $component)) {
+            // Match against full path ending with vendor/component
+            if (str_ends_with(mb_strtolower((string) $gitDir), mb_strtolower($component))) {
                 return $gitDir;
             }
         }
@@ -38,11 +49,11 @@ class GitCheckoutDirectory implements Stringable
 
     public function getGitDirs(): GitDirectoryIterator
     {
-        return $componentsCount = new GitDirectoryIterator($this->path . '/*/.git');
+        return $componentsCount = new GitDirectoryIterator($this->path . '/*/*/.git');
     }
     public function getHordeYmlDirs(): GitDirectoryIterator
     {
-        return $componentsCount = new GitDirectoryIterator($this->path . '/*/.horde.yml');
+        return $componentsCount = new GitDirectoryIterator($this->path . '/*/*/.horde.yml');
     }
 
     public function getComposerJsonPath(): string

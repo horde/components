@@ -19,6 +19,8 @@
 
 namespace Horde\Components\Release\Task;
 
+use Horde_Http_Client;
+
 /**
  * Components_Release_Task_Packagist:: Notify Packagist of update
  *
@@ -97,7 +99,7 @@ class Packagist extends Base
      */
     public function askDependencies(): array
     {
-        return ['http' => \Horde_Http_Client::class];
+        return ['http' => Horde_Http_Client::class];
     }
 
     /**

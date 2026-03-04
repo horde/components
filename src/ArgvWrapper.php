@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use IteratorAggregate;
 use RuntimeException;
 use Traversable;
+use ArrayIterator;
 
 /**
  * Wrap a copy of Argv into a simple, typed object for DI
@@ -33,7 +34,7 @@ class ArgvWrapper implements IteratorAggregate
 
     public function getIterator(): Traversable
     {
-        return new \ArrayIterator($this->argv);
+        return new ArrayIterator($this->argv);
     }
 
     public static function fromGlobal()

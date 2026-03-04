@@ -101,8 +101,7 @@ class ChangelogTest extends TestCase
         $package = $this->getMockBuilder('Horde\Components\Component\Source')
         ->disableOriginalConstructor()
         ->getMock();
-        $package->expects($this->any())
-            ->method('hasLocalPackageXml')
+        $package->method('hasLocalPackageXml')
             ->willReturn(true);
         return $package;
     }

@@ -16,6 +16,17 @@ declare(strict_types=1);
 namespace Horde\Components\Helper;
 
 use Horde\Components\Exception;
+use stdClass;
+
+use function array_map;
+use function array_pop;
+use function array_walk;
+use function explode;
+use function preg_replace;
+use function strlen;
+use function strpos;
+use function usort;
+use function version_compare;
 
 /**
  * Converts between different version schemes.
@@ -510,11 +521,11 @@ class Version
      *
      * @throws Exception on invalid version string.
      */
-    public static function parsePearVersion($version): \stdClass
+    public static function parsePearVersion($version): stdClass
     {
         \preg_match('/([.\d]+)(.*)/', $version, $matches);
 
-        $result = new \stdClass();
+        $result = new stdClass();
         $result->version = $matches[1];
         $result->description = '';
         $result->subversion = null;
@@ -533,7 +544,7 @@ class Version
         } else {
             $result->description = 'Final';
         }
-        $vcomp = \explode('.', (string) $result->version);
+        $vcomp = explode('.', (string) $result->version);
         if (\count($vcomp) != 3) {
             throw new Exception('A version number must have 3 parts.');
         }
@@ -689,9 +700,9 @@ class Version
 
         // Massage versions by splitting at '||', checking for and removing
         // leading '^', and sorting.
-        $versions = \explode('||', $version);
-        $versions = \array_map('trim', $versions);
-        \array_walk(
+        $versions = explode('||', $version);
+        $versions = array_map('trim', $versions);
+        array_walk(
             $versions,
             function ($v) use ($version, $versions) {
                 if ($v[0] != '^'
@@ -703,14 +714,14 @@ class Version
                 }
             }
         );
-        \usort(
+        usort(
             $versions,
-            fn($a, $b) => \version_compare(\ltrim((string) $a, '^'), \ltrim((string) $b, '^'))
+            fn($a, $b) => version_compare(\ltrim((string) $a, '^'), \ltrim((string) $b, '^'))
         );
 
         $constraints = [];
         if ($versions[0][0] == '^') {
-            $constraints['min'] = \preg_replace(
+            $constraints['min'] = preg_replace(
                 '/^\^(\d+\.\d+\.\d+).*/',
                 '$1',
                 $versions[0] . '.0.0'
@@ -719,8 +730,8 @@ class Version
             $constraints['min'] = $constraints['max'] = $versions[0];
             return $constraints;
         }
-        $max = \array_pop($versions);
-        $max = \substr($max, 1, \strpos($max, '.') ?: \strlen($max)) + 1;
+        $max = array_pop($versions);
+        $max = \substr($max, 1, strpos($max, '.') ?: strlen($max)) + 1;
         $max .= '.0.0alpha1';
         $constraints['max'] = $constraints['exclude'] = $max;
 

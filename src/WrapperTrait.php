@@ -15,6 +15,8 @@
 namespace Horde\Components;
 
 use Horde\Components\Wrapper;
+use Horde_Text_Diff;
+use Horde_Text_Diff_Renderer_Unified;
 
 /**
  * Trait for the component file wrappers.
@@ -87,7 +89,7 @@ trait WrapperTrait
      */
     public function diff(?Wrapper $wrapper = null)
     {
-        $renderer = new \Horde_Text_Diff_Renderer_Unified();
+        $renderer = new Horde_Text_Diff_Renderer_Unified();
         if ($wrapper) {
             $old = explode("\n", trim($wrapper, "\n"));
         } elseif ($this->exists()) {
@@ -96,7 +98,7 @@ trait WrapperTrait
             $old = [];
         }
         return $renderer->render(
-            new \Horde_Text_Diff(
+            new Horde_Text_Diff(
                 'auto',
                 [$old, explode("\n", rtrim((string) $this, "\n"))]
             )

@@ -110,9 +110,9 @@ class PhpInstaller
      */
     private function isDebianBased(): bool
     {
-        return file_exists('/etc/debian_version') ||
-               file_exists('/etc/lsb-release') ||
-               is_executable('/usr/bin/apt-get');
+        return file_exists('/etc/debian_version')
+               || file_exists('/etc/lsb-release')
+               || is_executable('/usr/bin/apt-get');
     }
 
     /**

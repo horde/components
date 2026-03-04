@@ -11,6 +11,8 @@
 
 namespace Horde\Components\Qc\Task;
 
+use Phar;
+
 /**
  * Horde\Components\Qc\Task\Phpcsfixer runs PHP CS Fixer on the component.
  *
@@ -113,8 +115,8 @@ class Phpcsfixer extends Base
             'files_skipped' => 0,
         ];
 
-        // Setup config extraction for PHAR context
-        $configPath = $this->setupConfigForPhar($componentPath);
+        // Setup config extraction for PHAR context or resolve config based on options
+        $configPath = $this->setupConfigForPhar($componentPath, $options);
 
         // Execute PHP CS Fixer
         $exitCode = $this->executePhpCsFixer($binary, $componentPath, $isDryRun, $configPath);
@@ -484,19 +486,98 @@ class Phpcsfixer extends Base
     }
 
     /**
+     * Resolve configuration file path based on --prefer-config-from option.
+     *
+     * @param string $componentPath Path to component being checked.
+     * @param array $options CLI options including prefer_config_from.
+     *
+     * @return string|null Path to config file (null to use default discovery).
+     */
+    private function resolveConfigPath(string $componentPath, array $options): ?string
+    {
+        $preference = $options['prefer_config_from'] ?? null;
+
+        // If explicit path provided, use it
+        if ($preference !== null && $preference !== 'tool' && $preference !== 'uut') {
+            $explicitPath = $preference;
+            if (file_exists($explicitPath)) {
+                $resolvedPath = realpath($explicitPath);
+                $this->getOutput()->info("Using explicit config: {$resolvedPath}");
+                return $resolvedPath;
+            }
+            $this->getOutput()->warn("Config path not found: {$explicitPath} - falling back to default");
+            $preference = null; // Fall through to default behavior
+        }
+
+        // "tool" preference - always use horde-components config
+        if ($preference === 'tool') {
+            $componentsConfig = __DIR__ . '/../../../.php-cs-fixer.dist.php';
+            if (file_exists($componentsConfig)) {
+                $resolvedPath = realpath($componentsConfig);
+                $this->getOutput()->info('Using horde-components config (--prefer-config-from=tool)');
+                if ($this->getOutput()->isVerbose()) {
+                    $this->getOutput()->info('Config path: ' . $resolvedPath);
+                }
+                return $resolvedPath;
+            }
+            $this->getOutput()->warn('horde-components config not found');
+            return null;
+        }
+
+        // "uut" preference - only use component's own config
+        if ($preference === 'uut') {
+            $componentConfig = $componentPath . '/.php-cs-fixer.dist.php';
+            if (file_exists($componentConfig)) {
+                if ($this->getOutput()->isVerbose()) {
+                    $this->getOutput()->info('Using component config (--prefer-config-from=uut)');
+                }
+                return null; // Let PHP CS Fixer discover it
+            }
+            $this->getOutput()->warn('Component has no .php-cs-fixer.dist.php - no config will be used');
+            return null;
+        }
+
+        // Default behavior: component config first, then horde-components as fallback
+        $componentConfig = $componentPath . '/.php-cs-fixer.dist.php';
+        if (file_exists($componentConfig)) {
+            // Component has own config - let PHP CS Fixer discover it
+            if ($this->getOutput()->isVerbose()) {
+                $this->getOutput()->info('Using component\'s own PHP CS Fixer config');
+            }
+            return null;
+        }
+
+        // No component config - use horde-components config as fallback
+        $componentsConfig = __DIR__ . '/../../../.php-cs-fixer.dist.php';
+        if (file_exists($componentsConfig)) {
+            $resolvedPath = realpath($componentsConfig);
+            $this->getOutput()->info('Using horde-components PHP CS Fixer config (component has no own config)');
+            if ($this->getOutput()->isVerbose()) {
+                $this->getOutput()->info('Config path: ' . $resolvedPath);
+            }
+            return $resolvedPath;
+        }
+
+        // No config found anywhere - let PHP CS Fixer use defaults
+        $this->getOutput()->warn('No PHP CS Fixer config found - using defaults');
+        return null;
+    }
+
+    /**
      * Setup config for PHAR context by extracting config and custom fixers.
      *
      * @param string $componentPath Path to component being checked.
+     * @param array $options CLI options including prefer_config_from.
      *
-     * @return string|null Path to config file (null if not in PHAR).
+     * @return string|null Path to config file (null to use default discovery).
      */
-    private function setupConfigForPhar(string $componentPath): ?string
+    private function setupConfigForPhar(string $componentPath, array $options = []): ?string
     {
-        $pharPath = \Phar::running(false);
+        $pharPath = Phar::running(false);
 
-        // Not running from PHAR - use default config discovery
+        // Not running from PHAR - resolve config path based on options
         if ($pharPath === '') {
-            return null;
+            return $this->resolveConfigPath($componentPath, $options);
         }
 
         $this->getOutput()->info('Running from PHAR - extracting custom fixers...');

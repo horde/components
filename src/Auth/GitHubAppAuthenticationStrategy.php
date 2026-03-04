@@ -6,6 +6,7 @@ namespace Horde\Components\Auth;
 
 use Horde\GithubApiClient\GithubApiClient;
 use RuntimeException;
+use Exception;
 
 /**
  * GitHub App authentication strategy
@@ -35,7 +36,7 @@ class GitHubAppAuthenticationStrategy implements AuthenticationStrategyInterface
     {
         try {
             return $this->authService->getAuthenticatedClient();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new RuntimeException(
                 "GitHub App authentication failed: {$e->getMessage()}",
                 0,
@@ -60,7 +61,7 @@ class GitHubAppAuthenticationStrategy implements AuthenticationStrategyInterface
     {
         try {
             return $this->authService->getJwtAuthenticatedClient();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new RuntimeException(
                 "GitHub App JWT authentication failed: {$e->getMessage()}",
                 0,

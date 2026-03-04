@@ -106,6 +106,16 @@ class Init extends Base
     }
 
     /**
+     * Get a short one-line description for command listings.
+     *
+     * @return string The short description.
+     */
+    public function getShortDescription(): string
+    {
+        return 'Scaffold new components from templates';
+    }
+
+    /**
      * Return the action arguments supported by this module.
      *
      * @return array A list of supported action arguments.
@@ -155,7 +165,7 @@ Create a new theme:
             '--email' => 'The author\'s email address',
             '--description' => 'Short component description',
             '--use-license' => 'License identifier (default: LGPL-2.1)',
-            '--force-overwrite' => 'Overwrite existing files'
+            '--force-overwrite' => 'Overwrite existing files',
         ];
     }
 

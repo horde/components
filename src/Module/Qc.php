@@ -66,6 +66,13 @@ class Qc extends Base
                     'help' => 'Directory containing QC tool binaries (PHPUnit, PHPStan, etc.)',
                 ]
             ),
+            new \Horde\Argv\Option(
+                '--prefer-config-from',
+                [
+                    'action' => 'store',
+                    'help' => 'Config file preference: "tool" (horde-components), "uut" (component being tested), or path to specific config. Applies to PHP CS Fixer and PHPStan.',
+                ]
+            ),
         ];
     }
 
@@ -87,6 +94,16 @@ class Qc extends Base
     public function getUsage(): string
     {
         return 'Check the package quality.';
+    }
+
+    /**
+     * Get a short one-line description for command listings.
+     *
+     * @return string The short description.
+     */
+    public function getShortDescription(): string
+    {
+        return 'Run quality checks (linter, PHPStan, tests)';
     }
 
     /**

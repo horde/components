@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Horde\Components\Runner\Init:: scaffold new components from templates.
  *
@@ -72,9 +73,9 @@ class Init
         $type = $this->arguments[1];
         if (!in_array($type, ['application', 'library', 'theme'])) {
             throw new Exception(
-                "Invalid component type: {$type}\n" .
-                "Must be one of: application, library, theme\n\n" .
-                "Run 'horde-components init' (no arguments) for interactive mode."
+                "Invalid component type: {$type}\n"
+                . "Must be one of: application, library, theme\n\n"
+                . "Run 'horde-components init' (no arguments) for interactive mode."
             );
         }
 
@@ -210,8 +211,8 @@ class Init
 
         if (!empty($errors)) {
             throw new Exception(
-                "Configuration errors:\n  - " . implode("\n  - ", $errors) . "\n\n" .
-                "Run 'horde-components init' (no arguments) for usage information."
+                "Configuration errors:\n  - " . implode("\n  - ", $errors) . "\n\n"
+                . "Run 'horde-components init' (no arguments) for usage information."
             );
         }
     }

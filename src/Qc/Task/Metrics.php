@@ -157,7 +157,7 @@ class Metrics extends Base
             escapeshellarg($targetDir)
         );
 
-        $this->system($command);
+        $this->getShell()->system($command);
     }
 
     /**

@@ -19,6 +19,8 @@ use PHPMD\PHPMD;
 use PHPMD\AbstractRule as PHPMDAbstractRule;
 use PHPMD\Report as PHPMDReport;
 
+use const STDOUT;
+
 /**
  * Components_Qc_Task_Md:: runs a mess detection check on the component.
  *
@@ -72,7 +74,7 @@ class Md extends Base
         $src = realpath($this->getPath() . '/src');
 
         $renderer = new PHPMDRendererTextRenderer();
-        $renderer->setWriter(new PHPMDWriterStreamWriter(\STDOUT));
+        $renderer->setWriter(new PHPMDWriterStreamWriter(STDOUT));
 
         $ruleSetFactory = new PHPMDRuleSetFactory();
         $ruleSetFactory->setMinimumPriority(PHPMDAbstractRule::LOWEST_PRIORITY);

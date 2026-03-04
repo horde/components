@@ -13,6 +13,7 @@
 namespace Horde\Components\Release\Task;
 
 use Horde\Components\Exception;
+use Horde_Exception_NotFound;
 
 /**
  * Components_Release_Task_Timestamp:: timestamps the package right before the
@@ -38,7 +39,7 @@ class Timestamp extends Base
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
      * @throws Exception
-     * @throws \Horde_Exception_NotFound
+     * @throws Horde_Exception_NotFound
      */
     public function preValidate($options): array
     {

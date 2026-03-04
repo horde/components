@@ -18,6 +18,8 @@ namespace Horde\Components\Ci\Run;
 
 use Horde\Components\Exception;
 use Horde\Components\Output;
+use Horde\GithubApiClient\GithubClient;
+use Horde\Http\Uri;
 
 /**
  * Orchestrates test execution across all test lanes by executing generated scripts.
@@ -36,12 +38,14 @@ class RunCommand
      * @param ResultCollector $collector Result collector
      * @param string $componentsPath Path to horde-components binary
      * @param string $workDir Work directory (for tools path)
+     * @param GithubClient|null $apiClient GitHub API client (optional)
      */
     public function __construct(
         private readonly Output $output,
         private readonly ResultCollector $collector,
         private readonly string $componentsPath,
-        private readonly string $workDir
+        private readonly string $workDir,
+        private readonly ?GithubClient $apiClient = null
     ) {}
 
     /**
@@ -89,10 +93,16 @@ class RunCommand
         // 6. Write GitHub Actions job summary (if in GitHub Actions)
         $this->writeGitHubSummary();
 
-        // 7. Write HTML report (if in local mode)
+        // 7. Create GitHub Check Runs (if in GitHub Actions with API client)
+        $this->createCheckRuns();
+
+        // 8. Post PR comment (if in pull request context)
+        $this->postPrComment();
+
+        // 9. Write HTML report (if in local mode)
         $this->writeHtmlReport($workDir);
 
-        // 8. Return exit code
+        // 10. Return exit code
         return $this->collector->allPassed() ? 0 : 1;
     }
 
@@ -506,228 +516,230 @@ class RunCommand
         $summary = $this->collector->getSummary();
 
         $timestamp = date('Y-m-d H:i:s');
-        $statusClass = $summary['failed'] === 0 ? 'success' : 'failure';
-        $statusText = $summary['failed'] === 0
-            ? "✅ All {$summary['total']} lanes passed"
-            : "❌ {$summary['failed']}/{$summary['total']} lanes failed";
+        $failed = $summary['failed'] ?? 0;
+        $total = $summary['total'] ?? 0;
+        $statusClass = $failed === 0 ? 'success' : 'failure';
+        $statusText = $failed === 0
+            ? "✅ All {$total} lanes passed"
+            : "❌ {$failed}/{$total} lanes failed";
 
         $html = <<<HTML
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horde CI Report - {$timestamp}</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Horde CI Report - {$timestamp}</title>
+                <style>
+                    * {
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: #f5f5f5;
-            padding: 20px;
-        }
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        background: #f5f5f5;
+                        padding: 20px;
+                    }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 30px;
-        }
+                    .container {
+                        max-width: 1200px;
+                        margin: 0 auto;
+                        background: white;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        padding: 30px;
+                    }
 
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
+                    h1 {
+                        color: #2c3e50;
+                        margin-bottom: 10px;
+                        font-size: 28px;
+                    }
 
-        .timestamp {
-            color: #7f8c8d;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
+                    .timestamp {
+                        color: #7f8c8d;
+                        font-size: 14px;
+                        margin-bottom: 20px;
+                    }
 
-        .status-banner {
-            padding: 15px 20px;
-            border-radius: 6px;
-            margin-bottom: 30px;
-            font-size: 18px;
-            font-weight: 500;
-        }
+                    .status-banner {
+                        padding: 15px 20px;
+                        border-radius: 6px;
+                        margin-bottom: 30px;
+                        font-size: 18px;
+                        font-weight: 500;
+                    }
 
-        .status-banner.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
+                    .status-banner.success {
+                        background: #d4edda;
+                        color: #155724;
+                        border: 1px solid #c3e6cb;
+                    }
 
-        .status-banner.failure {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
+                    .status-banner.failure {
+                        background: #f8d7da;
+                        color: #721c24;
+                        border: 1px solid #f5c6cb;
+                    }
 
-        h2 {
-            color: #2c3e50;
-            margin: 30px 0 15px 0;
-            font-size: 22px;
-            border-bottom: 2px solid #ecf0f1;
-            padding-bottom: 10px;
-        }
+                    h2 {
+                        color: #2c3e50;
+                        margin: 30px 0 15px 0;
+                        font-size: 22px;
+                        border-bottom: 2px solid #ecf0f1;
+                        padding-bottom: 10px;
+                    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-        }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 30px;
+                    }
 
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border: 1px solid #ddd;
-        }
+                    th, td {
+                        padding: 12px;
+                        text-align: left;
+                        border: 1px solid #ddd;
+                    }
 
-        th {
-            background: #34495e;
-            color: white;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 0.5px;
-        }
+                    th {
+                        background: #34495e;
+                        color: white;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        font-size: 12px;
+                        letter-spacing: 0.5px;
+                    }
 
-        tr:nth-child(even) {
-            background: #f8f9fa;
-        }
+                    tr:nth-child(even) {
+                        background: #f8f9fa;
+                    }
 
-        tr:hover {
-            background: #e8f4f8;
-        }
+                    tr:hover {
+                        background: #e8f4f8;
+                    }
 
-        .lane-name {
-            font-family: 'Monaco', 'Courier New', monospace;
-            font-weight: 600;
-        }
+                    .lane-name {
+                        font-family: 'Monaco', 'Courier New', monospace;
+                        font-weight: 600;
+                    }
 
-        .status-pass {
-            color: #28a745;
-        }
+                    .status-pass {
+                        color: #28a745;
+                    }
 
-        .status-fail {
-            color: #dc3545;
-        }
+                    .status-fail {
+                        color: #dc3545;
+                    }
 
-        .status-skip {
-            color: #6c757d;
-        }
+                    .status-skip {
+                        color: #6c757d;
+                    }
 
-        .metric-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            border-left: 4px solid #3498db;
-        }
+                    .metric-card {
+                        background: #f8f9fa;
+                        padding: 20px;
+                        border-radius: 6px;
+                        margin-bottom: 15px;
+                        border-left: 4px solid #3498db;
+                    }
 
-        .metric-card h3 {
-            color: #2c3e50;
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
+                    .metric-card h3 {
+                        color: #2c3e50;
+                        font-size: 16px;
+                        margin-bottom: 10px;
+                    }
 
-        .metric-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #e0e0e0;
-        }
+                    .metric-row {
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 8px 0;
+                        border-bottom: 1px solid #e0e0e0;
+                    }
 
-        .metric-row:last-child {
-            border-bottom: none;
-        }
+                    .metric-row:last-child {
+                        border-bottom: none;
+                    }
 
-        .metric-label {
-            font-weight: 500;
-            color: #555;
-        }
+                    .metric-label {
+                        font-weight: 500;
+                        color: #555;
+                    }
 
-        .metric-value {
-            font-family: 'Monaco', 'Courier New', monospace;
-            font-weight: 600;
-        }
+                    .metric-value {
+                        font-family: 'Monaco', 'Courier New', monospace;
+                        font-weight: 600;
+                    }
 
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #ecf0f1;
-            color: #7f8c8d;
-            font-size: 14px;
-            text-align: center;
-        }
+                    .footer {
+                        margin-top: 40px;
+                        padding-top: 20px;
+                        border-top: 1px solid #ecf0f1;
+                        color: #7f8c8d;
+                        font-size: 14px;
+                        text-align: center;
+                    }
 
-        .footer a {
-            color: #3498db;
-            text-decoration: none;
-        }
+                    .footer a {
+                        color: #3498db;
+                        text-decoration: none;
+                    }
 
-        .footer a:hover {
-            text-decoration: underline;
-        }
+                    .footer a:hover {
+                        text-decoration: underline;
+                    }
 
-        details {
-            margin-bottom: 15px;
-        }
+                    details {
+                        margin-bottom: 15px;
+                    }
 
-        summary {
-            cursor: pointer;
-            padding: 10px;
-            background: #ecf0f1;
-            border-radius: 4px;
-            font-weight: 600;
-            user-select: none;
-        }
+                    summary {
+                        cursor: pointer;
+                        padding: 10px;
+                        background: #ecf0f1;
+                        border-radius: 4px;
+                        font-weight: 600;
+                        user-select: none;
+                    }
 
-        summary:hover {
-            background: #d5dbdb;
-        }
+                    summary:hover {
+                        background: #d5dbdb;
+                    }
 
-        .detail-content {
-            padding: 15px;
-            margin-top: 10px;
-            border-left: 3px solid #3498db;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🔍 Horde CI Report</h1>
-        <div class="timestamp">Generated: {$timestamp}</div>
+                    .detail-content {
+                        padding: 15px;
+                        margin-top: 10px;
+                        border-left: 3px solid #3498db;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>🔍 Horde CI Report</h1>
+                    <div class="timestamp">Generated: {$timestamp}</div>
 
-        <div class="status-banner {$statusClass}">
-            {$statusText}
-        </div>
+                    <div class="status-banner {$statusClass}">
+                        {$statusText}
+                    </div>
 
-        <h2>Lane Results</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Lane</th>
-                    <th>PHPUnit</th>
-                    <th>PHPStan</th>
-                    <th>PHP-CS-Fixer</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
+                    <h2>Lane Results</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Lane</th>
+                                <th>PHPUnit</th>
+                                <th>PHPStan</th>
+                                <th>PHP-CS-Fixer</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
 
-HTML;
+            HTML;
 
         // Generate table rows
         foreach ($results as $laneName => $tools) {
@@ -745,25 +757,25 @@ HTML;
         }
 
         $html .= <<<HTML
-            </tbody>
-        </table>
+                        </tbody>
+                    </table>
 
-        <h2>Detailed Metrics</h2>
+                    <h2>Detailed Metrics</h2>
 
-HTML;
+            HTML;
 
         // Add detailed metrics
         $html .= $this->generateHtmlMetrics($results);
 
         $html .= <<<HTML
 
-        <div class="footer">
-            CI powered by <a href="https://github.com/horde/components" target="_blank">horde-components</a>
-        </div>
-    </div>
-</body>
-</html>
-HTML;
+                    <div class="footer">
+                        CI powered by <a href="https://github.com/horde/components" target="_blank">horde-components</a>
+                    </div>
+                </div>
+            </body>
+            </html>
+            HTML;
 
         return $html;
     }
@@ -839,41 +851,41 @@ HTML;
                 : 'Tests failed';
 
             $html .= <<<HTML
-        <div class="metric-card">
-            <h3>{$statusIcon} PHPUnit - {$statusText}</h3>
-            <div class="metric-row">
-                <span class="metric-label">Lanes executed:</span>
-                <span class="metric-value">{$lanesRun}</span>
-            </div>
-            <div class="metric-row">
-                <span class="metric-label">Total tests:</span>
-                <span class="metric-value">{$totalTests}</span>
-            </div>
-            <div class="metric-row">
-                <span class="metric-label">Total assertions:</span>
-                <span class="metric-value">{$assertions}</span>
-            </div>
+                        <div class="metric-card">
+                            <h3>{$statusIcon} PHPUnit - {$statusText}</h3>
+                            <div class="metric-row">
+                                <span class="metric-label">Lanes executed:</span>
+                                <span class="metric-value">{$lanesRun}</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Total tests:</span>
+                                <span class="metric-value">{$totalTests}</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Total assertions:</span>
+                                <span class="metric-value">{$assertions}</span>
+                            </div>
 
-HTML;
+                HTML;
 
             if ($totalFailures > 0) {
                 $html .= <<<HTML
-            <div class="metric-row">
-                <span class="metric-label">Failures:</span>
-                <span class="metric-value status-fail">{$totalFailures}</span>
-            </div>
+                                <div class="metric-row">
+                                    <span class="metric-label">Failures:</span>
+                                    <span class="metric-value status-fail">{$totalFailures}</span>
+                                </div>
 
-HTML;
+                    HTML;
             }
 
             if ($totalErrors > 0) {
                 $html .= <<<HTML
-            <div class="metric-row">
-                <span class="metric-label">Errors:</span>
-                <span class="metric-value status-fail">{$totalErrors}</span>
-            </div>
+                                <div class="metric-row">
+                                    <span class="metric-label">Errors:</span>
+                                    <span class="metric-value status-fail">{$totalErrors}</span>
+                                </div>
 
-HTML;
+                    HTML;
             }
 
             $html .= "        </div>\n";
@@ -891,23 +903,23 @@ HTML;
                 : "{$totalErrors} errors found";
 
             $html .= <<<HTML
-        <div class="metric-card">
-            <h3>{$statusIcon} PHPStan - {$statusText}</h3>
-            <div class="metric-row">
-                <span class="metric-label">Lanes executed:</span>
-                <span class="metric-value">{$lanesRun}</span>
-            </div>
-            <div class="metric-row">
-                <span class="metric-label">Files analyzed:</span>
-                <span class="metric-value">{$filesAnalyzed}</span>
-            </div>
-            <div class="metric-row">
-                <span class="metric-label">Errors:</span>
-                <span class="metric-value">{$totalErrors}</span>
-            </div>
-        </div>
+                        <div class="metric-card">
+                            <h3>{$statusIcon} PHPStan - {$statusText}</h3>
+                            <div class="metric-row">
+                                <span class="metric-label">Lanes executed:</span>
+                                <span class="metric-value">{$lanesRun}</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Files analyzed:</span>
+                                <span class="metric-value">{$filesAnalyzed}</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Errors:</span>
+                                <span class="metric-value">{$totalErrors}</span>
+                            </div>
+                        </div>
 
-HTML;
+                HTML;
         }
 
         // PHP-CS-Fixer section
@@ -921,21 +933,115 @@ HTML;
                 : "{$filesWithIssues} files with issues";
 
             $html .= <<<HTML
-        <div class="metric-card">
-            <h3>{$statusIcon} PHP-CS-Fixer - {$statusText}</h3>
-            <div class="metric-row">
-                <span class="metric-label">Files checked:</span>
-                <span class="metric-value">{$filesChecked}</span>
-            </div>
-            <div class="metric-row">
-                <span class="metric-label">Files with issues:</span>
-                <span class="metric-value">{$filesWithIssues}</span>
-            </div>
-        </div>
+                        <div class="metric-card">
+                            <h3>{$statusIcon} PHP-CS-Fixer - {$statusText}</h3>
+                            <div class="metric-row">
+                                <span class="metric-label">Files checked:</span>
+                                <span class="metric-value">{$filesChecked}</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Files with issues:</span>
+                                <span class="metric-value">{$filesWithIssues}</span>
+                            </div>
+                        </div>
 
-HTML;
+                HTML;
         }
 
         return $html;
+    }
+
+    /**
+     * Create GitHub Check Runs for each tool result.
+     */
+    private function createCheckRuns(): void
+    {
+        // Only run if we have API client and are in GitHub Actions
+        if ($this->apiClient === null || getenv('GITHUB_ACTIONS') === false) {
+            return;
+        }
+
+        // Get repository info from environment
+        $repo = getenv('GITHUB_REPOSITORY');
+        $sha = getenv('GITHUB_SHA');
+
+        if ($repo === false || $sha === false) {
+            return;
+        }
+
+        // Parse owner/repo
+        $parts = explode('/', $repo, 2);
+        if (count($parts) !== 2) {
+            return;
+        }
+
+        [$owner, $repoName] = $parts;
+
+        $reporter = new CheckReporter($this->output, $this->apiClient);
+        $reporter->reportLaneResults(
+            owner: $owner,
+            repo: $repoName,
+            sha: $sha,
+            results: $this->collector->getResults()
+        );
+    }
+
+    /**
+     * Post PR comment with results.
+     */
+    private function postPrComment(): void
+    {
+        // Only run if we have API client and are in GitHub Actions
+        if ($this->apiClient === null || getenv('GITHUB_ACTIONS') === false) {
+            return;
+        }
+
+        // Check if this is a pull request event
+        $eventPath = getenv('GITHUB_EVENT_PATH');
+        if ($eventPath === false || !file_exists($eventPath)) {
+            return;
+        }
+
+        $eventData = json_decode(file_get_contents($eventPath), true);
+        if (!isset($eventData['pull_request'])) {
+            return; // Not a PR event
+        }
+
+        $prNumber = $eventData['pull_request']['number'] ?? null;
+        if ($prNumber === null) {
+            return;
+        }
+
+        // Get repository info
+        $repo = getenv('GITHUB_REPOSITORY');
+        $runId = getenv('GITHUB_RUN_ID');
+        $serverUrl = getenv('GITHUB_SERVER_URL') ?: 'https://github.com';
+
+        if ($repo === false || $runId === false) {
+            return;
+        }
+
+        $parts = explode('/', $repo, 2);
+        if (count($parts) !== 2) {
+            return;
+        }
+
+        [$owner, $repoName] = $parts;
+
+        // Build GitHub Actions run URL
+        $serverUrl = getenv('GITHUB_SERVER_URL') ?: 'https://github.com';
+        $runUrl = (new Uri($serverUrl))
+            ->withPath("/{$repo}/actions/runs/{$runId}")
+            ->__toString();
+
+        $reporter = new PrCommentReporter($this->output, $this->apiClient);
+        $reporter->postComment(
+            owner: $owner,
+            repo: $repoName,
+            prNumber: (int) $prNumber,
+            results: $this->collector->getResults(),
+            summary: $this->collector->getSummary(),
+            runUrl: $runUrl
+        );
     }
 }

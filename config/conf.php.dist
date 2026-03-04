@@ -12,18 +12,15 @@
  * PHP Version 7
  */
 
-/* PEAR server name. Only change for testing purposes. */
-$conf['releaseserver'] = 'pear.horde.org';
-
-/* PEAR server directory. Only change for testing purposes. */
-$conf['releasedir'] = '/horde/web/pear.horde.org';
-
-/* Username for horde.org.
- * Make sure you belong to the "horde" group there. */
-$conf['horde_user'] = '';
-
-/* Needed to update the Whups versions */
-$conf['horde_pass'] = '';
+/**
+ * Whups (bugs.horde.org) Credentials
+ *
+ * Username and password for updating bugs.horde.org (the Horde bug tracker).
+ * Required for the Bugs release task which updates Whups versions.
+ * Make sure you belong to the "horde" group on bugs.horde.org.
+ */
+$conf['whups.user'] = '';
+$conf['whups.pass'] = '';
 
 /* From: address for announcements. */
 $conf['from'] = 'Full name <user@horde.org>';
@@ -53,11 +50,16 @@ $conf['from'] = 'Full name <user@horde.org>';
  */
 $conf['github.token'] = '';
 
-/* Path to a checkout of the horde-web repository. */
-$conf['web_dir'] = '/var/www/horde-web';
+/**
+ * Horde Web Repository Directory
+ *
+ * Path to a checkout of the horde-web repository (www.horde.org website).
+ * This directory contains the SQLite database for version tracking.
+ */
+$conf['hordeweb.dir'] = '/var/www/horde-web';
 
 // Target directory for a developer installation. The webroot will be the ./web dir under that install dir
-$conf['install_base'] = '/var/www/horde-dev';
+$conf['install.dir'] = '/var/www/horde-dev';
 
 /**
  * Vendor: Used by the composer, packagist, satis and git-related tasks
@@ -66,37 +68,51 @@ $conf['install_base'] = '/var/www/horde-dev';
 // $conf['vendor'] = 'horde';
 
 /**
- * Git Repo Base: The base URL for your remote git repo
- * Defaults to https://github.com/$vendor if unset
+ * SCM Repository Base URL
+ *
+ * The base URL for cloning remote git repositories.
+ * Used to construct clone URLs: scm.repo.base + ComponentName.git
+ *
+ * Defaults to https://github.com/{vendor}/ if unset
  * If you configure this, $vendor will NOT be appended
+ *
+ * Examples:
+ *   https://github.com/horde/        (default for vendor=horde)
+ *   https://git.mycompany.com/horde/ (custom git server)
  */
-//$conf['git_repo_base'] = 'https://git.mycompany.com/level/nextlevel/';
-
-/** composer_repo - Type of loader hints to generate
- * Default is not to generate any hints. Dependencies will be from packagist
- */
-// generate a vcs repo source per horde internal dependency
-// $conf['composer_repo'] = 'vcs';
-// generate a satis source for all horde namespace
-// $conf['composer_repo'] = 'satis:https://satis.horde.org';
+//$conf['scm.repo.base'] = 'https://git.mycompany.com/horde/';
 
 /**
- * composer_version - tweak all dependency versions
- * to a common branch name or version
+ * Composer Repository Type
+ *
+ * Type of repository hints to generate in composer.json files
+ * Default is not to generate any hints. Dependencies will be from packagist.
+ *
+ * Options:
+ *   'vcs'                       - Generate a VCS repo source per horde internal dependency
+ *   'satis:https://satis.url'   - Generate a satis source for all horde namespace
+ */
+// $conf['composer.repo'] = 'vcs';
+// $conf['composer.repo'] = 'satis:https://satis.horde.org';
+
+/**
+ * Composer Version Override
+ *
+ * Tweak all dependency versions to a common branch name or version.
  * This is used by the horde-components composer command and
- * the composer release task unless overwritten there
+ * the composer release task unless overwritten there.
  *
  * Default: Depend on versions from .horde.yml
+ *
+ * Examples:
+ *   'dev-master'           - Depend on master branch
+ *   'dev-FRAMEWORK_6_0'    - Depend on FRAMEWORK_6_0 branch
+ *   'dev-staging'          - Depend on a staging branch
  */
-// depend on master branch
-// $conf['composer_version'] = 'dev-master';
-// depend on a staging branch - components won't check if it even exists!
-// $conf['composer_version'] = 'dev-staging';
-
-$conf['composer_version'] = 'dev-FRAMEWORK_6_0';
+$conf['composer.version'] = 'dev-FRAMEWORK_6_0';
 
 /* Well known composer native substitutes for pear dependencies */
-$conf['composer_opts']['pear-substitutes'] = [
+$conf['composer.opts']['pear-substitutes'] = [
     ['pear.php.net/Archive_Tar' =>
         ['source' => 'Packagist', 'name' => 'pear/archive_tar']],
     ['pear.php.net/Console_Color2' =>

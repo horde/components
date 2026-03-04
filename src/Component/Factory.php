@@ -23,6 +23,14 @@ use Horde\Components\Helper\Root as HelperRoot;
 use Horde\Components\Output;
 use Horde\Components\Pear\Factory as PearFactory;
 use Horde\Components\Release\Notes as ReleaseNotes;
+use Horde_Http_Client;
+use Horde_Pear_Exception;
+use Horde_Pear_Package_Contents_List;
+use Horde_Pear_Package_Type_HordeSplit;
+use Horde_Pear_Package_Type_HordeTheme;
+use Horde_Pear_Package_Xml;
+use Horde_Pear_Remote;
+use Horde_Release_Sentinel;
 
 /**
  * Generates component instances and helpers.
@@ -61,11 +69,11 @@ class Factory
     *
      * @param array $_options Options for the current job.
      * @param PearFactory $_factory Generator for all required PEAR components.
-     * @param \Horde_Http_Client $_client The HTTP client for remote access.
+     * @param Horde_Http_Client $_client The HTTP client for remote access.
      * @param Output $_output The output handler.
      * @param ReleaseNotes $_notes The release notes.
     */
-    public function __construct(protected array $_options, protected PearFactory $_factory, protected \Horde_Http_Client $_client, protected Output $_output, protected ReleaseNotes $_notes) {}
+    public function __construct(protected array $_options, protected PearFactory $_factory, protected Horde_Http_Client $_client, protected Output $_output, protected ReleaseNotes $_notes) {}
 
     /**
      * Create a representation for a source component.
@@ -74,7 +82,7 @@ class Factory
      *
      * @return Source The source component.
      */
-    public function createSource($directory): \Horde\Components\Component\Source
+    public function createSource($directory): Source
     {
         $component = new Source(
             new ComponentDirectory($directory),
@@ -94,7 +102,7 @@ class Factory
      *
      * @return Archive The archive component.
      */
-    public function createArchive($archive): \Horde\Components\Component\Archive
+    public function createArchive($archive): Archive
     {
         $component = new Archive(
             $archive,
@@ -109,7 +117,7 @@ class Factory
      * @param string            $name      The name of the component.
      * @param string            $stability The stability of the component.
      * @param string            $channel   The component channel.
-     * @param \Horde_Pear_Remote $remote    The remote server handler.
+     * @param Horde_Pear_Remote $remote    The remote server handler.
      *
      * @return Remote The remote component.
      */
@@ -117,8 +125,8 @@ class Factory
         $name,
         $stability,
         $channel,
-        \Horde_Pear_Remote $remote
-    ): \Horde\Components\Component\Remote {
+        Horde_Pear_Remote $remote
+    ): Remote {
         return new Remote(
             $name,
             $stability,
@@ -158,7 +166,7 @@ class Factory
      *
      * @return DependencyList The dependency list.
      */
-    public function createDependencyList(Component $component): \Horde\Components\Component\DependencyList
+    public function createDependencyList(Component $component): DependencyList
     {
         return new DependencyList($component, $this);
     }
@@ -170,7 +178,7 @@ class Factory
      *
      * @return Dependency The dependency.
      */
-    public function createDependency($dependencies): \Horde\Components\Component\Dependency
+    public function createDependency($dependencies): Dependency
     {
         return new Dependency($dependencies, $this);
     }
@@ -180,7 +188,7 @@ class Factory
      *
      * @return Resolver The component resolver.
      */
-    public function getResolver(): \Horde\Components\Component\Resolver
+    public function getResolver(): Resolver
     {
         if (!isset($this->_resolver)) {
             $this->_resolver = $this->createResolver();
@@ -193,7 +201,7 @@ class Factory
      *
      * @return Resolver The component resolver.
      */
-    public function createResolver(): \Horde\Components\Component\Resolver
+    public function createResolver(): Resolver
     {
         return new Resolver(
             $this->getGitRoot(),
@@ -206,11 +214,11 @@ class Factory
      *
      * @param string $channel The channel name.
      *
-     * @return \Horde_Pear_Remote The remote handler.
+     * @return Horde_Pear_Remote The remote handler.
      */
-    public function createRemoteChannel($channel): \Horde_Pear_Remote
+    public function createRemoteChannel($channel): Horde_Pear_Remote
     {
-        return new \Horde_Pear_Remote($channel);
+        return new Horde_Pear_Remote($channel);
     }
 
     /**
@@ -218,11 +226,11 @@ class Factory
      *
      * @param string $directory The directory the sentinel should act in.
      *
-     * @return \Horde_Release_Sentinel The sentinel helper.
+     * @return Horde_Release_Sentinel The sentinel helper.
      */
-    public function createSentinel($directory): \Horde_Release_Sentinel
+    public function createSentinel($directory): Horde_Release_Sentinel
     {
-        return new \Horde_Release_Sentinel($directory);
+        return new Horde_Release_Sentinel($directory);
     }
 
     /**
@@ -262,9 +270,9 @@ class Factory
      *
      * @param string $package_xml_path Path to the package.xml file.
      */
-    public function createPackageXml($package_xml_path): \Horde_Pear_Package_Xml
+    public function createPackageXml($package_xml_path): Horde_Pear_Package_Xml
     {
-        return new \Horde_Pear_Package_Xml($package_xml_path);
+        return new Horde_Pear_Package_Xml($package_xml_path);
     }
 
     /**
@@ -273,11 +281,11 @@ class Factory
      * @param string $package_xml_dir Path to the parent directory of the
      *                                new package.xml file.
      *
-     * @throws \Horde_Pear_Exception
+     * @throws Horde_Pear_Exception
      */
     public function createPackageFile($package_xml_dir): void
     {
-        $type = new \Horde_Pear_Package_Type_HordeSplit($package_xml_dir);
+        $type = new Horde_Pear_Package_Type_HordeSplit($package_xml_dir);
         $type->writePackageXmlDraft();
     }
 
@@ -287,11 +295,11 @@ class Factory
      * @param string $package_xml_dir Path to the parent directory of the
      *                                new package.xml file.
      *
-     * @throws \Horde_Pear_Exception
+     * @throws Horde_Pear_Exception
      */
     public function createThemePackageFile($package_xml_dir): void
     {
-        $type = new \Horde_Pear_Package_Type_HordeTheme($package_xml_dir);
+        $type = new Horde_Pear_Package_Type_HordeTheme($package_xml_dir);
         $type->writePackageXmlDraft();
     }
 
@@ -303,13 +311,13 @@ class Factory
      *
      * @throws Exception
      */
-    public function createContentList($package_xml_dir): \Horde_Pear_Package_Contents_List
+    public function createContentList($package_xml_dir): Horde_Pear_Package_Contents_List
     {
-        $type = new \Horde_Pear_Package_Type_HordeSplit(
+        $type = new Horde_Pear_Package_Type_HordeSplit(
             $package_xml_dir,
             $this->getGitRoot()->getRoot()
         );
-        return new \Horde_Pear_Package_Contents_List($type);
+        return new Horde_Pear_Package_Contents_List($type);
     }
 
     /**
@@ -320,10 +328,10 @@ class Factory
      *
      * @throws Exception
      */
-    public function createThemeContentList($package_xml_dir): \Horde_Pear_Package_Contents_List
+    public function createThemeContentList($package_xml_dir): Horde_Pear_Package_Contents_List
     {
-        return new \Horde_Pear_Package_Contents_List(
-            new \Horde_Pear_Package_Type_HordeTheme(
+        return new Horde_Pear_Package_Contents_List(
+            new Horde_Pear_Package_Type_HordeTheme(
                 $package_xml_dir,
                 $this->getGitRoot()->getRoot()
             )
