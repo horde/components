@@ -1,4 +1,15 @@
 ---
+1.0.0-alpha32:
+  api: 1.0.0-alpha1
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-03-04
+  license:
+    identifier: LGPL-2.1-only
+    uri: http://www.horde.org/licenses/lgpl21
+  notes: |
+    fix(build): include data/ci in PHAR for sudo helper script
 1.0.0-alpha31:
   api: 1.0.0-alpha1
   state:
