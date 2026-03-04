@@ -43,7 +43,7 @@
         "horde/eventdispatcher": "* || dev-FRAMEWORK_6_0",
         "horde/githubapiclient": "* || dev-FRAMEWORK_6_0",
         "horde/composer": "* || dev-FRAMEWORK_6_0",
-        "horde/phpconfigfile": "^0.0.1-alpha4 || dev-FRAMEWORK_6_0"
+        "horde/phpconfigfile": "dev-FRAMEWORK_6_0"
     },
     "require-dev": {
         "horde/test": "^3 || dev-FRAMEWORK_6_0"
