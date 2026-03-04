@@ -2,7 +2,9 @@
   "compression": "GZ",
   "directories": [
     "src",
-    "data/website",
+    "data/website"
+  ],
+  "directories-bin": [
     "data/ci"
   ],
   "files": [
