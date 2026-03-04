@@ -5,6 +5,9 @@ name: CI
 # Generated: {{GENERATED_DATE}}
 #
 # DO NOT EDIT - Regenerate with: horde-components ci init
+#
+# This workflow uses the runner's preinstalled PHP 8.3 for bootstrap.
+# horde-components will install additional PHP versions as needed.
 
 on:
   push:
@@ -12,45 +15,32 @@ on:
   pull_request:
     branches: [ FRAMEWORK_6_0 ]
   workflow_dispatch:
-    inputs:
-      php_versions:
-        description: 'PHP versions to test (comma-separated, e.g., 8.2,8.4)'
-        required: false
-        default: 'all'
 
 jobs:
-  test:
+  ci:
     runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup PHP {{PHP_VERSION}} (for bootstrap)
-        uses: shivammathur/setup-php@v2
+      - name: Cache horde-components.phar
+        uses: actions/cache@v4
         with:
-          php-version: '{{PHP_VERSION}}'
-          extensions: json, mbstring, curl
-          coverage: none
+          path: {{WORK_DIR}}/bin
+          key: components-phar-${{ hashFiles('bin/ci-bootstrap.sh') }}
 
       - name: Cache QC tools (PHPUnit, PHPStan, PHP-CS-Fixer)
         uses: actions/cache@v4
         with:
           path: {{WORK_DIR}}/tools
           key: ci-tools-${{ hashFiles('.horde.yml') }}
-          restore-keys: |
-            ci-tools-
 
-      - name: CI Setup
+      - name: Run CI
         run: bash bin/ci-bootstrap.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMPONENTS_PHAR_URL: ${{ vars.COMPONENTS_PHAR_URL || '{{COMPONENTS_PHAR_URL}}' }}
-
-      - name: CI Run
-        run: |
-          php {{WORK_DIR}}/bin/horde-components.phar ci run \
-            --work-dir={{WORK_DIR}}
 
       - name: Upload test results
         if: always()
@@ -58,5 +48,5 @@ jobs:
         with:
           name: ci-results-${{ github.run_number }}
           path: |
-            {{WORK_DIR}}/lanes/*/build/*.json
+            {{WORK_DIR}}/lanes/*/{{COMPONENT_NAME}}/build/*.json
           retention-days: 30

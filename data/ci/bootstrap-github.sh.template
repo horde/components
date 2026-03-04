@@ -5,12 +5,14 @@
 # Generated: {{GENERATED_DATE}}
 #
 # DO NOT EDIT - Regenerate with: horde-components ci init
+#
+# This script uses the runner's preinstalled PHP (8.3 on ubuntu-24.04).
+# horde-components will install additional PHP versions as needed.
 
 set -e
 set -o pipefail
 
 # Configuration
-BOOTSTRAP_PHP_VERSION="{{PHP_VERSION}}"
 COMPONENTS_PHAR_URL="${COMPONENTS_PHAR_URL:-{{COMPONENTS_PHAR_URL}}}"
 COMPONENT_NAME="{{COMPONENT_NAME}}"
 WORK_DIR="{{WORK_DIR}}"
@@ -47,13 +49,12 @@ log_error() {
 }
 
 # Stage 1: Validate environment
-log_info "Horde CI Bootstrap - Stage 1 (GitHub Actions mode)"
+log_info "Horde CI Bootstrap (GitHub Actions mode)"
 log_info "Component: $COMPONENT_NAME"
-log_info "Bootstrap PHP: $BOOTSTRAP_PHP_VERSION"
 
 # Check we're in GitHub Actions
 if [ -z "$GITHUB_ACTIONS" ]; then
-    log_error "This script is for GitHub Actions. Use bootstrap-local.sh for local development."
+    log_error "This script is for GitHub Actions. Use ci setup --ci-mode=local for local development."
     exit 1
 fi
 
@@ -73,28 +74,28 @@ if [ -z "$GITHUB_TOKEN" ]; then
     exit 1
 fi
 
-# Stage 2: Verify PHP
+# Stage 2: Verify PHP (use runner's default - PHP 8.3)
 if ! command -v php &> /dev/null; then
-    log_error "PHP not found. Ensure setup-php action runs before this script."
+    log_error "PHP not found. ubuntu-24.04 runner should have PHP preinstalled."
     exit 1
 fi
 
 PHP_VERSION=$(php -r 'echo PHP_VERSION;')
-log_info "PHP version: $PHP_VERSION"
+log_info "Using runner's PHP version: $PHP_VERSION"
 
-if [ "${PHP_VERSION:0:3}" != "$BOOTSTRAP_PHP_VERSION" ]; then
-    log_warn "Expected PHP $BOOTSTRAP_PHP_VERSION, got $PHP_VERSION (proceeding anyway)"
-fi
+# Stage 3: Download horde-components.phar (or use cached)
+if [ -f "$WORK_DIR/bin/horde-components.phar" ]; then
+    log_info "Using cached horde-components.phar"
+    COMPONENTS_PHAR="$WORK_DIR/bin/horde-components.phar"
+else
+    log_info "Downloading horde-components from $COMPONENTS_PHAR_URL"
+    mkdir -p "$WORK_DIR/bin"
+    COMPONENTS_PHAR="$WORK_DIR/bin/horde-components.phar"
 
-# Stage 3: Download horde-components.phar
-log_info "Downloading horde-components from $COMPONENTS_PHAR_URL"
-
-mkdir -p "$WORK_DIR/bin"
-COMPONENTS_PHAR="$WORK_DIR/bin/horde-components.phar"
-
-if ! curl -sS -L -o "$COMPONENTS_PHAR" "$COMPONENTS_PHAR_URL"; then
-    log_error "Failed to download horde-components.phar"
-    exit 1
+    if ! curl -sS -L -o "$COMPONENTS_PHAR" "$COMPONENTS_PHAR_URL"; then
+        log_error "Failed to download horde-components.phar"
+        exit 1
+    fi
 fi
 
 # Validate it's a valid phar

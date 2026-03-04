@@ -181,7 +181,6 @@ class InitCommand
     ): array {
         $config = [
             '{{COMPONENT_NAME}}' => $componentName,
-            '{{PHP_VERSION}}' => '8.4',
             '{{WORK_DIR}}' => '/tmp/horde-ci',
         ];
 
