@@ -305,4 +305,14 @@ class ResultCollector
         $summary = $this->getSummary();
         return $summary['failed'] === 0;
     }
+
+    /**
+     * Get all results.
+     *
+     * @return array<string,array<string,array<string,mixed>>>
+     */
+    public function getResults(): array
+    {
+        return $this->results;
+    }
 }

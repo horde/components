@@ -86,7 +86,10 @@ class RunCommand
         // 5. Display summary
         $this->collector->displaySummary();
 
-        // 6. Return exit code
+        // 6. Write GitHub Actions job summary (if in GitHub Actions)
+        $this->writeGitHubSummary();
+
+        // 7. Return exit code
         return $this->collector->allPassed() ? 0 : 1;
     }
 
@@ -229,5 +232,239 @@ class RunCommand
                 }
             }
         }
+    }
+
+    /**
+     * Write GitHub Actions job summary.
+     *
+     * Writes a markdown summary to $GITHUB_STEP_SUMMARY if running in GitHub Actions.
+     */
+    private function writeGitHubSummary(): void
+    {
+        // Only write if in GitHub Actions
+        $summaryFile = getenv('GITHUB_STEP_SUMMARY');
+        if ($summaryFile === false || $summaryFile === '') {
+            return;
+        }
+
+        $markdown = $this->generateSummaryMarkdown();
+
+        // Append to summary file
+        file_put_contents($summaryFile, $markdown, FILE_APPEND);
+    }
+
+    /**
+     * Generate markdown summary for GitHub Actions.
+     *
+     * @return string Markdown content
+     */
+    private function generateSummaryMarkdown(): string
+    {
+        $results = $this->collector->getResults();
+        $summary = $this->collector->getSummary();
+
+        $md = "## 🔍 CI Results Summary\n\n";
+
+        // Overall status
+        if ($summary['failed'] === 0) {
+            $md .= "**Status**: ✅ All {$summary['total']} lanes passed\n\n";
+        } else {
+            $md .= "**Status**: ❌ {$summary['failed']}/{$summary['total']} lanes failed\n\n";
+        }
+
+        // Lane results table
+        $md .= "### Lane Results\n\n";
+        $md .= "| Lane | PHPUnit | PHPStan | PHP-CS-Fixer | Status |\n";
+        $md .= "|------|---------|---------|--------------|--------|\n";
+
+        foreach ($results as $laneName => $tools) {
+            $laneStatus = $this->isLanePassed($tools) ? '✅' : '❌';
+
+            $md .= sprintf(
+                "| %s | %s | %s | %s | %s |\n",
+                $laneName,
+                $this->formatToolForTable($tools['phpunit'] ?? null),
+                $this->formatToolForTable($tools['phpstan'] ?? null),
+                $this->formatToolForTable($tools['phpcsfixer'] ?? null),
+                $laneStatus
+            );
+        }
+
+        // Detailed metrics
+        $md .= "\n### Detailed Metrics\n\n";
+        $md .= $this->generateDetailedMetrics($results);
+
+        // Footer
+        $md .= "\n---\n";
+        $md .= "*CI powered by [horde-components](https://github.com/horde/components)*\n";
+
+        return $md;
+    }
+
+    /**
+     * Check if a lane passed all tools.
+     *
+     * @param array<string,array<string,mixed>> $tools Tool results
+     * @return bool
+     */
+    private function isLanePassed(array $tools): bool
+    {
+        foreach ($tools as $result) {
+            // Skipped is not a failure
+            if (isset($result['skipped']) && $result['skipped']) {
+                continue;
+            }
+
+            if (!($result['success'] ?? false)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Format tool result for table cell.
+     *
+     * @param array<string,mixed>|null $result Tool result
+     * @return string Formatted string
+     */
+    private function formatToolForTable(?array $result): string
+    {
+        if ($result === null) {
+            return '—';
+        }
+
+        // Skipped
+        if (isset($result['skipped']) && $result['skipped']) {
+            return '⊘ Skipped';
+        }
+
+        // Error
+        if (isset($result['error'])) {
+            return '❌ Error';
+        }
+
+        // Success/failure with stats
+        $stats = $result['statistics'] ?? [];
+        $emoji = ($result['success'] ?? false) ? '✅' : '❌';
+
+        // Extract key metric
+        $metric = '';
+        if (isset($stats['tests'])) {
+            $metric = "{$stats['tests']} tests";
+        } elseif (isset($stats['errors'])) {
+            $metric = "{$stats['errors']} errors";
+        } elseif (isset($stats['files_checked'])) {
+            $metric = "{$stats['files_checked']} files";
+        }
+
+        return $metric ? "{$emoji} {$metric}" : $emoji;
+    }
+
+    /**
+     * Generate detailed metrics section.
+     *
+     * @param array<string,array<string,array<string,mixed>>> $results All results
+     * @return string Markdown content
+     */
+    private function generateDetailedMetrics(array $results): string
+    {
+        $md = '';
+
+        // Aggregate stats across all lanes
+        $phpunitStats = $this->aggregateToolStats($results, 'phpunit');
+        $phpstanStats = $this->aggregateToolStats($results, 'phpstan');
+        $csFixerStats = $this->aggregateToolStats($results, 'phpcsfixer');
+
+        // PHPUnit section
+        if (!empty($phpunitStats)) {
+            $md .= "#### PHPUnit\n\n";
+            $totalTests = $phpunitStats['tests'] ?? 0;
+            $totalFailures = $phpunitStats['failures'] ?? 0;
+            $totalErrors = $phpunitStats['errors'] ?? 0;
+            $lanesRun = $phpunitStats['lanes_run'] ?? 0;
+
+            if ($totalFailures === 0 && $totalErrors === 0) {
+                $md .= "✅ **All tests passed** across {$lanesRun} lanes\n";
+            } else {
+                $md .= "❌ **Tests failed**\n";
+            }
+
+            $md .= "- Total tests: {$totalTests}\n";
+            if ($totalFailures > 0) {
+                $md .= "- Failures: {$totalFailures}\n";
+            }
+            if ($totalErrors > 0) {
+                $md .= "- Errors: {$totalErrors}\n";
+            }
+            $md .= "\n";
+        }
+
+        // PHPStan section
+        if (!empty($phpstanStats)) {
+            $md .= "#### PHPStan\n\n";
+            $totalErrors = $phpstanStats['errors'] ?? 0;
+            $filesAnalyzed = $phpstanStats['files_analyzed'] ?? 0;
+            $lanesRun = $phpstanStats['lanes_run'] ?? 0;
+
+            if ($totalErrors === 0) {
+                $md .= "✅ **No errors found** in {$filesAnalyzed} files ({$lanesRun} lanes)\n\n";
+            } else {
+                $md .= "⚠️ **{$totalErrors} errors found** in {$filesAnalyzed} files ({$lanesRun} lanes)\n\n";
+            }
+        }
+
+        // PHP-CS-Fixer section
+        if (!empty($csFixerStats)) {
+            $md .= "#### PHP-CS-Fixer\n\n";
+            $filesChecked = $csFixerStats['files_checked'] ?? 0;
+            $filesWithIssues = $csFixerStats['files_with_issues'] ?? 0;
+
+            if ($filesWithIssues === 0) {
+                $md .= "✅ **No style issues** in {$filesChecked} files\n\n";
+            } else {
+                $md .= "⚠️ **{$filesWithIssues} files** with style issues (of {$filesChecked} checked)\n\n";
+            }
+        }
+
+        return $md;
+    }
+
+    /**
+     * Aggregate statistics for a specific tool across all lanes.
+     *
+     * @param array<string,array<string,array<string,mixed>>> $results All results
+     * @param string $tool Tool name
+     * @return array<string,int> Aggregated stats
+     */
+    private function aggregateToolStats(array $results, string $tool): array
+    {
+        $aggregated = ['lanes_run' => 0];
+
+        foreach ($results as $laneName => $tools) {
+            if (!isset($tools[$tool])) {
+                continue;
+            }
+
+            $result = $tools[$tool];
+
+            // Skip skipped/errored lanes
+            if (isset($result['skipped']) || isset($result['error'])) {
+                continue;
+            }
+
+            $aggregated['lanes_run']++;
+
+            // Aggregate statistics
+            $stats = $result['statistics'] ?? [];
+            foreach ($stats as $key => $value) {
+                if (is_numeric($value)) {
+                    $aggregated[$key] = ($aggregated[$key] ?? 0) + $value;
+                }
+            }
+        }
+
+        return $aggregated;
     }
 }
