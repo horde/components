@@ -40,6 +40,7 @@ class ExtensionInstaller
         'common',   // Common files (timezone data, etc.)
         'curl',     // cURL
         'dom',      // DOM
+        'intl',     // Internationalization (required by horde/core)
         'json',     // JSON (built-in in 8.0+, but package may exist)
         'mbstring', // Multibyte string
         'xml',      // XML
