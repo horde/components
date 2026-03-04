@@ -4,6 +4,9 @@
     "src",
     "data/website"
   ],
+  "directories-bin": [
+    "data/ci"
+  ],
   "files": [
     "LICENSE",
     "bin/horde-components",
