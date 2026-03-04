@@ -136,3 +136,18 @@ else
     log_error "CI setup failed with exit code $EXIT_CODE"
     exit $EXIT_CODE
 fi
+
+# Stage 6: Run CI tests
+log_info "Running CI tests"
+
+php "$COMPONENTS_PHAR" ci run \
+    --work-dir="$WORK_DIR"
+
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -eq 0 ]; then
+    log_info "CI tests complete"
+else
+    log_error "CI tests failed with exit code $EXIT_CODE"
+    exit $EXIT_CODE
+fi
