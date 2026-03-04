@@ -699,7 +699,7 @@ class Git
     public function checkoutIsClean(string $localDir): bool
     {
         $cmd = $this->gitBin . ' diff --exit-code';
-        $res = $this->systemInDirectory(
+        $res = $this->shell->system(
             $cmd,
             $localDir
         );
@@ -707,7 +707,7 @@ class Git
             return false;
         }
         $cmd = $this->gitBin . ' diff --exit-code --cached';
-        $res = $this->systemInDirectory(
+        $res = $this->shell->system(
             $cmd,
             $localDir
         );
@@ -715,7 +715,7 @@ class Git
             return false;
         }
         $cmd = $this->gitBin . ' status --untracked-files=no --porcelain';
-        $res = $this->systemInDirectory(
+        $res = $this->shell->system(
             $cmd,
             $localDir
         );
@@ -740,7 +740,7 @@ class Git
             $remote,
             $ref ?? $this->getCurrentBranch($localDir)
         );
-        $this->systemInDirectory(
+        $this->shell->system(
             $cmd,
             $localDir
         );
@@ -772,10 +772,10 @@ class Git
             return;
         }
         foreach ($this->added as $path) {
-            $this->systemInDirectory('git add ' . $path, $localDir);
+            $this->shell->system('git add ' . $path, $localDir);
         }
         // TODO: Use a message file instead. Command line escaping might be brittle
-        $this->systemInDirectory('git commit -m "' . $log . '"', $localDir);
+        $this->shell->system('git commit -m "' . $log . '"', $localDir);
         $this->added = [];
     }
 
@@ -791,7 +791,7 @@ class Git
     {
         $forceSwitch = $force ? '--force ' : '';
         $cmd = $this->gitBin . ' tag ' . $forceSwitch . '-m "' . $message . '" ' . $tag;
-        $this->systemInDirectory(
+        $this->shell->system(
             $cmd,
             $localDir
         );
@@ -806,7 +806,7 @@ class Git
     public function getCurrentRefName(string $localDir): string
     {
         $cmd = $this->gitBin . ' symbolic-ref --short -q HEAD';
-        $branch = $this->systemInDirectory(
+        $branch = $this->shell->system(
             $cmd,
             $localDir
         );
@@ -815,7 +815,7 @@ class Git
         }
         $cmd = $this->gitBin . ' describe --tags';
         // TODO: Check if the output is really a tag and if not, get a full ref hash
-        $tag = $this->systemInDirectory(
+        $tag = $this->shell->system(
             $cmd,
             $localDir
         );
