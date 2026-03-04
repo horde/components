@@ -295,7 +295,7 @@ class SetupCommand
         if ($deps !== null) {
             $requiredSet = $deps->getRequired();
             if ($requiredSet !== null) {
-                $extensions = $requiredSet->getExt();
+                $extensions = $requiredSet->getExtensions();
             }
         }
 
