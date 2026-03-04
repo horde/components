@@ -109,7 +109,7 @@ class Satis extends Base
             return;
         }
         // Ensure the package is present in the satis repo
-        $res = $this->exec(
+        $res = $this->getShell()->exec(
             sprintf(
                 '%s add %s %s',
                 $options['satis_bin'],
@@ -128,7 +128,7 @@ class Satis extends Base
                 $options['satis_json']
             )
         );
-        $res = $this->exec(
+        $res = $this->getShell()->exec(
             sprintf(
                 '%s build %s %s',
                 $options['satis_bin'],
@@ -137,11 +137,11 @@ class Satis extends Base
             )
         );
         if ($options['satis_push']) {
-            $this->execInDirectory(
+            $this->getShell()->exec(
                 'git add index.html packages.json include',
                 $options['satis_outdir']
             );
-            $this->execInDirectory(
+            $this->getShell()->exec(
                 sprintf(
                     'git commit -m "Updated by %s release at %s"',
                     $package->getName(),
@@ -149,7 +149,7 @@ class Satis extends Base
                 ),
                 $options['satis_outdir']
             );
-            $this->execInDirectory(
+            $this->getShell()->exec(
                 'git push',
                 $options['satis_outdir']
             );
@@ -175,7 +175,7 @@ class Satis extends Base
     {
         $found = null;
         if (empty($options['satis_bin'])) {
-            $satisWhich = $this->exec('which satis');
+            $satisWhich = $this->getShell()->exec('which satis');
             $found = $satisWhich->getReturnValue() ? '' : (string) $satisWhich;
         }
         $options['satis_bin'] ??= $found;

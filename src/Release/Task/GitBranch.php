@@ -163,7 +163,7 @@ class GitBranch extends Base
      */
     protected function _whichGit(): \Horde\Components\Component\Task\SystemCallResult
     {
-        return $this->exec('which git');
+        return $this->getShell()->exec('which git');
     }
 
     /**

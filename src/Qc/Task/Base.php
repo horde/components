@@ -12,10 +12,11 @@
 namespace Horde\Components\Qc\Task;
 
 use Horde\Components\Component;
-use Horde\Components\Component\Task\SystemCall;
+use Horde\Components\Component\Task\SystemCallResult;
 use Horde\Components\Output;
 use Horde\Components\Qc\Tasks as QcTasks;
 use Horde\Components\Release\Tasks as ReleaseTasks;
+use Horde\Components\Helper\Shell;
 
 /**
  * Components_Qc_Task_Base:: provides core functionality for qc tasks.
@@ -32,7 +33,6 @@ use Horde\Components\Release\Tasks as ReleaseTasks;
  */
 class Base
 {
-    use SystemCall;
     /**
      * The component that should be checked
      */
@@ -49,6 +49,11 @@ class Base
     private ?string $_path = null;
 
     /**
+     * Shell executor for running commands
+     */
+    private Shell $_shell;
+
+    /**
      * Constructor.
      *
      * @param QcTasks $_tasks The task handler.
@@ -59,10 +64,13 @@ class Base
         private readonly Output $_output
     ) {
         if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
-            require __DIR__ . '/../vendor/autoload.php';
+            require __DIR__ . '/../../../bundle/vendor/autoload.php';
         } elseif (file_exists('/../../../bundle/vendor/autoload.php')) {
             require __DIR__ . '/../../../bundle/vendor/autoload.php';
         }
+
+        // Initialize shell (QC tasks don't have pretend mode)
+        $this->_shell = new Shell();
     }
 
     /**
@@ -137,6 +145,20 @@ class Base
     }
 
     /**
+     * Get the Shell instance for executing commands.
+     *
+     * Subclasses should use this to execute shell commands:
+     * - $this->getShell()->exec($cmd, $dir)
+     * - $this->getShell()->system($cmd, $dir)
+     *
+     * @return Shell The shell executor
+     */
+    protected function getShell(): Shell
+    {
+        return $this->_shell;
+    }
+
+    /**
      * Validate the preconditions required for this release task.
      *
      * @param array $options Additional options.
@@ -150,7 +172,7 @@ class Base
     }
 
     /**
-     * Formally needed because the system call trait supports pretend mode.
+     * QC tasks don't support pretend mode - they always execute.
      */
     public function pretend(): bool
     {

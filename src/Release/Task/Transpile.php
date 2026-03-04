@@ -156,21 +156,21 @@ class Transpile extends Base
         $transpilerFile = $this->getTemplateDirectory() . '/rector/transpile-' . $options['target_platform'] . '.php';
         copy($transpilerFile, $componentDir . '/rector-transpile.php');
         $transpileCmd = sprintf('%s/vendor/bin/rector -c %s --clear-cache process', $componentDir, 'rector-transpile.php');
-        $this->execInDirectory($transpileCmd, $componentDir);
+        $this->getShell()->exec($transpileCmd, $componentDir);
         // checkout composer.json version from before
         $checkoutCmd = $this->git->detectGitBin() . ' checkout composer.json';
-        $this->execInDirectory($checkoutCmd, $componentDir);
+        $this->getShell()->exec($checkoutCmd, $componentDir);
         // Configure target php version
         $this->composer->setDependency($componentDir, 'php', '^' . $options['target_platform']);
         // delete any leftover composer.lock
         $deleteComposerLock = $this->git->detectGitBin() . ' rm composer.lock --force';
-        $this->execInDirectory($deleteComposerLock, $componentDir);
+        $this->getShell()->exec($deleteComposerLock, $componentDir);
         // delete vendor dir
-        $this->execInDirectory('rm -rf ./vendor', $componentDir);
+        $this->getShell()->exec('rm -rf ./vendor', $componentDir);
         unlink($componentDir . '/rector-transpile.php');
         // check in changes
         $addChangesCmd = $this->git->detectGitBin() . ' add src/ test/ composer.json';
-        $this->execInDirectory($addChangesCmd, $componentDir);
+        $this->getShell()->exec($addChangesCmd, $componentDir);
         $this->git->commit($componentDir, 'Commit transpiled version for php ' . $options['target_platform']);
         $this->getOutput()->info('Created transpiled version');
         // if target is a branch

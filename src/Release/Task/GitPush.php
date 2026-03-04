@@ -13,7 +13,6 @@
 
 namespace Horde\Components\Release\Task;
 
-use Horde\Components\Component\Task\SystemCall;
 use Horde\Components\Component\Task\SystemCallResult;
 
 /**
@@ -89,7 +88,7 @@ class GitPush extends Base
      */
     protected function _push(string $remote, string $branch = ''): \Horde\Components\Component\Task\SystemCallResult
     {
-        return $this->execInDirectory(
+        return $this->getShell()->exec(
             sprintf('git push --set-upstream %s %s', $remote, $branch),
             $this->getComponent()->getComponentDirectory()
         );
@@ -106,7 +105,7 @@ class GitPush extends Base
      */
     protected function _pushTags(string $remote, string $branch = ''): \Horde\Components\Component\Task\SystemCallResult
     {
-        return $this->execInDirectory(
+        return $this->getShell()->exec(
             sprintf('git push --set-upstream %s %s --tags', $remote, $branch),
             $this->getComponent()->getComponentDirectory()
         );

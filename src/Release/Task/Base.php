@@ -14,11 +14,12 @@ namespace Horde\Components\Release\Task;
 use Horde\Components\TaskInterface;
 use Horde\Components\Component\Source as ComponentSource;
 use Horde\Components\Component\Task\Dependencies;
-use Horde\Components\Component\Task\SystemCall;
+use Horde\Components\Component\Task\SystemCallResult;
 use Horde\Components\Exception;
 use Horde\Components\Output;
 use Horde\Components\Release\Notes as ReleaseNotes;
 use Horde\Components\Release\Tasks as ReleaseTasks;
+use Horde\Components\Helper\Shell;
 
 /**
  * Components_Release_Task_Base:: provides core functionality for release tasks.
@@ -35,8 +36,8 @@ use Horde\Components\Release\Tasks as ReleaseTasks;
  */
 class Base implements TaskInterface
 {
-    use SystemCall;
     use Dependencies;
+
     /**
      * The component that should be released
      *
@@ -52,13 +53,24 @@ class Base implements TaskInterface
     protected $_name;
 
     /**
+     * Shell executor for running commands
+     *
+     * @var Shell
+     */
+    private Shell $_shell;
+
+    /**
      * Constructor.
      *
      * @param ReleaseTasks $_tasks The task handler.
      * @param ReleaseNotes $_notes The release notes.
      * @param Output $_output Accepts output.
      */
-    public function __construct(protected ReleaseTasks $_tasks, protected ReleaseNotes $_notes, protected Output $_output) {}
+    public function __construct(protected ReleaseTasks $_tasks, protected ReleaseNotes $_notes, protected Output $_output)
+    {
+        // Initialize shell with output and pretend mode
+        $this->_shell = new Shell($_output, $_tasks->pretend());
+    }
 
     /**
      * Set the component this task should act upon.
@@ -180,5 +192,19 @@ class Base implements TaskInterface
     public function pretend(): bool
     {
         return $this->getTasks()->pretend();
+    }
+
+    /**
+     * Get the Shell instance for executing commands.
+     *
+     * Subclasses should use this to execute shell commands:
+     * - $this->getShell()->exec($cmd, $dir)
+     * - $this->getShell()->system($cmd, $dir)
+     *
+     * @return Shell The shell executor
+     */
+    protected function getShell(): Shell
+    {
+        return $this->_shell;
     }
 }

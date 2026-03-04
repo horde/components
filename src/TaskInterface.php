@@ -13,7 +13,6 @@ namespace Horde\Components;
 
 use Horde\Components\Component\Source as ComponentSource;
 use Horde\Components\Component\Task\Dependencies;
-use Horde\Components\Component\Task\SystemCall;
 use Horde\Components\Exception;
 use Horde\Components\Output;
 use Horde\Components\Release\Notes as ReleaseNotes;

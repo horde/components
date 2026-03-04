@@ -145,8 +145,8 @@ class Package extends Base
         }
 
         if (!empty($options['upload'])) {
-            $this->system('scp ' . $path . ' ' . $options['releaseserver'] . ':~/');
-            $this->system('ssh ' . $options['releaseserver'] . ' "umask 0002 && pirum add ' . $options['releasedir'] . ' ~/' . basename((string) $path) . ' && rm ' . basename((string) $path) . '"');
+            $this->getShell()->system('scp ' . $path . ' ' . $options['releaseserver'] . ':~/');
+            $this->getShell()->system('ssh ' . $options['releaseserver'] . ' "umask 0002 && pirum add ' . $options['releasedir'] . ' ~/' . basename((string) $path) . ' && rm ' . basename((string) $path) . '"');
             if (!$this->getTasks()->pretend()) {
                 unlink($path);
             }
