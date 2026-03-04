@@ -1,0 +1,28 @@
+id: Skeleton
+name: Skeleton
+type: library
+full: Short headline for Skeleton
+description: Long, detailed description of Skeleton which may span multiple lines
+list: horde
+homepage: http://www.horde.org/libraries/Horde_Skeleton
+version:
+  release: 1.0.0alpha1
+  api: 1.0.0
+state:
+  release: alpha
+  api: alpha
+license:
+  identifier: LGPL-2.1
+  uri: http://www.horde.org/licenses/lgpl21
+authors:
+  - name: Some Person
+    user: tbd
+    email: some.person@example.com
+    role: lead
+    active: true
+dependencies:
+  required:
+    php: ^8.2
+    ext:
+      - json
+      - mbstring
