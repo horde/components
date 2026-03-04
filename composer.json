@@ -22,18 +22,7 @@
         }
     ],
     "time": "2026-03-03",
-    "repositories": [
-        {
-            "name": "version",
-            "type": "path",
-            "url": "/home/i567442/git/horde/Version"
-        },
-        {
-            "name": "hordeymlfile",
-            "type": "path",
-            "url": "/home/i567442/git/horde/HordeYmlFile"
-        }
-    ],
+    "repositories": [],
     "require": {
         "horde/horde-installer-plugin": "^2.6 || dev-FRAMEWORK_6_0",
         "php": "^8.2",
@@ -48,9 +37,9 @@
         "horde/util": "* || dev-FRAMEWORK_6_0",
         "horde/injector": "* || dev-FRAMEWORK_6_0",
         "horde/release": "^4 || dev-FRAMEWORK_6_0",
-        "horde/version": "dev-FRAMEWORK_6_0",
+        "horde/version": "^1.0.0-beta1 || dev-FRAMEWORK_6_0",
         "horde/yaml": "* || dev-FRAMEWORK_6_0",
-        "horde/hordeymlfile": "* || dev-FRAMEWORK_6_0",
+        "horde/hordeymlfile": "^0.0.1-alpha3 || dev-FRAMEWORK_6_0",
         "horde/eventdispatcher": "* || dev-FRAMEWORK_6_0",
         "horde/githubapiclient": "* || dev-FRAMEWORK_6_0",
         "horde/composer": "* || dev-FRAMEWORK_6_0",

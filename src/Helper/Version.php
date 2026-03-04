@@ -321,7 +321,7 @@ class Version
     {
         $res = preg_match('/^(\w+)?(\d+)(\.\d+)?(\.\d+)?(\.\d+)?(-?\w+.*)?$/', $version, $match);
         if ($res === false || $res === 0) {
-            throw new Exception('Could not parse Composer style version string: ' . $version);
+            throw new Exception('Could not parse Composer style version string: "' . $version . '"');
         }
 
         [$original, $prefix, $major, $minor, $patch, $subpatch, $other] = array_pad($match, 7, null);

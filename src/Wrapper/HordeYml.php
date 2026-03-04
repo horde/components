@@ -106,9 +106,11 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
      */
     public function getReleaseVersion(): Version
     {
-        return Version::fromComposerString(
-            $this->hordeYmlFile->getReleaseVersion()
-        );
+        $versionString = $this->hordeYmlFile->getReleaseVersion();
+        if (empty($versionString)) {
+            throw new \Exception('HordeYml: getReleaseVersion() returned empty string from library');
+        }
+        return Version::fromComposerString($versionString);
     }
 
     /**
@@ -118,9 +120,11 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
      */
     public function getApiVersion(): Version
     {
-        return Version::fromComposerString(
-            $this->hordeYmlFile->getApiVersion()
-        );
+        $versionString = $this->hordeYmlFile->getApiVersion();
+        if (empty($versionString)) {
+            throw new \Exception('HordeYml: getApiVersion() returned empty string from library');
+        }
+        return Version::fromComposerString($versionString);
     }
 
     /**
@@ -247,7 +251,10 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
      */
     public function save(): void
     {
-        $this->syncToLibrary();
+        // NOTE: We don't call syncToLibrary() here because:
+        // 1. We're using typed setters (setReleaseVersion, etc.) which update the library directly
+        // 2. syncToLibrary() would call $hordeYmlFile->set() which has bugs with nested structures
+        // 3. If legacy code modifies the ArrayObject directly, they need to use specific setters
         $this->hordeYmlFile->save();
         $this->refreshArray();
     }
