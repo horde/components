@@ -1,9 +1,11 @@
 <?php
-
 /**
- * Horde\Components\Runner\Init:: create new metadata.
+ * Horde\Components\Runner\Init:: scaffold new components from templates.
  *
- * PHP Version 8.2+
+ * Copyright 2018-2026 Horde LLC (http://www.horde.org/)
+ *
+ * See the enclosed file LICENSE for license information (LGPL). If you
+ * did not receive this file, see http://www.horde.org/licenses/lgpl21.
  *
  * @category Horde
  * @package  Components
@@ -19,15 +21,17 @@ use Horde\Components\Component;
 use Horde\Components\ConfigProvider\EffectiveConfigProvider;
 use Horde\Components\Exception;
 use Horde\Components\Output;
-use Horde\HordeYmlFile\HordeYmlFile;
+use Horde\Components\Scaffolding\SkeletonLocator;
+use Horde\Components\Scaffolding\ReplacementBuilder;
+use Horde\Components\Scaffolding\TemplateProcessor;
 
 /**
- * Horde\Components\Runner\Init:: create new metadata.
+ * Scaffold new components from templates.
  *
- * Copyright 2018-2026 Horde LLC (http://www.horde.org/)
- *
- * See the enclosed file LICENSE for license information (LGPL). If you
- * did not receive this file, see http://www.horde.org/licenses/lgpl21.
+ * Supports three component types:
+ * - application: Full Horde application (from horde/skeleton repository)
+ * - library: PSR-4 library with minimal structure
+ * - theme: Theme with CSS and graphics
  *
  * @category Horde
  * @package  Components
@@ -51,195 +55,164 @@ class Init
         private readonly Output $output
     ) {}
 
+    /**
+     * Run init command.
+     *
+     * @throws Exception If initialization fails
+     */
     public function run(): void
     {
-        // Use parameter values or defaults
-        $authorName = $this->config->hasSetting('author')
-            ? $this->config->getSetting('author')
-            : 'Some Person';
-
-        $authorEmail = $this->config->hasSetting('email')
-            ? $this->config->getSetting('email')
-            : 'some.person@example.com';
-
-        $list = 'horde';
-        $user = 'tbd';
-        $type = $this->arguments[1] ?? 'library';
-        $path = explode('/', getcwd());
-        $id = array_pop($path);
-        if ($type == 'library') {
-            $homepage = 'http://www.horde.org/libraries/Horde_' . $id;
-        } elseif ($type == 'application') {
-            $homepage = 'http://www.horde.org/apps/' . $id;
-        }
-        $authors = [['name' => $authorName, 'user' => $user, 'email' => $authorEmail, 'role' => 'lead', 'active' => true]];
-        $dt = new \Horde_Date(time());
-        $version = ['release' => '1.0.0alpha1', 'api' => '1.0.0'];
-        $state = ['release' => 'alpha', 'api' => 'alpha'];
-        $license = ['identifier' => 'LGP-2.1', 'uri' => 'http://www.horde.org/licenses/lgpl21'];
-        $dependencies = ['required' => ['php' => '^5.3 || ^7', 'pear' => ['pear.horde.org/Horde_Exception' => '^2']], 'optional' => ['pear' => ['pear.horde.org/Horde_Test' => '^2.1']]];
-        $description = "Long, detailed description of $id which may span multiple lines";
-        $summary = "Short headline for $id";
-
-        // Create a .horde.yml using the library
-        if (!file_exists('.horde.yml')) {
-            touch('.horde.yml');
+        // If no arguments, show interactive prompt
+        if (empty($this->arguments[1])) {
+            $this->showInteractivePrompt();
+            return;
         }
 
-        $hordeYml = new HordeYmlFile('.horde.yml');
-        $hordeYml->setId($id);
-        $hordeYml->setName(ucfirst($id));
-        $hordeYml->set('full', $summary);
-        $hordeYml->setFullDescription($description);
-        $hordeYml->set('list', $list);
-        $hordeYml->setType($type);
-        $hordeYml->set('homepage', $homepage ?? '');
-        $hordeYml->setAuthors($authors);
-        $hordeYml->set('version', $version);
-        $hordeYml->set('state', $state);
-        $hordeYml->setLicense($license['identifier'], $license['uri']);
-        $hordeYml->set('dependencies', $dependencies);
-        $hordeYml->save();
-
-        /* create a barebone xml
-         * We just need to satisfy formal criteria,
-         * otherwise Horde_Pear_Package_Xml and Component_Wrapper_Xml
-         * will break. The actual content does not matter much,
-         * it will be overwritten by the next update
-         */
-        $changelog = 'Initialize Module';
-        /* TODO: Put this into data and use a Horde_View to render?
-         * Or refactor into Horde_Pear_Package_Xml::init()?
-         */
-        $xml = sprintf(
-            '<?xml version="1.0" encoding="UTF-8"?>
-<package packagerversion="1.9.2" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
- <name>%s</name>
- <channel>pear.horde.org</channel>
- <summary>%s</summary>
- <description>%s</description>
- <lead>
-  <name>%s</name>
-  <user>%s</user>
-  <email>%s</email>
-  <active>yes</active>
- </lead>
- <date>%s</date>
- <version>
-  <release>%s</release>
-  <api>%s</api>
- </version>
- <stability>
-  <release>%s</release>
-  <api>%s</api>
- </stability>
- <license uri="%s">%s</license>
- <notes>
-* %s
- </notes>
- <contents>
-  <dir baseinstalldir="/" name="/">
-   <dir name="doc">
-   </dir> <!-- /doc -->
-  </dir> <!-- / -->
- </contents>
- <dependencies>
-  <required>
-   <php>
-    <min>5.3.0</min>
-    <max>8.0.0alpha1</max>
-    <exclude>8.0.0alpha1</exclude>
-   </php>
-   <pearinstaller>
-    <min>1.7.0</min>
-   </pearinstaller>
-   <package>
-    <name>horde</name>
-    <channel>pear.horde.org</channel>
-    <min>5.0.0</min>
-    <max>6.0.0alpha1</max>
-    <exclude>6.0.0alpha1</exclude>
-   </package>
-   <package>
-    <name>Horde_Exception</name>
-    <channel>pear.horde.org</channel>
-    <min>2.0.0</min>
-    <max>3.0.0alpha1</max>
-    <exclude>3.0.0alpha1</exclude>
-   </package>
-  </required>
-  <optional>
-  </optional>
- </dependencies>
- <phprelease>
-  <filelist>
-  </filelist>
- </phprelease>
- <changelog>
-  <release>
-   <version>
-    <release>%s</release>
-    <api>%s</api>
-   </version>
-   <stability>
-    <release>%s</release>
-    <api>%s</api>
-   </stability>
-   <date>%s</date>
-   <license uri="%s">%s</license>
-   <notes>
-* %s
-   </notes>
-  </release>
- </changelog>
-</package>',
-            $id,
-            $summary,
-            $description,
-            $authorName,
-            $user,
-            $authorEmail,
-            $dt->format('Y-m-d'),
-            $version['release'],
-            $version['api'],
-            $state['release'],
-            $state['api'],
-            $license['uri'],
-            $license['identifier'],
-            $changelog,
-            $version['release'],
-            $version['api'],
-            $state['release'],
-            $state['api'],
-            $dt->format('Y-m-d'),
-            $license['uri'],
-            $license['identifier'],
-            $changelog
-        );
-
-        file_put_contents('package.xml', $xml);
-
-        /* Create appropriate docdir for app or library
-         * don't care if it fails because it already exists
-         */
-        $docdir = 'doc';
-        if ($type == 'library') {
-            $docdir = 'doc/Horde/' . str_replace('_', '/', $id);
+        // Get component type
+        $type = $this->arguments[1];
+        if (!in_array($type, ['application', 'library', 'theme'])) {
+            throw new Exception(
+                "Invalid component type: {$type}\n" .
+                "Must be one of: application, library, theme\n\n" .
+                "Run 'horde-components init' (no arguments) for interactive mode."
+            );
         }
-        mkdir($docdir, 0o755, true);
-        $yaml = $this->component->getWrapper('ChangelogYml');
-        $yaml[$version['release']] = ['api' => $version['api'], 'state' => $state, 'date' => $dt->format('Y-m-d'), 'license' => $license, 'notes' => $changelog];
-        $yaml->save();
-        $changes = $this->component->getWrapper('Changes');
-        // The changes helper seems to have no option to create a changes file
-        $head = str_repeat('-', 12) . "\n";
-        $changeEntry = sprintf(
-            "%s%s\n%s\n%s\n",
-            $head,
-            $version['release'],
-            $head,
-            $changelog
-        );
-        file_put_contents($docdir . '/CHANGES', $changeEntry);
+
+        // Build configuration
+        $componentConfig = $this->buildConfig($type);
+
+        // Validate configuration
+        $this->validateConfig($componentConfig);
+
+        // Locate skeleton template
+        $this->output->info("Locating {$type} template...");
+        $skeletonPath = SkeletonLocator::locate($type);
+        $this->output->ok("Found template at: {$skeletonPath}");
+
+        // Build replacement map
+        $replacements = ReplacementBuilder::build($componentConfig);
+
+        // Process template
+        $processor = new TemplateProcessor($this->output);
+        $targetPath = getcwd();
+        $force = $this->config->hasSetting('force_overwrite') && $this->config->getSetting('force_overwrite');
+
+        $this->output->plain('');
+        $this->output->bold("=== Scaffolding {$type} component ===");
+        $processor->process($skeletonPath, $targetPath, $replacements, $force);
+
+        // Success message
+        $this->output->plain('');
+        $this->output->bold('=== Component initialized successfully! ===');
+        $this->output->ok("Component type: {$type}");
+        $this->output->ok("Component name: {$componentConfig['name']}");
+        $this->output->plain('');
+        $this->output->info('Next steps:');
+        $this->output->info('  1. Review generated files');
+        $this->output->info('  2. Run: composer install');
+        $this->output->info('  3. Run: vendor/bin/phpunit');
+        $this->output->info('  4. Customize for your needs');
+    }
+
+    /**
+     * Show interactive prompt to guide user.
+     */
+    private function showInteractivePrompt(): void
+    {
+        $this->output->bold('=== Horde Component Init ===');
+        $this->output->plain('');
+        $this->output->info('This command scaffolds a new Horde component from a template.');
+        $this->output->plain('');
+        $this->output->bold('Usage:');
+        $this->output->plain('  horde-components init <type> [options]');
+        $this->output->plain('');
+        $this->output->bold('Component Types:');
+        $this->output->plain('  application  - Full Horde application with UI (from horde/skeleton)');
+        $this->output->plain('  library      - PSR-4 library with minimal structure');
+        $this->output->plain('  theme        - Theme with CSS and graphics');
+        $this->output->plain('');
+        $this->output->bold('Options:');
+        $this->output->plain('  --name=NAME          Component name (e.g., "MyApp")');
+        $this->output->plain('  --author=NAME        Author\'s full name');
+        $this->output->plain('  --email=EMAIL        Author\'s email address');
+        $this->output->plain('  --description=TEXT   Short description');
+        $this->output->plain('  --use-license=LICENSE    License identifier (default: LGPL-2.1)');
+        $this->output->plain('  --force-overwrite        Overwrite existing files');
+        $this->output->plain('');
+        $this->output->bold('Examples:');
+        $this->output->plain('');
+        $this->output->info('Create a new library:');
+        $this->output->plain('  mkdir MyLibrary && cd MyLibrary');
+        $this->output->plain('  horde-components init library \\');
+        $this->output->plain('    --name="MyLibrary" \\');
+        $this->output->plain('    --author="John Doe" \\');
+        $this->output->plain('    --email="john@example.com"');
+        $this->output->plain('');
+        $this->output->info('Create a new application:');
+        $this->output->plain('  mkdir MyApp && cd MyApp');
+        $this->output->plain('  horde-components init application \\');
+        $this->output->plain('    --name="MyApp" \\');
+        $this->output->plain('    --author="John Doe" \\');
+        $this->output->plain('    --email="john@example.com" \\');
+        $this->output->plain('    --description="My cool application"');
+        $this->output->plain('');
+        $this->output->info('For more information, see:');
+        $this->output->plain('  https://wiki.horde.org/CreatingYourFirstModule');
+    }
+
+    /**
+     * Build configuration array from CLI options.
+     *
+     * @param string $type Component type
+     * @return array Configuration array
+     */
+    private function buildConfig(string $type): array
+    {
+        // Get directory name as default component name
+        $dirName = basename(getcwd());
+
+        return [
+            'name' => $this->config->hasSetting('name') ? $this->config->getSetting('name') : $dirName,
+            'type' => $type,
+            'author_name' => $this->config->hasSetting('author') ? $this->config->getSetting('author') : 'Unknown Author',
+            'author_email' => $this->config->hasSetting('email') ? $this->config->getSetting('email') : 'unknown@example.com',
+            'description' => $this->config->hasSetting('description') ? $this->config->getSetting('description') : "A Horde {$type}",
+            'license_id' => $this->config->hasSetting('use_license') ? $this->config->getSetting('use_license') : 'LGPL-2.1',
+        ];
+    }
+
+    /**
+     * Validate configuration.
+     *
+     * @param array $config Configuration array
+     * @throws Exception If configuration is invalid
+     */
+    private function validateConfig(array $config): void
+    {
+        $errors = [];
+
+        // Validate name
+        if (empty($config['name'])) {
+            $errors[] = 'Component name is required (use --name=NAME)';
+        }
+
+        // Validate author
+        if (empty($config['author_name']) || $config['author_name'] === 'Unknown Author') {
+            $errors[] = 'Author name is required (use --author=NAME)';
+        }
+
+        // Validate email
+        if (empty($config['author_email']) || $config['author_email'] === 'unknown@example.com') {
+            $errors[] = 'Author email is required (use --email=EMAIL)';
+        } elseif (!filter_var($config['author_email'], FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Invalid email address: ' . $config['author_email'];
+        }
+
+        if (!empty($errors)) {
+            throw new Exception(
+                "Configuration errors:\n  - " . implode("\n  - ", $errors) . "\n\n" .
+                "Run 'horde-components init' (no arguments) for usage information."
+            );
+        }
     }
 }
