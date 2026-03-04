@@ -20,7 +20,7 @@ use Horde\Components\Exception;
 use Horde\Components\Wrapper\HordeYml as WrapperHordeYml;
 use RuntimeException;
 use Horde\Components\Component\Task\SystemCallResult;
-use Horde\Components\Component\Task\SystemCall;
+use Horde\Components\Helper\Shell;
 use stdClass;
 use DirectoryIterator;
 
@@ -34,7 +34,6 @@ use DirectoryIterator;
  */
 class Composer
 {
-    use SystemCall;
     /**
      * @var array A list of repositories to add as sources for dependencies
      */
@@ -60,6 +59,22 @@ class Composer
     protected $_vendor = '';
 
     protected $_gitRepoBase = '';
+
+    /**
+     * Shell executor for running commands (always executes, no pretend mode)
+     */
+    private Shell $shell;
+
+    /**
+     * Constructor
+     *
+     * @param Shell|null $shell Optional Shell instance for dependency injection (for testing)
+     */
+    public function __construct(?Shell $shell = null)
+    {
+        // Use injected Shell or create new one (Composer always executes, no pretend mode)
+        $this->shell = $shell ?? new Shell();
+    }
     /**
      * Check some well known locations, fallback to which
      *
@@ -103,13 +118,13 @@ class Composer
             $command = 'require --dev';
         }
         $cmd = $this->detectComposerBin() . " $command --ignore-platform-reqs --no-install $package '$versionConstraint'";
-        $this->execInDirectory($cmd, $packageDir);
+        $this->shell->exec($cmd, $packageDir);
     }
 
     public function setMinimumStability(string $packageDir, string $stability)
     {
         $cmd = $this->detectComposerBin() . " config minimum-stability $stability";
-        $this->execInDirectory($cmd, $packageDir);
+        $this->shell->exec($cmd, $packageDir);
     }
 
     /**
@@ -122,7 +137,7 @@ class Composer
     public function update(string $packageDir, string $constraint = '')
     {
         $cmd = $this->detectComposerBin() . ' update ' . $constraint;
-        $this->execInDirectory($cmd, $packageDir);
+        $this->shell->exec($cmd, $packageDir);
     }
 
     /**
@@ -671,11 +686,5 @@ class Composer
                 'allow-plugins' => $plugins,
             ];
         }
-    }
-
-    // Stub of a pretent method
-    public function pretend(): bool
-    {
-        return false;
     }
 }

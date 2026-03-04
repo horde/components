@@ -145,6 +145,11 @@ class Shell
     /**
      * Static convenience method for simple exec() calls without pretend mode.
      *
+     * NOTE: Static methods are harder to mock in unit tests. For testable code,
+     * prefer using Shell as an injectable dependency with instance methods.
+     * Use this only for simple scripts, CI code, or cases where testability
+     * is not a concern.
+     *
      * Example: Shell::run('composer install', '/path/to/project')
      *
      * @param string $command Command to execute
@@ -159,6 +164,9 @@ class Shell
     /**
      * Static convenience method for simple system() calls without pretend mode.
      *
+     * NOTE: Static methods are harder to mock in unit tests. For testable code,
+     * prefer using Shell as an injectable dependency with instance methods.
+     *
      * Example: Shell::runSystem('git status', '/path/to/repo')
      *
      * @param string $command Command to execute
@@ -172,6 +180,9 @@ class Shell
 
     /**
      * Static convenience method for simple shell_exec() calls without pretend mode.
+     *
+     * NOTE: Static methods are harder to mock in unit tests. For testable code,
+     * prefer using Shell as an injectable dependency with instance methods.
      *
      * Example: $which = Shell::capture('which composer')
      *

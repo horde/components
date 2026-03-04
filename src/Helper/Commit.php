@@ -13,6 +13,7 @@ namespace Horde\Components\Helper;
 
 use Horde\Components\Output;
 use Horde\Components\Wrapper;
+use Horde\Components\Helper\Shell;
 
 /**
  * Components_Helper_Commit:: helps with collecting for git commit events.
@@ -35,10 +36,16 @@ class Commit
     private array $added = [];
 
     /**
+     * Shell executor for running commands
+     */
+    private Shell $shell;
+
+    /**
      * Constructor.
      *
      * @param Output $_output The output handler.
      * @param array $_options Application options.
+     * @param Shell|null $shell Optional Shell instance for dependency injection (for testing)
      */
     public function __construct(
         /**
@@ -47,8 +54,17 @@ class Commit
          * @param Output
          */
         private readonly Output $_output,
-        private $_options
-    ) {}
+        private $_options,
+        ?Shell $shell = null
+    ) {
+        // Use injected Shell or create new one with pretend mode from options
+        if ($shell !== null) {
+            $this->shell = $shell;
+        } else {
+            $pretend = !empty($_options['pretend']);
+            $this->shell = new Shell($_output, $pretend);
+        }
+    }
 
     /**
      * Add a path to be included in the commit and record the working directory
@@ -76,9 +92,9 @@ class Commit
             return;
         }
         foreach ($this->added as $path => $wd) {
-            $this->systemInDirectory('git add ' . $path, $wd);
+            $this->shell->system('git add ' . $path, $wd);
         }
-        $this->systemInDirectory('git commit -m "' . $log . '"', $wd);
+        $this->shell->system('git commit -m "' . $log . '"', $wd);
         $this->added = [];
     }
 
@@ -91,49 +107,9 @@ class Commit
      */
     public function tag($tag, $message, $directory): void
     {
-        $this->systemInDirectory(
+        $this->shell->system(
             'git tag -f -m "' . $message . '" ' . $tag,
             $directory
         );
-    }
-
-    /**
-     * Run a system call.
-     *
-     * @param string $call The system call to execute.
-     *
-     * @return string The command output.
-     */
-    protected function system($call): string
-    {
-        if (empty($this->_options['pretend'])) {
-            //@todo Error handling
-            return \system($call);
-        } else {
-            $this->_output->info(\sprintf('Would run "%s" now.', $call));
-        }
-        return '';
-    }
-
-    /**
-     * Run a system call.
-     *
-     * @param string $call       The system call to execute.
-     * @param string $target_dir Run the command in the provided target path.
-     *
-     * @return string The command output.
-     */
-    protected function systemInDirectory($call, $target_dir): string
-    {
-        $old_dir = null;
-        if (empty($this->_options['pretend'])) {
-            $old_dir = getcwd();
-            chdir($target_dir);
-        }
-        $result = $this->system($call);
-        if (empty($this->_options['pretend'])) {
-            chdir($old_dir);
-        }
-        return $result;
     }
 }

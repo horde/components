@@ -17,6 +17,7 @@ use Horde\Components\Component\Task\SystemCallResult;
 use Horde\Components\Output;
 use Horde\Components\GitCommit;
 use Horde\Components\GitCommitLog;
+use Horde\Components\Helper\Shell;
 use RuntimeException;
 
 /**
@@ -59,16 +60,31 @@ class Git
      * A variable potentially holding the output tool
      */
     public ?Output $output;
+
+    /**
+     * Shell executor for running commands
+     */
+    private Shell $shell;
+
     /**
      * Constructor
      *
      * @param string $gitBin  Path to git binary. Empty string to autodetect.
      * @param array  $options Any options this helper consumes. None yet.
+     * @param Shell|null $shell Optional Shell instance for dependency injection (for testing)
      */
-    public function __construct(string $gitBin = '', protected array $options = [])
+    public function __construct(string $gitBin = '', protected array $options = [], ?Shell $shell = null)
     {
         if (empty($gitBin)) {
             $this->gitBin = $this->detectGitBin();
+        }
+
+        // Use injected Shell or create new one with pretend mode from options
+        if ($shell !== null) {
+            $this->shell = $shell;
+        } else {
+            $pretend = !empty($options['pretend']);
+            $this->shell = new Shell($this->output ?? null, $pretend);
         }
     }
 
@@ -845,24 +861,6 @@ class Git
     }
 
     /**
-     * Run a system call.
-     *
-     * @param string $call The system call to execute.
-     *
-     * @return string The command output.
-     */
-    protected function system(string $call): ?string
-    {
-        if (empty($this->options['pretend'])) {
-            //@todo Error handling
-            return \system($call);
-        } else {
-            $this->output->info(\sprintf('Would run "%s" now.', $call));
-        }
-        return null;
-    }
-
-    /**
      * Run a system call and capture output.
      *
      * @param string $call The system call to execute.
@@ -871,35 +869,7 @@ class Git
      */
     protected function exec(string $call): SystemCallResult
     {
-        if (empty($this->options['pretend'])) {
-            //@todo Error handling
-            \exec($call, $output, $retval);
-            return new SystemCallResult($output, $retval);
-        }
-        $this->output->info(\sprintf('Would run "%s" now.', $call));
-        return new SystemCallResult([], 0);
-    }
-
-    /**
-     * Run a system call.
-     *
-     * @param string $call       The system call to execute.
-     * @param string $target_dir Run the command in the provided target path.
-     *
-     * @return string The command output.
-     */
-    protected function systemInDirectory(string $call, string $target_dir): string
-    {
-        $old_dir = null;
-        if (empty($this->options['pretend'])) {
-            $old_dir = getcwd();
-            chdir($target_dir);
-        }
-        $result = $this->system($call);
-        if (empty($this->options['pretend'])) {
-            chdir($old_dir);
-        }
-        return $result;
+        return $this->shell->exec($call);
     }
 
     /**
@@ -912,15 +882,6 @@ class Git
      */
     protected function execInDirectory(string $call, string $targetDir): SystemCallResult
     {
-        $oldDir = null;
-        if (empty($this->options['pretend'])) {
-            $oldDir = getcwd();
-            chdir($targetDir);
-        }
-        $result = $this->exec($call);
-        if (empty($this->options['pretend'])) {
-            chdir($oldDir);
-        }
-        return $result;
+        return $this->shell->exec($call, $targetDir);
     }
 }

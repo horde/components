@@ -18,6 +18,7 @@ namespace Horde\Components\Helper;
 use Horde\Components\Component;
 use Horde\Components\Exception;
 use Horde\Components\Helper\Version as HelperVersion;
+use Horde\Components\Helper\Shell;
 
 /**
  * Helper for adding entries to the change log(s).
@@ -410,6 +411,9 @@ class ChangeLog
     /**
      * Run a system call.
      *
+     * Uses Shell::capture() for simple command execution without pretend mode.
+     * ChangeLog operations always execute (no dry-run mode).
+     *
      * @param string $call       The system call to execute.
      * @param string $target_dir Run the command in the provided target path.
      *
@@ -417,10 +421,8 @@ class ChangeLog
      */
     protected function _systemInDirectory($call, $target_dir): string|bool
     {
-        $old_dir = getcwd();
-        chdir($target_dir);
-        $result = exec($call);
-        chdir($old_dir);
-        return $result;
+        $result = Shell::capture($call, $target_dir);
+        // exec() returns false on failure, empty string on success with no output
+        return $result !== '' ? $result : false;
     }
 }
