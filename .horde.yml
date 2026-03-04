@@ -27,7 +27,7 @@ authors:
     active: true
     role: contributor
 version:
-  release: 1.0.0-alpha30
+  release: 1.0.0-alpha31
   api: 1.0.0alpha1
 state:
   release: alpha
@@ -77,3 +77,4 @@ allow-plugins: ~
 quality:
   phpstan:
     level: 0
+vendor: horde
