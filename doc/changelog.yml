@@ -1,4 +1,15 @@
 ---
+1.0.0-alpha36:
+  api: 1.0.0-alpha1
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-03-04
+  license:
+    identifier: LGPL-2.1-only
+    uri: http://www.horde.org/licenses/lgpl21
+  notes: |
+    fix(ci): add intl to baseline extensions for horde/core dependency
 1.0.0-alpha35:
   api: 1.0.0-alpha1
   state:
