@@ -2,7 +2,8 @@
   "compression": "GZ",
   "directories": [
     "src",
-    "data/website"
+    "data/website",
+    "data/ci"
   ],
   "files": [
     "LICENSE",
