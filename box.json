@@ -1,0 +1,37 @@
+{
+  "compression": "GZ",
+  "directories": [
+    "src",
+    "data/website"
+  ],
+  "files": [
+    "LICENSE",
+    "bin/horde-components",
+    ".php-cs-fixer.dist.php"
+  ],
+  "finder": [
+    {
+      "name": "*.php",
+      "exclude": [
+        "tests",
+        "test"
+      ],
+      "in": "vendor"
+    },
+    {
+      "name": "*.po",
+      "exclude": [
+        "tests",
+        "test"
+      ],
+      "in": "vendor/horde"
+    }
+  ],
+  "blacklist": [
+    "build"
+  ],
+  "git-version": "package_version",
+  "intercept": true,
+  "main": "bin/horde-components",
+  "output": "build/horde-components.phar"
+}

@@ -494,10 +494,17 @@ MORE INFO:
         }
 
         // Determine horde-components path
-        $componentsPath = realpath(__DIR__ . '/../../bin/horde-components');
-        if ($componentsPath === false) {
-            $output->fail("Could not locate horde-components binary");
-            return false;
+        // Check if we're running from a phar
+        if (strlen(\Phar::running()) > 0) {
+            // We're inside a phar - use the phar path
+            $componentsPath = \Phar::running(false);
+        } else {
+            // Normal file system - use relative path to bin/horde-components
+            $componentsPath = realpath(__DIR__ . '/../../bin/horde-components');
+            if ($componentsPath === false) {
+                $output->fail("Could not locate horde-components binary");
+                return false;
+            }
         }
 
         // Create RunCommand with dependencies
