@@ -18,6 +18,8 @@ namespace Horde\Components\Ci\Run;
 
 use Horde\Components\Exception;
 use Horde\Components\Output;
+use Horde\GithubApiClient\GithubClient;
+use Horde\Http\Uri;
 
 /**
  * Orchestrates test execution across all test lanes by executing generated scripts.
@@ -36,12 +38,14 @@ class RunCommand
      * @param ResultCollector $collector Result collector
      * @param string $componentsPath Path to horde-components binary
      * @param string $workDir Work directory (for tools path)
+     * @param GithubClient|null $apiClient GitHub API client (optional)
      */
     public function __construct(
         private readonly Output $output,
         private readonly ResultCollector $collector,
         private readonly string $componentsPath,
-        private readonly string $workDir
+        private readonly string $workDir,
+        private readonly ?GithubClient $apiClient = null
     ) {}
 
     /**
@@ -89,10 +93,16 @@ class RunCommand
         // 6. Write GitHub Actions job summary (if in GitHub Actions)
         $this->writeGitHubSummary();
 
-        // 7. Write HTML report (if in local mode)
+        // 7. Create GitHub Check Runs (if in GitHub Actions with API client)
+        $this->createCheckRuns();
+
+        // 8. Post PR comment (if in pull request context)
+        $this->postPrComment();
+
+        // 9. Write HTML report (if in local mode)
         $this->writeHtmlReport($workDir);
 
-        // 8. Return exit code
+        // 10. Return exit code
         return $this->collector->allPassed() ? 0 : 1;
     }
 
@@ -937,5 +947,99 @@ HTML;
         }
 
         return $html;
+    }
+
+    /**
+     * Create GitHub Check Runs for each tool result.
+     */
+    private function createCheckRuns(): void
+    {
+        // Only run if we have API client and are in GitHub Actions
+        if ($this->apiClient === null || getenv('GITHUB_ACTIONS') === false) {
+            return;
+        }
+
+        // Get repository info from environment
+        $repo = getenv('GITHUB_REPOSITORY');
+        $sha = getenv('GITHUB_SHA');
+
+        if ($repo === false || $sha === false) {
+            return;
+        }
+
+        // Parse owner/repo
+        $parts = explode('/', $repo, 2);
+        if (count($parts) !== 2) {
+            return;
+        }
+
+        [$owner, $repoName] = $parts;
+
+        $reporter = new CheckReporter($this->output, $this->apiClient);
+        $reporter->reportLaneResults(
+            owner: $owner,
+            repo: $repoName,
+            sha: $sha,
+            results: $this->collector->getResults()
+        );
+    }
+
+    /**
+     * Post PR comment with results.
+     */
+    private function postPrComment(): void
+    {
+        // Only run if we have API client and are in GitHub Actions
+        if ($this->apiClient === null || getenv('GITHUB_ACTIONS') === false) {
+            return;
+        }
+
+        // Check if this is a pull request event
+        $eventPath = getenv('GITHUB_EVENT_PATH');
+        if ($eventPath === false || !file_exists($eventPath)) {
+            return;
+        }
+
+        $eventData = json_decode(file_get_contents($eventPath), true);
+        if (!isset($eventData['pull_request'])) {
+            return; // Not a PR event
+        }
+
+        $prNumber = $eventData['pull_request']['number'] ?? null;
+        if ($prNumber === null) {
+            return;
+        }
+
+        // Get repository info
+        $repo = getenv('GITHUB_REPOSITORY');
+        $runId = getenv('GITHUB_RUN_ID');
+        $serverUrl = getenv('GITHUB_SERVER_URL') ?: 'https://github.com';
+
+        if ($repo === false || $runId === false) {
+            return;
+        }
+
+        $parts = explode('/', $repo, 2);
+        if (count($parts) !== 2) {
+            return;
+        }
+
+        [$owner, $repoName] = $parts;
+
+        // Build GitHub Actions run URL
+        $serverUrl = getenv('GITHUB_SERVER_URL') ?: 'https://github.com';
+        $runUrl = (new Uri($serverUrl))
+            ->withPath("/{$repo}/actions/runs/{$runId}")
+            ->__toString();
+
+        $reporter = new PrCommentReporter($this->output, $this->apiClient);
+        $reporter->postComment(
+            owner: $owner,
+            repo: $repoName,
+            prNumber: (int)$prNumber,
+            results: $this->collector->getResults(),
+            summary: $this->collector->getSummary(),
+            runUrl: $runUrl
+        );
     }
 }

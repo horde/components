@@ -507,9 +507,19 @@ MORE INFO:
             }
         }
 
+        // Get GitHub API client (if available)
+        $apiClient = null;
+        if (getenv('GITHUB_TOKEN') !== false) {
+            try {
+                $apiClient = $this->dependencies->getGithubClient();
+            } catch (\Exception $e) {
+                // GitHub client not available, continue without it
+            }
+        }
+
         // Create RunCommand with dependencies
         $collector = new ResultCollector($output);
-        $runCommand = new RunCommand($output, $collector, $componentsPath, $workDir);
+        $runCommand = new RunCommand($output, $collector, $componentsPath, $workDir, $apiClient);
 
         try {
             $exitCode = $runCommand->execute($workDir);
