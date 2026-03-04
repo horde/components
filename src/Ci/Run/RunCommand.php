@@ -89,7 +89,10 @@ class RunCommand
         // 6. Write GitHub Actions job summary (if in GitHub Actions)
         $this->writeGitHubSummary();
 
-        // 7. Return exit code
+        // 7. Write HTML report (if in local mode)
+        $this->writeHtmlReport($workDir);
+
+        // 8. Return exit code
         return $this->collector->allPassed() ? 0 : 1;
     }
 
@@ -466,5 +469,473 @@ class RunCommand
         }
 
         return $aggregated;
+    }
+
+    /**
+     * Write HTML report for local mode.
+     *
+     * Writes an HTML report to the work directory if NOT in GitHub Actions.
+     *
+     * @param string $workDir Work directory
+     */
+    private function writeHtmlReport(string $workDir): void
+    {
+        // Only write if NOT in GitHub Actions (local mode)
+        if (getenv('GITHUB_ACTIONS') !== false) {
+            return;
+        }
+
+        $reportFile = $workDir . '/ci-report.html';
+        $html = $this->generateHtmlReport();
+
+        file_put_contents($reportFile, $html);
+
+        $this->output->plain('');
+        $this->output->info("📊 HTML report written to: {$reportFile}");
+        $this->output->info("   Open in browser: file://{$reportFile}");
+    }
+
+    /**
+     * Generate HTML report.
+     *
+     * @return string HTML content
+     */
+    private function generateHtmlReport(): string
+    {
+        $results = $this->collector->getResults();
+        $summary = $this->collector->getSummary();
+
+        $timestamp = date('Y-m-d H:i:s');
+        $statusClass = $summary['failed'] === 0 ? 'success' : 'failure';
+        $statusText = $summary['failed'] === 0
+            ? "✅ All {$summary['total']} lanes passed"
+            : "❌ {$summary['failed']}/{$summary['total']} lanes failed";
+
+        $html = <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horde CI Report - {$timestamp}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .timestamp {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .status-banner {
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .status-banner.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-banner.failure {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin: 30px 0 15px 0;
+            font-size: 22px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #34495e;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        tr:hover {
+            background: #e8f4f8;
+        }
+
+        .lane-name {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-weight: 600;
+        }
+
+        .status-pass {
+            color: #28a745;
+        }
+
+        .status-fail {
+            color: #dc3545;
+        }
+
+        .status-skip {
+            color: #6c757d;
+        }
+
+        .metric-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+        }
+
+        .metric-card h3 {
+            color: #2c3e50;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .metric-value {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-weight: 600;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+            color: #7f8c8d;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        details {
+            margin-bottom: 15px;
+        }
+
+        summary {
+            cursor: pointer;
+            padding: 10px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        summary:hover {
+            background: #d5dbdb;
+        }
+
+        .detail-content {
+            padding: 15px;
+            margin-top: 10px;
+            border-left: 3px solid #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Horde CI Report</h1>
+        <div class="timestamp">Generated: {$timestamp}</div>
+
+        <div class="status-banner {$statusClass}">
+            {$statusText}
+        </div>
+
+        <h2>Lane Results</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Lane</th>
+                    <th>PHPUnit</th>
+                    <th>PHPStan</th>
+                    <th>PHP-CS-Fixer</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+
+HTML;
+
+        // Generate table rows
+        foreach ($results as $laneName => $tools) {
+            $laneStatus = $this->isLanePassed($tools);
+            $statusIcon = $laneStatus ? '✅' : '❌';
+            $statusClass = $laneStatus ? 'status-pass' : 'status-fail';
+
+            $html .= "                <tr>\n";
+            $html .= "                    <td class=\"lane-name\">{$laneName}</td>\n";
+            $html .= "                    <td>" . $this->formatToolForHtml($tools['phpunit'] ?? null) . "</td>\n";
+            $html .= "                    <td>" . $this->formatToolForHtml($tools['phpstan'] ?? null) . "</td>\n";
+            $html .= "                    <td>" . $this->formatToolForHtml($tools['phpcsfixer'] ?? null) . "</td>\n";
+            $html .= "                    <td class=\"{$statusClass}\">{$statusIcon}</td>\n";
+            $html .= "                </tr>\n";
+        }
+
+        $html .= <<<HTML
+            </tbody>
+        </table>
+
+        <h2>Detailed Metrics</h2>
+
+HTML;
+
+        // Add detailed metrics
+        $html .= $this->generateHtmlMetrics($results);
+
+        $html .= <<<HTML
+
+        <div class="footer">
+            CI powered by <a href="https://github.com/horde/components" target="_blank">horde-components</a>
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+
+        return $html;
+    }
+
+    /**
+     * Format tool result for HTML table cell.
+     *
+     * @param array<string,mixed>|null $result Tool result
+     * @return string HTML string
+     */
+    private function formatToolForHtml(?array $result): string
+    {
+        if ($result === null) {
+            return '<span class="status-skip">—</span>';
+        }
+
+        // Skipped
+        if (isset($result['skipped']) && $result['skipped']) {
+            return '<span class="status-skip">⊘ Skipped</span>';
+        }
+
+        // Error
+        if (isset($result['error'])) {
+            return '<span class="status-fail">❌ Error</span>';
+        }
+
+        // Success/failure with stats
+        $stats = $result['statistics'] ?? [];
+        $success = $result['success'] ?? false;
+        $emoji = $success ? '✅' : '❌';
+        $class = $success ? 'status-pass' : 'status-fail';
+
+        // Extract key metric
+        $metric = '';
+        if (isset($stats['tests'])) {
+            $metric = "{$stats['tests']} tests";
+        } elseif (isset($stats['errors'])) {
+            $metric = "{$stats['errors']} errors";
+        } elseif (isset($stats['files_checked'])) {
+            $metric = "{$stats['files_checked']} files";
+        }
+
+        $display = $metric ? "{$emoji} {$metric}" : $emoji;
+        return "<span class=\"{$class}\">{$display}</span>";
+    }
+
+    /**
+     * Generate HTML metrics section.
+     *
+     * @param array<string,array<string,array<string,mixed>>> $results All results
+     * @return string HTML content
+     */
+    private function generateHtmlMetrics(array $results): string
+    {
+        $html = '';
+
+        // Aggregate stats
+        $phpunitStats = $this->aggregateToolStats($results, 'phpunit');
+        $phpstanStats = $this->aggregateToolStats($results, 'phpstan');
+        $csFixerStats = $this->aggregateToolStats($results, 'phpcsfixer');
+
+        // PHPUnit section
+        if (!empty($phpunitStats)) {
+            $totalTests = $phpunitStats['tests'] ?? 0;
+            $totalFailures = $phpunitStats['failures'] ?? 0;
+            $totalErrors = $phpunitStats['errors'] ?? 0;
+            $lanesRun = $phpunitStats['lanes_run'] ?? 0;
+            $assertions = $phpunitStats['assertions'] ?? 0;
+
+            $statusIcon = ($totalFailures === 0 && $totalErrors === 0) ? '✅' : '❌';
+            $statusText = ($totalFailures === 0 && $totalErrors === 0)
+                ? 'All tests passed'
+                : 'Tests failed';
+
+            $html .= <<<HTML
+        <div class="metric-card">
+            <h3>{$statusIcon} PHPUnit - {$statusText}</h3>
+            <div class="metric-row">
+                <span class="metric-label">Lanes executed:</span>
+                <span class="metric-value">{$lanesRun}</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Total tests:</span>
+                <span class="metric-value">{$totalTests}</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Total assertions:</span>
+                <span class="metric-value">{$assertions}</span>
+            </div>
+
+HTML;
+
+            if ($totalFailures > 0) {
+                $html .= <<<HTML
+            <div class="metric-row">
+                <span class="metric-label">Failures:</span>
+                <span class="metric-value status-fail">{$totalFailures}</span>
+            </div>
+
+HTML;
+            }
+
+            if ($totalErrors > 0) {
+                $html .= <<<HTML
+            <div class="metric-row">
+                <span class="metric-label">Errors:</span>
+                <span class="metric-value status-fail">{$totalErrors}</span>
+            </div>
+
+HTML;
+            }
+
+            $html .= "        </div>\n";
+        }
+
+        // PHPStan section
+        if (!empty($phpstanStats)) {
+            $totalErrors = $phpstanStats['errors'] ?? 0;
+            $filesAnalyzed = $phpstanStats['files_analyzed'] ?? 0;
+            $lanesRun = $phpstanStats['lanes_run'] ?? 0;
+
+            $statusIcon = $totalErrors === 0 ? '✅' : '⚠️';
+            $statusText = $totalErrors === 0
+                ? 'No errors found'
+                : "{$totalErrors} errors found";
+
+            $html .= <<<HTML
+        <div class="metric-card">
+            <h3>{$statusIcon} PHPStan - {$statusText}</h3>
+            <div class="metric-row">
+                <span class="metric-label">Lanes executed:</span>
+                <span class="metric-value">{$lanesRun}</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Files analyzed:</span>
+                <span class="metric-value">{$filesAnalyzed}</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Errors:</span>
+                <span class="metric-value">{$totalErrors}</span>
+            </div>
+        </div>
+
+HTML;
+        }
+
+        // PHP-CS-Fixer section
+        if (!empty($csFixerStats)) {
+            $filesChecked = $csFixerStats['files_checked'] ?? 0;
+            $filesWithIssues = $csFixerStats['files_with_issues'] ?? 0;
+
+            $statusIcon = $filesWithIssues === 0 ? '✅' : '⚠️';
+            $statusText = $filesWithIssues === 0
+                ? 'No style issues'
+                : "{$filesWithIssues} files with issues";
+
+            $html .= <<<HTML
+        <div class="metric-card">
+            <h3>{$statusIcon} PHP-CS-Fixer - {$statusText}</h3>
+            <div class="metric-row">
+                <span class="metric-label">Files checked:</span>
+                <span class="metric-value">{$filesChecked}</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Files with issues:</span>
+                <span class="metric-value">{$filesWithIssues}</span>
+            </div>
+        </div>
+
+HTML;
+        }
+
+        return $html;
     }
 }
