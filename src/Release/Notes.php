@@ -18,6 +18,7 @@ use Horde\Components\Component;
 use Horde\Components\Helper\Version as HelperVersion;
 use Horde\Components\Output;
 use Horde\Components\Exception;
+use Horde\Components\Util\YamlLoader;
 
 /**
  * This class deals with the information associated to a release.
@@ -83,11 +84,7 @@ class Notes
             if (isset($info['list'])) {
                 $this->_notes['list'] = $info['list'];
             }
-            try {
-                $release = \Horde_Yaml::loadFile($file);
-            } catch (\Horde_Yaml_Exception $e) {
-                throw new Exception($e);
-            }
+            $release = YamlLoader::loadFile($file);
             if (isset($release['branch'])) {
                 $this->_notes['branch'] = $release['branch'];
             }

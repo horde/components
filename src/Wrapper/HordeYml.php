@@ -20,9 +20,13 @@ use Horde\Components\Wrapper;
 use Horde\Components\WrapperTrait;
 use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\License;
+use Horde\HordeYmlFile\HordeYmlFile as LibraryHordeYmlFile;
+use Horde\HordeYmlFile\InvalidHordeYmlFileException;
 
 /**
  * Wrapper for the .horde.yml file.
+ *
+ * Provides components-specific business logic on top of horde/hordeymlfile library.
  *
  * @category   Horde
  * @package    Components
@@ -34,6 +38,11 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
     use WrapperTrait;
 
     /**
+     * The underlying library object
+     */
+    private LibraryHordeYmlFile $hordeYmlFile;
+
+    /**
      * Constructor.
      *
      * @param string $baseDir Directory with .horde.yml.
@@ -42,110 +51,215 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
     public function __construct(ComponentDirectory|string $baseDir)
     {
         $this->_file = (string) $baseDir . '/.horde.yml';
-        if ($this->exists()) {
-            try {
-                $horde = \Horde_Yaml::loadFile($this->_file);
-            } catch (\Horde_Yaml_Exception $e) {
-                throw new \Exception($e);
+
+        try {
+            if ($this->exists()) {
+                $this->hordeYmlFile = new LibraryHordeYmlFile($this->_file);
+            } else {
+                // Create empty file for new components
+                touch($this->_file);
+                $this->hordeYmlFile = new LibraryHordeYmlFile($this->_file);
             }
-        } else {
-            $horde = [];
+
+            // Apply graceful defaults for missing fields
+            $this->hordeYmlFile->applyGracefulUpdates();
+        } catch (InvalidHordeYmlFileException $e) {
+            throw new Exception("Failed to load .horde.yml: " . $e->getMessage(), 0, $e);
         }
-        parent::__construct($horde);
+
+        // Initialize ArrayObject with library data for backward compatibility
+        parent::__construct($this->hordeYmlFile->toArray());
     }
 
-    public function setLicense(License $license)
+    /**
+     * Set license information
+     *
+     * @param License $license License object
+     */
+    public function setLicense(License $license): void
     {
-        $this['license'] = $license->toArray();
+        $this->hordeYmlFile->setLicense(
+            $license->getIdentifier(),
+            $license->getUri()
+        );
+        $this->refreshArray();
     }
 
+    /**
+     * Get license information
+     *
+     * @return License License object
+     */
     public function getLicense(): License
     {
-        // TODO: If missing?
-        return new License($this['license']['identifier'] ?? '', $this['license']['uri'] ?? '');
+        $lic = $this->hordeYmlFile->getLicense();
+        return new License(
+            $lic->identifier ?? '',
+            $lic->uri ?? ''
+        );
     }
 
+    /**
+     * Get release version as Version object
+     *
+     * @return Version Release version
+     */
     public function getReleaseVersion(): Version
     {
-        return Version::fromComposerString($this['version']['release']);
+        return Version::fromComposerString(
+            $this->hordeYmlFile->getReleaseVersion()
+        );
     }
+
+    /**
+     * Get API version as Version object
+     *
+     * @return Version API version
+     */
     public function getApiVersion(): Version
     {
-        return Version::fromComposerString($this['version']['api']);
+        return Version::fromComposerString(
+            $this->hordeYmlFile->getApiVersion()
+        );
     }
 
+    /**
+     * Get component stability
+     *
+     * @return string Stability (alpha, beta, stable)
+     */
     public function getComponentStability(): string
     {
-        return (string) $this['state']['release'];
+        return $this->hordeYmlFile->getReleaseState();
     }
-    public function setReleaseVersionAndStability(Version $version)
+
+    /**
+     * Set release version and stability
+     *
+     * @param Version $version Version object
+     * @return self
+     */
+    public function setReleaseVersionAndStability(Version $version): self
     {
-        if (empty($this['version']) || empty($this['version']['release'])) {
-            $this['version'] = ['release' => $version->toFullSemVerV2()];
-        }
-        $this['version']['release'] = $version->toFullSemVerV2();
+        $this->hordeYmlFile->setReleaseVersion($version->toFullSemVerV2());
+        $this->hordeYmlFile->setReleaseState($version->getStability());
+
         // Ensure API version exists
-        if (empty($this['version']['api'])) {
+        if (!$this->hordeYmlFile->getApiVersion()) {
             $this->setApiVersionAndStability($version);
         }
+
+        $this->refreshArray();
         return $this;
     }
 
-    public function setApiVersionAndStability(Version $version)
+    /**
+     * Set API version and stability
+     *
+     * @param Version $version Version object
+     * @return self
+     */
+    public function setApiVersionAndStability(Version $version): self
     {
-        if (empty($this['version']) || empty($this['version']['api'])) {
-            $this['version'] = ['api' => $version->toFullSemVerV2()];
-        }
-        $this['version']['api'] = $version->toFullSemVerV2();
+        $this->hordeYmlFile->setApiVersion($version->toFullSemVerV2());
+        $this->hordeYmlFile->setApiState($version->getStability());
+
         // Ensure release version exists
-        if (empty($this['version']['release'])) {
+        if (!$this->hordeYmlFile->getReleaseVersion()) {
             $this->setReleaseVersionAndStability($version);
         }
+
+        $this->refreshArray();
         return $this;
     }
 
+    /**
+     * Get composer package name
+     *
+     * @return string Composer name (e.g., "horde/components")
+     */
     public function getComposerName(): string
     {
-        $vendor = $this['vendor'] ?? 'horde';
-        $package = $this['name'] ?? $this['id'];
-        return mb_strtolower($vendor . '/' . $package);
+        return $this->hordeYmlFile->getComposerName();
     }
 
+    /**
+     * Get component name
+     *
+     * @return string Component name
+     */
     public function getName(): string
     {
-        return $this['name'] ?? $this['id'] ?? 'unknown';
+        $name = $this->hordeYmlFile->getName();
+        if (!$name) {
+            $name = $this->hordeYmlFile->getId();
+        }
+        return $name ?: 'unknown';
     }
 
+    /**
+     * Get allowed Composer plugins
+     *
+     * Components-specific logic: auto-adds horde-installer-plugin for components/applications
+     *
+     * @return array|object Allowed plugins
+     */
     public function getAllowedPlugins(): array|object
     {
-        $allowedPlugins = [];
-        if (!empty($this['allow-plugins'])) {
-            if ($this['allow-plugins'] === true) {
-                $allowedPlugins = ['all' => true];
-            } else {
-                foreach ($this['allow-plugins'] as $plugin => $bool) {
-                    print_r($plugin);
-                    if (is_string($plugin)) {
-                        $allowedPlugins[$plugin] = (bool) $bool;
-                    }
-                }
-            }
-        }
-        if (in_array($this['type'], ['component', 'application'])) {
+        $allowedPlugins = $this->hordeYmlFile->getAllowedPlugins();
+
+        // Components-specific: auto-add horde-installer-plugin for components/applications
+        $type = $this->hordeYmlFile->getType();
+        if (in_array($type, ['component', 'application'])) {
             if (!array_key_exists('horde/horde-installer-plugin', $allowedPlugins)) {
                 $allowedPlugins['horde/horde-installer-plugin'] = true;
             }
         }
+
         return (object) $allowedPlugins;
     }
+
     /**
-     * Returns the file contents.
+     * Refresh the ArrayObject data from library
+     *
+     * Called after modifications to keep ArrayObject in sync
+     */
+    private function refreshArray(): void
+    {
+        $this->exchangeArray($this->hordeYmlFile->toArray());
+    }
+
+    /**
+     * Sync ArrayObject changes back to library before save
+     */
+    private function syncToLibrary(): void
+    {
+        // If ArrayObject was modified directly (legacy code path),
+        // sync changes back to library
+        $currentArray = $this->getArrayCopy();
+        foreach ($currentArray as $key => $value) {
+            $this->hordeYmlFile->set($key, $value);
+        }
+    }
+
+    /**
+     * Save the file
+     */
+    public function save(): void
+    {
+        $this->syncToLibrary();
+        $this->hordeYmlFile->save();
+        $this->refreshArray();
+    }
+
+    /**
+     * Returns the file contents as YAML
+     *
+     * @return string YAML representation
      */
     public function __toString(): string
     {
-        return \Horde_Yaml::dump(
-            iterator_to_array($this),
-            ['wordwrap' => 78]
-        );
+        $this->syncToLibrary();
+        return (string) $this->hordeYmlFile;
     }
 }

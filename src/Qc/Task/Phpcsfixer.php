@@ -525,7 +525,7 @@ class Phpcsfixer extends Base
         ];
 
         foreach ($fixerFiles as $file) {
-            $source = $pharPath . '/src/PhpCsFixer/' . $file;
+            $source = 'phar://' . $pharPath . '/src/PhpCsFixer/' . $file;
             $dest = $fixerDir . '/' . $file;
 
             if (!copy($source, $dest)) {
@@ -536,7 +536,7 @@ class Phpcsfixer extends Base
         }
 
         // Extract config file
-        $configSource = $pharPath . '/.php-cs-fixer.dist.php';
+        $configSource = 'phar://' . $pharPath . '/.php-cs-fixer.dist.php';
         $configDest = $tempDir . '/.php-cs-fixer.dist.php';
 
         if (!copy($configSource, $configDest)) {

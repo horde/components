@@ -20,7 +20,7 @@ use Horde\Components\Exception;
 use Horde\Components\Output;
 
 /**
- * Orchestrates test execution across all test lanes using QC system.
+ * Orchestrates test execution across all test lanes by executing generated scripts.
  *
  * @category Horde
  * @package  Components
@@ -75,9 +75,9 @@ class RunCommand
         $this->output->info("Found " . count($lanes) . " test lanes");
         $this->output->plain('');
 
-        // 3. Run QC in each lane
+        // 3. Run lane scripts
         foreach ($lanes as $lane) {
-            $this->runQcInLane($lane);
+            $this->runLaneScript($lane);
         }
 
         // 4. Aggregate results from JSON files
@@ -109,7 +109,8 @@ class RunCommand
             $name = basename($dir);
 
             // Parse lane name: "php8.4-dev" -> php_version="8.4", stability="dev"
-            if (!preg_match('/^php(\d+\.\d+)-(dev|stable)$/', $name, $matches)) {
+            // Accept any stability: dev, stable, alpha, beta, RC, etc.
+            if (!preg_match('/^php(\d+\.\d+)-(\w+)$/', $name, $matches)) {
                 continue; // Skip invalid lane names
             }
 
@@ -142,51 +143,50 @@ class RunCommand
     }
 
     /**
-     * Run QC in a single lane using self-invocation.
+     * Run tests in a single lane by executing its script.
      *
      * @param array{name: string, dir: string, component_dir: string, php_version: string, stability: string} $lane Lane info
      */
-    private function runQcInLane(array $lane): void
+    private function runLaneScript(array $lane): void
     {
-        $this->output->info("[{$lane['name']}] Running QC...");
+        $scriptPath = $lane['dir'] . '/run-lane.sh';
 
-        $phpBinary = "/usr/bin/php{$lane['php_version']}";
+        $this->output->info("[{$lane['name']}] Executing lane script...");
 
-        // Check if PHP binary exists
-        if (!file_exists($phpBinary)) {
-            $this->output->warn("[{$lane['name']}] PHP binary not found: {$phpBinary}");
-            $this->collector->addSkipped($lane['name'], 'phpunit', "PHP {$lane['php_version']} not installed");
-            $this->collector->addSkipped($lane['name'], 'phpstan', "PHP {$lane['php_version']} not installed");
+        // Check if script exists
+        if (!file_exists($scriptPath)) {
+            $this->output->error("[{$lane['name']}] Script not found: {$scriptPath}");
+            $this->output->info("  Run 'horde-components ci setup' first");
+            $this->collector->addSkipped($lane['name'], 'phpunit', 'Script not found');
+            $this->collector->addSkipped($lane['name'], 'phpstan', 'Script not found');
             return;
         }
 
-        // Determine QC tasks for this lane
-        $tasks = 'unit phpstan';
-        if ($lane['name'] === 'php8.4-dev') {
-            $tasks .= ' phpcsfixer';
+        // Check if script is executable
+        if (!is_executable($scriptPath)) {
+            $this->output->error("[{$lane['name']}] Script not executable: {$scriptPath}");
+            $this->collector->addSkipped($lane['name'], 'phpunit', 'Script not executable');
+            $this->collector->addSkipped($lane['name'], 'phpstan', 'Script not executable');
+            return;
         }
 
-        // Tools directory
-        $toolsDir = $this->workDir . '/tools';
+        // Execute script and capture output
+        $command = sprintf('bash %s 2>&1', escapeshellarg($scriptPath));
 
-        // Build command to invoke horde-components qc with specific PHP version
-        // Note: cd to component_dir (not lane dir) since QC expects to be in component root
-        $command = sprintf(
-            'cd %s && %s %s qc %s --tools-dir=%s 2>&1',
-            escapeshellarg($lane['component_dir']),
-            escapeshellarg($phpBinary),
-            escapeshellarg($this->componentsPath),
-            $tasks,
-            escapeshellarg($toolsDir)
-        );
-
-        // Execute QC
+        $output = [];
+        $exitCode = 0;
         exec($command, $output, $exitCode);
 
-        if ($exitCode !== 0) {
-            $this->output->warn("[{$lane['name']}] QC exited with code: {$exitCode}");
+        // Log output
+        foreach ($output as $line) {
+            $this->output->plain("[{$lane['name']}] {$line}");
+        }
+
+        // Report result
+        if ($exitCode === 0) {
+            $this->output->ok("[{$lane['name']}] Completed successfully");
         } else {
-            $this->output->ok("[{$lane['name']}] QC completed");
+            $this->output->error("[{$lane['name']}] Failed with exit code: {$exitCode}");
         }
     }
 

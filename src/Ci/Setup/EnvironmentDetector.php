@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Horde\Components\Ci\Setup;
 
 use Horde\Components\Exception;
+use Horde\Components\Helper\Git;
 
 /**
  * Detects CI environment and extracts configuration.
@@ -103,9 +104,10 @@ class EnvironmentDetector
         // Try from git
         $gitDir = $componentPath . '/.git';
         if (is_dir($gitDir)) {
-            $branch = shell_exec("cd " . escapeshellarg($componentPath) . " && git branch --show-current 2>/dev/null");
-            if ($branch !== null && trim($branch) !== '') {
-                return trim($branch);
+            $git = new Git();
+            $branch = $git->getCurrentBranch($componentPath);
+            if ($branch !== '') {
+                return $branch;
             }
         }
 
@@ -162,6 +164,39 @@ class EnvironmentDetector
     }
 
     /**
+     * Get path to currently running horde-components executable.
+     *
+     * Returns the absolute path to the horde-components script that is
+     * currently executing. This works for both source installations and
+     * PHAR archives.
+     *
+     * @return string Absolute path to horde-components executable
+     */
+    public static function getComponentsExecutablePath(): string
+    {
+        // Check if we're running from a PHAR
+        if (class_exists('Phar') && \Phar::running(false) !== '') {
+            return \Phar::running(false);
+        }
+
+        // Not a PHAR - find the bin/horde-components script
+        // We're in src/Ci/Setup/, so go up to root then to bin/
+        $binPath = realpath(__DIR__ . '/../../../bin/horde-components');
+
+        if ($binPath === false) {
+            // Fallback: try to find in PATH
+            $which = trim((string) shell_exec('which horde-components 2>/dev/null'));
+            if (!empty($which) && file_exists($which)) {
+                return $which;
+            }
+
+            throw new Exception('Could not determine path to horde-components executable');
+        }
+
+        return $binPath;
+    }
+
+    /**
      * Get components PHAR URL.
      *
      * @return string PHAR URL
@@ -198,6 +233,7 @@ class EnvironmentDetector
             'github_token' => self::getGithubToken(),
             'components_phar_url' => self::getComponentsPharUrl(),
             'local_components_path' => self::getLocalComponentsPath(),
+            'components_path' => self::getComponentsExecutablePath(),  // NEW
         ];
     }
 

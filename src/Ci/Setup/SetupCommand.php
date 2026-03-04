@@ -20,6 +20,7 @@ use Horde\Components\Exception;
 use Horde\Components\Output;
 use Horde\Components\Ci\Config\CiConfig;
 use Horde\Components\Component;
+use Horde\HordeYmlFile\HordeYmlFile;
 
 /**
  * Main orchestrator for CI setup.
@@ -30,6 +31,8 @@ use Horde\Components\Component;
  * 3. Install extensions
  * 4. Copy component to lanes
  * 5. Run composer install per lane
+ * 6. Generate lane execution scripts
+ * 7. Download QC tools
  *
  * @category Horde
  * @package  Components
@@ -47,6 +50,7 @@ class SetupCommand
      * @param LaneCopier $laneCopier Lane copier
      * @param ComposerInstaller $composerInstaller Composer installer
      * @param ToolCache $toolCache Tool cache manager
+     * @param LaneScriptGenerator $laneScriptGenerator Lane script generator
      */
     public function __construct(
         private readonly Output $output,
@@ -54,7 +58,8 @@ class SetupCommand
         private readonly ExtensionInstaller $extensionInstaller,
         private readonly LaneCopier $laneCopier,
         private readonly ComposerInstaller $composerInstaller,
-        private readonly ToolCache $toolCache
+        private readonly ToolCache $toolCache,
+        private readonly LaneScriptGenerator $laneScriptGenerator
     ) {}
 
     /**
@@ -98,6 +103,7 @@ class SetupCommand
             'github_token' => $config->githubToken,
             'components_phar_url' => $config->componentsPharUrl,
             'local_components_path' => $config->localComponentsPath,
+            'components_path' => $config->componentsPath,
         ], $componentInfo));
 
         $this->output->ok("Component type: {$config->componentType}");
@@ -176,12 +182,51 @@ class SetupCommand
             $this->output->plain('');
         }
 
+        // Generate lane execution scripts
+        $this->output->bold('=== Generating lane scripts ===');
+        $scriptsFailed = 0;
+
+        foreach ($lanes as $index => $lane) {
+            $num = $index + 1;
+            $total = count($lanes);
+
+            // Construct lane name from PHP version and stability
+            $laneName = 'php' . $lane['php'] . '-' . $lane['stability'];
+            $scriptPath = dirname($lane['dir']) . '/run-lane.sh';
+
+            $this->output->info("[{$num}/{$total}] {$laneName}");
+
+            $laneConfig = [
+                'lane_name' => $laneName,
+                'php_version' => $lane['php'],
+                'php_binary' => $this->phpInstaller->getPhpBinary($lane['php']),
+                'stability' => $lane['stability'],
+                'component_dir' => $lane['dir'], // dir IS the component dir
+                'tools_dir' => $config->workDir . '/tools',
+                'build_dir' => $lane['dir'] . '/build',
+                'components_path' => $config->componentsPath,  // NEW
+            ];
+
+            if ($this->laneScriptGenerator->generate($scriptPath, $laneConfig)) {
+                $this->output->ok("  ✓ Generated {$scriptPath}");
+            } else {
+                $this->output->error("  ✗ Failed to generate script for lane: {$laneName}");
+                $scriptsFailed++;
+            }
+        }
+
+        $this->output->plain('');
+
         // Summary
         $this->output->bold('=== Setup Summary ===');
         $this->output->ok("Successful lanes: {$successful}");
 
         if ($failed > 0) {
             $this->output->warn("Failed lanes: {$failed}");
+        }
+
+        if ($scriptsFailed > 0) {
+            $this->output->warn("Failed script generation: {$scriptsFailed}");
         }
 
         $this->output->plain('');
@@ -214,49 +259,43 @@ class SetupCommand
      */
     private function readComponentInfo(string $componentPath): array
     {
-        $hordeYml = $componentPath . '/.horde.yml';
+        $hordeYmlPath = $componentPath . '/.horde.yml';
 
-        if (!file_exists($hordeYml)) {
+        if (!file_exists($hordeYmlPath)) {
             throw new Exception('.horde.yml not found in component directory');
         }
 
-        $content = file_get_contents($hordeYml);
-        if ($content === false) {
-            throw new Exception('Failed to read .horde.yml');
+        try {
+            $hordeYml = new HordeYmlFile($hordeYmlPath);
+        } catch (\Exception $e) {
+            throw new Exception('Failed to read .horde.yml: ' . $e->getMessage(), 0, $e);
         }
 
-        // Parse YAML (simple parsing for now)
-        $data = $this->parseSimpleYaml($content);
-
-        // Extract minimum PHP version
+        // Extract minimum PHP version using typed Dependencies API
         $minPhp = '8.2'; // Default
-        if (isset($data['dependencies']['required']['php'])) {
-            $phpReq = $data['dependencies']['required']['php'];
-            // Parse requirements like "^8.2", ">=8.3", "^8.2 || ^8.3"
-            if (preg_match('/[>^~]?\s*(\d+\.\d+)/', $phpReq, $matches)) {
-                $minPhp = $matches[1];
+        $deps = $hordeYml->getDependencies();
+        if ($deps !== null) {
+            $phpReq = $deps->getRequiredPhp();
+            if ($phpReq !== null) {
+                // Parse requirements like "^8.2", ">=8.3", "^8.2 || ^8.3"
+                if (preg_match('/[>^~]?\s*(\d+\.\d+)/', $phpReq, $matches)) {
+                    $minPhp = $matches[1];
+                }
             }
         }
 
         // Extract component stability
-        $stability = 'alpha'; // Default
-        if (isset($data['state']['release'])) {
-            $stability = $data['state']['release'];
-        }
+        $stability = $hordeYml->getReleaseState() ?: 'alpha';
 
         // Extract component type
-        $type = 'library'; // Default
-        if (isset($data['type'])) {
-            $type = $data['type'];
-        }
+        $type = $hordeYml->getType() ?: 'library';
 
         // Detect required extensions from dependencies
         $extensions = [];
-        if (isset($data['dependencies']['required']['ext']) && is_array($data['dependencies']['required']['ext'])) {
-            foreach ($data['dependencies']['required']['ext'] as $ext) {
-                if (is_string($ext)) {
-                    $extensions[] = $ext;
-                }
+        if ($deps !== null) {
+            $requiredSet = $deps->getRequired();
+            if ($requiredSet !== null) {
+                $extensions = $requiredSet->getExt();
             }
         }
 
@@ -266,66 +305,5 @@ class SetupCommand
             'component_stability' => $stability,
             'required_extensions' => $extensions,
         ];
-    }
-
-    /**
-     * Simple YAML parser (handles basic structure only).
-     *
-     * This is a simplified parser for .horde.yml structure.
-     * For production, consider using symfony/yaml.
-     *
-     * @param string $content YAML content
-     * @return array<string,mixed> Parsed data
-     */
-    private function parseSimpleYaml(string $content): array
-    {
-        $data = [];
-        $lines = explode("\n", $content);
-        $stack = [&$data];
-        $indents = [0];
-
-        foreach ($lines as $line) {
-            // Skip comments and empty lines
-            if (preg_match('/^\s*#/', $line) || trim($line) === '') {
-                continue;
-            }
-
-            // Get indentation
-            preg_match('/^(\s*)/', $line, $matches);
-            $indent = strlen($matches[1]);
-            $line = trim($line);
-
-            // Pop stack if indent decreased
-            while (count($indents) > 1 && $indent < end($indents)) {
-                array_pop($stack);
-                array_pop($indents);
-            }
-
-            // Parse key: value
-            if (preg_match('/^([^:]+):\s*(.*)$/', $line, $matches)) {
-                $key = trim($matches[1]);
-                $value = trim($matches[2]);
-
-                $current = &$stack[count($stack) - 1];
-
-                if ($value === '') {
-                    // New array
-                    $current[$key] = [];
-                    $stack[] = &$current[$key];
-                    $indents[] = $indent;
-                } else {
-                    // Simple value
-                    $current[$key] = $value;
-                }
-            }
-            // Parse array item
-            elseif (preg_match('/^-\s+(.+)$/', $line, $matches)) {
-                $value = trim($matches[1]);
-                $current = &$stack[count($stack) - 1];
-                $current[] = $value;
-            }
-        }
-
-        return $data;
     }
 }

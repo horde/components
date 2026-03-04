@@ -39,10 +39,13 @@ class ComposerJson extends \ArrayObject implements Wrapper, \Stringable
     {
         $this->_file = $baseDir . '/composer.json';
         if ($this->exists()) {
-            try {
-                $horde = \Horde_Yaml::loadFile($this->_file);
-            } catch (\Horde_Yaml_Exception $e) {
-                throw new Exception($e);
+            $content = file_get_contents($this->_file);
+            if ($content === false) {
+                throw new Exception("Failed to read {$this->_file}");
+            }
+            $horde = json_decode($content, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new Exception("Invalid JSON in {$this->_file}: " . json_last_error_msg());
             }
         } else {
             $horde = [];

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Horde\Components\Website;
 
 use RuntimeException;
+use Horde\HordeYmlFile\HordeYmlFile;
 
 /**
  * Full page generator for dev.horde.org
@@ -104,7 +105,7 @@ class PageGenerator
         return $data;
     }
 
-    private function loadHordeYml(string $componentName): ?array
+    private function loadHordeYml(string $componentName): ?HordeYmlFile
     {
         // Try to find .horde.yml in git checkout
         // Component name format: "horde/ComponentName"
@@ -116,24 +117,18 @@ class PageGenerator
         $repoName = $parts[1];
 
         // Try common locations
-        $homeDir = getenv('HOME') ?: '/home/i567442';
-        $possiblePaths = [
-            "{$homeDir}/git/horde/{$repoName}/.horde.yml",
-        ];
+        $homeDir = getenv('HOME') ?: ($_SERVER['HOME'] ?? null);
+        if (!$homeDir) {
+            return null; // Can't find home directory
+        }
+        $path = "{$homeDir}/git/horde/{$repoName}/.horde.yml";
 
-        foreach ($possiblePaths as $path) {
-            if (file_exists($path)) {
-                try {
-                    // Use Horde_Yaml (PEAR-style) to parse
-                    if (class_exists('Horde_Yaml')) {
-                        return \Horde_Yaml::loadFile($path);
-                    }
-                    // Fallback: return null if Yaml not available
-                    return null;
-                } catch (\Exception $e) {
-                    // Ignore parse errors, return null
-                    return null;
-                }
+        if (file_exists($path)) {
+            try {
+                return new HordeYmlFile($path);
+            } catch (\Exception $e) {
+                // Ignore parse errors, return null
+                return null;
             }
         }
 
@@ -472,37 +467,41 @@ class PageGenerator
 
         if ($hordeYml !== null) {
             // Use version from .horde.yml if available
-            if (isset($hordeYml['version']['release'])) {
-                $version = $this->esc($hordeYml['version']['release']);
+            $releaseVersion = $hordeYml->getReleaseVersion();
+            if ($releaseVersion) {
+                $version = $this->esc($releaseVersion);
             }
 
             // Full description
-            if (isset($hordeYml['description'])) {
-                $fullDesc = $this->esc($hordeYml['description']);
-            } elseif (isset($hordeYml['full'])) {
-                $fullDesc = $this->esc($hordeYml['full']);
+            $fullDesc = $hordeYml->getFullDescription();
+            if ($fullDesc) {
+                $fullDesc = $this->esc($fullDesc);
             }
 
-            // License
-            if (isset($hordeYml['license']['identifier'])) {
-                $license = $this->esc($hordeYml['license']['identifier']);
-                $licenseUri = $hordeYml['license']['uri'] ?? null;
+            // License (returns stdClass with identifier and uri)
+            $licenseObj = $hordeYml->getLicense();
+            if ($licenseObj && isset($licenseObj->identifier)) {
+                $license = $this->esc($licenseObj->identifier);
+                $licenseUri = $licenseObj->uri ?? null;
             }
 
-            // Authors
-            if (isset($hordeYml['authors']) && is_array($hordeYml['authors'])) {
-                foreach ($hordeYml['authors'] as $author) {
-                    if (isset($author['name'])) {
-                        $authors[] = $this->esc($author['name'])
-                            . (isset($author['role']) ? ' (' . $this->esc($author['role']) . ')' : '');
-                    }
+            // Authors (returns array of arrays)
+            $authorsData = $hordeYml->getAuthors();
+            foreach ($authorsData as $author) {
+                if (isset($author['name'])) {
+                    $authors[] = $this->esc($author['name'])
+                        . (isset($author['role']) ? ' (' . $this->esc($author['role']) . ')' : '');
                 }
             }
 
-            // Dependencies
-            if (isset($hordeYml['dependencies']['required']['composer'])) {
-                foreach ($hordeYml['dependencies']['required']['composer'] as $pkg => $ver) {
-                    $dependencies[] = $this->esc($pkg) . ': ' . $this->esc($ver);
+            // Dependencies (using typed Dependencies API)
+            $deps = $hordeYml->getDependencies();
+            if ($deps !== null) {
+                $requiredSet = $deps->getRequired();
+                if ($requiredSet !== null) {
+                    foreach ($requiredSet->getComposer() as $pkg => $ver) {
+                        $dependencies[] = $this->esc($pkg) . ': ' . $this->esc($ver);
+                    }
                 }
             }
         }

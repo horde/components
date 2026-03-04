@@ -25,6 +25,7 @@ use Horde\Components\Ci\Setup\ExtensionInstaller;
 use Horde\Components\Ci\Setup\LaneCopier;
 use Horde\Components\Ci\Setup\ComposerInstaller;
 use Horde\Components\Ci\Setup\ToolCache;
+use Horde\Components\Ci\Setup\LaneScriptGenerator;
 use Horde\Components\Ci\Init\InitCommand;
 use Horde\Components\Ci\Config\CiConfig;
 use Horde\Components\Ci\Run\RunCommand;
@@ -442,13 +443,13 @@ MORE INFO:
     {
         // Build configuration
         $configArray = EnvironmentDetector::buildConfig(
-            $options['ci-mode'] ?? null,
-            $options['local-path'] ?? null
+            $options['ci_mode'] ?? null,
+            $options['local_path'] ?? null
         );
 
         // Override with CLI options
-        if (isset($options['work-dir'])) {
-            $configArray['work_dir'] = $options['work-dir'];
+        if (isset($options['work_dir'])) {
+            $configArray['work_dir'] = $options['work_dir'];
         }
         if (isset($options['component'])) {
             $configArray['component_name'] = $options['component'];
@@ -467,7 +468,8 @@ MORE INFO:
             new ExtensionInstaller($output),
             new LaneCopier($output),
             new ComposerInstaller($output),
-            $toolCache
+            $toolCache,
+            new LaneScriptGenerator($output)
         );
 
         return $setupCommand->execute($config);

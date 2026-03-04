@@ -831,6 +831,20 @@ class Git
     }
 
     /**
+     * Get git describe output with tags
+     *
+     * @param string $localDir Full path to local git repository
+     *
+     * @return string The git describe output (e.g., "v1.2.3" or "v1.2.3-4-gabcdef")
+     */
+    public function describeWithTags(string $localDir): string
+    {
+        $cmd = $this->gitBin . ' describe --tags --always 2>/dev/null';
+        $result = $this->execInDirectory($cmd, $localDir);
+        return trim($result->getOutputString());
+    }
+
+    /**
      * Run a system call.
      *
      * @param string $call The system call to execute.

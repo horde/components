@@ -393,7 +393,6 @@ class Version
                     (string) $match[2]
                 );
             }
-            print($match[2]);
             // make bare alpha/beta/rc version 1 each
             if (in_array($match[2], ['alpha', 'beta', 'RC'])) {
                 $match[2] = '1';

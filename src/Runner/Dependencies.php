@@ -17,6 +17,7 @@ namespace Horde\Components\Runner;
 
 use Horde\Components\Component;
 use Horde\Components\Helper\Dependencies as HelperDependencies;
+use Horde\Components\Util\YamlLoader;
 
 /**
  * Horde\Components\Runner\Dependencies:: lists a tree of dependencies.
@@ -49,7 +50,7 @@ class Dependencies
     public function run(): void
     {
         if (!empty($this->options['no_tree'])) {
-            print \Horde_Yaml::dump(
+            print YamlLoader::dump(
                 $this->component->getDependencies()
             );
         } else {

@@ -22,6 +22,7 @@ use Horde\Components\Module\Pullrequest;
 use Horde\Components\Module\Qc;
 use Horde\Components\Module\Release;
 use Horde\Components\Module\Status;
+use Horde\Components\Module\Version;
 use Horde\Components\Module\Website;
 use Horde\Components\Module\Ci;
 
@@ -64,6 +65,7 @@ class ModuleProvider implements CliModuleProvider
             $this->injector->get(Qc::class),
             $this->injector->get(Release::class),
             $this->injector->get(Status::class),
+            $this->injector->get(Version::class),
             $this->injector->get(Website::class),
         ]);
     }

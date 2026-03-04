@@ -98,6 +98,12 @@ class CiConfig
     public readonly ?string $localComponentsPath;
 
     /**
+     * Path to horde-components executable (binary or PHAR).
+     * Used by lane scripts to invoke QC tasks.
+     */
+    public readonly string $componentsPath;
+
+    /**
      * Constructor.
      *
      * @param array<string,mixed> $config Configuration array
@@ -117,6 +123,12 @@ class CiConfig
         $this->githubToken = $config['github_token'] ?? null;
         $this->componentsPharUrl = $config['components_phar_url'] ?? null;
         $this->localComponentsPath = $config['local_components_path'] ?? null;
+
+        // Components path must be provided - no guessing
+        if (!isset($config['components_path'])) {
+            throw new \InvalidArgumentException('components_path must be provided in configuration');
+        }
+        $this->componentsPath = $config['components_path'];
     }
 
     /**
@@ -206,10 +218,6 @@ class CiConfig
 
         if ($this->isGithubMode() && empty($this->githubToken)) {
             $errors[] = 'GitHub token is required in github mode';
-        }
-
-        if ($this->isLocalMode() && empty($this->localComponentsPath)) {
-            $errors[] = 'Local components path is required in local mode';
         }
 
         if (empty($this->phpVersions)) {

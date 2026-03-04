@@ -19,6 +19,7 @@ use Horde\Components\Component;
 use Horde\Components\ConfigProvider\EffectiveConfigProvider;
 use Horde\Components\Exception;
 use Horde\Components\Output;
+use Horde\HordeYmlFile\HordeYmlFile;
 
 /**
  * Horde\Components\Runner\Init:: create new metadata.
@@ -79,24 +80,26 @@ class Init
         $dependencies = ['required' => ['php' => '^5.3 || ^7', 'pear' => ['pear.horde.org/Horde_Exception' => '^2']], 'optional' => ['pear' => ['pear.horde.org/Horde_Test' => '^2.1']]];
         $description = "Long, detailed description of $id which may span multiple lines";
         $summary = "Short headline for $id";
-        // First create a .horde.yml
-        //$yaml = $this->component->getWrapper('HordeYml');
-        // Doesn't currently work, create a plain Horde_Yaml instead
-        $yaml = [];
-        $yaml['id'] = $id;
-        $yaml['name'] = ucfirst($id);
-        $yaml['full'] = $summary;
-        $yaml['description'] = $description;
-        $yaml['list'] = $list;
-        $yaml['type'] = $type;
-        $yaml['homepage'] = $homepage ?? '';
-        $yaml['authors'] = $authors;
-        $yaml['version'] = $version;
-        $yaml['state'] = $state;
-        $yaml['license'] = $license;
-        $yaml['dependencies'] = $dependencies;
-        // $yaml->save();
-        file_put_contents('.horde.yml', \Horde_Yaml::dump($yaml));
+
+        // Create a .horde.yml using the library
+        if (!file_exists('.horde.yml')) {
+            touch('.horde.yml');
+        }
+
+        $hordeYml = new HordeYmlFile('.horde.yml');
+        $hordeYml->setId($id);
+        $hordeYml->setName(ucfirst($id));
+        $hordeYml->set('full', $summary);
+        $hordeYml->setFullDescription($description);
+        $hordeYml->set('list', $list);
+        $hordeYml->setType($type);
+        $hordeYml->set('homepage', $homepage ?? '');
+        $hordeYml->setAuthors($authors);
+        $hordeYml->set('version', $version);
+        $hordeYml->set('state', $state);
+        $hordeYml->setLicense($license['identifier'], $license['uri']);
+        $hordeYml->set('dependencies', $dependencies);
+        $hordeYml->save();
 
         /* create a barebone xml
          * We just need to satisfy formal criteria,
