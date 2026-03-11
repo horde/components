@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Builds replacement map for template placeholders.
  *

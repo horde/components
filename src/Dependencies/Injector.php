@@ -45,6 +45,12 @@ use Horde\Components\Runner\Webdocs as RunnerWebdocs;
 use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 use Horde\Injector\Injector as HordeInjector;
 use Horde\Injector\TopLevel;
+use Exception;
+use Horde_Argv_Parser;
+use Horde_Cli;
+use Horde_Cli_Modular;
+use Horde_Http_Client;
+use Horde_Pear_Remote;
 
 /**
  * The Components_Dependencies_Injector:: class provides the
@@ -85,7 +91,7 @@ class Injector extends HordeInjector implements Dependencies
             'createComponentFactory'
         );
         $this->bindFactory(
-            \Horde_Cli::class,
+            Horde_Cli::class,
             Dependencies::class,
             'createCli'
         );
@@ -134,7 +140,7 @@ class Injector extends HordeInjector implements Dependencies
     public static function registerAppDependencies(HordeInjector $injector)
     {
         $injector->bindFactory(
-            \Horde_Cli::class,
+            Horde_Cli::class,
             Dependencies::class,
             'createCli'
         );
@@ -173,41 +179,41 @@ class Injector extends HordeInjector implements Dependencies
     /**
      * Set the list of modules.
      *
-     * @param \Horde_Cli_Modular $modules The list of modules.
+     * @param Horde_Cli_Modular $modules The list of modules.
      */
-    public function setModules(\Horde_Cli_Modular $modules): void
+    public function setModules(Horde_Cli_Modular $modules): void
     {
-        $this->setInstance(\Horde_Cli_Modular::class, $modules);
+        $this->setInstance(Horde_Cli_Modular::class, $modules);
     }
 
     /**
      * Return the list of modules.
      *
-     * @return \Horde_Cli_Modular The list of modules.
+     * @return Horde_Cli_Modular The list of modules.
      */
     public function getModules()
     {
-        return $this->getInstance(\Horde_Cli_Modular::class);
+        return $this->getInstance(Horde_Cli_Modular::class);
     }
 
     /**
      * Set the CLI parser.
      *
-     * @param \Horde_Argv_Parser $parser The parser.
+     * @param Horde_Argv_Parser $parser The parser.
      */
     public function setParser($parser): void
     {
-        $this->setInstance(\Horde_Argv_Parser::class, $parser);
+        $this->setInstance(Horde_Argv_Parser::class, $parser);
     }
 
     /**
      * Return the CLI parser.
      *
-     * @return \Horde_Argv_Parser The parser.
+     * @return Horde_Argv_Parser The parser.
      */
     public function getParser()
     {
-        return $this->getInstance(\Horde_Argv_Parser::class);
+        return $this->getInstance(Horde_Argv_Parser::class);
     }
 
     /**
@@ -415,11 +421,11 @@ class Injector extends HordeInjector implements Dependencies
     /**
      * Returns the handler for remote PEAR servers.
      *
-     * @return \Horde_Pear_Remote The handler.
+     * @return Horde_Pear_Remote The handler.
      */
     public function getRemote()
     {
-        return $this->getInstance(\Horde_Pear_Remote::class);
+        return $this->getInstance(Horde_Pear_Remote::class);
     }
 
     /**
@@ -446,14 +452,14 @@ class Injector extends HordeInjector implements Dependencies
                     $options[$key] = $configProvider->getSetting($key);
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $options = [];
         }
 
         return new ComponentFactory(
             $options,
             $this->getInstance(\Horde\Components\Pear\Factory::class),
-            $this->getInstance(\Horde_Http_Client::class),
+            $this->getInstance(Horde_Http_Client::class),
             $this->getInstance(Output::class),
             $this->getInstance(ReleaseNotes::class)
         );
@@ -466,9 +472,9 @@ class Injector extends HordeInjector implements Dependencies
      * with PHPUnit's exception handling in tests. We detect if running under
      * PHPUnit and avoid init() in that case.
      *
-     * @return \Horde_Cli The CLI handler.
+     * @return Horde_Cli The CLI handler.
      */
-    public function createCli(): \Horde_Cli
+    public function createCli(): Horde_Cli
     {
         // Check if running under PHPUnit
         $isTestEnvironment = defined('PHPUNIT_COMPOSER_INSTALL')
@@ -478,11 +484,11 @@ class Injector extends HordeInjector implements Dependencies
         if ($isTestEnvironment) {
             // In test environment, use constructor directly to avoid
             // set_exception_handler() call in Horde_Cli::init()
-            return new \Horde_Cli(['pager' => $this->_usePager]);
+            return new Horde_Cli(['pager' => $this->_usePager]);
         }
 
         // In production, use init() which sets up full CLI environment
-        return \Horde_Cli::init(['pager' => $this->_usePager]);
+        return Horde_Cli::init(['pager' => $this->_usePager]);
     }
 
     /**
@@ -492,7 +498,7 @@ class Injector extends HordeInjector implements Dependencies
      *
      * @return Output The output handler.
      */
-    public function createOutput(Injector $injector): \Horde\Components\Output
+    public function createOutput(Injector $injector): Output
     {
         // Get parsed options from DI if available, otherwise use empty array
         $options = [];
@@ -501,7 +507,7 @@ class Injector extends HordeInjector implements Dependencies
         }
 
         return new Output(
-            $injector->getInstance(\Horde_Cli::class),
+            $injector->getInstance(Horde_Cli::class),
             $options
         );
     }

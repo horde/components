@@ -25,6 +25,7 @@ use Horde\Components\Output;
 use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
 use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 use Horde\Components\Runner\Status as RunnerStatus;
+use ReflectionClass;
 
 /**
  * Components_Module_Change:: records a change log entry.
@@ -74,6 +75,16 @@ class Status extends Base
     public function getUsage(): string
     {
         return 'Show status';
+    }
+
+    /**
+     * Get a short one-line description for command listings.
+     *
+     * @return string The short description.
+     */
+    public function getShortDescription(): string
+    {
+        return 'Show component and environment status';
     }
 
     /**
@@ -149,11 +160,13 @@ EXAMPLES:
 CONFIGURATION DEPENDENCIES:
     The status command respects these configuration settings:
 
-    checkout.dir      The git checkout directory to check
-                      (default: ~/git/horde or /srv/git/horde)
+    checkout.dir      The git checkout directory to check (parent of vendor directories)
+                      Components are located at: checkout.dir/horde/component
+                      (default: ~/git or /srv/git)
 
     install.dir       The Horde installation directory to check
-                      (default: derived from runtime context)
+                      (default: ~/www/horde-dev or /srv/www/horde-dev)
+                      Can also use HORDE_INSTALL_DIR environment variable
 
 COMMON WARNINGS AND FIXES:
     \"Config file does not exist or is not readable\"
@@ -165,7 +178,7 @@ COMMON WARNINGS AND FIXES:
     \"Git Tree dir does not exist or is not readable\"
       Fix: Create the directory or update checkout.dir config setting
            mkdir -p ~/git/horde
-           horde-components config checkout.dir ~/git/horde
+           horde-components config checkout.dir ~/git
 
     \"Install dir does not exist or is not readable\"
       Fix: Create a Horde installation using composer
@@ -220,7 +233,7 @@ SEE ALSO:
             // Get config file path from PhpConfigFileProvider
             $phpConfigProvider = $this->dependencies->get(PhpConfigFileProvider::class);
             // Access the private location property via reflection
-            $reflection = new \ReflectionClass($phpConfigProvider);
+            $reflection = new ReflectionClass($phpConfigProvider);
             $locationProperty = $reflection->getProperty('location');
             $locationProperty->setAccessible(true);
             $configFilePath = $locationProperty->getValue($phpConfigProvider);

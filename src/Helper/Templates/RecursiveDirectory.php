@@ -14,6 +14,8 @@ namespace Horde\Components\Helper\Templates;
 
 use Horde\Components\Exception;
 use Horde\Components\Helper\Templates;
+use DirectoryIterator;
+use IteratorIterator;
 
 /**
  * Components_Helper_Templates_RecursiveDirectory:: converts template files
@@ -62,7 +64,7 @@ class RecursiveDirectory extends Templates
             mkdir($this->_target, 0o777, true);
         }
         foreach (
-            new \IteratorIterator(new \DirectoryIterator($this->_source)) as $file
+            new IteratorIterator(new DirectoryIterator($this->_source)) as $file
         ) {
             if ($file->isFile()) {
                 $this->writeSourceToTarget(

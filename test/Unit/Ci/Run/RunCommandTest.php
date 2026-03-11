@@ -46,7 +46,7 @@ class RunCommandTest extends TestCase
 
         // Create temp directory for test lanes
         $this->tempDir = sys_get_temp_dir() . '/horde-ci-run-test-' . uniqid();
-        mkdir($this->tempDir, 0755, true);
+        mkdir($this->tempDir, 0o755, true);
 
         // Create RunCommand
         $this->runCommand = new RunCommand(
@@ -72,17 +72,19 @@ class RunCommandTest extends TestCase
         $componentDir = $laneDir . '/TestComponent';
         $buildDir = $componentDir . '/build';
 
-        mkdir($buildDir, 0755, true);
+        mkdir($buildDir, 0o755, true);
 
         // Create a test lane script that succeeds
         $scriptPath = $laneDir . '/run-lane.sh';
-        file_put_contents($scriptPath, <<<'BASH'
-#!/bin/bash
-echo "Test script running"
-exit 0
-BASH
+        file_put_contents(
+            $scriptPath,
+            <<<'BASH'
+                #!/bin/bash
+                echo "Test script running"
+                exit 0
+                BASH
         );
-        chmod($scriptPath, 0755);
+        chmod($scriptPath, 0o755);
 
         // Mock collector expectations
         $this->collector
@@ -106,7 +108,7 @@ BASH
         $laneDir = $this->tempDir . '/lanes/php8.4-dev';
         $componentDir = $laneDir . '/TestComponent';
 
-        mkdir($componentDir, 0755, true);
+        mkdir($componentDir, 0o755, true);
 
         // No script created
 
@@ -132,12 +134,12 @@ BASH
         $laneDir = $this->tempDir . '/lanes/php8.4-dev';
         $componentDir = $laneDir . '/TestComponent';
 
-        mkdir($componentDir, 0755, true);
+        mkdir($componentDir, 0o755, true);
 
         // Create script but don't make it executable
         $scriptPath = $laneDir . '/run-lane.sh';
         file_put_contents($scriptPath, "#!/bin/bash\necho test\n");
-        chmod($scriptPath, 0644); // Not executable
+        chmod($scriptPath, 0o644); // Not executable
 
         // Mock output to expect error message
         $this->output
@@ -162,20 +164,22 @@ BASH
         $componentDir = $laneDir . '/TestComponent';
         $buildDir = $componentDir . '/build';
 
-        mkdir($buildDir, 0755, true);
+        mkdir($buildDir, 0o755, true);
 
         // Create script with specific output
         $scriptPath = $laneDir . '/run-lane.sh';
-        file_put_contents($scriptPath, <<<'BASH'
-#!/bin/bash
-echo "=== Running PHPUnit ==="
-echo "Tests: 10, Assertions: 25"
-echo "=== Running PHPStan ==="
-echo "No errors found"
-exit 0
-BASH
+        file_put_contents(
+            $scriptPath,
+            <<<'BASH'
+                #!/bin/bash
+                echo "=== Running PHPUnit ==="
+                echo "Tests: 10, Assertions: 25"
+                echo "=== Running PHPStan ==="
+                echo "No errors found"
+                exit 0
+                BASH
         );
-        chmod($scriptPath, 0755);
+        chmod($scriptPath, 0o755);
 
         // Mock output to capture script output
         $capturedOutput = [];
@@ -205,17 +209,19 @@ BASH
         $componentDir = $laneDir . '/TestComponent';
         $buildDir = $componentDir . '/build';
 
-        mkdir($buildDir, 0755, true);
+        mkdir($buildDir, 0o755, true);
 
         // Create script that exits with error
         $scriptPath = $laneDir . '/run-lane.sh';
-        file_put_contents($scriptPath, <<<'BASH'
-#!/bin/bash
-echo "Tests failed"
-exit 42
-BASH
+        file_put_contents(
+            $scriptPath,
+            <<<'BASH'
+                #!/bin/bash
+                echo "Tests failed"
+                exit 42
+                BASH
         );
-        chmod($scriptPath, 0755);
+        chmod($scriptPath, 0o755);
 
         // Mock output to expect warning about exit code
         $this->output
@@ -248,12 +254,12 @@ BASH
             $componentDir = $laneDir . '/TestComponent';
             $buildDir = $componentDir . '/build';
 
-            mkdir($buildDir, 0755, true);
+            mkdir($buildDir, 0o755, true);
 
             // Create passing script
             $scriptPath = $laneDir . '/run-lane.sh';
             file_put_contents($scriptPath, "#!/bin/bash\nexit 0\n");
-            chmod($scriptPath, 0755);
+            chmod($scriptPath, 0o755);
         }
 
         // Mock output to capture lane info messages
@@ -281,16 +287,16 @@ BASH
         // Create valid lane
         $validLaneDir = $this->tempDir . '/lanes/php8.4-dev';
         $componentDir = $validLaneDir . '/TestComponent';
-        mkdir($componentDir, 0755, true);
+        mkdir($componentDir, 0o755, true);
 
         $scriptPath = $validLaneDir . '/run-lane.sh';
         file_put_contents($scriptPath, "#!/bin/bash\nexit 0\n");
-        chmod($scriptPath, 0755);
+        chmod($scriptPath, 0o755);
 
         // Create invalid lane names that should be skipped
-        mkdir($this->tempDir . '/lanes/invalid-name', 0755, true);
-        mkdir($this->tempDir . '/lanes/php-noversion', 0755, true);
-        mkdir($this->tempDir . '/lanes/php8.4', 0755, true); // Missing stability
+        mkdir($this->tempDir . '/lanes/invalid-name', 0o755, true);
+        mkdir($this->tempDir . '/lanes/php-noversion', 0o755, true);
+        mkdir($this->tempDir . '/lanes/php8.4', 0o755, true); // Missing stability
 
         // Mock collector
         $this->collector->method('displaySummary');
@@ -322,12 +328,12 @@ BASH
             $componentDir = $laneDir . '/TestComponent';
             $buildDir = $componentDir . '/build';
 
-            mkdir($buildDir, 0755, true);
+            mkdir($buildDir, 0o755, true);
 
             // Create script
             $scriptPath = $laneDir . '/run-lane.sh';
             file_put_contents($scriptPath, "#!/bin/bash\nexit 0\n");
-            chmod($scriptPath, 0755);
+            chmod($scriptPath, 0o755);
 
             // Create mock result files
             file_put_contents($buildDir . '/phpunit-results-summary.json', '{"tests":10,"passed":true}');
@@ -353,12 +359,12 @@ BASH
         $componentDir = $laneDir . '/TestComponent';
         $buildDir = $componentDir . '/build';
 
-        mkdir($buildDir, 0755, true);
+        mkdir($buildDir, 0o755, true);
 
         // Create script
         $scriptPath = $laneDir . '/run-lane.sh';
         file_put_contents($scriptPath, "#!/bin/bash\nexit 0\n");
-        chmod($scriptPath, 0755);
+        chmod($scriptPath, 0o755);
 
         // No result files created
 

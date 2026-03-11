@@ -86,7 +86,7 @@ class GitPush extends Base
      * @return SystemCallResult The result object
      * Might make sense to factor out into a git helper for reuse?
      */
-    protected function _push(string $remote, string $branch = ''): \Horde\Components\Component\Task\SystemCallResult
+    protected function _push(string $remote, string $branch = ''): SystemCallResult
     {
         return $this->getShell()->exec(
             sprintf('git push --set-upstream %s %s', $remote, $branch),
@@ -103,7 +103,7 @@ class GitPush extends Base
      * @return SystemCallResult The result object
      * Might make sense to factor out into a git helper for reuse?
      */
-    protected function _pushTags(string $remote, string $branch = ''): \Horde\Components\Component\Task\SystemCallResult
+    protected function _pushTags(string $remote, string $branch = ''): SystemCallResult
     {
         return $this->getShell()->exec(
             sprintf('git push --set-upstream %s %s --tags', $remote, $branch),

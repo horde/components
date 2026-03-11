@@ -150,7 +150,7 @@ interface Component
      * Return a data array with the most relevant information about this
      * component.
      *
-     * @return \stdClass Information about this component.
+     * @return stdClass Information about this component.
      */
     public function getData(): stdClass;
 

@@ -18,6 +18,8 @@ namespace Horde\Components\Ci\Setup;
 
 use Horde\Components\Output;
 use Horde\Components\Exception;
+use Phar;
+use Throwable;
 
 /**
  * Manages cached QC tool binaries (PHPUnit, PHPStan, PHP-CS-Fixer).
@@ -68,7 +70,7 @@ class ToolCache
     {
         // Create cache directory
         if (!is_dir($this->cacheDir)) {
-            mkdir($this->cacheDir, 0755, true);
+            mkdir($this->cacheDir, 0o755, true);
         }
 
         // Download PHPUnit for each PHP version
@@ -233,7 +235,7 @@ class ToolCache
         }
 
         // Make executable
-        chmod($destination, 0755);
+        chmod($destination, 0o755);
     }
 
     /**
@@ -249,9 +251,9 @@ class ToolCache
         }
 
         try {
-            \Phar::loadPhar($path);
+            Phar::loadPhar($path);
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return false;
         }
     }

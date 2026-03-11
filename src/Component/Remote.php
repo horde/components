@@ -15,6 +15,9 @@ use Horde\Components\Exception;
 use stdClass;
 use Horde\Components\Pear\Environment as PearEnvironment;
 use Horde\Components\Wrapper\PackageXml;
+use Horde_Http_Client;
+use Horde_Pear_Package_Xml;
+use Horde_Pear_Remote;
 
 /**
  * Represents a remote component.
@@ -46,7 +49,7 @@ class Remote extends Base
     /**
      * The package file representing the component.
      */
-    private ?\Horde_Pear_Package_Xml $_package = null;
+    private ?Horde_Pear_Package_Xml $_package = null;
 
     /**
     * Constructor.
@@ -54,16 +57,16 @@ class Remote extends Base
      * @param string $_name Component name.
      * @param string $_stability Component stability.
      * @param string $_channel Component channel.
-     * @param \Horde_Pear_Remote $_remote Remote channel handler.
-     * @param \Horde_Http_Client $_client The HTTP client for remote access.
+     * @param Horde_Pear_Remote $_remote Remote channel handler.
+     * @param Horde_Http_Client $_client The HTTP client for remote access.
     * @param Factory $factory Generator for additional helpers.
     */
     public function __construct(
         private $_name,
         private $_stability,
         private $_channel,
-        private readonly \Horde_Pear_Remote $_remote,
-        private readonly \Horde_Http_Client $_client,
+        private readonly Horde_Pear_Remote $_remote,
+        private readonly Horde_Http_Client $_client,
         Factory $factory
     ) {
         parent::__construct($factory);
@@ -151,7 +154,7 @@ class Remote extends Base
      */
     public function getData(): stdClass
     {
-        $data = new \stdClass();
+        $data = new stdClass();
         $release = $this->_remote->getLatestDetails($this->_name, null);
         $data->name = $this->_name;
         $data->summary = $release->getSummary();

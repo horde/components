@@ -16,6 +16,8 @@ namespace Horde\Components\Qc\Task;
 
 use SebastianBergmann\FinderFacade\FinderFacade;
 use SebastianBergmann\PHPLOC;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 /**
  * Measure the size and analyze the structure of a PHP component.
@@ -67,8 +69,8 @@ class Loc extends Base
         // We should probably factor out the component php file finder and reuse it.
         $componentDir = realpath($this->getPath());
         $vendorDir = $componentDir . DIRECTORY_SEPARATOR . 'vendor';
-        $recursion = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($componentDir)
+        $recursion = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($componentDir)
         );
         $errors = 0;
         foreach ($recursion as $file) {

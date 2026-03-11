@@ -18,6 +18,9 @@ use Horde\Components\Components;
 use Horde\Components\Dependencies\Injector;
 use Horde\Components\Release\Notes as ReleaseNotes;
 use Horde\Components\Test\Stub\Output;
+use DirectoryIterator;
+use Horde_Test_Stub_Cli;
+use Horde_Util;
 
 /**
  * Test base.
@@ -93,7 +96,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
     protected function getTemporaryDirectory()
     {
-        return \Horde_Util::createTempDir();
+        return Horde_Util::createTempDir();
     }
 
     protected function getHelp()
@@ -126,7 +129,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $parameters['dependencies'] = new Injector();
         $parameters['dependencies']->setInstance(
             'Horde_Cli',
-            new \Horde_Test_Stub_Cli(['output' => $stream])
+            new Horde_Test_Stub_Cli(['output' => $stream])
         );
         call_user_func_array($callback, [$parameters]);
         rewind($stream);
@@ -154,7 +157,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
     {
         $files = [];
         $found = false;
-        foreach (new \DirectoryIterator($dir) as $file) {
+        foreach (new DirectoryIterator($dir) as $file) {
             if (preg_match($regex, $file->getBasename('.tgz'))) {
                 $found = true;
             }

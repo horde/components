@@ -21,6 +21,8 @@ use Horde\Components\ChangelogEntry;
 use Horde\Components\Helper\Version;
 use Horde\HordeYmlFile\ChangelogYmlFile as LibraryChangelogYmlFile;
 use Horde\HordeYmlFile\InvalidChangelogFileException;
+use ArrayObject;
+use Stringable;
 
 /**
  * Wrapper for the changelog.yml file.
@@ -32,7 +34,7 @@ use Horde\HordeYmlFile\InvalidChangelogFileException;
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class ChangelogYml extends \ArrayObject implements Wrapper, \Stringable
+class ChangelogYml extends ArrayObject implements Wrapper, Stringable
 {
     use WrapperTrait;
 
@@ -148,14 +150,21 @@ class ChangelogYml extends \ArrayObject implements Wrapper, \Stringable
         }
 
         // If ArrayObject was modified directly (legacy code path),
-        // sync changes back to library
+        // sync changes back to library by recreating the file
         $currentArray = $this->getArrayCopy();
 
-        // Clear and rebuild from ArrayObject
-        // Note: This is a bit hacky but maintains backward compatibility
-        // The library's addVersionEntry will handle sorting
-        foreach ($currentArray as $version => $entry) {
-            $this->changelogYmlFile->addVersionEntry($version, $entry);
+        // Only truncate and recreate if we have entries
+        // This prevents creating empty files during test teardown
+        if (!empty($currentArray)) {
+            // Recreate the file with only the current ArrayObject contents
+            // This handles deletions (unset) properly
+            file_put_contents($this->_file, "---\n");
+            $this->changelogYmlFile = new LibraryChangelogYmlFile($this->_file);
+
+            // Add all current entries
+            foreach ($currentArray as $version => $entry) {
+                $this->changelogYmlFile->addVersionEntry($version, $entry);
+            }
         }
     }
 
@@ -164,6 +173,11 @@ class ChangelogYml extends \ArrayObject implements Wrapper, \Stringable
      */
     public function save(): void
     {
+        // Don't create empty changelog files
+        if (!isset($this->changelogYmlFile) && $this->count() === 0) {
+            return;
+        }
+
         // Create library instance if not already created (for new files)
         if (!isset($this->changelogYmlFile)) {
             $dir = dirname($this->_file);
@@ -196,7 +210,8 @@ class ChangelogYml extends \ArrayObject implements Wrapper, \Stringable
             return strnatcmp($b, $a);
         });
 
-        $this->syncToLibrary();
+        // Don't sync to library here - __toString() should be read-only
+        // Syncing happens in save()
         return (string) $this->changelogYmlFile;
     }
 }

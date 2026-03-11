@@ -8,6 +8,7 @@ use Horde\Components\Auth\GitHubAppConfig;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use ReflectionClass;
 
 /**
  * Copyright 2026 The Horde Project (http://www.horde.org/)
@@ -229,7 +230,7 @@ class GitHubAppConfigTest extends TestCase
     {
         $config = new GitHubAppConfig(123, 456, '/path/key.pem');
 
-        $reflection = new \ReflectionClass($config);
+        $reflection = new ReflectionClass($config);
 
         foreach ($reflection->getProperties() as $property) {
             $this->assertTrue(

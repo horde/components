@@ -24,6 +24,7 @@ use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
 use Horde\Components\Helper\Git;
 use Horde\Version\RelaxedSemanticVersion;
 use Horde\Version\InvalidVersionException;
+use Phar;
 
 /**
  * Display version information for horde-components tool and UUT.
@@ -81,6 +82,16 @@ class Version extends Base
      * @return string The description.
      */
     public function getUsage(): string
+    {
+        return 'Display version information';
+    }
+
+    /**
+     * Get a short one-line description for command listings.
+     *
+     * @return string The short description.
+     */
+    public function getShortDescription(): string
     {
         return 'Display version information';
     }
@@ -183,11 +194,11 @@ The UUT version is read from the component\'s .horde.yml file.
     private function getToolVersion(): string
     {
         // Check if running from PHAR
-        if (class_exists('Phar') && \Phar::running(false) !== '') {
+        if (class_exists('Phar') && Phar::running(false) !== '') {
             // Try to get git version from PHAR manifest
-            $pharPath = \Phar::running(false);
+            $pharPath = Phar::running(false);
             try {
-                $phar = new \Phar($pharPath);
+                $phar = new Phar($pharPath);
                 $meta = $phar->getMetadata();
                 if (is_array($meta) && isset($meta['version'])) {
                     return $meta['version'];

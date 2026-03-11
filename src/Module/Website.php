@@ -112,6 +112,16 @@ class Website extends Base
         return 'web - Generate dev.horde.org website';
     }
 
+    /**
+     * Get a short one-line description for command listings.
+     *
+     * @return string The short description.
+     */
+    public function getShortDescription(): string
+    {
+        return 'Generate dev.horde.org website';
+    }
+
     public function getActions(): array
     {
         return ['web', 'web catalog'];
@@ -129,9 +139,13 @@ WEBSITE GENERATION:
 
   Options:
     --web-input <dir>        Webhook JSON directory (default: data/webhooks)
+                             Config: devsite.input_dir
     --web-output <dir>       Output directory (default: build/dev.horde.org)
+                             Config: devsite.output_dir
     --web-templates <dir>    Templates directory (default: data/website)
+                             Config: devsite.template_dir
     --web-components <file>  Component catalog JSON (default: data/website/components.json)
+                             Config: devsite.components
 
   Examples:
     horde-components web
@@ -145,14 +159,20 @@ COMPONENT CATALOG:
 
   Options:
     --web-components <file>  Catalog output file (default: data/website/components.json)
+                             Config: devsite.components
     --web-org <name>         GitHub organization (default: horde)
+                             Config: repo.org (shared) or devsite.org
     --web-git-dir <path>     Local git repos for version info
+                             Config: checkout.dir (shared) or devsite.git_dir
     --web-token <token>      GitHub API token (or set GITHUB_TOKEN env var)
+                             Config: github.token (shared) or devsite.token
 
   Examples:
     horde-components web catalog
-    horde-components web catalog --web-org horde --web-git-dir ~/git/horde
+    horde-components web catalog --web-org horde --web-git-dir ~/git
     GITHUB_TOKEN=ghp_xxx horde-components web catalog
+
+  Note: CLI options --web-* map to devsite.* config keys for consistency.
 ';
     }
 

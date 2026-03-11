@@ -13,6 +13,8 @@
 
 namespace Horde\Components\Component\Task;
 
+use Stringable;
+
 /**
  * Components\Component\Task\SystemCallResult:: Holds Output, Return code etc
  *
@@ -26,7 +28,7 @@ namespace Horde\Components\Component\Task;
  * @author   Ralf Lang <ralf.lang@ralf-lang.de>
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class SystemCallResult implements \Stringable
+class SystemCallResult implements Stringable
 {
     protected $_fields = [];
 

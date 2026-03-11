@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Test\Auth;
 
-use Horde\Components\Auth\Rs256JwtGenerator;
+use Horde\Components\Auth\GitHubJwtGenerator;
 use Horde\Components\Auth\PrivateKey;
 use Horde\Components\Auth\GeneratedJwt;
 use RuntimeException;
@@ -21,16 +21,16 @@ use PHPUnit\Framework\Attributes\CoversClass;
  * @package  Components
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-#[CoversClass(Rs256JwtGenerator::class)]
+#[CoversClass(GitHubJwtGenerator::class)]
 class Rs256JwtGeneratorTest extends TestCase
 {
-    private Rs256JwtGenerator $generator;
+    private GitHubJwtGenerator $generator;
     private PrivateKey $privateKey;
     private string $publicKeyPath;
 
     protected function setUp(): void
     {
-        $this->generator = new Rs256JwtGenerator();
+        $this->generator = new GitHubJwtGenerator();
         $privateKeyPath = __DIR__ . '/test-private-key.pem';
         $this->publicKeyPath = __DIR__ . '/test-public-key.pem';
         $this->privateKey = PrivateKey::fromFile($privateKeyPath);

@@ -64,7 +64,11 @@ class ShellTest extends TestCase
     public function testSystemReturnsString(): void
     {
         $shell = new Shell();
+
+        // Capture stdout to prevent risky test warning
+        ob_start();
         $result = $shell->system('echo "test"');
+        ob_end_clean();
 
         $this->assertIsString($result);
         $this->assertStringContainsString('test', $result);
@@ -74,7 +78,11 @@ class ShellTest extends TestCase
     {
         $shell = new Shell();
         $tmpDir = sys_get_temp_dir();
+
+        // Capture stdout to prevent risky test warning
+        ob_start();
         $result = $shell->system('pwd', $tmpDir);
+        ob_end_clean();
 
         $this->assertStringContainsString($tmpDir, $result);
     }
@@ -167,7 +175,10 @@ class ShellTest extends TestCase
 
     public function testStaticRunSystemMethod(): void
     {
+        // Capture stdout to prevent risky test warning
+        ob_start();
         $result = Shell::runSystem('echo "test"');
+        ob_end_clean();
 
         $this->assertIsString($result);
         $this->assertStringContainsString('test', $result);
@@ -210,7 +221,11 @@ class ShellTest extends TestCase
         $tmpDir = sys_get_temp_dir();
 
         $shell = new Shell();
+
+        // Capture stdout to prevent risky test warning
+        ob_start();
         $shell->system('echo test', $tmpDir);
+        ob_end_clean();
 
         $this->assertSame($originalDir, getcwd());
     }

@@ -70,34 +70,57 @@ readonly class WebsiteConfig
         ?string $fallbackToken = null
     ): self {
         // Get values with defaults relative to components root
-        $inputDir = $config->hasSetting('web_input')
-            ? $config->getSetting('web_input')
-            : $componentsRoot . '/data/webhooks';
+        // Try new names first, then fall back to old names for backwards compatibility
+        $inputDir = $config->hasSetting('devsite.input_dir')
+            ? $config->getSetting('devsite.input_dir')
+            : ($config->hasSetting('web_input')
+                ? $config->getSetting('web_input')
+                : $componentsRoot . '/data/webhooks');
 
-        $outputDir = $config->hasSetting('web_output')
-            ? $config->getSetting('web_output')
-            : $componentsRoot . '/build/dev.horde.org';
+        $outputDir = $config->hasSetting('devsite.output_dir')
+            ? $config->getSetting('devsite.output_dir')
+            : ($config->hasSetting('web_output')
+                ? $config->getSetting('web_output')
+                : $componentsRoot . '/build/dev.horde.org');
 
-        $templatesDir = $config->hasSetting('web_templates')
-            ? $config->getSetting('web_templates')
-            : $componentsRoot . '/data/website';
+        $templatesDir = $config->hasSetting('devsite.template_dir')
+            ? $config->getSetting('devsite.template_dir')
+            : ($config->hasSetting('web_templates')
+                ? $config->getSetting('web_templates')
+                : $componentsRoot . '/data/website');
 
-        $componentsFile = $config->hasSetting('web_components')
-            ? $config->getSetting('web_components')
-            : $templatesDir . '/components.json';
+        $componentsFile = $config->hasSetting('devsite.components')
+            ? $config->getSetting('devsite.components')
+            : ($config->hasSetting('web_components')
+                ? $config->getSetting('web_components')
+                : $templatesDir . '/components.json');
 
-        $organization = $config->hasSetting('web_org')
-            ? $config->getSetting('web_org')
-            : 'horde';
+        // For organization, prefer repo.org over devsite.org over legacy web_org
+        $organization = $config->hasSetting('repo.org')
+            ? $config->getSetting('repo.org')
+            : ($config->hasSetting('devsite.org')
+                ? $config->getSetting('devsite.org')
+                : ($config->hasSetting('web_org')
+                    ? $config->getSetting('web_org')
+                    : 'horde'));
 
-        $gitDir = $config->hasSetting('web_git_dir')
-            ? $config->getSetting('web_git_dir')
-            : null;
+        // For git directory, prefer checkout.dir over devsite.git_dir over legacy web_git_dir
+        $gitDir = $config->hasSetting('checkout.dir')
+            ? $config->getSetting('checkout.dir')
+            : ($config->hasSetting('devsite.git_dir')
+                ? $config->getSetting('devsite.git_dir')
+                : ($config->hasSetting('web_git_dir')
+                    ? $config->getSetting('web_git_dir')
+                    : null));
 
-        // Token priority: web_token config > fallback token (from GithubApiConfig)
-        $token = $config->hasSetting('web_token')
-            ? $config->getSetting('web_token')
-            : $fallbackToken;
+        // For token, prefer github.token over devsite.token over legacy web_token
+        $token = $config->hasSetting('github.token')
+            ? $config->getSetting('github.token')
+            : ($config->hasSetting('devsite.token')
+                ? $config->getSetting('devsite.token')
+                : ($config->hasSetting('web_token')
+                    ? $config->getSetting('web_token')
+                    : $fallbackToken));
 
         return new self(
             $inputDir,

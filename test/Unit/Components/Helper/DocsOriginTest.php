@@ -14,6 +14,10 @@ namespace Horde\Components\Unit\Components\Helper;
 
 use Horde\Components\Helper\DocsOrigin as HelperDocsOrigin;
 use Horde\Components\Test\TestCase;
+use Horde_Http_Client;
+use Horde_Http_Request_Mock;
+use Horde_Http_Response_Mock;
+use Horde_Support_StringStream;
 
 /**
  * Test the document fetching helper.
@@ -72,11 +76,11 @@ class DocsOriginTest extends TestCase
     private function _getClient()
     {
         $response = 'REMOTE';
-        $body = new \Horde_Support_StringStream($response);
-        $response = new \Horde_Http_Response_Mock('', $body->fopen());
+        $body = new Horde_Support_StringStream($response);
+        $response = new Horde_Http_Response_Mock('', $body->fopen());
         $response->code = 200;
-        $request = new \Horde_Http_Request_Mock();
+        $request = new Horde_Http_Request_Mock();
         $request->setResponse($response);
-        return new \Horde_Http_Client(['request' => $request]);
+        return new Horde_Http_Client(['request' => $request]);
     }
 }

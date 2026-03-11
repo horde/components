@@ -11,6 +11,10 @@
 
 namespace Horde\Components\Qc;
 
+use Phar;
+use PharException;
+use Throwable;
+
 /**
  * Tool binary finder for quality check tasks.
  *
@@ -205,16 +209,16 @@ class ToolFinder
         try {
             // First, validate it's a PHAR using PHP's built-in validation
             // This checks the GBMB signature at the end of the file
-            \Phar::loadPhar($path);
+            Phar::loadPhar($path);
 
             // Then require it to execute the stub and register autoloaders
             require_once $path;
 
             return true;
-        } catch (\PharException $e) {
+        } catch (PharException $e) {
             // Not a valid PHAR file
             return false;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Other errors (permissions, require_once already called, etc.)
             // Note: require_once is safe to call multiple times
             return false;
@@ -238,11 +242,11 @@ class ToolFinder
         }
 
         try {
-            \Phar::loadPhar($path);
+            Phar::loadPhar($path);
             return true;
-        } catch (\PharException $e) {
+        } catch (PharException $e) {
             return false;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return false;
         }
     }
@@ -279,7 +283,7 @@ class ToolFinder
                 require_once $autoloader;
                 return true;
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return false;
         }
 

@@ -26,6 +26,9 @@ use Horde\Components\Runner\Snapshot as RunnerSnapshot;
 use Horde\Components\Runner\Update as RunnerUpdate;
 use Horde\Components\Runner\Webdocs as RunnerWebdocs;
 use Psr\Container\ContainerInterface;
+use Horde_Argv_Parser;
+use Horde_Cli_Modular;
+use Horde_Pear_Remote;
 
 /**
  * The Components_Dependencies:: interface is a central broker for
@@ -55,11 +58,11 @@ interface Dependencies extends ContainerInterface
     /**
      * Set the list of modules.
      *
-     * @param \Horde_Cli_Modular $modules The list of modules.
+     * @param Horde_Cli_Modular $modules The list of modules.
      *
      * @return void
      */
-    public function setModules(\Horde_Cli_Modular $modules);
+    public function setModules(Horde_Cli_Modular $modules);
 
     /**
      * Return the list of modules.
@@ -71,7 +74,7 @@ interface Dependencies extends ContainerInterface
     /**
      * Set the CLI parser.
      *
-     * @param \Horde_Argv_Parser $parser The parser.
+     * @param Horde_Argv_Parser $parser The parser.
      *
      * @return void
      */
@@ -150,7 +153,7 @@ interface Dependencies extends ContainerInterface
     /**
      * Returns the documentation fetch handler for a package.
      *
-     * @return RunnerFetchdocs The fetch handler.
+     * @return RunnerFetchDocs The fetch handler.
      */
     public function getRunnerFetchdocs();
 
@@ -199,7 +202,7 @@ interface Dependencies extends ContainerInterface
     /**
      * Returns the handler for remote PEAR servers.
      *
-     * @return \Horde_Pear_Remote The handler.
+     * @return Horde_Pear_Remote The handler.
      */
     public function getRemote();
 }

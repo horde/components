@@ -14,6 +14,7 @@ use Horde\Http\Client\Options;
 use Horde\Http\StreamFactory;
 use Horde\Http\RequestFactory;
 use Horde\Http\ResponseFactory;
+use Exception;
 
 /**
  * Helper for creating GitHub releases
@@ -101,7 +102,7 @@ class GitHubReleaseCreator
 
             $this->output->ok("GitHub release created successfully: {$release->htmlUrl}");
             return $release;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->warn("Failed to create GitHub release: " . $e->getMessage());
             return null;
         }
@@ -157,7 +158,7 @@ class GitHubReleaseCreator
 
             $this->output->ok("PHAR asset uploaded successfully: {$asset->browserDownloadUrl}");
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->warn("Failed to upload PHAR asset: " . $e->getMessage());
             return false;
         }
@@ -199,5 +200,178 @@ class GitHubReleaseCreator
         }
 
         return $header . "\n\n" . trim($notes);
+    }
+
+    /**
+     * Get a release by tag name
+     *
+     * @param string $localDir The local directory path of the component
+     * @param string $tagName The tag name to look up
+     * @return object|null The release object or null if not found
+     */
+    public function getReleaseByTag(string $localDir, string $tagName): ?object
+    {
+        // Check if this is a GitHub repository
+        if (!$this->githubChecker->isOnGitHub($localDir)) {
+            return null;
+        }
+
+        // Get repository identifier
+        $repoFullName = $this->githubChecker->getGitHubRepository($localDir);
+        if (!$repoFullName) {
+            return null;
+        }
+
+        // Get GitHub token
+        $githubToken = $this->githubApiConfig->accessToken;
+        if ($githubToken === '') {
+            return null;
+        }
+
+        try {
+            // Initialize GitHub API client
+            $httpClient = new CurlClient(new ResponseFactory(), new StreamFactory(), new Options());
+            $requestFactory = new RequestFactory();
+            $streamFactory = new StreamFactory();
+            $config = new GithubApiConfig(accessToken: $githubToken);
+            $apiClient = new GithubApiClient($httpClient, $requestFactory, $config, $streamFactory);
+
+            $repo = GithubRepository::fromFullName($repoFullName);
+
+            // Try to get release by tag
+            $release = $apiClient->getReleaseByTag($repo, $tagName);
+            return $release;
+        } catch (Exception $e) {
+            // Release not found or API error
+            return null;
+        }
+    }
+
+    /**
+     * Get an asset from a release by name
+     *
+     * @param string $localDir The local directory path of the component
+     * @param int $releaseId GitHub release ID
+     * @param string $assetName Asset filename to find
+     * @return object|null Asset object or null if not found
+     */
+    public function getAssetByName(string $localDir, int $releaseId, string $assetName): ?object
+    {
+        // Check if this is a GitHub repository
+        if (!$this->githubChecker->isOnGitHub($localDir)) {
+            return null;
+        }
+
+        // Get repository identifier
+        $repoFullName = $this->githubChecker->getGitHubRepository($localDir);
+        if (!$repoFullName) {
+            return null;
+        }
+
+        // Get GitHub token
+        $githubToken = $this->githubApiConfig->accessToken;
+        if ($githubToken === '') {
+            return null;
+        }
+
+        try {
+            // Initialize GitHub API client
+            $httpClient = new CurlClient(new ResponseFactory(), new StreamFactory(), new Options());
+            $requestFactory = new RequestFactory();
+            $streamFactory = new StreamFactory();
+            $config = new GithubApiConfig(accessToken: $githubToken);
+            $apiClient = new GithubApiClient($httpClient, $requestFactory, $config, $streamFactory);
+
+            $repo = GithubRepository::fromFullName($repoFullName);
+
+            // Get release assets
+            $release = $apiClient->getRelease($repo, $releaseId);
+
+            if (!$release || !isset($release->assets)) {
+                return null;
+            }
+
+            // Find asset by name
+            foreach ($release->assets as $asset) {
+                if ($asset->name === $assetName) {
+                    return $asset;
+                }
+            }
+
+            return null;
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Upload file as asset to GitHub release
+     *
+     * @param string $localDir The local directory path of the component
+     * @param int $releaseId GitHub release ID
+     * @param string $filePath Local file path
+     * @param string $assetName Asset filename (for GitHub)
+     * @param string $contentType MIME type
+     * @return object Asset object
+     * @throws Exception if upload fails
+     */
+    public function uploadAsset(
+        string $localDir,
+        int $releaseId,
+        string $filePath,
+        string $assetName,
+        string $contentType = 'application/octet-stream'
+    ): object {
+        if (!file_exists($filePath)) {
+            throw new Exception("File not found: {$filePath}");
+        }
+
+        // Check if this is a GitHub repository
+        if (!$this->githubChecker->isOnGitHub($localDir)) {
+            throw new Exception('Not a GitHub repository');
+        }
+
+        // Get repository identifier
+        $repoFullName = $this->githubChecker->getGitHubRepository($localDir);
+        if (!$repoFullName) {
+            throw new Exception('Could not determine GitHub repository');
+        }
+
+        // Get GitHub token
+        $githubToken = $this->githubApiConfig->accessToken;
+        if ($githubToken === '') {
+            throw new Exception('GitHub token not configured');
+        }
+
+        // Initialize GitHub API client
+        $httpClient = new CurlClient(new ResponseFactory(), new StreamFactory(), new Options());
+        $requestFactory = new RequestFactory();
+        $streamFactory = new StreamFactory();
+        $config = new GithubApiConfig(accessToken: $githubToken);
+        $apiClient = new GithubApiClient($httpClient, $requestFactory, $config, $streamFactory);
+
+        $repo = GithubRepository::fromFullName($repoFullName);
+
+        // Get release to get upload URL
+        $release = $apiClient->getRelease($repo, $releaseId);
+        if (!$release) {
+            throw new Exception("Release not found: {$releaseId}");
+        }
+
+        // Read file content
+        $fileContent = file_get_contents($filePath);
+        if ($fileContent === false) {
+            throw new Exception("Failed to read file: {$filePath}");
+        }
+
+        // Upload asset
+        $asset = $apiClient->uploadReleaseAsset(
+            $release->uploadUrl,
+            $assetName,
+            $fileContent,
+            $contentType
+        );
+
+        return $asset;
     }
 }

@@ -19,6 +19,7 @@ use Horde\Components\Output;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Helper\Version as VersionHelper;
 use Horde\Components\ConventionalCommitReader;
+use InvalidArgumentException;
 
 /**
  * Components_Runner_Change:: adds a new change log entry.
@@ -122,7 +123,7 @@ class ConventionalCommit
                 $this->runNextVersion();
                 break;
             default:
-                throw new \InvalidArgumentException('Unknown action: ' . $action);
+                throw new InvalidArgumentException('Unknown action: ' . $action);
         }
 
     }

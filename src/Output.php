@@ -14,6 +14,7 @@ namespace Horde\Components;
 
 use Horde\Components\Output\Presenter;
 use Horde\Components\Output\PresenterFactory;
+use Horde_Cli;
 
 /**
  * Components_Output:: handles output from the components application.
@@ -54,10 +55,10 @@ class Output
     /**
      * Constructor.
      *
-     * @param \Horde_Cli $_cli The CLI handler.
+     * @param Horde_Cli $_cli The CLI handler.
      * @param array     $options The configuration for the current job.
      */
-    public function __construct(private readonly \Horde_Cli $_cli, $options)
+    public function __construct(private readonly Horde_Cli $_cli, $options)
     {
         $this->_verbose = !empty($options['verbose']);
         $this->_quiet = !empty($options['quiet']);

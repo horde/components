@@ -13,6 +13,8 @@
 namespace Horde\Components\Release\Task;
 
 use Horde\Components\Exception;
+use Horde_Mail_Transport_Sendmail;
+use Horde_Release_MailingList;
 
 /**
  * Components_Release_Task_Announce:: announces new releases to the mailing
@@ -47,7 +49,7 @@ class Announce extends Base
         if (empty($options['from'])) {
             $errors[] = 'The "from" option has no value. Who is sending the announcements?';
         }
-        if (!class_exists(\Horde_Release_MailingList::class)) {
+        if (!class_exists(Horde_Release_MailingList::class)) {
             $errors[] = 'The \Horde_Release package is missing (specifically the class \Horde_Release_MailingList)!';
         }
         return $errors;
@@ -67,7 +69,7 @@ class Announce extends Base
             return;
         }
 
-        $mailer = new \Horde_Release_MailingList(
+        $mailer = new Horde_Release_MailingList(
             $this->getComponent()->getName(),
             $this->getNotes()->getName(),
             $this->getNotes()->getBranch(),
@@ -91,7 +93,7 @@ class Announce extends Base
         if (!$this->getTasks()->pretend()) {
             try {
                 //@todo: Make configurable again
-                $class = \Horde_Mail_Transport_Sendmail::class;
+                $class = Horde_Mail_Transport_Sendmail::class;
                 $mailer->getMail()->send(new $class([]));
             } catch (Exception $e) {
                 $this->getOutput()->warn((string) $e);

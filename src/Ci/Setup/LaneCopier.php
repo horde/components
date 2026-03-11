@@ -82,7 +82,7 @@ class LaneCopier
         // Create parent directory
         $parentDir = dirname($targetPath);
         if (!is_dir($parentDir)) {
-            if (!mkdir($parentDir, 0755, true)) {
+            if (!mkdir($parentDir, 0o755, true)) {
                 throw new Exception("Failed to create directory: {$parentDir}");
             }
         }
@@ -161,7 +161,7 @@ class LaneCopier
         }
 
         $parts = explode("\t", trim($output));
-        return isset($parts[0]) ? (float)$parts[0] : 0.0;
+        return isset($parts[0]) ? (float) $parts[0] : 0.0;
     }
 
     /**

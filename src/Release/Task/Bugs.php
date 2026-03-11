@@ -23,6 +23,8 @@ use Horde\Http\Client\Options;
 use Horde\Http\RequestFactory;
 use Horde\Http\StreamFactory;
 use Horde\Http\ResponseFactory;
+use Horde_Exception;
+use Horde_Release_Whups;
 
 /**
  * Components_Release_Task_Bugs adds the new release to the issue tracker.
@@ -50,19 +52,23 @@ class Bugs extends Base
     public function preValidate($options): array
     {
         $errors = [];
-        if (empty($options['horde_user'])) {
-            $errors[] = 'The "horde_user" option has no value. Who is updating bugs.horde.org?';
+        // Try new names first, then fall back to old names for backwards compatibility
+        $whupsUser = $options['whups.user'] ?? $options['horde_user'] ?? null;
+        $whupsPass = $options['whups.pass'] ?? $options['horde_pass'] ?? null;
+
+        if (empty($whupsUser)) {
+            $errors[] = 'The "whups.user" option has no value. Who is updating bugs.horde.org?';
         }
-        if (empty($options['horde_pass'])) {
-            $errors[] = 'The "horde_pass" option has no value. What is your password for updating bugs.horde.org?';
+        if (empty($whupsPass)) {
+            $errors[] = 'The "whups.pass" option has no value. What is your password for updating bugs.horde.org?';
         }
-        if (!class_exists(\Horde_Release_Whups::class)) {
+        if (!class_exists(Horde_Release_Whups::class)) {
             $errors[] = 'The \Horde_Release package is missing (specifically the class \Horde_Release_Whups)!';
         }
         try {
             $this->_qid = $this->_getBugs($options)
                 ->getQueueId($this->getComponent()->getName());
-        } catch (\Horde_Exception $e) {
+        } catch (Horde_Exception $e) {
             $errors[] = sprintf(
                 'Failed accessing bugs.horde.org: %s',
                 $e->getMessage()
@@ -79,17 +85,21 @@ class Bugs extends Base
      *
      * @param array $options Additional options.
      */
-    public function _getBugs($options): \Horde_Release_Whups
+    public function _getBugs($options): Horde_Release_Whups
     {
-        if (!isset($options['horde_user']) || !isset($options['horde_user'])) {
+        // Try new names first, then fall back to old names for backwards compatibility
+        $whupsUser = $options['whups.user'] ?? $options['horde_user'] ?? '';
+        $whupsPass = $options['whups.pass'] ?? $options['horde_pass'] ?? '';
+
+        if (!isset($whupsUser) || !isset($whupsPass)) {
             throw new Exception('Missing credentials!');
         }
         $httpClient = new Curl(
             new ResponseFactory(),
             new StreamFactory(),
             new Options([
-                'request.username' => $options['horde_user'],
-                'request.password' => $options['horde_pass'],
+                'request.username' => $whupsUser,
+                'request.password' => $whupsPass,
                 'request.timeout' => 10,
             ])
         );
@@ -98,7 +108,7 @@ class Bugs extends Base
             new RequestFactory(),
             new StreamFactory()
         );
-        return new \Horde_Release_Whups(
+        return new Horde_Release_Whups(
             [
                 'client' => $client,
                 'url' => 'https://dev.horde.org/horde/rpc.php',
@@ -139,7 +149,7 @@ class Bugs extends Base
                     $ticket_version,
                     $ticket_description
                 );
-            } catch (\Horde_Exception $e) {
+            } catch (Horde_Exception $e) {
                 $this->getOutput()->warn('Cannot update version on bugs.horde.org.');
                 $this->getOutput()->warn($e->getMessage());
             }

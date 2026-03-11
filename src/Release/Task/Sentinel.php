@@ -12,6 +12,8 @@
 
 namespace Horde\Components\Release\Task;
 
+use Horde_Release_Sentinel;
+
 /**
  * Components_Release_Task_Sentinel:: provides base functionality for the
  * sentinel tasks.
@@ -38,7 +40,7 @@ class Sentinel extends Base
      */
     public function preValidate($options)
     {
-        if (!class_exists(\Horde_Release_Sentinel::class)) {
+        if (!class_exists(Horde_Release_Sentinel::class)) {
             return ['The \Horde_Release package is missing (specifically the class \Horde_Release_Sentinel)!'];
         }
         return [];

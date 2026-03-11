@@ -22,6 +22,8 @@ use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\License;
 use Horde\HordeYmlFile\HordeYmlFile as LibraryHordeYmlFile;
 use Horde\HordeYmlFile\InvalidHordeYmlFileException;
+use ArrayObject;
+use Stringable;
 
 /**
  * Wrapper for the .horde.yml file.
@@ -33,7 +35,7 @@ use Horde\HordeYmlFile\InvalidHordeYmlFileException;
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class HordeYml extends \ArrayObject implements Wrapper, \Stringable
+class HordeYml extends ArrayObject implements Wrapper, Stringable
 {
     use WrapperTrait;
 
@@ -55,20 +57,29 @@ class HordeYml extends \ArrayObject implements Wrapper, \Stringable
         try {
             if ($this->exists()) {
                 $this->hordeYmlFile = new LibraryHordeYmlFile($this->_file);
+                // Apply graceful defaults for missing fields
+                $this->hordeYmlFile->applyGracefulUpdates();
             } else {
                 // Create empty file for new components
-                touch($this->_file);
-                $this->hordeYmlFile = new LibraryHordeYmlFile($this->_file);
+                // Suppress warning if directory is not writable
+                @touch($this->_file);
+                if (file_exists($this->_file)) {
+                    $this->hordeYmlFile = new LibraryHordeYmlFile($this->_file);
+                    // Apply graceful defaults for missing fields
+                    $this->hordeYmlFile->applyGracefulUpdates();
+                }
             }
-
-            // Apply graceful defaults for missing fields
-            $this->hordeYmlFile->applyGracefulUpdates();
         } catch (InvalidHordeYmlFileException $e) {
             throw new Exception("Failed to load .horde.yml: " . $e->getMessage(), 0, $e);
         }
 
         // Initialize ArrayObject with library data for backward compatibility
-        parent::__construct($this->hordeYmlFile->toArray());
+        // Only if we successfully created the hordeYmlFile
+        if (isset($this->hordeYmlFile)) {
+            parent::__construct($this->hordeYmlFile->toArray());
+        } else {
+            parent::__construct([]);
+        }
     }
 
     /**

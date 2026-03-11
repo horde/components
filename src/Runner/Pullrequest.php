@@ -22,6 +22,7 @@ use Horde\Components\Output;
 use Horde\Components\Helper\GitHubChecker;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Helper\PullRequestManager;
+use Exception;
 
 /**
  * Components_Runner_Pullrequest:: runner for pull request operations.
@@ -305,7 +306,7 @@ class Pullrequest
         try {
             $apiClient = $this->prManager->getApiClient();
             $pr = $apiClient->getPullRequest($repo, $prNumber);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->error("Failed to fetch PR #{$prNumber}: {$e->getMessage()}");
             return;
         }
@@ -363,7 +364,7 @@ class Pullrequest
             $result = $this->gitHelper->fetch($localDir);
 
             if ($result->getReturnValue() !== 0) {
-                throw new \Exception("Fetch failed: {$result->getOutputString()}");
+                throw new Exception("Fetch failed: {$result->getOutputString()}");
             }
 
             // Check if local branch exists
@@ -375,7 +376,7 @@ class Pullrequest
                 $result = $this->gitHelper->checkoutBranch($localDir, $branchName);
 
                 if ($result->getReturnValue() !== 0) {
-                    throw new \Exception("Checkout failed: {$result->getOutputString()}");
+                    throw new Exception("Checkout failed: {$result->getOutputString()}");
                 }
 
                 // Update from remote (pull)
@@ -387,19 +388,19 @@ class Pullrequest
                 $result = $this->gitHelper->createRemoteTrackingBranch($localDir, $branchName, 'origin');
 
                 if ($result->getReturnValue() !== 0) {
-                    throw new \Exception("Failed to create tracking branch: {$result->getOutputString()}");
+                    throw new Exception("Failed to create tracking branch: {$result->getOutputString()}");
                 }
 
                 // Checkout the newly created branch
                 $result = $this->gitHelper->checkoutBranch($localDir, $branchName);
 
                 if ($result->getReturnValue() !== 0) {
-                    throw new \Exception("Checkout failed: {$result->getOutputString()}");
+                    throw new Exception("Checkout failed: {$result->getOutputString()}");
                 }
             }
 
             $this->output->ok("Successfully checked out PR #{$pr->number} on branch '{$branchName}'");
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->error("Failed to checkout branch: {$e->getMessage()}");
         }
     }
@@ -435,7 +436,7 @@ class Pullrequest
             $result = $this->gitHelper->fetch($localDir);
 
             if ($result->getReturnValue() !== 0) {
-                throw new \Exception("Fetch failed: {$result->getOutputString()}");
+                throw new Exception("Fetch failed: {$result->getOutputString()}");
             }
 
             // Check if local branch exists
@@ -447,7 +448,7 @@ class Pullrequest
                 $result = $this->gitHelper->checkoutBranch($localDir, $localBranchName);
 
                 if ($result->getReturnValue() !== 0) {
-                    throw new \Exception("Checkout failed: {$result->getOutputString()}");
+                    throw new Exception("Checkout failed: {$result->getOutputString()}");
                 }
 
                 $this->output->plain("  Pulling latest changes...");
@@ -462,7 +463,7 @@ class Pullrequest
                     $result = $this->gitHelper->branchFromLocal($localDir, $localBranchName, "{$remoteName}/{$remoteBranch}");
 
                     if ($result->getReturnValue() !== 0) {
-                        throw new \Exception("Failed to create branch: {$result->getOutputString()}");
+                        throw new Exception("Failed to create branch: {$result->getOutputString()}");
                     }
                 }
 
@@ -470,13 +471,13 @@ class Pullrequest
                 $result = $this->gitHelper->checkoutBranch($localDir, $localBranchName);
 
                 if ($result->getReturnValue() !== 0) {
-                    throw new \Exception("Checkout failed: {$result->getOutputString()}");
+                    throw new Exception("Checkout failed: {$result->getOutputString()}");
                 }
             }
 
             $this->output->ok("Successfully checked out PR #{$pr->number} on branch '{$localBranchName}'");
             $this->output->plain("  Tracking: {$remoteName}/{$remoteBranch}");
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->error("Failed to checkout cross-repo PR: {$e->getMessage()}");
         }
     }
@@ -500,7 +501,7 @@ class Pullrequest
         chdir($oldDir);
 
         if ($returnCode !== 0) {
-            throw new \Exception("Failed to add remote: " . implode("\n", $output));
+            throw new Exception("Failed to add remote: " . implode("\n", $output));
         }
     }
 
@@ -556,7 +557,7 @@ class Pullrequest
             $this->output->warn("No open PR found for branch '{$currentBranch}'");
             $this->output->help('Specify PR number explicitly: horde-components pr merge <id>');
             return null;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->error("Failed to deduce PR from branch: {$e->getMessage()}");
             return null;
         }
@@ -604,7 +605,7 @@ class Pullrequest
             // Optional: prompt for review comment
             // For now, approve without comment
             $this->prManager->approvePullRequest($prNumber);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->error("Failed to approve PR #{$prNumber}: {$e->getMessage()}");
         }
     }
@@ -667,7 +668,7 @@ class Pullrequest
             }
 
             $this->prManager->requestChangesPullRequest($prNumber, $comment);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->error("Failed to request changes on PR #{$prNumber}: {$e->getMessage()}");
         }
     }
@@ -714,7 +715,7 @@ class Pullrequest
 
             // Attempt to merge
             $this->prManager->mergePullRequest($prNumber);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->error("Failed to merge PR #{$prNumber}: {$e->getMessage()}");
         }
     }
@@ -760,7 +761,7 @@ class Pullrequest
 
             // Attempt to close
             $this->prManager->closePullRequest($prNumber);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->error("Failed to close PR #{$prNumber}: {$e->getMessage()}");
         }
     }
@@ -807,7 +808,7 @@ class Pullrequest
 
             // Attempt to reopen
             $this->prManager->reopenPullRequest($prNumber);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->error("Failed to reopen PR #{$prNumber}: {$e->getMessage()}");
         }
     }

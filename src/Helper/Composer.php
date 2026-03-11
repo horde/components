@@ -23,6 +23,8 @@ use Horde\Components\Component\Task\SystemCallResult;
 use Horde\Components\Helper\Shell;
 use stdClass;
 use DirectoryIterator;
+use Horde_Date;
+use Horde_String;
 
 /**
  * @author    Michael Slusarz <slusarz@horde.org>
@@ -150,34 +152,39 @@ class Composer
      */
     public function generateComposerJson(WrapperHordeYml $package, array $options = []): string|bool
     {
-        if (!empty($options['composer_opts']['pear-substitutes'])) {
-            $this->_substitutes = $options['composer_opts']['pear-substitutes'];
+        // Try new name first, then fall back to old name for backwards compatibility
+        if (!empty($options['composer.opts']['pear-substitutes']) || !empty($options['composer_opts']['pear-substitutes'])) {
+            $this->_substitutes = $options['composer.opts']['pear-substitutes'] ?? $options['composer_opts']['pear-substitutes'];
         }
         // Handle cases where vendor is not horde.
         $this->_vendor = $options['vendor'] ?? 'horde';
         // The git repo base URL, defaults to github/vendor.
-        $this->_gitRepoBase = $options['git_repo_base']
+        // Try new name first, then fall back to old name for backwards compatibility
+        $this->_gitRepoBase = $options['scm.repo.base']
+            ?? $options['git_repo_base']
             ?? 'https://github.com/' . $this->_vendor . '/';
         // Decide on repo type hints
-        if (!empty($options['composer_repo'])) {
-            if ($options['composer_repo'] == 'vcs') {
+        if (!empty($options['composer.repo']) || !empty($options['composer_repo'])) {
+            $composerRepo = $options['composer.repo'] ?? $options['composer_repo'];
+            if ($composerRepo == 'vcs') {
                 $this->_composerRepo = 'vcs';
             }
-            if (substr((string) $options['composer_repo'], 0, 6) == 'satis:') {
+            if (substr((string) $composerRepo, 0, 6) == 'satis:') {
                 $this->_composerRepo = 'composer';
                 $this->_repositories['composer'] = [
                     'type' => 'composer',
-                    'url' => substr((string) $options['composer_repo'], 6),
+                    'url' => substr((string) $composerRepo, 6),
                 ];
             }
         }
         // Override horde dependency versions
-        if (!empty($options['composer_version'])) {
-            $this->_composerVersion = $options['composer_version'];
+        // Try new name first, then fall back to old name for backwards compatibility
+        if (!empty($options['composer.version']) || !empty($options['composer_version'])) {
+            $this->_composerVersion = $options['composer.version'] ?? $options['composer_version'];
         }
 
         $filename = dirname($package->getFullPath()) . '/composer.json';
-        $composerDefinition = new \stdClass();
+        $composerDefinition = new stdClass();
         /**
          * Allow setting a minimum stability.
          * Normally we would either want the default (empty, stable)
@@ -203,7 +210,7 @@ class Composer
         // Composer docs advise against writing the version tag to file
         // https://getcomposer.org/doc/04-schema.md#version
         // $composerDefinition->version = $version;
-        $composerDefinition->time = $package['time'] ?? (new \Horde_Date(time()))->format('Y-m-d');
+        $composerDefinition->time = $package['time'] ?? (new Horde_Date(time()))->format('Y-m-d');
         $composerDefinition->repositories = [];
         $this->_setRequire($package, $composerDefinition);
         $this->_setDevRequire($package, $composerDefinition);
@@ -220,20 +227,20 @@ class Composer
         $version = $package->getReleaseVersion();
         // Enforce suggest to be a json object rather than array
         if (empty($composerDefinition->suggest)) {
-            $composerDefinition->suggest = new \stdClass();
+            $composerDefinition->suggest = new stdClass();
         }
         if (empty($composerDefinition->{'require-dev'})) {
-            $composerDefinition->{'require-dev'} = new \stdClass();
+            $composerDefinition->{'require-dev'} = new stdClass();
         }
         $gitHelper = new Git();
         $branch = $gitHelper->getCurrentBranch(dirname($package->getFullPath()));
         // branch alias
         if ($branch == 'FRAMEWORK_6_0') {
             if (empty($composerDefinition->extra)) {
-                $composerDefinition->extra = new \stdClass();
+                $composerDefinition->extra = new stdClass();
             }
             if (empty($composerDefinition->extra->{'branch-alias'})) {
-                $composerDefinition->extra->{'branch-alias'} = new \stdClass();
+                $composerDefinition->extra->{'branch-alias'} = new stdClass();
             }
             if (empty($composerDefinition->extra->{'branch-alias'}->{'dev-' . $branch})) {
                 $composerDefinition->extra->{'branch-alias'}->{'dev-' . $branch} = $version->getMajor() . '.x-dev';
@@ -255,7 +262,7 @@ class Composer
     /**
      * Turn a provides: block in yml into a composer.json provide: block
      */
-    public function _setProvides(WrapperHordeYml $package, \stdClass $composerDefinition): void
+    public function _setProvides(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
         if (empty($package['provides'])) {
             return;
@@ -274,7 +281,7 @@ class Composer
      * Otherwise use provided whitelist "commands"
      * and blacklist "nocommands" (blacklist wins)
      */
-    protected function _setVendorBin(WrapperHordeYml $package, \stdClass $composerDefinition): void
+    protected function _setVendorBin(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
         $commands = [];
         $noCommands = [];
@@ -290,7 +297,7 @@ class Composer
             // No explicit list - search bindir
             $binDir = dirname($package->getFullPath()) . '/bin/';
             if (is_dir($binDir)) {
-                foreach (new \DirectoryIterator($binDir) as $file) {
+                foreach (new DirectoryIterator($binDir) as $file) {
                     if ($file->isExecutable() and $file->isFile()) {
                         $commands[] = 'bin/' . $file->getFilename();
                     }
@@ -310,14 +317,14 @@ class Composer
         }
     }
 
-    protected function _setName(WrapperHordeYml $package, \stdClass $composerDefinition): void
+    protected function _setName(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
         $vendor = $this->_vendor;
-        $name = \Horde_String::lower($package['name']);
+        $name = Horde_String::lower($package['name']);
         $composerDefinition->name = "$vendor/$name";
     }
 
-    protected function _setType(WrapperHordeYml $package, \stdClass $composerDefinition): void
+    protected function _setType(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
         if (!isset($package['type']) || ($package['type'] == 'library')) {
             // Only use custom type horde-library if we have to
@@ -342,13 +349,16 @@ class Composer
         // No type is perfectly valid for composer. Types for bundles?
     }
 
-    protected function _setAuthors(WrapperHordeYml $package, \stdClass $composerDefinition): void
+    protected function _setAuthors(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
         $composerDefinition->authors = [];
         foreach ($package['authors'] as $author) {
-            $person = new \stdClass();
+            $person = new stdClass();
             $person->name = $author['name'];
-            $person->email = $author['email'];
+            // Only include email if it's present and not null
+            if (!empty($author['email'])) {
+                $person->email = $author['email'];
+            }
             $person->role = $author['role'];
             array_push($composerDefinition->authors, $person);
         }
@@ -362,7 +372,7 @@ class Composer
      * @param WrapperHordeYml A Yaml definition of the package
      * @param stdClass the composer definition file to build
      */
-    protected function _setAutoload(WrapperHordeYml $package, \stdClass $composerDefinition): void
+    protected function _setAutoload(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
         $composerDefinition->autoload = [];
 
@@ -406,7 +416,7 @@ class Composer
      * @param WrapperHordeYml A Yaml definition of the package
      * @param stdClass the composer definition file to build
      */
-    protected function _setAutoloadDev(WrapperHordeYml $package, \stdClass $composerDefinition): void
+    protected function _setAutoloadDev(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
         $composerDefinition->{'autoload-dev'} = [];
         $parts = explode('_', (string) $package['name']);
@@ -459,7 +469,7 @@ class Composer
      * - a satis repo
      * - individual git repos
      */
-    protected function _setRequire(WrapperHordeYml $package, \stdClass $composerDefinition): void
+    protected function _setRequire(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
         $version = ($this->_composerVersion) ? $this->_composerVersion . " || ^3 || ^2" : '^3 || ^2';
         // Only require the installer if we really need it
@@ -474,6 +484,8 @@ class Composer
             if ($element == 'composer') {
                 // composer dependencies which have no pear equivalent, i.e. unbundling
                 foreach ($required as $dep => $version) {
+                    // Lowercase package name (composer packages are always lowercase)
+                    $dep = strtolower($dep);
                     if ($this->_composerVersion && substr((string) $dep, 0, 5) == 'horde') {
                         $composerDefinition->require[$dep] = "$version || $this->_composerVersion" ;
                     } else {
@@ -545,7 +557,7 @@ class Composer
             $this->_repositories['pear-' . $repo] = ['url' => 'https://' . $repo, 'type' => 'pear'];
         } else {
             // Most likely, this is always composer
-            $stack[\Horde_String::lower("$vendor/$basename")] = $version;
+            $stack[Horde_String::lower("$vendor/$basename")] = $version;
             if ($this->_composerRepo == 'vcs') {
                 $this->_repositories["$vendor/$basename"] = ['url' => "https://github.com/$vendor/$repo", 'type' => 'vcs'];
             }
@@ -563,7 +575,7 @@ class Composer
      *
      * References to the horde pear channel will be changed to composer vcs/github
      */
-    protected function _setSuggest(WrapperHordeYml $package, \stdClass $composerDefinition): void
+    protected function _setSuggest(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
         $composerDefinition->suggest = [];
         if (empty($package['dependencies']['optional'])) {
@@ -573,6 +585,8 @@ class Composer
             if ($element == 'composer') {
                 // composer dependencies which have no pear equivalent, i.e. unbundling
                 foreach ($suggested as $dep => $version) {
+                    // Lowercase package name (composer packages are always lowercase)
+                    $dep = strtolower($dep);
                     if ($this->_composerVersion && substr((string) $dep, 0, 5) == 'horde') {
                         $composerDefinition->suggest[$dep] = "$version || $this->_composerVersion" ;
                     } else {
@@ -630,7 +644,7 @@ class Composer
      * No known pear equivalent, this is composer-only
      * We still require the composer: key for consistency with optional
      */
-    protected function _setDevRequire(WrapperHordeYml $package, \stdClass $composerDefinition): void
+    protected function _setDevRequire(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
         $composerDefinition->{'require-dev'} = [];
         if (empty($package['dependencies']['dev'])) {
@@ -640,6 +654,8 @@ class Composer
             if ($element == 'composer') {
                 // composer dependencies which have no pear equivalent, i.e. unbundling
                 foreach ($suggested as $dep => $version) {
+                    // Lowercase package name (composer packages are always lowercase)
+                    $dep = strtolower($dep);
                     if ($this->_composerVersion && substr((string) $dep, 0, 5) == 'horde') {
                         $composerDefinition->{'require-dev'}[$dep] = "$version || $this->_composerVersion" ;
                     } else {
@@ -671,12 +687,12 @@ class Composer
         return false;
     }
 
-    protected function _setRepositories(WrapperHordeYml $package, \stdClass $composerDefinition): void
+    protected function _setRepositories(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
         $composerDefinition->repositories = array_values($this->_repositories);
     }
 
-    protected function _setConfig(WrapperHordeYml $package, \stdClass $composerDefinition): void
+    protected function _setConfig(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
         $plugins = $package->getAllowedPlugins();
         if (!empty($plugins->all)) {

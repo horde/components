@@ -23,6 +23,7 @@ use Horde\Components\Helper\Version as HelperVersion;
 use Horde\Components\Output;
 use Horde\Components\Release\Notes as ReleaseNotes;
 use Horde\Components\Component\Source;
+use Horde_Pear_Exception;
 
 /**
  * Components_Runner_Update updates the package files of a Horde component.
@@ -52,7 +53,7 @@ class Update
 
     /**
      * @throws Exception
-     * @throws \Horde_Pear_Exception
+     * @throws Horde_Pear_Exception
      */
     public function run(): void
     {

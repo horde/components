@@ -16,8 +16,9 @@
 namespace Horde\Components\Test\Stub;
 
 use Horde\Components\Exception;
+use Horde_Cli;
 
-class OutputCli extends \Horde_Cli
+class OutputCli extends Horde_Cli
 {
     public $messages = [];
 

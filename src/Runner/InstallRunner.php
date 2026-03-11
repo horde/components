@@ -11,6 +11,7 @@ use Horde\Components\Output;
 use Horde\Components\Wrapper\HordeYml;
 use Horde\Composer\RecursiveCopy;
 use stdClass;
+use Exception;
 
 class InstallRunner
 {
@@ -84,7 +85,7 @@ class InstallRunner
         // Inject all horde apps as local sources.
         try {
             $composerJson = $this->installationDirectory->getComposerJson();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->fail('Could not read composer.json file from installation directory: ' . $this->installationDirectory);
             return;
         }

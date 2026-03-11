@@ -17,6 +17,9 @@ namespace Horde\Components\Helper;
 use Horde\Components\Component;
 use Horde\Components\Exception;
 use Horde\Components\Output;
+use Horde_Util;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 /**
  * This class is a helper for a horde-web git repository checkout.
@@ -61,7 +64,7 @@ class Website
             throw new Exception('"--html-generator" MUST be set for this action!');
         }
 
-        $tmp_dir = \Horde_Util::createTempDir();
+        $tmp_dir = Horde_Util::createTempDir();
         $archive = $component->placeArchive(
             $tmp_dir,
             ['logger' => $this->_output]
@@ -211,7 +214,7 @@ class Website
         if (!is_dir($path)) {
             return $doc_files;
         }
-        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path)) as $file) {
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path)) as $file) {
             if ($file->isFile()
                 && preg_match('/[A-Z_]+/', (string) $file->getFilename())
                 && !preg_match('/\.(html|php)$/', (string) $file->getFilename())

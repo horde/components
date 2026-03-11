@@ -17,6 +17,7 @@ namespace Horde\Components\Test\Unit\Components\Wrapper;
 
 use Horde\Components\Test\TestCase;
 use Horde\Components\Wrapper\ChangelogYml as WrapperChangelogYml;
+use Horde_Util;
 
 /**
  * Tests the changelog.yml wrapper.
@@ -112,7 +113,7 @@ class ChangelogYmlTest extends TestCase
 
     public function testChangeProperty()
     {
-        $dir = \Horde_Util::createTempDir();
+        $dir = Horde_Util::createTempDir();
         copy(
             __DIR__ . '/../../../fixtures/deps/doc/Horde/Deps/changelog.yml',
             $dir . '/changelog.yml'
@@ -128,7 +129,7 @@ class ChangelogYmlTest extends TestCase
 
     public function testAddEntry()
     {
-        $dir = \Horde_Util::createTempDir();
+        $dir = Horde_Util::createTempDir();
         copy(
             __DIR__ . '/../../../fixtures/deps/doc/Horde/Deps/changelog.yml',
             $dir . '/changelog.yml'
@@ -145,7 +146,7 @@ class ChangelogYmlTest extends TestCase
 
     public function testChangeKey()
     {
-        $dir = \Horde_Util::createTempDir();
+        $dir = Horde_Util::createTempDir();
         copy(
             __DIR__ . '/../../../fixtures/deps/doc/Horde/Deps/changelog.yml',
             $dir . '/changelog.yml'

@@ -24,6 +24,7 @@ use PhpCsFixer\FixerDefinition\FixerDefinitionInterface;
 use PhpCsFixer\FixerDefinition\CodeSample;
 use PhpCsFixer\Tokenizer\Tokens;
 use PhpCsFixer\Tokenizer\Token;
+use SplFileInfo;
 
 /**
  * Updates copyright year ranges to include current year.
@@ -74,7 +75,7 @@ class Foo {}
         return 5;
     }
 
-    protected function applyFix(\SplFileInfo $file, Tokens $tokens): void
+    protected function applyFix(SplFileInfo $file, Tokens $tokens): void
     {
         $currentYear = date('Y');
 

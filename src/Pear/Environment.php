@@ -14,6 +14,13 @@ namespace Horde\Components\Pear;
 use Horde\Components\Exception;
 use Horde\Components\Exception\Pear as ExceptionPear;
 use Horde\Components\Output;
+use Horde_Pear_Remote;
+use PEAR_ChannelFile;
+use PEAR_Command_Channels;
+use PEAR_Command_Install;
+use PEAR_Config;
+use PEAR_Frontend_CLI;
+use PEAR_Registry;
 
 /**
  * PearEnvironment:: handles a specific PEAR environment.
@@ -33,7 +40,7 @@ class Environment
     /**
      * The factory for PEAR class instances.
      */
-    private ?\Horde\Components\Pear\Factory $_factory = null;
+    private ?Factory $_factory = null;
 
     /**
      * The base directory for the PEAR install location.
@@ -203,7 +210,7 @@ class Environment
         }
         ob_start();
         $config = Exception_Pear::catchError(
-            \PEAR_Config::singleton($this->_config_file, '#no#system#config#', false)
+            PEAR_Config::singleton($this->_config_file, '#no#system#config#', false)
         );
         $root = dirname($this->_config_file);
         $config->noRegistry();
@@ -220,7 +227,7 @@ class Environment
         $config->set('bin_dir', "$root/pear");
         $config->writeConfigFile();
         $config->_noRegistry = false;
-        $config->_registry['default'] = new \PEAR_Registry("$root/pear/php");
+        $config->_registry['default'] = new PEAR_Registry("$root/pear/php");
         $config->_noRegistry = true;
         if (!file_exists("$root/pear")) {
             mkdir("$root/pear/php", 0o777, true);
@@ -235,7 +242,7 @@ class Environment
     }
 
     /**
-     * @return \PEAR_Config
+     * @return PEAR_Config
      * @throws Exception
      * @throws ExceptionPear
      */
@@ -245,8 +252,8 @@ class Environment
             $GLOBALS['_PEAR_Config_instance'] = false;
         }
         if (empty($this->_config_file)) {
-            /** @var \PEAR_Config $config */
-            $config = \PEAR_Config::singleton();
+            /** @var PEAR_Config $config */
+            $config = PEAR_Config::singleton();
             if (!$config->validConfiguration()) {
                 throw new Exception(
                     'Set the path to the PEAR environment first!'
@@ -258,7 +265,7 @@ class Environment
             $this->createPearConfig();
         }
         return ExceptionPear::catchError(
-            \PEAR_Config::singleton($this->_config_file)
+            PEAR_Config::singleton($this->_config_file)
         );
     }
 
@@ -273,7 +280,7 @@ class Environment
      */
     public function channelExists($channel): bool
     {
-        /** @var \PEAR_ChannelFile[] $registered */
+        /** @var PEAR_ChannelFile[] $registered */
         $registered = $this->getPearConfig()->getRegistry()->getChannels();
         foreach ($registered as $c) {
             if ($channel == $c->getName()) {
@@ -306,10 +313,10 @@ class Environment
      * @throws Exception
      * @throws ExceptionPear
      */
-    private function getInstallationHandler(): \PEAR_Command_Install
+    private function getInstallationHandler(): PEAR_Command_Install
     {
-        $installer = new \PEAR_Command_Install(
-            new \PEAR_Frontend_CLI(),
+        $installer = new PEAR_Command_Install(
+            new PEAR_Frontend_CLI(),
             $this->getPearConfig()
         );
         return $installer;
@@ -420,7 +427,7 @@ class Environment
                 );
             }
             if (!empty($this->_channeldirectory)) {
-                $remote = new \Horde_Pear_Remote($channel);
+                $remote = new Horde_Pear_Remote($channel);
                 file_put_contents($static, $remote->getChannel());
                 $this->_output->warn(
                     sprintf(
@@ -432,8 +439,8 @@ class Environment
             }
         }
 
-        $channel_handler = new \PEAR_Command_Channels(
-            new \PEAR_Frontend_CLI(),
+        $channel_handler = new PEAR_Command_Channels(
+            new PEAR_Frontend_CLI(),
             $this->getPearConfig()
         );
 

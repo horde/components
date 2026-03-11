@@ -118,6 +118,16 @@ class Release extends Base
     }
 
     /**
+     * Get a short one-line description for command listings.
+     *
+     * @return string The short description.
+     */
+    public function getShortDescription(): string
+    {
+        return 'Release a component (h5 or h6 workflow)';
+    }
+
+    /**
      * Return the action arguments supported by this module.
      *
      * @return array A list of supported action arguments.

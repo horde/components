@@ -182,19 +182,22 @@ dependencies: []
                 ),
             ]
         );
+        $output = $this->_output->getOutput();
+
+        // Check the first message (non-git command)
         $this->assertEquals(
-            [
-                'Would add next version "5.0.0-git" with the initial note "" to .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Application.php, doc/changelog.yml now.',
-                'Would run "git add .horde.yml" now.',
-                'Would run "git add package.xml" now.',
-                'Would run "git add composer.json" now.',
-                'Would run "git add doc/CHANGES" now.',
-                'Would run "git add lib/Application.php" now.',
-                'Would run "git add doc/changelog.yml" now.',
-                "Would run \"git commit -m \"chore: set development mode to 5.0.0\n\nPrepare Horde for next development cycle\"\" now.",
-            ],
-            $this->_output->getOutput()
+            'Would add next version "5.0.0-git" with the initial note "" to .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Application.php, doc/changelog.yml now.',
+            $output[0]
         );
+
+        // Check git commands (format changed to include colon and working dir)
+        $this->assertStringStartsWith('Would run: "git add .horde.yml" (in ', $output[1]);
+        $this->assertStringStartsWith('Would run: "git add package.xml" (in ', $output[2]);
+        $this->assertStringStartsWith('Would run: "git add composer.json" (in ', $output[3]);
+        $this->assertStringStartsWith('Would run: "git add doc/CHANGES" (in ', $output[4]);
+        $this->assertStringStartsWith('Would run: "git add lib/Application.php" (in ', $output[5]);
+        $this->assertStringStartsWith('Would run: "git add doc/changelog.yml" (in ', $output[6]);
+        $this->assertStringStartsWith('Would run: "git commit -m "chore: set development mode to 5.0.0', $output[7]);
     }
 
     public function testPretendWithoutVersion()
@@ -214,21 +217,22 @@ dependencies: []
                 ),
             ]
         );
-        $this->assertEquals(
-            [
-                'Would add next version "5.0.1" with the initial note "" to .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Application.php, doc/changelog.yml now.',
-                'Would run "git add .horde.yml" now.',
-                'Would run "git add package.xml" now.',
-                'Would run "git add composer.json" now.',
-                'Would run "git add doc/CHANGES" now.',
-                'Would run "git add lib/Application.php" now.',
-                'Would run "git add doc/changelog.yml" now.',
-                'Would run "git commit -m "chore: set development mode to 5.0.1
+        $output = $this->_output->getOutput();
 
-Prepare Horde for next development cycle"" now.',
-            ],
-            $this->_output->getOutput()
+        // Check the first message (non-git command)
+        $this->assertEquals(
+            'Would add next version "5.0.1" with the initial note "" to .horde.yml, package.xml, composer.json, doc/CHANGES, lib/Application.php, doc/changelog.yml now.',
+            $output[0]
         );
+
+        // Check git commands (format changed to include colon and working dir)
+        $this->assertStringStartsWith('Would run: "git add .horde.yml" (in ', $output[1]);
+        $this->assertStringStartsWith('Would run: "git add package.xml" (in ', $output[2]);
+        $this->assertStringStartsWith('Would run: "git add composer.json" (in ', $output[3]);
+        $this->assertStringStartsWith('Would run: "git add doc/CHANGES" (in ', $output[4]);
+        $this->assertStringStartsWith('Would run: "git add lib/Application.php" (in ', $output[5]);
+        $this->assertStringStartsWith('Would run: "git add doc/changelog.yml" (in ', $output[6]);
+        $this->assertStringStartsWith('Would run: "git commit -m "chore: set development mode to 5.0.1', $output[7]);
     }
 
     public function testPretendAlphaWithoutVersion()

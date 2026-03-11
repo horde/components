@@ -71,6 +71,16 @@ class Config extends Base
     }
 
     /**
+     * Get a short one-line description for command listings.
+     *
+     * @return string The short description.
+     */
+    public function getShortDescription(): string
+    {
+        return 'Configure horde-components settings';
+    }
+
+    /**
      * Return the action arguments supported by this module.
      *
      * @return array A list of supported action arguments.
@@ -113,9 +123,11 @@ CONFIGURATION FILE LOCATION:
     The file is created automatically when you first write a value.
 
 COMMON CONFIGURATION KEYS:
-    checkout.dir      Directory where Horde repositories are checked out
-                      Default: ~/git/horde or /srv/git/horde
-                      Example: /home/user/projects/horde
+    checkout.dir      Directory containing vendor subdirectories with repositories
+                      Components are located at: checkout.dir/vendor/component
+                      Default: ~/git or /srv/git
+                      Example: /home/user/projects
+                      (Components would be at: /home/user/projects/horde/ActiveSync, etc.)
 
     repo.org          GitHub organization or user name for repositories
                       Default: horde
@@ -144,8 +156,8 @@ EXAMPLES:
     horde-components config checkout.dir
     horde-components config repo.org
 
-    # Set a configuration value
-    horde-components config checkout.dir /home/user/horde
+    # Set checkout directory (parent of vendor directories)
+    horde-components config checkout.dir /home/user/git
     horde-components config repo.org mycompany
     horde-components config scm.domain https://github.example.com
     horde-components config github.token ghp_your_token_here

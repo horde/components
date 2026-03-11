@@ -11,6 +11,9 @@
 
 namespace Horde\Components\Qc\Task;
 
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+
 /**
  * Components_Qc_Task_Lint:: runs a syntax check on the component.
  *
@@ -46,8 +49,8 @@ class Lint extends Base
     public function run(array &$options = []): int
     {
         $lib = realpath($this->getPath());
-        $recursion = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($lib)
+        $recursion = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($lib)
         );
         $errors = 0;
         foreach ($recursion as $file) {

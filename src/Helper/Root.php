@@ -16,6 +16,8 @@ use Horde\Components\Component;
 use Horde\Components\Exception;
 use Horde\Components\Output;
 
+use function file_get_contents;
+
 /**
  * Components_Helper_Root:: handles the root position for a tree of dependencies
  * and takes the Horde component layout into account.
@@ -95,7 +97,7 @@ class Root
      */
     public function getGitIgnore(): string|bool
     {
-        return \file_get_contents($this->getRoot() . '/.gitignore');
+        return file_get_contents($this->getRoot() . '/.gitignore');
     }
 
     /**

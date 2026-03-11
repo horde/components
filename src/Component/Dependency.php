@@ -12,6 +12,7 @@
 namespace Horde\Components\Component;
 
 use Horde\Components\Component;
+use PEAR;
 
 /**
  * Horde\Components\Component\Dependency:: wraps PEAR dependency information.
@@ -96,7 +97,7 @@ class Dependency
      *
      * @return Component The component.
      */
-    public function getComponent($options = []): bool|\Horde\Components\Component
+    public function getComponent($options = []): bool|Component
     {
         return $this->_factory->createResolver()
             ->resolveDependency($this, $options);
@@ -181,7 +182,7 @@ class Dependency
      */
     public function isPearBase(): bool
     {
-        if ($this->_name == \PEAR::class && $this->_channel == 'pear.php.net') {
+        if ($this->_name == PEAR::class && $this->_channel == 'pear.php.net') {
             return true;
         }
         return false;

@@ -17,6 +17,7 @@ use Horde\Components\Dependencies;
 use Horde\Components\Exception;
 use Horde\Components\Helper\Commit as HelperCommit;
 use Horde\Components\Release\Task\Base as TaskBase;
+use Horde_Exception;
 
 /**
  * Components_Release_Tasks:: organizes the different tasks required for
@@ -70,7 +71,7 @@ class Tasks
         foreach ($task->askDependencies() as $key => $dependency) {
             try {
                 $deps[$key] = $this->_dependencies->getInstance($dependency);
-            } catch (\Horde_Exception) {
+            } catch (Horde_Exception) {
                 // what to do here?
             }
         }

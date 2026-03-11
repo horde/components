@@ -29,6 +29,7 @@ use Horde\Http\Client\Options;
 use Horde\Http\StreamFactory;
 use Horde\Http\RequestFactory;
 use Horde\Http\ResponseFactory;
+use Exception;
 
 /**
  * Helper for managing GitHub pull requests
@@ -91,7 +92,7 @@ class PullRequestManager
             $this->repository = GithubRepository::fromFullName($repoFullName);
 
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->error("Failed to initialize GitHub API client: {$e->getMessage()}");
             return false;
         }
@@ -134,7 +135,7 @@ class PullRequestManager
 
         try {
             return $this->apiClient->listPullRequests($this->repository, $baseBranch, $headRef, $state);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->error("Failed to list pull requests: {$e->getMessage()}");
             return null;
         }
@@ -185,7 +186,7 @@ class PullRequestManager
             }
 
             return '✓';
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // If we can't get check status, just return unknown
             return '-';
         }
@@ -217,7 +218,7 @@ class PullRequestManager
                 $this->output->warn("PR #{$number} was not merged: {$result->message}");
                 return false;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->error("Failed to merge PR #{$number}: {$e->getMessage()}");
             return false;
         }
@@ -240,7 +241,7 @@ class PullRequestManager
             $pr = $this->apiClient->closePullRequest($this->repository, $number);
             $this->output->ok("Successfully closed PR #{$pr->number}: {$pr->title}");
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->error("Failed to close PR #{$number}: {$e->getMessage()}");
             return false;
         }
@@ -263,7 +264,7 @@ class PullRequestManager
             $pr = $this->apiClient->reopenPullRequest($this->repository, $number);
             $this->output->ok("Successfully reopened PR #{$pr->number}: {$pr->title}");
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->error("Failed to reopen PR #{$number}: {$e->getMessage()}");
             return false;
         }
@@ -294,7 +295,7 @@ class PullRequestManager
                 $this->output->info("Review comment: {$body}");
             }
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $errorMessage = $e->getMessage();
 
             // Special handling for self-approval attempt
@@ -336,7 +337,7 @@ class PullRequestManager
             $this->output->ok("Successfully requested changes on PR #{$number}");
             $this->output->info("Review comment: {$body}");
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->error("Failed to request changes on PR #{$number}: {$e->getMessage()}");
             return false;
         }

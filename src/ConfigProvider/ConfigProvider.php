@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Horde\Components\ConfigProvider;
 
+use Exception;
+
 /**
  * Configuration provider interface
  *
@@ -37,7 +39,7 @@ interface ConfigProvider
      *
      * @param string $id The setting key
      * @return string The setting value
-     * @throws \Exception if the setting does not exist
+     * @throws Exception if the setting does not exist
      */
     public function getSetting(string $id): string;
 

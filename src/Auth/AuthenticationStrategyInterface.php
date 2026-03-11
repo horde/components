@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Horde\Components\Auth;
 
 use Horde\GithubApiClient\GithubApiClient;
+use RuntimeException;
 
 /**
  * Interface for GitHub authentication strategies
@@ -24,7 +25,7 @@ interface AuthenticationStrategyInterface
      * Authenticate and return configured GitHub API client
      *
      * @return GithubApiClient Configured client ready to make API calls
-     * @throws \RuntimeException If authentication fails
+     * @throws RuntimeException If authentication fails
      */
     public function authenticate(): GithubApiClient;
 

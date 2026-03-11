@@ -23,6 +23,12 @@ $config = (new PhpCsFixer\Config())
         '@PHP8x2Migration' => true,
         'php_unit_test_class_requires_covers' => true,
         'nullable_type_declaration_for_default_null_value' => true,
+        'fully_qualified_strict_types' => true,
+        'global_namespace_import' => [
+            'import_classes' => true,
+            'import_constants' => true,
+            'import_functions' => true,
+        ],
         'Horde/remove_php_version_comment' => true,
         'Horde/update_copyright_year' => true,
     ])

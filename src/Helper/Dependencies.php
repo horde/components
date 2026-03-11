@@ -15,6 +15,9 @@ namespace Horde\Components\Helper;
 use Horde\Components\Component;
 use Horde\Components\Component\Dependency as Dependency;
 use Horde\Components\Output;
+use Horde_String;
+
+use function str_repeat;
 
 /**
  * Components_Helper_Dependencies:: provides a utility that produces a dependency
@@ -204,11 +207,11 @@ class Dependencies
     ): void {
         if (empty($options['short'])) {
             $this->_output->$color(
-                \Horde_String::pad(
+                Horde_String::pad(
                     $this->_listLevel($level) . '|_' . $name,
                     45
                 )
-                . \Horde_String::pad(' [' . $channel . ']', 20) . ' ' . $info
+                . Horde_String::pad(' [' . $channel . ']', 20) . ' ' . $info
             );
         } else {
             $this->_short_list[$key] = ['channel' => $channel, 'name' => $name, 'color' => $color];
@@ -235,8 +238,8 @@ class Dependencies
         array_multisort($channels, $names, $colors);
         foreach ($names as $key => $name) {
             $this->_output->{$colors[$key]}(
-                \Horde_String::pad($name, 28)
-                . \Horde_String::pad('[' . $channels[$key] . ']', 20)
+                Horde_String::pad($name, 28)
+                . Horde_String::pad('[' . $channels[$key] . ']', 20)
             );
         }
     }
@@ -250,6 +253,6 @@ class Dependencies
      */
     private function _listLevel($level): string
     {
-        return \str_repeat('  ', $level);
+        return str_repeat('  ', $level);
     }
 }

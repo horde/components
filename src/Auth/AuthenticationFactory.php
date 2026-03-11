@@ -9,6 +9,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use RuntimeException;
+use InvalidArgumentException;
 
 /**
  * Authentication factory that determines which authentication method to use
@@ -99,7 +100,7 @@ class AuthenticationFactory
             return null;
         }
 
-        $jwtGenerator = new Rs256JwtGenerator();
+        $jwtGenerator = new GitHubJwtGenerator();
         $authService = new GitHubAppAuthenticationService(
             $appConfig,
             $jwtGenerator,
@@ -123,7 +124,7 @@ class AuthenticationFactory
         // Try environment variables first
         try {
             return GitHubAppConfig::fromEnvironment();
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             // Environment variables not set or incomplete, try config file
         }
 
@@ -153,7 +154,7 @@ class AuthenticationFactory
                 installationId: (int) $installationId,
                 privateKeyPath: (string) $privateKeyPath
             );
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             // Invalid configuration, return null
             return null;
         }

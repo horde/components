@@ -17,6 +17,9 @@ use PHPUnit\Event\Test\Errored;
 use PHPUnit\Event\Test\Failed;
 use PHPUnit\Event\Test\Finished;
 use PHPUnit\Event\Test\Skipped;
+use ReflectionClass;
+use ReflectionException;
+use Throwable;
 
 /**
  * Components_Qc_Task_Unit:: runs the test suite of the component.
@@ -142,7 +145,7 @@ class Unit extends Base
             if (class_exists('PHPUnit\Runner\Version')) {
                 return \PHPUnit\Runner\Version::id();
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Ignore
         }
         return '';
@@ -159,7 +162,7 @@ class Unit extends Base
         $versionStr = $version ? ' version ' . $version : '';
 
         try {
-            $reflection = new \ReflectionClass('PHPUnit\TextUI\Application');
+            $reflection = new ReflectionClass('PHPUnit\TextUI\Application');
             $filename = $reflection->getFileName();
 
             if ($filename === false) {
@@ -193,7 +196,7 @@ class Unit extends Base
             } else {
                 $this->getOutput()->info('Using PHPUnit' . $versionStr . ' from: ' . dirname($filename) . ' (system)');
             }
-        } catch (\ReflectionException $e) {
+        } catch (ReflectionException $e) {
             $this->getOutput()->info('Using PHPUnit' . $versionStr . ' (source detection failed)');
         }
     }

@@ -7,6 +7,7 @@ namespace Horde\Components\Test\Auth;
 use Horde\Components\Auth\GeneratedJwt;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use ReflectionClass;
 
 /**
  * Copyright 2026 The Horde Project (http://www.horde.org/)
@@ -84,7 +85,7 @@ class GeneratedJwtTest extends TestCase
     {
         $jwt = new GeneratedJwt('token', time() + 600);
 
-        $reflection = new \ReflectionClass($jwt);
+        $reflection = new ReflectionClass($jwt);
 
         $tokenProperty = $reflection->getProperty('token');
         $this->assertTrue($tokenProperty->isReadOnly());

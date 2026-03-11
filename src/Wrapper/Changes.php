@@ -16,6 +16,9 @@ namespace Horde\Components\Wrapper;
 
 use Horde\Components\Wrapper;
 use Horde\Components\WrapperTrait;
+use ArrayIterator;
+use IteratorAggregate;
+use Stringable;
 
 /**
  * Wrapper for the CHANGES file.
@@ -25,7 +28,7 @@ use Horde\Components\WrapperTrait;
  * @author     Jan Schneider <jan@horde.org>
  * @license    http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
-class Changes implements \IteratorAggregate, Wrapper, \Stringable
+class Changes implements IteratorAggregate, Wrapper, Stringable
 {
     use WrapperTrait;
 
@@ -58,11 +61,11 @@ class Changes implements \IteratorAggregate, Wrapper, \Stringable
     /**
      * Returns the iterator over the changes.
      *
-     * @return \ArrayIterator  An iterator.
+     * @return ArrayIterator  An iterator.
      */
-    public function getIterator(): \ArrayIterator
+    public function getIterator(): ArrayIterator
     {
-        return new \ArrayIterator($this->_changes);
+        return new ArrayIterator($this->_changes);
     }
 
     /**

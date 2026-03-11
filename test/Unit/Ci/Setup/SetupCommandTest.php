@@ -63,24 +63,26 @@ class SetupCommandTest extends TestCase
 
         // Create temp directory for test component
         $this->tempDir = sys_get_temp_dir() . '/horde-ci-setup-test-' . uniqid();
-        mkdir($this->tempDir, 0755, true);
+        mkdir($this->tempDir, 0o755, true);
 
         $this->testComponentPath = $this->tempDir . '/component';
-        mkdir($this->testComponentPath, 0755, true);
+        mkdir($this->testComponentPath, 0o755, true);
 
         // Create minimal .horde.yml
-        file_put_contents($this->testComponentPath . '/.horde.yml', <<<YAML
-id: TestComponent
-name: TestComponent
-type: library
-version:
-  release: 1.0.0
-state:
-  release: stable
-dependencies:
-  required:
-    php: ^8.2
-YAML
+        file_put_contents(
+            $this->testComponentPath . '/.horde.yml',
+            <<<YAML
+                id: TestComponent
+                name: TestComponent
+                type: library
+                version:
+                  release: 1.0.0
+                state:
+                  release: stable
+                dependencies:
+                  required:
+                    php: ^8.2
+                YAML
         );
 
         // Create SetupCommand with mocked dependencies
@@ -114,6 +116,7 @@ YAML
             'min_php_version' => '8.2',
             'component_stability' => 'stable',
             'local_components_path' => '/usr/bin/horde-components',
+            'components_path' => '/usr/bin/horde-components',
         ]);
 
         // Mock PHP installer to return binary path
@@ -200,11 +203,14 @@ YAML
             'min_php_version' => '8.2',
             'component_stability' => 'stable',
             'local_components_path' => '/usr/bin/horde-components',
+            'components_path' => '/usr/bin/horde-components',
         ]);
 
         // Setup mocks for successful setup until lane script generation
         $this->phpInstaller->method('install');
-        $this->phpInstaller->method('getPhpBinary')->willReturnCallback(function ($v) { return "/usr/bin/php{$v}"; });
+        $this->phpInstaller->method('getPhpBinary')->willReturnCallback(function ($v) {
+            return "/usr/bin/php{$v}";
+        });
         $this->extensionInstaller->method('detectExtensions')->willReturn([]);
         $this->extensionInstaller->method('install');
         $this->laneCopier->method('copyToLanes');
@@ -247,11 +253,14 @@ YAML
             'min_php_version' => '8.2',
             'component_stability' => 'stable',
             'local_components_path' => '/usr/bin/horde-components',
+            'components_path' => '/usr/bin/horde-components',
         ]);
 
         // Setup mocks
         $this->phpInstaller->method('install');
-        $this->phpInstaller->method('getPhpBinary')->willReturnCallback(function ($v) { return "/usr/bin/php{$v}"; });
+        $this->phpInstaller->method('getPhpBinary')->willReturnCallback(function ($v) {
+            return "/usr/bin/php{$v}";
+        });
         $this->extensionInstaller->method('detectExtensions')->willReturn([]);
         $this->extensionInstaller->method('install');
         $this->laneCopier->method('copyToLanes');
@@ -272,27 +281,23 @@ YAML
         // Execute setup
         $this->setupCommand->execute($config);
 
-        // Debug: CiConfig defaults to alpha for stability, not stable
-        // The actual stability used is from componentStability which defaults to 'alpha'
-
         // Verify we got configs for lanes
         $this->assertGreaterThanOrEqual(2, count($capturedConfigs), 'Should generate scripts for at least 2 lanes');
 
-        // Find configs for 8.3-dev and 8.3-alpha (not stable, because default is alpha)
+        // Find configs for 8.3-dev and 8.3-stable (component_stability is set to 'stable')
         $devLaneConfig = null;
-        $alphaLaneConfig = null;
+        $stableLaneConfig = null;
         foreach ($capturedConfigs as $cfg) {
             if ($cfg['php_version'] === '8.3' && $cfg['stability'] === 'dev') {
                 $devLaneConfig = $cfg;
             }
-            // Note: CiConfig defaults component_stability to 'alpha'
-            if ($cfg['php_version'] === '8.3' && $cfg['stability'] === 'alpha') {
-                $alphaLaneConfig = $cfg;
+            if ($cfg['php_version'] === '8.3' && $cfg['stability'] === 'stable') {
+                $stableLaneConfig = $cfg;
             }
         }
 
         $this->assertNotNull($devLaneConfig, 'Should have php8.3-dev lane config');
-        $this->assertNotNull($alphaLaneConfig, 'Should have php8.3-alpha lane config');
+        $this->assertNotNull($stableLaneConfig, 'Should have php8.3-stable lane config');
 
         // Verify dev lane config
         $this->assertSame('php8.3-dev', $devLaneConfig['lane_name']);
@@ -303,10 +308,10 @@ YAML
         $this->assertSame('/tmp/test-ci/tools', $devLaneConfig['tools_dir']);
         $this->assertStringContainsString('/build', $devLaneConfig['build_dir']);
 
-        // Verify alpha lane config
-        $this->assertSame('php8.3-alpha', $alphaLaneConfig['lane_name']);
-        $this->assertSame('8.3', $alphaLaneConfig['php_version']);
-        $this->assertSame('alpha', $alphaLaneConfig['stability']);
+        // Verify stable lane config
+        $this->assertSame('php8.3-stable', $stableLaneConfig['lane_name']);
+        $this->assertSame('8.3', $stableLaneConfig['php_version']);
+        $this->assertSame('stable', $stableLaneConfig['stability']);
     }
 
     public function testLaneScriptsGeneratedAfterComposerNotBefore(): void
@@ -320,6 +325,7 @@ YAML
             'min_php_version' => '8.2',
             'component_stability' => 'stable',
             'local_components_path' => '/usr/bin/horde-components',
+            'components_path' => '/usr/bin/horde-components',
         ]);
 
         $callOrder = [];
@@ -329,7 +335,9 @@ YAML
             $callOrder[] = 'php_install';
             return true;
         });
-        $this->phpInstaller->method('getPhpBinary')->willReturnCallback(function ($v) { return "/usr/bin/php{$v}"; });
+        $this->phpInstaller->method('getPhpBinary')->willReturnCallback(function ($v) {
+            return "/usr/bin/php{$v}";
+        });
         $this->extensionInstaller->method('detectExtensions')->willReturn([]);
         $this->extensionInstaller->method('install');
         $this->laneCopier->method('copyToLanes');
@@ -373,11 +381,14 @@ YAML
             'min_php_version' => '8.2',
             'component_stability' => 'stable',
             'local_components_path' => '/usr/bin/horde-components',
+            'components_path' => '/usr/bin/horde-components',
         ]);
 
         // Setup mocks
         $this->phpInstaller->method('install');
-        $this->phpInstaller->method('getPhpBinary')->willReturnCallback(function ($v) { return "/usr/bin/php{$v}"; });
+        $this->phpInstaller->method('getPhpBinary')->willReturnCallback(function ($v) {
+            return "/usr/bin/php{$v}";
+        });
         $this->extensionInstaller->method('detectExtensions')->willReturn([]);
         $this->extensionInstaller->method('install');
         $this->laneCopier->method('copyToLanes');

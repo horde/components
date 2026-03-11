@@ -18,6 +18,7 @@ namespace Horde\Components\Ci\Setup;
 
 use Horde\Components\Exception;
 use Horde\Components\Helper\Git;
+use Phar;
 
 /**
  * Detects CI environment and extracts configuration.
@@ -175,8 +176,8 @@ class EnvironmentDetector
     public static function getComponentsExecutablePath(): string
     {
         // Check if we're running from a PHAR
-        if (class_exists('Phar') && \Phar::running(false) !== '') {
-            return \Phar::running(false);
+        if (class_exists('Phar') && Phar::running(false) !== '') {
+            return Phar::running(false);
         }
 
         // Not a PHAR - find the bin/horde-components script
@@ -221,8 +222,8 @@ class EnvironmentDetector
      */
     public static function buildConfig(?string $mode = null, ?string $componentPath = null): array
     {
-        $mode = $mode ?? self::detectMode();
-        $componentPath = $componentPath ?? getcwd();
+        $mode ??= self::detectMode();
+        $componentPath ??= getcwd();
 
         return [
             'mode' => $mode,

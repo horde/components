@@ -16,6 +16,9 @@
 
 namespace Horde\Components\Release\Task;
 
+use Horde_Date;
+use Horde_Http_Client;
+
 /**
  * Components_Release_Task_Satis:: Rebuild a satis repo
  *
@@ -61,7 +64,7 @@ class Satis extends Base
      */
     public function askDependencies(): array
     {
-        return ['http' => \Horde_Http_Client::class];
+        return ['http' => Horde_Http_Client::class];
     }
 
     /**
@@ -84,7 +87,9 @@ class Satis extends Base
         if ($base == 'horde') {
             $base = 'base';
         }
-        $repo = $options['git_repo_base'] . $base . '.git';
+        // Use new name, falling back to old name (both set in _options)
+        $repoBase = $options['scm.repo.base'] ?? $options['git_repo_base'];
+        $repo = $repoBase . $base . '.git';
         if ($pretend) {
             $this->getOutput()->info(
                 sprintf(
@@ -145,7 +150,7 @@ class Satis extends Base
                 sprintf(
                     'git commit -m "Updated by %s release at %s"',
                     $package->getName(),
-                    (new \Horde_Date(time(), 'UTC'))->toJson()
+                    (new Horde_Date(time(), 'UTC'))->toJson()
                 ),
                 $options['satis_outdir']
             );
@@ -183,7 +188,10 @@ class Satis extends Base
         $options['satis_outdir'] ??= '';
         $options['satis_push'] = (bool) $options['satis_push'];
         $options['vendor'] ??= 'horde';
-        $options['git_repo_base'] ??= 'https://github.com/' . $options['vendor'] . '/';
+        // Try new name first, then fall back to old name for backwards compatibility
+        $options['scm.repo.base'] ??= $options['git_repo_base'] ?? 'https://github.com/' . $options['vendor'] . '/';
+        // Keep old name populated for backwards compatibility
+        $options['git_repo_base'] ??= $options['scm.repo.base'];
         return $options;
     }
 }

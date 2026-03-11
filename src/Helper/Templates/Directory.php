@@ -14,6 +14,8 @@ namespace Horde\Components\Helper\Templates;
 
 use Horde\Components\Exception;
 use Horde\Components\Helper\Templates;
+use DirectoryIterator;
+use IteratorIterator;
 
 /**
  * Components_Helper_Templatesdirectory:: converts template files from a
@@ -62,7 +64,7 @@ class Directory extends Templates
             mkdir($this->_target, 0o777, true);
         }
         foreach (
-            new \IteratorIterator(new \DirectoryIterator($this->_source)) as $file
+            new IteratorIterator(new DirectoryIterator($this->_source)) as $file
         ) {
             if ($file->isFile()) {
                 $this->writeSourceToTarget(

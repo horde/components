@@ -579,7 +579,7 @@ class Git
         string $localDir,
         string $branch,
         string $remote = 'origin'
-    ): \Horde\Components\Component\Task\SystemCallResult {
+    ): SystemCallResult {
         // git branch -t $branch origin/$branch
         $cmd = sprintf(
             '%s branch -t %s %s/%s',
@@ -858,6 +858,98 @@ class Git
         $cmd = $this->gitBin . ' describe --tags --always 2>/dev/null';
         $result = $this->execInDirectory($cmd, $localDir);
         return trim($result->getOutputString());
+    }
+
+    /**
+     * Get the SHA of the last commit (HEAD).
+     *
+     * @param string $localDir Full path to local git repository
+     *
+     * @return string The commit SHA (40-character hex string)
+     */
+    public function getLastCommitSha(string $localDir): string
+    {
+        $cmd = $this->gitBin . ' log --format="%H" HEAD^..HEAD';
+        $result = $this->execInDirectory($cmd, $localDir);
+        return trim($result->getOutputString());
+    }
+
+    /**
+     * Get the commit hash for a specific tag.
+     *
+     * @param string $localDir Full path to local git repository
+     * @param string $tagName The tag name to resolve
+     *
+     * @return string The commit hash (40-character hex string)
+     * @throws RuntimeException if tag doesn't exist
+     */
+    public function getTagCommitHash(string $localDir, string $tagName): string
+    {
+        $cmd = $this->gitBin . ' rev-list -n 1 ' . escapeshellarg($tagName);
+        $result = $this->execInDirectory($cmd, $localDir);
+
+        if ($result->getReturnValue() !== 0) {
+            throw new RuntimeException("Failed to get commit hash for tag {$tagName}: " . $result->getOutputString());
+        }
+
+        return trim($result->getOutputString());
+    }
+
+    /**
+     * Get the most recent tag in the repository.
+     *
+     * @param string $localDir Full path to local git repository
+     *
+     * @return string|null The last tag name, or null if no tags exist
+     */
+    public function getLastTag(string $localDir): ?string
+    {
+        $cmd = $this->gitBin . ' describe --tags --abbrev=0 2>/dev/null';
+        $result = $this->execInDirectory($cmd, $localDir);
+
+        if ($result->getReturnValue() !== 0) {
+            return null;
+        }
+
+        $tag = trim($result->getOutputString());
+        return $tag !== '' ? $tag : null;
+    }
+
+    /**
+     * Get the commit hash for a specific ref (branch, tag, or commit).
+     *
+     * @param string $localDir Full path to local git repository
+     * @param string $ref The ref to resolve (e.g., 'HEAD', 'main', 'v1.0.0')
+     *
+     * @return string The commit hash (40-character hex string)
+     * @throws RuntimeException if ref doesn't exist
+     */
+    public function getCommitHash(string $localDir, string $ref): string
+    {
+        $cmd = $this->gitBin . ' rev-parse ' . escapeshellarg($ref);
+        $result = $this->execInDirectory($cmd, $localDir);
+
+        if ($result->getReturnValue() !== 0) {
+            throw new RuntimeException("Failed to resolve ref {$ref}: " . $result->getOutputString());
+        }
+
+        return trim($result->getOutputString());
+    }
+
+    /**
+     * Run a git command in a directory and return the result.
+     *
+     * This is a convenience method for tasks that need to run custom git commands.
+     *
+     * @param string $command The git command (without 'git' prefix)
+     * @param string $localDir Full path to local git repository
+     *
+     * @return SystemCallResult The command result
+     */
+    public function run(string $command, string $localDir): SystemCallResult
+    {
+        $cmd = $this->gitBin . ' ' . $command;
+        return $this->execInDirectory($cmd, $localDir);
     }
 
     /**

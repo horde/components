@@ -23,6 +23,7 @@ use Horde\Components\Exception;
 use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Helper\Composer as ComposerHelper;
+use Horde\Components\Helper\Shell;
 use Horde\Components\Release\HordeRelease;
 use Horde\GithubApiClient\GithubApiConfig;
 
@@ -89,6 +90,7 @@ class Release
             $path = new ComponentDirectory($this->component->getComponentDirectory());
             $gitHelper = new GitHelper();
             $composerHelper = new ComposerHelper();
+            $shell = new Shell();
 
             // Get GitHubChecker and GitHubReleaseCreator from dependencies
             $githubChecker = new \Horde\Components\Helper\GitHubChecker($gitHelper);
@@ -108,9 +110,9 @@ class Release
                 $gitHelper,
                 $path,
                 $this->output,
-                $githubChecker,
                 $githubReleaseCreator,
-                $this->qcTasks
+                $this->qcTasks,
+                $shell
             );
 
             $release->run($this->component, $this->options);

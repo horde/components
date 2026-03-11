@@ -83,6 +83,16 @@ class Help extends Base
     }
 
     /**
+     * Get a short one-line description for command listings.
+     *
+     * @return string The short description.
+     */
+    public function getShortDescription(): string
+    {
+        return 'Show help for commands';
+    }
+
+    /**
      * Return the action arguments supported by this module.
      *
      * @return array A list of supported action arguments.
@@ -148,8 +158,86 @@ class Help extends Base
 
     public function handleWithoutAction(): bool
     {
-        $modular = $this->dependencies->get(ModularCli::class);
-        $modular->getParser()->printUsage();
+        // Show command list when "horde-components help" is invoked
+        $this->showCommandList();
         return true;
+    }
+
+    /**
+     * Show brief help (when horde-components is run with no arguments).
+     *
+     * This is shown via Components.php, not directly by this module.
+     */
+    public function showBriefHelp(): void
+    {
+        $green = "\033[32m";
+        $reset = "\033[0m";
+
+        echo "Horde Components - Development tool for Horde Framework\n\n";
+        echo "USAGE:\n";
+        echo "    horde-components <command> [options] [arguments]\n";
+        echo "    horde-components {$green}help{$reset} <command>\n\n";
+        echo "COMMON COMMANDS:\n";
+        echo "    {$green}release{$reset} <h6|h5>           Release a component\n";
+        echo "    {$green}ci{$reset} <subcommand>           Manage continuous integration\n";
+        echo "    {$green}database{$reset}|{$green}db{$reset} <subcommand>   Manage database setup for testing\n";
+        echo "    {$green}qc{$reset}                        Run quality checks\n\n";
+        echo "    {$green}config{$reset}                    Configure horde-components\n";
+        echo "    {$green}status{$reset}                    Show component and environment status\n\n";
+        echo "MORE COMMANDS:\n";
+        echo "    {$green}changed{$reset}, {$green}composer{$reset}, {$green}git{$reset}, {$green}init{$reset}, {$green}install{$reset}, {$green}package{$reset}, {$green}pullrequest{$reset}|{$green}pr{$reset}, {$green}version{$reset}, {$green}web{$reset}\n\n";
+        echo "    Use '{$green}horde-components help{$reset}' to see all commands with descriptions\n";
+        echo "    Use '{$green}horde-components help <command>{$reset}' for detailed command help\n\n";
+        echo "GETTING STARTED:\n";
+        echo "    {$green}horde-components help{$reset}       Show all available commands\n";
+        echo "    {$green}horde-components status{$reset}     Check your environment\n";
+        echo "    {$green}horde-components config{$reset}     Configure the tool\n";
+    }
+
+    /**
+     * Show command list with short descriptions (horde-components help).
+     */
+    public function showCommandList(): void
+    {
+        echo "Horde Components - Available Commands\n\n";
+
+        $categories = [
+            'RELEASE & VERSIONING' => ['release', 'version', 'changed'],
+            'CI & TESTING' => ['ci', 'database', 'qc'],
+            'GITHUB INTEGRATION' => ['github', 'pullrequest'],
+            'PROJECT SETUP' => ['init', 'install', 'config'],
+            'BUILD & PACKAGING' => ['composer', 'package'],
+            'UTILITIES' => ['git', 'status', 'web'],
+        ];
+
+        // Build module lookup by action
+        $modular = $this->dependencies->get(ModularCli::class);
+        $modulesByAction = [];
+        foreach ($modular->getModules() as $module) {
+            foreach ($module->getActions() as $action) {
+                if ($action !== 'help') {  // Skip self-reference
+                    $modulesByAction[$action] = $module;
+                }
+            }
+        }
+
+        // Display by category
+        foreach ($categories as $categoryName => $actions) {
+            echo "$categoryName:\n";
+            foreach ($actions as $action) {
+                if (isset($modulesByAction[$action])) {
+                    $module = $modulesByAction[$action];
+                    $description = $module->getShortDescription();
+                    printf("    %-20s %s\n", $action, $description);
+                }
+            }
+            echo "\n";
+        }
+
+        echo "Use 'horde-components help <command>' for detailed help on a specific command.\n\n";
+        echo "EXAMPLES:\n";
+        echo "    horde-components help release     See release command help\n";
+        echo "    horde-components help ci          See CI command help\n";
+        echo "    horde-components ci help          Alternative syntax\n";
     }
 }
