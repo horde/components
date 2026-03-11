@@ -1,4 +1,16 @@
 ---
+1.0.0-alpha38:
+  api: 1.0.0-alpha38
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-03-11
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: |-
+    feat(database): Add database test setup commands (#17)
+    feat(ci): add GitHub Check Runs and PR comment integration
 1.0.0-alpha37:
   api: 1.0.0-alpha1
   state:
