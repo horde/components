@@ -205,7 +205,17 @@ SEE ALSO:
 
         if (!in_array($subcommand, ['build', 'upload'])) {
             $output = $this->dependencies->get(Output::class);
-            $output->fail('Unknown subcommand. Use: phar build or phar upload');
+            if ($subcommand === null) {
+                $output->info('Please specify a subcommand:');
+                $output->plain('  horde-components phar build    - Build PHAR archive');
+                $output->plain('  horde-components phar upload   - Upload PHAR to GitHub release');
+                $output->plain('');
+                $output->plain('Run "horde-components help phar" for detailed information.');
+            } else {
+                $output->warn("Unknown subcommand: {$subcommand}");
+                $output->info('Available subcommands: build, upload');
+                $output->plain('Run "horde-components help phar" for more information.');
+            }
             return true;
         }
 
