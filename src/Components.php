@@ -87,7 +87,7 @@ class Components
         $dispatcher = new EventDispatcher($provider);
         // Setup the DI system and feed the container - whatever needs the event system will get it
         $injector = new Dependencies\Injector(new TopLevel());
-        $injector->setInstance(EventdispatcherInterface::class, $dispatcher);
+        $injector->setInstance(EventDispatcherInterface::class, $dispatcher);
         $injector->setInstance(ListenerProviderInterface::class, $provider);
         $injector->setInstance(ArgvWrapper::class, ArgvWrapper::fromGlobal());
         $app = new Components($injector, $parameters);

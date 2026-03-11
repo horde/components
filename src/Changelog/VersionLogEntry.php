@@ -19,9 +19,9 @@ class VersionLogEntry
     public readonly ApiVersion $apiVersion;
     public function __construct(
         Version|string $packageVersion,
+        public readonly License $license,
         DateTime $date = new DateTime('now', new DateTimeZone('UTC')),
         ApiVersion|string|null $apiVersion = null,
-        public readonly License $license,
         private array $added = [],
         private array $changed = [],
         private array $deprecated = [],
