@@ -4,3 +4,8 @@ parameters:
   paths:
     - src
     - test
+  excludePaths:
+    - src/PhpCsFixer/*
+    - src/Qc/Task/Cs.php
+    - src/Qc/Task/Md.php
+    - src/Qc/Task/Loc.php

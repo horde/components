@@ -76,5 +76,5 @@ nocommands:
 allow-plugins: ~
 quality:
   phpstan:
-    level: 0
+    level: 9
 vendor: horde
