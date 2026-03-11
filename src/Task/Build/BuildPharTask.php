@@ -90,7 +90,7 @@ class BuildPharTask extends AbstractTask
         if ($pharName === null) {
             // Read from box.json.dist
             $boxJson = json_decode(file_get_contents($boxConfig), true);
-            $pharName = basename($boxJson['output'] ?? 'dist.phar');
+            $pharName = $boxJson['output'] ?? 'dist.phar';
         }
 
         $pharPath = $componentPath . '/' . $pharName;
@@ -109,7 +109,7 @@ class BuildPharTask extends AbstractTask
             }
 
             // Quick sanity check: PHAR is valid
-            $result = $this->shellHelper->run("php {$pharName} --version", $componentPath);
+            $result = $this->shellHelper->run("php {$pharName} version 2>&1", $componentPath);
             if ($result->getReturnValue() !== 0) {
                 throw new Exception('Built PHAR is not valid/executable');
             }

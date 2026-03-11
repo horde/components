@@ -26,6 +26,7 @@ use Horde\Components\Module\Status;
 use Horde\Components\Module\Version;
 use Horde\Components\Module\Website;
 use Horde\Components\Module\Ci;
+use Horde\Components\Module\Phar;
 
 /**
  * Components tool specific, context aware module provider
@@ -63,6 +64,7 @@ class ModuleProvider implements CliModuleProvider
             $this->injector->get(Init::class),
             $this->injector->get(InstallModule::class),
             $this->injector->get(Package::class),
+            $this->injector->get(Phar::class),
             $this->injector->get(Pullrequest::class),
             $this->injector->get(Qc::class),
             $this->injector->get(Release::class),
