@@ -144,6 +144,16 @@ class Components
 
         // NOW that parser is ready, we can create CliConfigProvider and update factory
         $parser = $modular->getParser();
+
+        // Add global options that aren't module-specific
+        $parser->addOption(
+            new \Horde\Argv\Option(
+                '-P',
+                '--pretend',
+                ['action' => 'store_true', 'help' => 'Just pretend and indicate what would be done rather than performing the action.']
+            )
+        );
+
         [$parsedOptions, $parsedArgs] = $parser->parseArgs();
 
         // Convert Horde\Argv\Values object to array
