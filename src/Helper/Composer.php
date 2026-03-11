@@ -112,6 +112,7 @@ class Composer
      */
     public function setDependency(string $packageDir, string $package, string $versionConstraint = '*', $type = 'require')
     {
+        $command = 'require';
         if ($type === 'require' || $type === 'requires') {
             $command = 'require';
         } elseif ($type === 'suggest' || $type === 'suggests' || $type === 'optional') {
@@ -369,8 +370,8 @@ class Composer
      *
      * The default is to autoload both PSR-0 and PSR-4 if no rule is found
      *
-     * @param WrapperHordeYml A Yaml definition of the package
-     * @param stdClass the composer definition file to build
+     * @param WrapperHordeYml $package A Yaml definition of the package
+     * @param stdClass $composerDefinition the composer definition file to build
      */
     protected function _setAutoload(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
@@ -413,8 +414,8 @@ class Composer
      *
      * The default is to autoload both PSR-0 and PSR-4 if no rule is found
      *
-     * @param WrapperHordeYml A Yaml definition of the package
-     * @param stdClass the composer definition file to build
+     * @param WrapperHordeYml $package A Yaml definition of the package
+     * @param stdClass $composerDefinition the composer definition file to build
      */
     protected function _setAutoloadDev(WrapperHordeYml $package, stdClass $composerDefinition): void
     {

@@ -185,7 +185,7 @@ class CreateGitHubReleaseTask extends AbstractTask
         $context->setFact('github.release_url', $existingRelease->htmlUrl);
         $context->setFact('github.tag_name', $expectedTagName);
 
-        return Result::skip(
+        return Result::skipped(
             "GitHub release already exists with matching identity: {$existingRelease->htmlUrl}",
             [
                 'release_id' => $existingRelease->id,

@@ -64,7 +64,7 @@ class BuildPharTask extends AbstractTask
 
     public function getName(): string
     {
-        return "Buil\1 \2har";
+        return "Build Phar";
     }
     public function run(Context $context): Result
     {

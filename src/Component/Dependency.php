@@ -65,7 +65,7 @@ class Dependency
     *
      * @param array $_dependency The dependency
                                                information.
-     * @param Horde\Components\Component\Factory $_factory Helper factory.
+     * @param Factory $_factory Helper factory.
     */
     public function __construct(
         private $_dependency,
@@ -116,7 +116,7 @@ class Dependency
     /**
      * Is the dependency required?
      *
-     * @return boolen True if the dependency is required.
+     * @return bool True if the dependency is required.
      */
     public function isRequired(): bool
     {
@@ -126,7 +126,7 @@ class Dependency
     /**
      * Is this a package dependency?
      *
-     * @return boolen True if the dependency is a package.
+     * @return bool True if the dependency is a package.
      */
     public function isPackage(): bool
     {
@@ -136,7 +136,7 @@ class Dependency
     /**
      * Is the dependency a Horde dependency?
      *
-     * @return boolen True if it is a Horde dependency.
+     * @return bool True if it is a Horde dependency.
      */
     public function isHorde(): bool
     {
@@ -152,7 +152,7 @@ class Dependency
     /**
      * Is this the PHP dependency?
      *
-     * @return boolen True if it is the PHP dependency.
+     * @return bool True if it is the PHP dependency.
      */
     public function isPhp(): bool
     {
@@ -165,7 +165,7 @@ class Dependency
     /**
      * Is this a PHP extension dependency?
      *
-     * @return boolen True if it is a PHP extension dependency.
+     * @return bool True if it is a PHP extension dependency.
      */
     public function isExtension(): bool
     {
@@ -178,7 +178,7 @@ class Dependency
     /**
      * Is the dependency the PEAR base package?
      *
-     * @return boolen True if it is the PEAR base package.
+     * @return bool True if it is the PEAR base package.
      */
     public function isPearBase(): bool
     {

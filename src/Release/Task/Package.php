@@ -53,7 +53,7 @@ class Package extends Base
      * @return array An empty array if all preconditions are met and a list of
      *               error messages otherwise.
      *
-     * @throws Horde\Components\Exception
+     * @throws \Horde\Components\Exception
      */
     public function preValidate($options): array
     {

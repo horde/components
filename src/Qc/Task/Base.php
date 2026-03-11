@@ -127,7 +127,7 @@ class Base
     /**
      * Get the tasks handler.
      *
-     * @return ReleaseTasks The release tasks handler.
+     * @return QcTasks The QC tasks handler.
      */
     protected function getTasks(): QcTasks
     {

@@ -38,7 +38,7 @@ class Composer extends Base
      *
      * @param array $options Additional options by reference.
      *
-     * @return void;
+     * @return void
      */
     public function run(&$options): void
     {

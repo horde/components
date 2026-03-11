@@ -48,7 +48,7 @@ class GitBranch extends Base
      *
      * @param array $options Additional options by reference.
      *
-     * @return void;
+     * @return void
      */
     public function run(&$options): void
     {
@@ -158,7 +158,7 @@ class GitBranch extends Base
     /**
      * Look for the git binary
      *
-     * @return string|void
+     * @return \Horde\Components\Component\Task\SystemCallResult
      * Might make sense to factor out into a git helper for reuse?
      */
     protected function _whichGit(): \Horde\Components\Component\Task\SystemCallResult

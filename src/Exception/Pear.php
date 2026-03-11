@@ -35,7 +35,7 @@ class Pear extends HordePear
      *
      * @return mixed Returns the original result if it was no PEAR_Error.
      *
-     * @throws Horde\Components\Exception\Pear In case the result was a PEAR_Error.
+     * @throws Pear In case the result was a PEAR_Error.
      */
     public static function catchError($result)
     {

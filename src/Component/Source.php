@@ -245,7 +245,6 @@ class Source extends Base
     {
         $data = new stdClass();
 
-        /** @var WrapperHordeYml $package */
         $data->name = $this->getName();
         $data->summary = $this->getSummary();
         $data->description = $this->getDescription();
@@ -312,9 +311,7 @@ class Source extends Base
     /**
      * Return the path to a DOCS_ORIGIN file within the component.
      *
-     * @return array|null An array containing the path name and the component
-     *                    base directory or NULL if there is no DOCS_ORIGIN
-     *                    file.
+     * @return string|null The path to the DOCS_ORIGIN file or NULL if there is no DOCS_ORIGIN file.
      */
     public function getDocumentOrigin(): ?string
     {
@@ -1109,7 +1106,7 @@ class Source extends Base
                 $this->directory
             ));
         }
-        return $result ?? '';
+        return $result;
     }
 
     /**
@@ -1247,11 +1244,7 @@ class Source extends Base
      *
      * @param string $file File wrapper to return.
      *
-     * @return WrapperApplicationPhp|WrapperChangelogYml|
-     *         WrapperChanges|WrapperComposerJson|
-     *         WrapperHordeYml|WrapperPackageXml
-     *         The requested file
-     *                                                                                                                                                                                                 wrapper.
+     * @return WrapperApplicationPhp|WrapperChangelogYml|WrapperChanges|WrapperComposerJson|WrapperHordeYml|WrapperPackageXml The requested file wrapper.
      * @throws Exception
      * @throws NotFound
      */

@@ -125,7 +125,7 @@ class UploadGitHubAssetTask extends AbstractTask
                 $context->setFact('github.asset_url', $existingAsset->browser_download_url);
                 $context->setFact('github.asset_name', $assetName);
 
-                return Result::skip(
+                return Result::skipped(
                     "GitHub asset already exists: {$assetName}",
                     [
                         'asset_id' => $existingAsset->id,

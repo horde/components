@@ -407,7 +407,7 @@ class PageGenerator
         }
     }
 
-    private function renderComponentPage(array $componentMeta, ?array $hordeYml, array $events): string
+    private function renderComponentPage(array $componentMeta, ?HordeYmlFile $hordeYml, array $events): string
     {
         $componentName = $componentMeta['name'];
         $componentEsc = $this->esc($componentName);
@@ -453,7 +453,7 @@ class PageGenerator
             HTML;
     }
 
-    private function renderComponentDetailsCard(array $componentMeta, ?array $hordeYml): string
+    private function renderComponentDetailsCard(array $componentMeta, ?HordeYmlFile $hordeYml): string
     {
         $name = $this->esc($componentMeta['name']);
         $version = $this->esc($componentMeta['version'] ?? 'unknown');

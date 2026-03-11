@@ -100,7 +100,7 @@ class Archive extends Base
     /**
      * Return a PEAR package representation for the component.
      *
-     * @return Horde_Pear_Package_Xml The package representation.
+     * @return PackageXml The package representation.
      */
     protected function getPackageXml(): PackageXml
     {

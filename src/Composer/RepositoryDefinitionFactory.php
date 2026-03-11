@@ -14,5 +14,6 @@ class RepositoryDefinitionFactory
         if ($input->type == 'path') {
             return new PathRepositoryDefinition($input->url, $input->options ?? new stdClass());
         }
+        throw new \InvalidArgumentException('Unsupported repository type: ' . ($input->type ?? 'unknown'));
     }
 }

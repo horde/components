@@ -76,7 +76,7 @@ class Environment
     /**
      * Define the factory that creates our PEAR dependencies.
      *
-     * @param Factory
+     * @param Factory $factory
      */
     public function setFactory(Factory $factory): void
     {

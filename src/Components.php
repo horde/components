@@ -26,7 +26,7 @@ use Horde\Injector\Injector;
 use Horde\EventDispatcher\EventDispatcher;
 use Horde\EventDispatcher\SimpleListenerProvider;
 use Psr\Container\ContainerInterface;
-use Psr\EventDispatcher\EventdispatcherInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Horde\Components\Cli\ModuleProvider;
 use Horde\Cli\Cli;

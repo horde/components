@@ -174,6 +174,7 @@ class Transpile extends Base
         $this->git->commit($componentDir, 'Commit transpiled version for php ' . $options['target_platform']);
         $this->getOutput()->info('Created transpiled version');
         // if target is a branch
+        $targetRef = $sourceRef;
         if ($refType == 'branch') {
             // Check if exists
             $targetRef = $targetBranch = $sourceRef . '-php' . $options['target_platform'];

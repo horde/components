@@ -46,7 +46,7 @@ class Installer
     /**
      * The output handler.
      *
-     * @param Output
+     * @var Output
      */
     private $_output;
 

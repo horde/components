@@ -35,35 +35,35 @@ class Package
     /**
      * The PEAR environment for the package.
      *
-     * @param Environment
+     * @var Environment
      */
     private $_environment;
 
     /**
      * The factory for PEAR class instances.
      *
-     * @param Factory
+     * @var Factory
      */
     private $_factory;
 
     /**
      * The path to the package XML file.
      *
-     * @param string
+     * @var string
      */
     private $_package_xml_path;
 
     /**
      * The path to the package *.tgz file.
      *
-     * @param string
+     * @var string
      */
     private $_package_tgz_path;
 
     /**
      * The package representation.
      *
-     * @param PEAR_PackageFile_v2
+     * @var PEAR_PackageFile_v2
      */
     private $_package_file;
 
@@ -76,7 +76,7 @@ class Package
         /**
          * The output handler.
          *
-         * @param Output
+         * @var Output
          */
         private readonly Output $_output
     ) {}
@@ -84,7 +84,7 @@ class Package
     /**
      * Define the surrounding PEAR environment for the package.
      *
-     * @param Environment
+     * @param Environment $environment
      *
      * @return void
      */
@@ -96,11 +96,11 @@ class Package
     /**
      * Define the factory that creates our PEAR dependencies.
      *
-     * @param Factory
+     * @param Factory $factory
      *
-     * @return null
+     * @return void
      */
-    public function setFactory(Factory $factory)
+    public function setFactory(Factory $factory): void
     {
         $this->_factory = $factory;
     }

@@ -265,9 +265,9 @@ class Version
         // SemVer does not support prefixes
         return sprintf(
             "%s.%s.%s",
-            $this->major ?? '0',
-            $this->minor ?? '0',
-            $this->patch ?? '0'
+            $this->major,
+            $this->minor,
+            $this->patch
         );
     }
 
@@ -514,7 +514,7 @@ class Version
      *
      * @param string $version The PEAR package version.
      *
-     * @return object  An object with the properties:
+     * @return stdClass  An object with the properties:
      *                 - version: The base version string.
      *                 - description: A stability description.
      *                 - subversion: The sub version within the stability level.
@@ -731,7 +731,7 @@ class Version
             return $constraints;
         }
         $max = array_pop($versions);
-        $max = \substr($max, 1, strpos($max, '.') ?: strlen($max)) + 1;
+        $max = (int) \substr($max, 1, strpos($max, '.') ?: strlen($max)) + 1;
         $max .= '.0.0alpha1';
         $constraints['max'] = $constraints['exclude'] = $max;
 

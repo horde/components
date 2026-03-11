@@ -60,6 +60,8 @@ class ConventionalCommit extends GitCommit
             author_date: $author_date,
             committer_name: $committer_name,
             committer_email: $committer_email,
+            committer_date: $committer_date,
+            trailers: $trailers
         );
         $breaking = false;
         $lookupSeverity = [

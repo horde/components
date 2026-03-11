@@ -20,7 +20,7 @@ class VersionLogEntry
     public function __construct(
         Version|string $packageVersion,
         public readonly License $license,
-        DateTime $date = new DateTime('now', new DateTimeZone('UTC')),
+        public readonly DateTime $date = new DateTime('now', new DateTimeZone('UTC')),
         ApiVersion|string|null $apiVersion = null,
         private array $added = [],
         private array $changed = [],
@@ -44,23 +44,23 @@ class VersionLogEntry
 
     public function appendChanged(string $added)
     {
-        array_push($this->added, $added);
+        array_push($this->changed, $added);
     }
     public function appendDeprecated(string $added)
     {
-        array_push($this->added, $added);
+        array_push($this->deprecated, $added);
     }
     public function appendRemoved(string $added)
     {
-        array_push($this->added, $added);
+        array_push($this->removed, $added);
     }
     public function appendFixed(string $added)
     {
-        array_push($this->added, $added);
+        array_push($this->fixed, $added);
     }
     public function appendSecurity(string $added)
     {
-        array_push($this->added, $added);
+        array_push($this->security, $added);
     }
 
 

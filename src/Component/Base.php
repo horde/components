@@ -444,7 +444,7 @@ abstract class Base implements Component
     /**
      * Return a PEAR package representation for the component.
      *
-     * @return Horde_Pear_Package_Xml The package representation.
+     * @return WrapperPackageXml The package representation.
      * @throws Exception
      */
     protected function getPackageXml(): WrapperPackageXml

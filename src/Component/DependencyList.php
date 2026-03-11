@@ -32,7 +32,7 @@ class DependencyList implements Iterator
     /**
      * The dependency list.
      *
-     * @param array<Dependency>
+     * @var array<Dependency>
      */
     private $_dependencies;
 
@@ -133,7 +133,7 @@ class DependencyList implements Iterator
     /**
      * Implementation of the Iterator key() method. Returns the key of the current dependency.
      *
-     * @return mixed The key for the current position.
+     * @return Dependency|null The key for the current position.
      */
     public function key(): ?Dependency
     {

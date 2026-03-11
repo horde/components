@@ -192,6 +192,7 @@ class ChangeLog
                 $release
             );
             $license = $xml->findNodeRelativeTo('p:license', $release);
+            $licenseUri = ($license !== false) ? $license->getAttribute('uri') : '';
             $notes = trim(preg_replace(
                 '/^\* /m',
                 '',
@@ -209,7 +210,7 @@ class ChangeLog
             ), 'api' => $xml->getNodeTextRelativeTo(
                 'p:stability/p:api',
                 $release
-            )], 'date' => $xml->getNodeTextRelativeTo('p:date', $release), 'license' => ['identifier' => $license->textContent, 'uri' => $license->getAttribute('uri')], 'notes' => $notes];
+            )], 'date' => $xml->getNodeTextRelativeTo('p:date', $release), 'license' => ['identifier' => $license !== false ? $license->textContent : '', 'uri' => $licenseUri], 'notes' => $notes];
         }
         $changes = \array_reverse($changes);
 

@@ -203,11 +203,12 @@ The major changes compared to the %s version %s are:%s',
      *
      * @return string|null The mailing list.
      */
-    public function getList()
+    public function getList(): ?string
     {
         if (isset($this->_notes['list'])) {
             return $this->_notes['list'];
         }
+        return null;
     }
 
     /**

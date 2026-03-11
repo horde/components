@@ -127,6 +127,8 @@ class Help extends Base
     {
         $formatter = new IndentedHelpFormatter();
         $modular = $this->dependencies->get(ModularCli::class);
+        $module = null;
+        $help = '';
         foreach ($modular->getModules() as $module) {
             $element = $module;
             if (in_array($action, $element->getActions())) {

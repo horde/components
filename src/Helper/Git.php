@@ -129,8 +129,8 @@ class Git
                     raw_body: $matches[22],
                     trailers: $matches[23]
                 );
+                $commits[] = $commit;
             }
-            $commits[] = $commit;
         }
         return new GitCommitLog(...$commits);
     }
@@ -283,7 +283,7 @@ class Git
      * @param string $branch       The branch to check out
      * @param string $source       The source branch
      *
-     * @return bool True if workflow was successful
+     * @return void
      */
     public function workflowUpdate(
         Output $output,
@@ -418,7 +418,7 @@ class Git
      * @param string $branch   Full path to repo
      * @param string $source   Full path to repo. If empty, origin/branch
      *
-     * @return string SystemCallResult
+     * @return SystemCallResult
      */
     public function rebase(
         string $localDir,
@@ -782,9 +782,9 @@ class Git
     /**
      * Tag the component.
      *
+     * @param string $localDir  The working directory.
      * @param string $tag       Tag name.
      * @param string $message   Tag message.
-     * @param string $directory The working directory.
      * @param bool   $force     If the tag already exists, overwrite it.
      */
     public function tag(string $localDir, string $tag, string $message, bool $force = false): void

@@ -91,7 +91,7 @@ class Bugs extends Base
         $whupsUser = $options['whups.user'] ?? $options['horde_user'] ?? '';
         $whupsPass = $options['whups.pass'] ?? $options['horde_pass'] ?? '';
 
-        if (!isset($whupsUser) || !isset($whupsPass)) {
+        if (empty($whupsUser) || empty($whupsPass)) {
             throw new Exception('Missing credentials!');
         }
         $httpClient = new Curl(

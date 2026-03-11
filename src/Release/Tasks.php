@@ -96,6 +96,7 @@ class Tasks
         $this->_options = $options;
         $this->_sequence = $sequence;
         $taskSequence = [];
+        $extraOptions = [];
         // check for predefined pipelines
         if ((count($sequence) == 2)
             && $sequence[0] == 'pipeline:'
@@ -125,6 +126,8 @@ class Tasks
             }
         }
         $selectedTasks = [];
+        $selectedOptions = [];
+        $errors = [];
         foreach ($taskSequence as $index => $task) {
             // Note: Extra options override global options - which is OK. But they also override CLI options.
             $taskOptions = array_merge($options, $extraOptions[$index]);
@@ -146,6 +149,7 @@ class Tasks
                             join("\n", $taskErrors)
                         )
                     );
+                    $errors = array_merge($errors, $taskErrors);
                 }
             } else {
                 $selectedTasks[] = $task;

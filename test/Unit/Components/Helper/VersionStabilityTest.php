@@ -35,12 +35,11 @@ class VersionStabilityTest extends TestCase
 {
     public function testStable()
     {
-        $this->assertNull(
-            HelperVersion::validateReleaseStability(
-                '4.0.0',
-                'stable'
-            )
+        HelperVersion::validateReleaseStability(
+            '4.0.0',
+            'stable'
         );
+        $this->assertTrue(true); // If no exception, validation passed
     }
 
     public function testInvalidStable()
@@ -61,12 +60,11 @@ class VersionStabilityTest extends TestCase
 
     public function testAlpha()
     {
-        $this->assertNull(
-            HelperVersion::validateReleaseStability(
-                '4.0.0alpha1',
-                'alpha'
-            )
+        HelperVersion::validateReleaseStability(
+            '4.0.0alpha1',
+            'alpha'
         );
+        $this->assertTrue(true); // If no exception, validation passed
     }
 
     public function testInvalidAlpha()
@@ -87,12 +85,11 @@ class VersionStabilityTest extends TestCase
 
     public function testBeta()
     {
-        $this->assertNull(
-            HelperVersion::validateReleaseStability(
-                '4.0.0beta1',
-                'beta'
-            )
+        HelperVersion::validateReleaseStability(
+            '4.0.0beta1',
+            'beta'
         );
+        $this->assertTrue(true); // If no exception, validation passed
     }
 
     public function testInvalidBeta()
@@ -113,12 +110,11 @@ class VersionStabilityTest extends TestCase
 
     public function testRc()
     {
-        $this->assertNull(
-            HelperVersion::validateReleaseStability(
-                '4.0.0RC1',
-                'beta'
-            )
+        HelperVersion::validateReleaseStability(
+            '4.0.0RC1',
+            'beta'
         );
+        $this->assertTrue(true); // If no exception, validation passed
     }
 
     public function testInvalidRc()
@@ -139,12 +135,11 @@ class VersionStabilityTest extends TestCase
 
     public function testDev()
     {
-        $this->assertNull(
-            HelperVersion::validateReleaseStability(
-                '4.0.0dev1',
-                'devel'
-            )
+        HelperVersion::validateReleaseStability(
+            '4.0.0dev1',
+            'devel'
         );
+        $this->assertTrue(true); // If no exception, validation passed
     }
 
     public function testInvalidDev()
@@ -165,22 +160,20 @@ class VersionStabilityTest extends TestCase
 
     public function testApiRc()
     {
-        $this->assertNull(
-            HelperVersion::validateApiStability(
-                '4.0.0RC1',
-                'beta'
-            )
+        HelperVersion::validateApiStability(
+            '4.0.0RC1',
+            'beta'
         );
+        $this->assertTrue(true); // If no exception, validation passed
     }
 
     public function testApiStable()
     {
-        $this->assertNull(
-            HelperVersion::validateApiStability(
-                '4.0.0',
-                'stable'
-            )
+        HelperVersion::validateApiStability(
+            '4.0.0',
+            'stable'
         );
+        $this->assertTrue(true); // If no exception, validation passed
     }
 
     public function testInvalidApiStable()

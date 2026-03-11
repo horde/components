@@ -253,8 +253,7 @@ class Root
      *
      * @param string $directory Path to the directory to test.
      *
-     * @return string|boolean The root path or false if it could not be
-     *                        determined.
+     * @return bool True if valid root, false otherwise.
      */
     private function _isValidRoot($directory): bool
     {

@@ -37,12 +37,11 @@ class File extends Base
      */
     public function __construct($path)
     {
+        $conf = [];
         if (file_exists($path)) {
             include $path;
-            $this->_options = $conf;
-        } else {
-            $this->_options = [];
         }
+        $this->_options = $conf;
         $this->_arguments = [];
     }
 }
