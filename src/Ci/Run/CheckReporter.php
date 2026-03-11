@@ -18,7 +18,6 @@ namespace Horde\Components\Ci\Run;
 
 use Horde\Components\Output;
 use Horde\GithubApiClient\GithubClient;
-use Exception;
 
 /**
  * Reports CI results to GitHub Check Runs API.
@@ -122,7 +121,7 @@ class CheckReporter
                 "/repos/{$owner}/{$repo}/check-runs",
                 $data
             );
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->output->warn("Failed to create check run '{$checkName}': " . $e->getMessage());
         }
     }

@@ -18,7 +18,6 @@ namespace Horde\Components\Ci\Run;
 
 use Horde\Components\Output;
 use Horde\GithubApiClient\GithubClient;
-use Exception;
 
 /**
  * Posts CI results as PR comments.
@@ -89,7 +88,7 @@ class PrCommentReporter
                 );
                 $this->output->ok("Created new PR comment");
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->output->warn("Failed to post PR comment: " . $e->getMessage());
         }
     }
@@ -114,7 +113,7 @@ class PrCommentReporter
                     return $comment;
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // Ignore errors finding existing comment
         }
 
