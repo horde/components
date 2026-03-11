@@ -78,7 +78,7 @@ class BuildPharTask extends AbstractTask
 
         // Check box utility available
         $result = $this->shellHelper->run('which box', $componentPath);
-        if ($result->getCode() !== 0) {
+        if ($result->getReturnValue() !== 0) {
             throw new Exception(
                 'Box utility not found in PATH. Install with: composer global require humbug/box'
             );
@@ -99,8 +99,8 @@ class BuildPharTask extends AbstractTask
         if (!$this->pretend) {
             $result = $this->shellHelper->run('box compile', $componentPath);
 
-            if ($result->getCode() !== 0) {
-                throw new Exception('Failed to build PHAR: ' . $result->getOutput());
+            if ($result->getReturnValue() !== 0) {
+                throw new Exception('Failed to build PHAR: ' . $result->getOutputString());
             }
 
             // Verify PHAR was created
@@ -110,7 +110,7 @@ class BuildPharTask extends AbstractTask
 
             // Quick sanity check: PHAR is valid
             $result = $this->shellHelper->run("php {$pharName} --version", $componentPath);
-            if ($result->getCode() !== 0) {
+            if ($result->getReturnValue() !== 0) {
                 throw new Exception('Built PHAR is not valid/executable');
             }
         }
