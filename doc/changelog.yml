@@ -1,4 +1,16 @@
 ---
+1.0.0-alpha39:
+  api: 1.0.0-alpha39
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-03-11
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: |-
+    fix(cli): restore --pretend global option
+    fix(build): correct SystemCallResult method calls in BuildPharTask
 1.0.0-alpha38:
   api: 1.0.0-alpha38
   state:
