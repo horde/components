@@ -33,11 +33,12 @@ use Horde\Components\Test\TestCase;
  */
 class ChangelogTest extends TestCase
 {
-    protected $_fixture;
+    protected string $_fixture;
 
     public function setUp(): void
     {
-        $this->_fixture = __DIR__ . '/../../../../fixtures/simple';
+        // Use isolated copy to prevent fixture pollution
+        $this->_fixture = $this->copyFixture('simple');
     }
 
     public function testPreValidateSucceeds()

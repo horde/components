@@ -54,6 +54,14 @@ class TestCase extends \PHPUnit\Framework\TestCase
      */
     protected $cwd;
 
+    /**
+     * Temporary fixture directories created during test.
+     * Cleaned up automatically in tearDown.
+     *
+     * @var array<string>
+     */
+    protected array $tempFixtures = [];
+
     protected function getComponentFactory(
         $arguments = [],
         $options = []
@@ -97,6 +105,90 @@ class TestCase extends \PHPUnit\Framework\TestCase
     protected function getTemporaryDirectory()
     {
         return Horde_Util::createTempDir();
+    }
+
+    /**
+     * Copy a test fixture to a temporary directory.
+     *
+     * Creates an isolated copy of a fixture directory for tests that need
+     * to modify files. The temporary directory is automatically cleaned up
+     * in tearDown().
+     *
+     * @param string $fixtureName Name of fixture directory (e.g., 'simple')
+     * @return string Path to temporary fixture copy
+     */
+    protected function copyFixture(string $fixtureName): string
+    {
+        $fixtureSource = __DIR__ . '/fixtures/' . $fixtureName;
+
+        if (!is_dir($fixtureSource)) {
+            throw new \RuntimeException("Fixture not found: {$fixtureName}");
+        }
+
+        $tempDir = $this->getTemporaryDirectory();
+        $this->copyRecursive($fixtureSource, $tempDir);
+
+        // Track for cleanup
+        $this->tempFixtures[] = $tempDir;
+
+        return $tempDir;
+    }
+
+    /**
+     * Recursively copy a directory.
+     *
+     * @param string $source Source directory
+     * @param string $dest Destination directory
+     */
+    protected function copyRecursive(string $source, string $dest): void
+    {
+        if (!is_dir($dest)) {
+            mkdir($dest, 0755, true);
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($source, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::SELF_FIRST
+        );
+
+        foreach ($iterator as $item) {
+            $destPath = $dest . DIRECTORY_SEPARATOR . $iterator->getSubPathname();
+
+            if ($item->isDir()) {
+                if (!is_dir($destPath)) {
+                    mkdir($destPath, 0755, true);
+                }
+            } else {
+                copy($item->getPathname(), $destPath);
+            }
+        }
+    }
+
+    /**
+     * Recursively remove a directory.
+     *
+     * @param string $dir Directory to remove
+     */
+    protected function removeRecursive(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($iterator as $item) {
+            if ($item->isDir()) {
+                rmdir($item->getPathname());
+            } else {
+                unlink($item->getPathname());
+            }
+        }
+
+        rmdir($dir);
     }
 
     protected function getHelp()
@@ -191,6 +283,12 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
     public function tearDown(): void
     {
+        // Clean up temporary fixtures
+        foreach ($this->tempFixtures as $tempDir) {
+            $this->removeRecursive($tempDir);
+        }
+        $this->tempFixtures = [];
+
         if (!empty($this->cwd)) {
             chdir($this->cwd);
         }
