@@ -16,6 +16,10 @@ declare(strict_types=1);
 namespace Horde\Components\Module;
 
 use Horde\Components\Component;
+use Horde\Components\Helper\Composer;
+use Horde\Components\Helper\Git;
+use Horde\Components\Output;
+use Horde\Components\Runner\PackageDependencies;
 use Horde\Cli\Cli;
 
 /**
@@ -112,14 +116,57 @@ class Package extends Base
      */
     public function getHelp($action): string
     {
-        return 'Run Package
+        return $this->getPackageHelp();
+    }
 
-For checking the current working directory
-    horde-components Package
+    /**
+     * Get comprehensive help text for package command.
+     *
+     * @return string The help text.
+     */
+    private function getPackageHelp(): string
+    {
+        return <<<'EOT'
+USAGE:
+    horde-components package [subcommand]
 
-For checking a specific directory
-    horde-components Package
-';
+SUBCOMMANDS:
+    status                  Show package information
+    dependencies list       List all dependencies by type
+    dependencies update     Update Horde dependency versions from FRAMEWORK_6_0
+
+EXAMPLES:
+    # Show helpful recommendations (no subcommand)
+    horde-components package
+
+    # Show package info
+    horde-components package status
+
+    # List all dependencies
+    horde-components package dependencies list
+
+    # Update dependency versions (pretend mode)
+    horde-components package dependencies update --pretend
+    horde-components package dependencies update -P
+
+    # Update dependency versions
+    horde-components package dependencies update
+
+DEPENDENCY UPDATE BEHAVIOR:
+    - Only updates horde/* composer dependencies
+    - Reads versions from FRAMEWORK_6_0 branches in git checkout
+    - Uses checkout.dir config or ~/git by default
+    - Skips components not found or not on FRAMEWORK_6_0
+    - Updates .horde.yml and regenerates composer.json
+    - Uses constraint pattern: version 3.0.5 → constraint ^3
+    - Supports global --pretend|-P flag for preview
+
+PRETEND MODE:
+    - Use --pretend or -P to preview changes without modifying files
+    - Works with both 'list' (no-op) and 'update' (preview) commands
+    - Consistent with other horde-components commands
+
+EOT;
     }
 
     /**
@@ -144,11 +191,109 @@ For checking a specific directory
      */
     public function handle(array $options, array $arguments, ?Component $component = null): bool
     {
-        if ((isset($arguments[0]) && $arguments[0] == 'package')) {
-            $cli = $this->dependencies->get(Cli::class);
-            $cli->writeln(print_r($options, true));
-            return true;
+        if (!in_array($arguments[0] ?? '', $this->getActions())) {
+            return false;
         }
-        return false;
+
+        // Extract subcommand
+        $subcommand = $arguments[1] ?? null;
+
+        // Dispatch based on subcommand
+        match ($subcommand) {
+            'status' => $this->handleStatus($component),
+            'dependencies' => $this->handleDependencies($options, $arguments),
+            null => $this->showRecommendations(),
+            default => $this->showUnknownSubcommand($subcommand),
+        };
+
+        return true;
+    }
+
+    /**
+     * Show package status information.
+     *
+     * @param Component|null $component The selected component.
+     */
+    private function handleStatus(?Component $component): void
+    {
+        $output = $this->dependencies->get(Output::class);
+
+        if ($component === null) {
+            $output->error('No component found in current directory.');
+            return;
+        }
+
+        try {
+            $output->bold('Package: ' . $component->getName());
+            $output->plain('Version: ' . $component->getVersion());
+
+            $summary = $component->getSummary();
+            if ($summary) {
+                $output->plain('Description: ' . $summary);
+            }
+
+            $output->plain('');
+        } catch (\Exception $e) {
+            $output->error('Error reading package information: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Handle dependencies subcommands.
+     *
+     * @param array $options CLI options
+     * @param array $arguments CLI arguments
+     */
+    private function handleDependencies(array $options, array $arguments): void
+    {
+        $output = $this->dependencies->get(Output::class);
+        $componentFactory = $this->dependencies->getComponentFactory();
+        $gitHelper = $this->dependencies->get(Git::class);
+        $composerHelper = $this->dependencies->get(Composer::class);
+
+        $runner = new PackageDependencies(
+            $arguments,
+            $options,
+            $output,
+            $componentFactory,
+            $gitHelper,
+            $composerHelper
+        );
+        $runner->run();
+    }
+
+    /**
+     * Show helpful recommendations when no subcommand is provided.
+     */
+    private function showRecommendations(): void
+    {
+        $output = $this->dependencies->get(Output::class);
+
+        $output->plain('Usage: horde-components package <subcommand>');
+        $output->plain('');
+        $output->plain('Available subcommands:');
+        $output->plain('  status             Show package information');
+        $output->plain('  dependencies list  List all dependencies');
+        $output->plain('  dependencies update Update Horde dependency versions');
+        $output->plain('');
+        $output->plain('Examples:');
+        $output->plain('  horde-components package status');
+        $output->plain('  horde-components package dependencies list');
+        $output->plain('  horde-components package dependencies update --pretend');
+        $output->plain('');
+        $output->plain('For more help: horde-components help package');
+    }
+
+    /**
+     * Handle unknown subcommand.
+     *
+     * @param string $subcommand The unknown subcommand.
+     */
+    private function showUnknownSubcommand(string $subcommand): void
+    {
+        $output = $this->dependencies->get(Output::class);
+        $output->error("Unknown subcommand: {$subcommand}");
+        $output->plain('');
+        $this->showRecommendations();
     }
 }
