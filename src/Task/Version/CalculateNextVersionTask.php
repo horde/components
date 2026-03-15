@@ -39,6 +39,7 @@ use Exception;
  *
  * Options:
  * - next_version (string) - Manual version override
+ * - next_relstate (string) - Force stability: 'alpha', 'beta', 'RC', 'stable', or 'unchanged'
  * - version_part (string) - Force bump type: 'minor' or 'patch'
  * - allow_existing_tag (bool) - Skip tag check (default: false)
  *
@@ -79,18 +80,23 @@ class CalculateNextVersionTask extends AbstractTask
         // Determine version source and calculate
         $manualVersion = $context->getOption('next_version');
         $versionPart = $context->getOption('version_part');
+        $nextRelstate = $context->getOption('next_relstate') ?? 'unchanged';
 
         if ($manualVersion !== null) {
             // Path A: Manual version
             $version = Version::fromComposerString($manualVersion);
+            // Apply stability override if provided for manual version
+            if ($nextRelstate !== 'unchanged') {
+                $version = $version->nextVersionObject('patch', $nextRelstate);
+            }
             $source = 'manual';
         } elseif ($versionPart !== null) {
             // Path C: Force version part bump
-            $version = $this->bumpVersionPart($context, $versionPart);
+            $version = $this->bumpVersionPart($context, $versionPart, $nextRelstate);
             $source = 'forced';
         } else {
             // Path B: Calculate from commits
-            $version = $this->calculateFromCommits($context);
+            $version = $this->calculateFromCommits($context, $nextRelstate);
             $source = 'calculated';
         }
 
@@ -129,7 +135,7 @@ class CalculateNextVersionTask extends AbstractTask
     /**
      * Calculate version from conventional commits.
      */
-    private function calculateFromCommits(Context $context): Version
+    private function calculateFromCommits(Context $context, string $nextRelstate): Version
     {
         $topSeverity = $context->getFact('version.top_severity');
 
@@ -144,14 +150,14 @@ class CalculateNextVersionTask extends AbstractTask
 
         $currentVersion = Version::fromComposerString($currentVersionStr);
 
-        // Bump based on severity
-        return $currentVersion->nextVersionObject($topSeverity);
+        // Bump based on severity with optional stability override
+        return $currentVersion->nextVersionObject($topSeverity, $nextRelstate);
     }
 
     /**
      * Bump specific version part.
      */
-    private function bumpVersionPart(Context $context, string $part): Version
+    private function bumpVersionPart(Context $context, string $part, string $nextRelstate): Version
     {
         if (!in_array($part, ['minor', 'patch'])) {
             throw new Exception("Invalid version_part: {$part}. Must be 'minor' or 'patch'.");
@@ -162,7 +168,7 @@ class CalculateNextVersionTask extends AbstractTask
 
         $currentVersion = Version::fromComposerString($currentVersionStr);
 
-        return $currentVersion->nextVersionObject($part);
+        return $currentVersion->nextVersionObject($part, $nextRelstate);
     }
 
     /**
