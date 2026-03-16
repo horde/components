@@ -83,11 +83,19 @@ class CalculateNextVersionTask extends AbstractTask
         $nextRelstate = $context->getOption('next_relstate') ?? 'unchanged';
 
         if ($manualVersion !== null) {
-            // Path A: Manual version
+            // Path A: Manual version - use exactly as provided
             $version = Version::fromComposerString($manualVersion);
-            // Apply stability override if provided for manual version
+
+            // Validate consistency if both next_version and next_relstate provided
             if ($nextRelstate !== 'unchanged') {
-                $version = $version->nextVersionObject('patch', $nextRelstate);
+                $versionStability = $version->getStability();
+                if ($versionStability !== $nextRelstate) {
+                    throw new Exception(
+                        "Conflicting options: --next-version={$manualVersion} has stability '{$versionStability}' "
+                        . "but --next-relstate={$nextRelstate} requests '{$nextRelstate}'. "
+                        . "When providing --next-version, either omit --next-relstate or ensure they match."
+                    );
+                }
             }
             $source = 'manual';
         } elseif ($versionPart !== null) {
