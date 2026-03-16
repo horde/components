@@ -20,6 +20,7 @@ use Horde\Components\Exception;
 use RuntimeException;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Output;
+use Horde\Components\Runner\GithubSync;
 use Horde\GithubApiClient\GithubApiClient;
 use Horde\GithubApiClient\GithubOrganizationId;
 use Horde\Components\RuntimeContext\GitCheckoutDirectory;
@@ -54,6 +55,7 @@ class Github
      *
      * @param EffectiveConfigProvider $config Configuration provider
      * @param array $arguments CLI arguments
+     * @param array $options CLI options
      * @param Output $output The output handler
      * @param GitHelper $gitHelper Git helper for operations
      * @param GithubApiClient $client Github API client
@@ -62,6 +64,7 @@ class Github
     public function __construct(
         private readonly EffectiveConfigProvider $config,
         private readonly array $arguments,
+        private readonly array $options,
         private readonly Output $output,
         private readonly GitHelper $gitHelper,
         private readonly GithubApiClient $client,
@@ -82,6 +85,14 @@ class Github
     public function run(): void
     {
         if (count($this->arguments) == 1 && $this->arguments[0] == 'github-clone-org') {
+            // Check if --detect-differences flag is set
+            // Argv converts dashes to underscores in option keys
+            if (isset($this->options['detect_differences']) || isset($this->options['detect-differences'])) {
+                $this->runDetectDifferences();
+                return;
+            }
+
+            // Original github-clone-org behavior
             // TODO: Configure this
             $headBranch = 'FRAMEWORK_6_0';
             $this->output->ok('About the clone a complete github org.');
@@ -122,6 +133,36 @@ class Github
         } elseif (count($this->arguments) == 1) {
             $this->output->help('For usage help, run: horde-components help git');
             return;
+        }
+    }
+
+    /**
+     * Run detect-differences workflow.
+     *
+     * @return void
+     */
+    private function runDetectDifferences(): void
+    {
+        $sync = new GithubSync(
+            $this->client,
+            $this->gitCheckoutDirectory,
+            $this->gitHelper,
+            $this->output,
+            'horde',
+            $this->localCheckoutDir,
+            $this->gitRepoBase
+        );
+
+        // Detect differences
+        $report = $sync->detectDifferences();
+
+        // Present report
+        $sync->presentReport($report);
+
+        // If --sync flag is set, clone missing repositories
+        if (isset($this->options['sync']) && $report->hasRemoteOnly()) {
+            $this->output->plain('');
+            $sync->syncMissingRepositories($report->remoteOnly);
         }
     }
 }

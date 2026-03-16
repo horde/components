@@ -19,6 +19,7 @@ use Horde\Components\ConfigProvider\EffectiveConfigProvider;
 use Horde\Components\Exception;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Output;
+use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 
 /**
  * Horde\Components\Runner\Git:: runner for git operations.
@@ -50,14 +51,18 @@ class Git
      *
      * @param EffectiveConfigProvider $config Configuration provider
      * @param array $arguments CLI arguments
+     * @param array $options CLI options
      * @param Output $output The output handler
      * @param GitHelper $gitHelper Git helper for operations
+     * @param GitCheckoutDirectory|null $checkoutDir Checkout directory context (optional, for --all-repos)
      */
     public function __construct(
         private readonly EffectiveConfigProvider $config,
         private readonly array $arguments,
+        private readonly array $options,
         private readonly Output $output,
-        private readonly GitHelper $gitHelper
+        private readonly GitHelper $gitHelper,
+        private readonly ?GitCheckoutDirectory $checkoutDir = null
     ) {
         // Try new name first, then fall back to old name for backwards compatibility
         $this->gitRepoBase = $this->config->hasSetting('scm.repo.base')
@@ -121,30 +126,129 @@ class Git
             return;
         }
         if ($this->arguments[1] == 'checkout') {
-            if (count($this->arguments) != 4) {
-                $this->output->help('checkout currently only supports a fixed format');
-                $this->output->help('checkout component branch');
+            $isAllRepos = !empty($this->options['all-repos']);
+            $pattern = $this->options['pattern'] ?? null;
+
+            // Validate: --all-repos and --pattern are mutually exclusive
+            if ($isAllRepos && $pattern) {
+                $this->output->error('--all-repos and --pattern are mutually exclusive');
+                $this->output->help('Use --pattern to filter repos, OR --all-repos for all repos');
+                return;
             }
-            [$git, $action, $component, $branch] = $this->arguments;
-            $component = $this->normalizeComponentName($component);
-            $componentDir = $this->localCheckoutDir . '/' . $component . '/';
-            $this->gitHelper->workflowCheckout(
-                $this->output,
-                $componentDir,
-                $branch
-            );
+
+            if ($isAllRepos || $pattern) {
+                // Multi-repo mode: checkout branch --all-repos OR checkout branch --pattern="X"
+                if ($this->checkoutDir === null) {
+                    $this->output->error('Multi-repo operations require GitCheckoutDirectory dependency');
+                    return;
+                }
+
+                if (count($this->arguments) < 3) {
+                    $this->output->error('Branch name required');
+                    $this->output->help('Usage: checkout [branch] --all-repos OR checkout [branch] --pattern="pattern"');
+                    return;
+                }
+
+                $branch = $this->arguments[2];
+                $repos = [];
+
+                foreach ($this->checkoutDir->getGitDirs() as $componentDir) {
+                    $repoPath = (string) $componentDir;
+                    $repoName = basename($repoPath);
+
+                    // Apply pattern filter if provided
+                    if ($pattern !== null && !fnmatch($pattern, $repoName)) {
+                        continue;
+                    }
+
+                    $repos[] = $repoPath;
+                }
+
+                if (empty($repos)) {
+                    $this->output->warn('No repositories found matching criteria');
+                    return;
+                }
+
+                foreach ($repos as $componentDir) {
+                    $componentName = basename($componentDir);
+                    $this->output->info("Checking out {$branch} in {$componentName}...");
+                    $this->gitHelper->workflowCheckout(
+                        $this->output,
+                        $componentDir,
+                        $branch
+                    );
+                }
+            } else {
+                // Single component mode: checkout component branch
+                if (count($this->arguments) < 4) {
+                    $this->output->help('Usage: checkout [component] [branch] OR checkout [branch] --all-repos OR checkout [branch] --pattern="pattern"');
+                    return;
+                }
+
+                $component = $this->normalizeComponentName($this->arguments[2]);
+                $branch = $this->arguments[3];
+                $componentDir = $this->localCheckoutDir . '/' . $component . '/';
+
+                $this->gitHelper->workflowCheckout(
+                    $this->output,
+                    $componentDir,
+                    $branch
+                );
+            }
             return;
         }
         if ($this->arguments[1] == 'fetch') {
-            if (count($this->arguments) != 3) {
-                $this->output->help('fetch currently only supports a fixed format');
-                $this->output->help('fetch [component]');
+            $isAllRepos = !empty($this->options['all-repos']);
+            $pattern = $this->options['pattern'] ?? null;
+
+            // Validate: --all-repos and --pattern are mutually exclusive
+            if ($isAllRepos && $pattern) {
+                $this->output->error('--all-repos and --pattern are mutually exclusive');
+                $this->output->help('Use --pattern to filter repos, OR --all-repos for all repos');
                 return;
             }
-            [$git, $action, $component] = $this->arguments;
-            $component = $this->normalizeComponentName($component);
-            $componentDir = $this->localCheckoutDir . '/' . $component . '/';
-            $this->gitHelper->fetch($componentDir);
+
+            if ($isAllRepos || $pattern) {
+                // Multi-repo mode
+                if ($this->checkoutDir === null) {
+                    $this->output->error('Multi-repo operations require GitCheckoutDirectory dependency');
+                    return;
+                }
+
+                $repos = [];
+                foreach ($this->checkoutDir->getGitDirs() as $componentDir) {
+                    $repoPath = (string) $componentDir;
+                    $repoName = basename($repoPath);
+
+                    // Apply pattern filter if provided
+                    if ($pattern !== null && !fnmatch($pattern, $repoName)) {
+                        continue;
+                    }
+
+                    $repos[] = $repoPath;
+                }
+
+                if (empty($repos)) {
+                    $this->output->warn('No repositories found matching criteria');
+                    return;
+                }
+
+                foreach ($repos as $componentDir) {
+                    $componentName = basename($componentDir);
+                    $this->output->info("Fetching {$componentName}...");
+                    $this->gitHelper->fetch($componentDir);
+                }
+            } else {
+                // Single component mode
+                if (count($this->arguments) < 3) {
+                    $this->output->help('Usage: fetch [component] OR fetch --all-repos OR fetch --pattern="pattern"');
+                    return;
+                }
+
+                $component = $this->normalizeComponentName($this->arguments[2]);
+                $componentDir = $this->localCheckoutDir . '/' . $component . '/';
+                $this->gitHelper->fetch($componentDir);
+            }
             return;
         }
         if ($this->arguments[1] == 'branch') {

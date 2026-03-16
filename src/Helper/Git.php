@@ -429,9 +429,8 @@ class Git
             $source = 'origin/' . $branch;
         }
         $cmd = sprintf(
-            '%s rebase %s %s',
+            '%s rebase %s',
             $this->gitBin,
-            $branch,
             $source
         );
         return $this->execInDirectory(

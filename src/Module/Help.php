@@ -179,21 +179,40 @@ class Help extends Base
         echo "USAGE:\n";
         echo "    horde-components <command> [options] [arguments]\n";
         echo "    horde-components {$green}help{$reset} <command>\n\n";
-        echo "COMMON COMMANDS:\n";
+
+        echo "SINGLE COMPONENT COMMANDS:\n";
         echo "    {$green}release{$reset} <h6|h5>           Release a component\n";
         echo "    {$green}ci{$reset} <subcommand>           Manage continuous integration\n";
-        echo "    {$green}database{$reset}|{$green}db{$reset} <subcommand>   Manage database setup for testing\n";
-        echo "    {$green}qc{$reset}                        Run quality checks\n\n";
+        echo "    {$green}qc{$reset}                        Run quality checks\n";
+        echo "    {$green}version{$reset}                   Show or update component version\n";
+        echo "    {$green}changed{$reset}                   Generate changelog entries\n";
+        echo "    {$green}pr{$reset}|{$green}pullrequest{$reset}            Create or manage pull requests\n\n";
+
+        echo "MULTI-REPOSITORY COMMANDS:\n";
+        echo "    {$green}github-clone-org{$reset}          Clone all repositories from GitHub organization\n";
+        echo "    {$green}git sync-all{$reset}              Fetch, rebase, and analyze all local repositories\n\n";
+
+        echo "SETUP & CONFIGURATION:\n";
         echo "    {$green}config{$reset}                    Configure horde-components\n";
-        echo "    {$green}status{$reset}                    Show component and environment status\n\n";
-        echo "MORE COMMANDS:\n";
-        echo "    {$green}changed{$reset}, {$green}composer{$reset}, {$green}git{$reset}, {$green}init{$reset}, {$green}install{$reset}, {$green}package{$reset}, {$green}pullrequest{$reset}|{$green}pr{$reset}, {$green}version{$reset}, {$green}web{$reset}\n\n";
-        echo "    Use '{$green}horde-components help{$reset}' to see all commands with descriptions\n";
-        echo "    Use '{$green}horde-components help <command>{$reset}' for detailed command help\n\n";
+        echo "    {$green}status{$reset}                    Show component and environment status\n";
+        echo "    {$green}init{$reset}                      Initialize a new component\n";
+        echo "    {$green}install{$reset}                   Install component dependencies\n";
+        echo "    {$green}database{$reset}|{$green}db{$reset}              Set up test database\n\n";
+
+        echo "OTHER COMMANDS:\n";
+        echo "    {$green}composer{$reset}                  Manage composer.json\n";
+        echo "    {$green}git{$reset}                       Git operations (clone, fetch, branch, tag, push)\n";
+        echo "    {$green}package{$reset}                   Build packages\n";
+        echo "    {$green}web{$reset}                       Start development web server\n\n";
+
+        echo "HELP:\n";
+        echo "    {$green}horde-components help{$reset}              List all commands with descriptions\n";
+        echo "    {$green}horde-components help <command>{$reset}    Show detailed help for a command\n\n";
+
         echo "GETTING STARTED:\n";
-        echo "    {$green}horde-components help{$reset}       Show all available commands\n";
-        echo "    {$green}horde-components status{$reset}     Check your environment\n";
-        echo "    {$green}horde-components config{$reset}     Configure the tool\n";
+        echo "    {$green}horde-components status{$reset}            Check your environment\n";
+        echo "    {$green}horde-components config{$reset}            Configure the tool\n";
+        echo "    {$green}horde-components github-clone-org{$reset}  Clone all Horde repositories\n";
     }
 
     /**
@@ -206,10 +225,11 @@ class Help extends Base
         $categories = [
             'RELEASE & VERSIONING' => ['release', 'version', 'changed'],
             'CI & TESTING' => ['ci', 'database', 'qc'],
-            'GITHUB INTEGRATION' => ['github', 'pullrequest'],
-            'PROJECT SETUP' => ['init', 'install', 'config'],
+            'MULTI-REPOSITORY OPERATIONS' => ['github-clone-org', 'git'],
+            'GITHUB INTEGRATION' => ['pullrequest'],
+            'PROJECT SETUP' => ['init', 'install', 'config', 'status'],
             'BUILD & PACKAGING' => ['composer', 'package'],
-            'UTILITIES' => ['git', 'status', 'web'],
+            'UTILITIES' => ['web'],
         ];
 
         // Build module lookup by action
@@ -230,16 +250,33 @@ class Help extends Base
                 if (isset($modulesByAction[$action])) {
                     $module = $modulesByAction[$action];
                     $description = $module->getShortDescription();
+
+                    // Provide custom descriptions for specific actions
+                    if ($action === 'github-clone-org') {
+                        $description = 'Clone all repositories from GitHub organization';
+                    } elseif ($action === 'git' && $categoryName === 'MULTI-REPOSITORY OPERATIONS') {
+                        $description = 'Git operations for multiple repositories';
+                    }
+
                     printf("    %-20s %s\n", $action, $description);
                 }
             }
             echo "\n";
         }
 
+        echo "MULTI-REPOSITORY EXAMPLES:\n";
+        echo "    horde-components github-clone-org            Clone all Horde repos\n";
+        echo "    horde-components github-clone-org --detect-differences\n";
+        echo "                                                 Check for missing repos\n";
+        echo "    horde-components git sync-all                Sync all repositories\n";
+        echo "    horde-components git sync-all --pretend      Preview sync operations\n";
+        echo "    horde-components git sync-all --pattern=\"Cli*\"\n";
+        echo "                                                 Sync specific repos\n\n";
+
         echo "Use 'horde-components help <command>' for detailed help on a specific command.\n\n";
         echo "EXAMPLES:\n";
         echo "    horde-components help release     See release command help\n";
-        echo "    horde-components help ci          See CI command help\n";
+        echo "    horde-components help git         See git command help\n";
         echo "    horde-components ci help          Alternative syntax\n";
     }
 }

@@ -20,8 +20,10 @@ namespace Horde\Components\Module;
 
 use Horde\Components\Component;
 use Horde\Components\ConfigProvider\ConfigProviderFactory;
+use Horde\Components\Helper\Shell;
 use Horde\Components\Runner\Git as RunnerGit;
 use Horde\Components\Runner\Github as RunnerGithub;
+use Horde\Components\Runner\GitSyncAll;
 use Horde\Components\Output;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\GithubApiClient\GithubApiClient;
@@ -69,10 +71,28 @@ class Git extends Base
      */
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde\Argv\Option(
-            '--git-bin',
-            ['action' => 'store', 'help'   => 'Path to git binary.']
-        )];
+        return [
+            new \Horde\Argv\Option(
+                '--git-bin',
+                ['action' => 'store', 'help'   => 'Path to git binary.']
+            ),
+            new \Horde\Argv\Option(
+                '--detect-differences',
+                ['action' => 'store_true', 'help' => 'Detect differences between GitHub and local repositories.']
+            ),
+            new \Horde\Argv\Option(
+                '--sync',
+                ['action' => 'store_true', 'help' => 'Clone missing repositories after detection.']
+            ),
+            new \Horde\Argv\Option(
+                '--all-repos',
+                ['action' => 'store_true', 'help' => 'Apply operation to all repositories in checkout directory.']
+            ),
+            new \Horde\Argv\Option(
+                '--pattern',
+                ['action' => 'store', 'help' => 'Filter repositories by glob pattern (e.g., "Cli*").']
+            ),
+        ];
     }
 
     /**
@@ -112,7 +132,7 @@ class Git extends Base
      */
     public function getActions(): array
     {
-        return ['git'];
+        return ['git', 'github-clone-org'];
     }
 
     /**
@@ -124,19 +144,84 @@ class Git extends Base
      */
     public function getHelp($action): string
     {
+        if ($action === 'github-clone-org') {
+            return 'Clone and manage all repositories from GitHub organization
+
+Clone all repositories from the Horde organization on GitHub into your local
+checkout directory (default: ~/git/). This is the first step when setting up
+a complete Horde development environment.
+
+BASIC USAGE:
+    horde-components github-clone-org
+
+    Clones all repositories from the horde GitHub organization. If a repository
+    already exists locally, it will be updated (fetch + rebase).
+
+DETECT MISSING REPOSITORIES:
+    horde-components github-clone-org --detect-differences
+
+    Compares your local checkout with GitHub and reports:
+    - Repositories on GitHub that are not cloned locally
+    - Local directories that are not found on GitHub (orphaned)
+    - Repositories that exist in both places
+
+SYNC MISSING REPOSITORIES:
+    horde-components github-clone-org --detect-differences --sync
+
+    Detects differences and automatically clones missing repositories.
+
+CONFIGURATION:
+    The checkout directory can be configured in ~/.config/horde/components.php:
+
+    \'checkout.dir\' => \'/path/to/checkout\',  // Default: ~/git
+
+EXAMPLES:
+    # Initial setup - clone all repos
+    horde-components github-clone-org
+
+    # Check if any repos are missing
+    horde-components github-clone-org --detect-differences
+
+    # Clone any missing repos
+    horde-components github-clone-org --detect-differences --sync
+        ';
+        }
+
         return 'Run Git Actions
+
+MULTI-REPOSITORY OPERATIONS:
 
 For checking out all repositories from an organization
     horde-components github-clone-org
+
+Detect differences between GitHub and local repositories
+    horde-components github-clone-org --detect-differences
+
+Detect and sync missing repositories
+    horde-components github-clone-org --detect-differences --sync
+
+Synchronize repositories (fetch, rebase, analyze)
+    horde-components git sync                     # Sync current directory repo
+    horde-components git sync --all-repos         # Sync all repos
+    horde-components git sync --pattern="Cli*"    # Sync repos matching pattern
+
+Preview sync operations without executing
+    horde-components git sync --all-repos --pretend
+
+SINGLE COMPONENT OPERATIONS:
 
 Clone a component from an online repo
     horde-components git clone [component] [branch]
 
 Fetch metadata from all remotes, including tags
-    horde-components git fetch [component]
+    horde-components git fetch [component]        # Single repo
+    horde-components git fetch --all-repos        # All repos
+    horde-components git fetch --pattern="Cli*"   # Repos matching pattern
 
 Locally checkout a branch
-    horde-components git checkout [component] [branch]
+    horde-components git checkout [component] [branch]    # Single repo
+    horde-components git checkout [branch] --all-repos    # All repos
+    horde-components git checkout [branch] --pattern="Cli*"  # Repos matching pattern
 
 Update a branch from another branch
     horde-components git branch [component] [branch] [source branch]
@@ -146,6 +231,9 @@ Write a tag to a branch
 
 Push a component to a remote
     horde-components git push [component] [remote]
+
+NOTE: --all-repos and --pattern are mutually exclusive.
+      --pattern implies operating on all repos that match the pattern.
         ';
     }
 
@@ -156,7 +244,13 @@ Push a component to a remote
      */
     public function getContextOptionHelp(): array
     {
-        return ['--git-bin' => 'Path to git binary'];
+        return [
+            '--git-bin' => 'Path to git binary',
+            '--detect-differences' => 'Detect differences between GitHub and local repositories',
+            '--sync' => 'Clone missing repositories after detection',
+            '--all-repos' => 'Apply operation to all repositories in checkout directory',
+            '--pattern' => 'Filter repositories by glob pattern',
+        ];
     }
 
     /**
@@ -184,6 +278,7 @@ Push a component to a remote
             $runner = new RunnerGithub(
                 $effectiveConfig,
                 $arguments,
+                $options,
                 $output,
                 $gitHelper,
                 $client,
@@ -193,13 +288,37 @@ Push a component to a remote
             return true;
         }
 
+        // Handle git sync command (replaces sync-all)
+        if (isset($arguments[0]) && $arguments[0] == 'git'
+            && isset($arguments[1]) && ($arguments[1] == 'sync' || $arguments[1] == 'sync-all')) {
+            $checkoutDir = $this->dependencies->get(GitCheckoutDirectory::class);
+            $shell = $this->dependencies->get(Shell::class);
+
+            $runner = new GitSyncAll(
+                $checkoutDir,
+                $gitHelper,
+                $shell,
+                $output
+            );
+
+            $dryRun = isset($options['pretend']) && $options['pretend'];
+            $pattern = $options['pattern'] ?? null;
+
+            $runner->run($dryRun, $pattern);
+            return true;
+        }
+
         // Handle git commands
         if (isset($arguments[0]) && $arguments[0] == 'git') {
+            $checkoutDir = $this->dependencies->get(GitCheckoutDirectory::class);
+
             $runner = new RunnerGit(
                 $effectiveConfig,
                 $arguments,
+                $options,
                 $output,
-                $gitHelper
+                $gitHelper,
+                $checkoutDir
             );
             $runner->run();
             return true;
