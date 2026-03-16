@@ -32,13 +32,15 @@ class Gitignore extends Base
     private const REQUIRED_ENTRIES = [
         '/build/' => 'Build artifacts directory',
         '/vendor/' => 'Composer dependencies directory',
+        '/composer.lock' => 'Composer lock file (libraries should not commit lock files)',
         '/.idea/' => 'PHPStorm IDE settings',
         '/.vscode/' => 'VSCode IDE settings',
         '/.claude/' => 'Claude Code CLI cache and state',
         '/.cline/' => 'Cline extension data',
         '/.php-cs-fixer.cache' => 'PHP CS Fixer cache file',
         '/.phpunit.result.cache' => 'PHPUnit result cache',
-        '/phpstan.neon' => 'PHPStan local configuration (if not committed)',
+        '/.phpunit.cache' => 'PHPUnit Cache (other)',
+        '/phpstan.neon' => 'PHPStan local configuration',
         '/.phpstan.cache/' => 'PHPStan cache directory',
     ];
 
