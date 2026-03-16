@@ -30,7 +30,7 @@ use Exception;
  * identity check (file size comparison) for retry safety.
  *
  * Required Facts:
- * - github.release_id (int) - GitHub release ID
+ * - version.tag_name (string) - Git tag name (e.g., 'v2.0.0')
  *
  * Required Options (one of):
  * - file_path (string) - Path to file to upload
@@ -99,18 +99,18 @@ class UploadGitHubAssetTask extends AbstractTask
             ?? basename($filePath);
 
         // Get release info
-        $releaseId = $context->getFact('github.release_id');
+        $tagName = $context->getFact('version.tag_name');
 
-        if ($releaseId === null) {
+        if ($tagName === null) {
             throw new Exception(
-                'github.release_id fact not found. Run CreateGitHubReleaseTask first.'
+                'version.tag_name fact not found. Run CalculateNextVersionTask first.'
             );
         }
 
         // Check if asset already exists
         $existingAsset = $this->githubReleaseCreator->getAssetByName(
             $componentPath,
-            $releaseId,
+            $tagName,
             $assetName
         );
 

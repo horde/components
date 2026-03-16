@@ -251,11 +251,11 @@ class GitHubReleaseCreator
      * Get an asset from a release by name
      *
      * @param string $localDir The local directory path of the component
-     * @param int $releaseId GitHub release ID
+     * @param string $tagName Git tag name (e.g., 'v2.0.0')
      * @param string $assetName Asset filename to find
      * @return object|null Asset object or null if not found
      */
-    public function getAssetByName(string $localDir, int $releaseId, string $assetName): ?object
+    public function getAssetByName(string $localDir, string $tagName, string $assetName): ?object
     {
         // Check if this is a GitHub repository
         if (!$this->githubChecker->isOnGitHub($localDir)) {
@@ -284,8 +284,8 @@ class GitHubReleaseCreator
 
             $repo = GithubRepository::fromFullName($repoFullName);
 
-            // Get release assets
-            $release = $apiClient->getRelease($repo, $releaseId);
+            // Get release by tag
+            $release = $apiClient->getReleaseByTag($repo, $tagName);
 
             if (!$release || !isset($release->assets)) {
                 return null;
