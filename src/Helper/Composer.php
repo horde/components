@@ -248,7 +248,26 @@ class Composer
             }
         }
 
+        // Deep merge extra section from .horde.yml if present
+        if (!empty($package['extra'])) {
+            if (empty($composerDefinition->extra)) {
+                $composerDefinition->extra = new stdClass();
+            }
+
+            // Convert objects to arrays for deep merge
+            $existingExtra = json_decode(json_encode($composerDefinition->extra), true);
+            $newExtra = $package['extra'];
+
+            // Deep merge: .horde.yml values are overlaid on generated values
+            // array_replace_recursive ensures nested keys are merged, not replaced
+            $mergedExtra = array_replace_recursive($existingExtra, $newExtra);
+
+            // Convert back to stdClass for composer.json
+            $composerDefinition->extra = json_decode(json_encode($mergedExtra));
+        }
+
         $jsonDefinition = json_encode($composerDefinition, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
         file_put_contents($filename, $jsonDefinition);
 
 
@@ -473,8 +492,13 @@ class Composer
     protected function _setRequire(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
         $version = ($this->_composerVersion) ? $this->_composerVersion . " || ^3 || ^2" : '^3 || ^2';
-        // Only require the installer if we really need it
-        if (property_exists($composerDefinition, 'type') && !in_array($composerDefinition->type, ['library', 'project', 'application'])) {
+        // Only require the installer if we really need it AND if we're not the installer itself
+        $isInstallerPlugin = property_exists($composerDefinition, 'name')
+            && $composerDefinition->name === 'horde/horde-installer-plugin';
+
+        if (!$isInstallerPlugin
+            && property_exists($composerDefinition, 'type')
+            && !in_array($composerDefinition->type, ['library', 'project', 'application'])) {
             $composerDefinition->require = ['horde/horde-installer-plugin' => $version];
         }
 

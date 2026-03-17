@@ -24,6 +24,8 @@ use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Helper\Composer as ComposerHelper;
 use Horde\Components\Helper\Shell;
+use Horde\Components\Helper\GitHubChecker;
+use Horde\Components\Helper\GitHubReleaseCreator;
 use Horde\Components\Release\HordeRelease;
 use Horde\GithubApiClient\GithubApiConfig;
 
@@ -93,13 +95,13 @@ class Release
             $shell = new Shell();
 
             // Get GitHubChecker and GitHubReleaseCreator from dependencies
-            $githubChecker = new \Horde\Components\Helper\GitHubChecker($gitHelper);
+            $githubChecker = new GitHubChecker($gitHelper);
 
             // Get GitHub token from environment
             $githubToken = getenv('GITHUB_TOKEN') ?: '';
             $githubApiConfig = new GithubApiConfig(accessToken: $githubToken);
 
-            $githubReleaseCreator = new \Horde\Components\Helper\GitHubReleaseCreator(
+            $githubReleaseCreator = new GitHubReleaseCreator(
                 $githubChecker,
                 $this->output,
                 $githubApiConfig

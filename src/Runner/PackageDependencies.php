@@ -26,6 +26,7 @@ use Horde\Components\Task\Composer\UpdateDependenciesTask;
 use Horde\Components\Task\Context;
 use Horde\Components\Wrapper\HordeYml as WrapperHordeYml;
 use Horde\HordeYmlFile\HordeYmlFile;
+use stdClass;
 
 /**
  * Horde\Components\Runner\PackageDependencies:: Handle package dependency management operations
@@ -59,8 +60,7 @@ class PackageDependencies
         private readonly ComponentFactory $componentFactory,
         private readonly Git $gitHelper,
         private readonly Composer $composerHelper,
-    ) {
-    }
+    ) {}
 
     /**
      * Run the dependencies command.
@@ -265,10 +265,8 @@ class PackageDependencies
      */
     private function createMinimalComponent(string $componentPath): \Horde\Components\Component
     {
-        return new class($componentPath) implements \Horde\Components\Component {
-            public function __construct(private string $path)
-            {
-            }
+        return new class ($componentPath) implements \Horde\Components\Component {
+            public function __construct(private string $path) {}
 
             public function getComponentDirectory(): string
             {
@@ -356,9 +354,9 @@ class PackageDependencies
                 return null;
             }
 
-            public function getData(): \stdClass
+            public function getData(): stdClass
             {
-                return new \stdClass();
+                return new stdClass();
             }
 
             public function getDocumentOrigin(): ?string
@@ -387,8 +385,7 @@ class PackageDependencies
                 $stability_api = null,
                 $stability_release = null,
                 $options = []
-            ) {
-            }
+            ) {}
 
             public function currentSentinel($changes, $app, $options): array
             {
@@ -410,16 +407,13 @@ class PackageDependencies
                 return '';
             }
 
-            public function installChannel(\Horde\Components\Pear\Environment $env, $options = []): void
-            {
-            }
+            public function installChannel(\Horde\Components\Pear\Environment $env, $options = []): void {}
 
             public function install(
                 \Horde\Components\Pear\Environment $env,
                 $options = [],
                 $reason = ''
-            ): void {
-            }
+            ): void {}
         };
     }
 
@@ -437,8 +431,8 @@ class PackageDependencies
 
         foreach ($changes as $change) {
             $this->output->plain(
-                "  {$change['package']}: {$change['current']} → {$change['new']} " .
-                "(from version {$change['version']})"
+                "  {$change['package']}: {$change['current']} → {$change['new']} "
+                . "(from version {$change['version']})"
             );
         }
 
@@ -457,8 +451,8 @@ class PackageDependencies
         foreach ($suggestions as $suggestion) {
             $reason = $suggestion['reason'] ?? '';
             $this->output->warn(
-                "  {$suggestion['package']}: {$suggestion['current']} → {$suggestion['new']} " .
-                "(from version {$suggestion['version']}) - {$reason}"
+                "  {$suggestion['package']}: {$suggestion['current']} → {$suggestion['new']} "
+                . "(from version {$suggestion['version']}) - {$reason}"
             );
         }
 

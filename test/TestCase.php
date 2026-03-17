@@ -21,6 +21,9 @@ use Horde\Components\Test\Stub\Output;
 use DirectoryIterator;
 use Horde_Test_Stub_Cli;
 use Horde_Util;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use RuntimeException;
 
 /**
  * Test base.
@@ -122,7 +125,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $fixtureSource = __DIR__ . '/fixtures/' . $fixtureName;
 
         if (!is_dir($fixtureSource)) {
-            throw new \RuntimeException("Fixture not found: {$fixtureName}");
+            throw new RuntimeException("Fixture not found: {$fixtureName}");
         }
 
         $tempDir = $this->getTemporaryDirectory();
@@ -143,12 +146,12 @@ class TestCase extends \PHPUnit\Framework\TestCase
     protected function copyRecursive(string $source, string $dest): void
     {
         if (!is_dir($dest)) {
-            mkdir($dest, 0755, true);
+            mkdir($dest, 0o755, true);
         }
 
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($source, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::SELF_FIRST
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::SELF_FIRST
         );
 
         foreach ($iterator as $item) {
@@ -156,7 +159,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
             if ($item->isDir()) {
                 if (!is_dir($destPath)) {
-                    mkdir($destPath, 0755, true);
+                    mkdir($destPath, 0o755, true);
                 }
             } else {
                 copy($item->getPathname(), $destPath);
@@ -175,9 +178,9 @@ class TestCase extends \PHPUnit\Framework\TestCase
             return;
         }
 
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
         );
 
         foreach ($iterator as $item) {

@@ -17,6 +17,7 @@ namespace Horde\Components\Module;
 
 use Horde\Components\Component;
 use Horde\Components\Dependencies;
+use Horde\Components\Auth\AuthenticationFactory;
 use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\Composer\InstallationDirectory;
 use Horde\Components\ConfigProvider\ConfigProviderFactory;
@@ -239,7 +240,7 @@ SEE ALSO:
             $configFilePath = $locationProperty->getValue($phpConfigProvider);
 
             // Get authentication factory from DI
-            $authFactory = $this->dependencies->get(\Horde\Components\Auth\AuthenticationFactory::class);
+            $authFactory = $this->dependencies->get(AuthenticationFactory::class);
 
             // Instantiate and run runner
             $runner = new RunnerStatus(

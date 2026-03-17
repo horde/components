@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Module;
 
+use Horde\Argv\Option;
 use Horde\Components\Component;
 
 /**
@@ -59,7 +60,7 @@ class Fetchdocs extends Base
      */
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde\Argv\Option(
+        return [new Option(
             '-F',
             '--fetchdocs',
             ['action' => 'store_true', 'help'   => 'Fetches documentation files from remote locations. The files to fetch and their target location will be determined by a DOCS_ORIGIN file in the "doc" or "docs" folder of the selected component.']

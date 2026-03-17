@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Module;
 
+use Horde\Argv\Option;
 use Horde\Components\Component;
 use Horde\Components\ConfigProvider\ConfigProviderFactory;
 use Horde\Components\Component\Factory as ComponentFactory;
@@ -52,32 +53,32 @@ class Init extends Base
     public function getOptionGroupOptions(): array
     {
         return [
-            new \Horde\Argv\Option(
+            new Option(
                 '',
                 '--name',
                 ['action' => 'store', 'help' => 'Component name']
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '',
                 '--author',
                 ['action' => 'store', 'help' => 'Author\'s full name']
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '',
                 '--email',
                 ['action' => 'store', 'help' => 'Author\'s email address']
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '',
                 '--description',
                 ['action' => 'store', 'help' => 'Short description']
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '',
                 '--use-license',
                 ['action' => 'store', 'help' => 'License identifier (default: LGPL-2.1)']
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '',
                 '--force-overwrite',
                 ['action' => 'store_true', 'help' => 'Overwrite existing files']

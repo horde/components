@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Module;
 
+use Horde\Argv\Option;
 use Horde\Components\Component;
 use Horde_Argv_IndentedHelpFormatter;
 
@@ -60,11 +61,11 @@ class Webdocs extends Base
      */
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde\Argv\Option(
+        return [new Option(
             '-W',
             '--webdocs',
             ['action' => 'store_true', 'help'   => 'Generate the documentation for the component in the specified DESTINATION or WEBSOURCE location.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--html-generator',
             ['action' => 'store', 'help'   => 'Path to the Python docutils HTML generator script.']
         )];

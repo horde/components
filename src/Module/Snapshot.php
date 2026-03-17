@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Module;
 
+use Horde\Argv\Option;
 use Horde\Components\Component;
 
 /**
@@ -61,11 +62,11 @@ class Snapshot extends Base
      */
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde\Argv\Option(
+        return [new Option(
             '-z',
             '--snapshot',
             ['action' => 'store_true', 'help'   => 'Generate a development snapshot']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--keep-version',
             ['action' => 'store_true', 'help'   => 'Keep the package version as it is. Usually it will get appended with "devYYYYMMDD".']
         )];

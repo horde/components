@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Module;
 
+use Horde\Argv\Option;
 use Horde\Components\Component;
 use Horde\Components\Output;
 use Horde\Components\Exception;
@@ -60,42 +61,35 @@ class Ci extends Base
     public function getOptionGroupOptions(): array
     {
         return [
-            new \Horde\Argv\Option(
+            new Option(
                 '--ci-mode',
                 [
                     'action' => 'store',
                     'help' => 'CI mode: github or local (default: auto-detect)',
                 ]
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--work-dir',
                 [
                     'action' => 'store',
                     'help' => 'Working directory for CI operations (default: /tmp/horde-ci)',
                 ]
             ),
-            new \Horde\Argv\Option(
-                '--component',
-                [
-                    'action' => 'store',
-                    'help' => 'Component name (default: auto-detect)',
-                ]
-            ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--local-path',
                 [
                     'action' => 'store',
                     'help' => 'Local component path (local mode)',
                 ]
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--force',
                 [
                     'action' => 'store_true',
                     'help' => 'Force overwrite existing files (ci init)',
                 ]
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--dry-run',
                 [
                     'action' => 'store_true',
@@ -222,7 +216,7 @@ CI SETUP - Prepare Environment:
     horde-components ci setup --work-dir=/tmp/my-ci
 
     # GitHub Actions mode (called by bootstrap script)
-    horde-components ci setup --ci-mode=github --component=Db
+    horde-components ci setup --ci-mode=github -c Db
 
     Test lanes created:
     - php8.2-dev     (minimum-stability: dev)

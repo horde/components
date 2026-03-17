@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Module;
 
+use Horde\Argv\Option;
 use Horde\Components\Component;
 
 /**
@@ -61,17 +62,17 @@ class Dependencies extends Base
      */
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde\Argv\Option(
+        return [new Option(
             '-L',
             '--list-deps',
             ['action' => 'store_true', 'help'   => 'generate a dependency listing']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--short',
             ['action' => 'store_true', 'help'   => 'Generate a brief dependency list.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--alldeps',
             ['action' => 'store_true', 'help'   => 'Include all optional dependencies into the dependency list.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--no-tree',
             ['action' => 'store_true', 'help'   => 'Just print the dependencies of this package (YAML format) rather than generating a complete tree.']
         )];

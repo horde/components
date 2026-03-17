@@ -11,6 +11,7 @@
 
 namespace Horde\Components\Qc\Task;
 
+use Horde\Components\Qc\ToolFinder;
 use Phar;
 
 /**
@@ -158,7 +159,7 @@ class Phpcsfixer extends Base
         }
 
         // Use ToolFinder for consistent tool discovery
-        $toolFinder = new \Horde\Components\Qc\ToolFinder($componentPath, $toolsDir);
+        $toolFinder = new ToolFinder($componentPath, $toolsDir);
         return $toolFinder->findBinary('php-cs-fixer');
     }
 

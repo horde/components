@@ -12,6 +12,7 @@
 
 namespace Horde\Components;
 
+use Horde\Argv\Option;
 use Horde\Cli\Modular\ModularCli;
 use Horde\Components\Component\Identify;
 use Horde\Components\ConfigProvider\BuiltinConfigProvider;
@@ -147,10 +148,17 @@ class Components
 
         // Add global options that aren't module-specific
         $parser->addOption(
-            new \Horde\Argv\Option(
+            new Option(
                 '-P',
                 '--pretend',
                 ['action' => 'store_true', 'help' => 'Just pretend and indicate what would be done rather than performing the action.']
+            )
+        );
+        $parser->addOption(
+            new Option(
+                '-c',
+                '--component',
+                ['action' => 'store', 'help' => 'Specify component name to operate on (e.g., "Data" or "horde/Data").']
             )
         );
 

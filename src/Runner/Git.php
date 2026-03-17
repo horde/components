@@ -126,17 +126,17 @@ class Git
             return;
         }
         if ($this->arguments[1] == 'checkout') {
-            $isAllRepos = !empty($this->options['all-repos']);
-            $pattern = $this->options['pattern'] ?? null;
+            $isAllRepos = isset($this->options['all_repos']) && $this->options['all_repos'] === true;
+            $pattern = isset($this->options['pattern']) && $this->options['pattern'] !== '' ? $this->options['pattern'] : null;
 
             // Validate: --all-repos and --pattern are mutually exclusive
-            if ($isAllRepos && $pattern) {
+            if ($isAllRepos && $pattern !== null) {
                 $this->output->error('--all-repos and --pattern are mutually exclusive');
-                $this->output->help('Use --pattern to filter repos, OR --all-repos for all repos');
+                $this->output->plain('Use --all-repos for all repositories, OR --pattern="glob" to filter repositories by pattern.');
                 return;
             }
 
-            if ($isAllRepos || $pattern) {
+            if ($isAllRepos || $pattern !== null) {
                 // Multi-repo mode: checkout branch --all-repos OR checkout branch --pattern="X"
                 if ($this->checkoutDir === null) {
                     $this->output->error('Multi-repo operations require GitCheckoutDirectory dependency');
@@ -198,17 +198,17 @@ class Git
             return;
         }
         if ($this->arguments[1] == 'fetch') {
-            $isAllRepos = !empty($this->options['all-repos']);
-            $pattern = $this->options['pattern'] ?? null;
+            $isAllRepos = isset($this->options['all_repos']) && $this->options['all_repos'] === true;
+            $pattern = isset($this->options['pattern']) && $this->options['pattern'] !== '' ? $this->options['pattern'] : null;
 
             // Validate: --all-repos and --pattern are mutually exclusive
-            if ($isAllRepos && $pattern) {
+            if ($isAllRepos && $pattern !== null) {
                 $this->output->error('--all-repos and --pattern are mutually exclusive');
-                $this->output->help('Use --pattern to filter repos, OR --all-repos for all repos');
+                $this->output->plain('Use --all-repos for all repositories, OR --pattern="glob" to filter repositories by pattern.');
                 return;
             }
 
-            if ($isAllRepos || $pattern) {
+            if ($isAllRepos || $pattern !== null) {
                 // Multi-repo mode
                 if ($this->checkoutDir === null) {
                     $this->output->error('Multi-repo operations require GitCheckoutDirectory dependency');

@@ -14,6 +14,7 @@ namespace Horde\Components\Dependencies;
 
 use Horde\Components\Component\Factory as ComponentFactory;
 use Horde\Components\Composer\InstallationDirectory;
+use Horde\Components\ConfigProvider\ConfigProvider;
 use Horde\Components\ConfigProvider\EnvironmentConfigProvider;
 use Horde\Components\Dependencies;
 use Horde\Components\Output;
@@ -22,6 +23,7 @@ use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Helper\GitHubChecker;
 use Horde\Components\Helper\GitHubReleaseCreator;
 use Horde\Components\Helper\PullRequestManager;
+use Horde\Components\Pear\Factory as PearFactory;
 use Horde\Components\Release\Notes as ReleaseNotes;
 use Horde\Components\Release\Tasks as ReleaseTasks;
 use Horde\Components\Runner\Change as RunnerChange;
@@ -445,7 +447,7 @@ class Injector extends HordeInjector implements Dependencies
     {
         // Get options from ConfigProvider if available, or empty array as fallback
         try {
-            $configProvider = $this->getInstance(\Horde\Components\ConfigProvider\ConfigProvider::class);
+            $configProvider = $this->getInstance(ConfigProvider::class);
             $options = [];
             foreach ($configProvider->getAvailableKeys() as $key) {
                 if ($configProvider->hasSetting($key)) {
@@ -458,7 +460,7 @@ class Injector extends HordeInjector implements Dependencies
 
         return new ComponentFactory(
             $options,
-            $this->getInstance(\Horde\Components\Pear\Factory::class),
+            $this->getInstance(PearFactory::class),
             $this->getInstance(Horde_Http_Client::class),
             $this->getInstance(Output::class),
             $this->getInstance(ReleaseNotes::class)

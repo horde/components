@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Module;
 
+use Horde\Argv\Option;
 use Horde\Components\Component;
 use Horde\Components\Exception;
 use Horde\Components\Output;
@@ -44,7 +45,7 @@ class Pipeline extends Base
 
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde\Argv\Option(
+        return [new Option(
             '',
             '--clean-room-dir',
             ['action' => 'store', 'help'   => 'Where to put the auto-deleted dir?',

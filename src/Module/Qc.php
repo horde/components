@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Module;
 
+use Horde\Argv\Option;
 use Horde\Components\Component;
 use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
@@ -50,23 +51,23 @@ class Qc extends Base
     public function getOptionGroupOptions(): array
     {
         return [
-            new \Horde\Argv\Option(
+            new Option(
                 '-Q',
                 '--qc',
                 ['action' => 'store_true', 'help' => 'Check the package quality.']
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--fix-qc-issues',
                 ['action' => 'store_true', 'help' => 'Automatically fix QC issues where possible.']
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--tools-dir',
                 [
                     'action' => 'store',
                     'help' => 'Directory containing QC tool binaries (PHPUnit, PHPStan, etc.)',
                 ]
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--prefer-config-from',
                 [
                     'action' => 'store',

@@ -53,7 +53,7 @@ class Update
 
     /**
      * @throws \Horde\Components\Exception
-     * @throws \Horde_Pear_Exception
+     * @throws Horde_Pear_Exception
      */
     public function run(): void
     {

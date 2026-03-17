@@ -242,7 +242,7 @@ class GithubSync
         // Ensure parent directory exists
         $parentDir = dirname($localPath);
         if (!is_dir($parentDir)) {
-            if (!mkdir($parentDir, 0755, true)) {
+            if (!mkdir($parentDir, 0o755, true)) {
                 throw new RuntimeException(sprintf('Failed to create directory: %s', $parentDir));
             }
         }

@@ -11,6 +11,7 @@
 
 namespace Horde\Components\Qc\Task;
 
+use Horde\Components\Qc\ToolFinder;
 use Throwable;
 
 /**
@@ -239,7 +240,7 @@ class Phpstan extends Base
         }
 
         // Use ToolFinder for consistent tool discovery
-        $toolFinder = new \Horde\Components\Qc\ToolFinder($componentPath, $toolsDir);
+        $toolFinder = new ToolFinder($componentPath, $toolsDir);
         return $toolFinder->findBinary('phpstan');
     }
 

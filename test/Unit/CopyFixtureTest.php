@@ -11,6 +11,7 @@
 namespace Horde\Components\Unit;
 
 use Horde\Components\Test\TestCase;
+use RuntimeException;
 
 /**
  * Test copyFixture infrastructure.
@@ -18,6 +19,7 @@ use Horde\Components\Test\TestCase;
  * @category   Horde
  * @package    Components
  * @subpackage UnitTests
+ * @coversNothing
  */
 class CopyFixtureTest extends TestCase
 {
@@ -85,7 +87,7 @@ class CopyFixtureTest extends TestCase
 
     public function testInvalidFixtureThrowsException()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Fixture not found');
 
         $this->copyFixture('nonexistent-fixture');

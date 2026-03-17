@@ -1038,7 +1038,7 @@ class RunCommand
         $reporter->postComment(
             owner: $owner,
             repo: $repoName,
-            prNumber: (int)$prNumber,
+            prNumber: (int) $prNumber,
             results: $this->collector->getResults(),
             summary: $this->collector->getSummary(),
             runUrl: $runUrl

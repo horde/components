@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Module;
 
+use Horde\Argv\Option;
 use Horde\Components\Component;
 
 /**
@@ -46,33 +47,33 @@ class Update extends Base
 
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde\Argv\Option(
+        return [new Option(
             '-u',
             '--updatexml',
             ['action' => 'store_true', 'help'   => 'Update the package.xml for the package']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '-A',
             '--action',
             ['action'  => 'store', 'type'    => 'choice', 'choices' => ['update', 'diff', 'print'], 'default' => 'update', 'help'    => 'An optional argument that allows choosing the action that should be performed. The default is "update" which will rewrite the package.xml. "diff" allows you to produce a diffed output of the changes that would be applied with "update" - the "Horde_Text_Diff" package needs to be installed for that. "print" will output the new package.xml to the screen rather than rewriting it.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--regenerate',
             ['action' => 'store_true', 'help'   => 'Replace the old lists with a fresh listing.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--theme',
             ['action' => 'store_true', 'help'   => 'Update a theme\'s package.xml.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--new-version',
             ['action' => 'store', 'help'   => 'Set a new version number in the package.xml.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--new-api',
             ['action' => 'store', 'help'   => 'Set a new api number in the package.xml.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--new-state',
             ['action' => 'store', 'help'   => 'Set a new release state in the package.xml.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--new-apistate',
             ['action' => 'store', 'help'   => 'Set a new api state in the package.xml.']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--sentinel',
             ['action' => 'store_true', 'help'   => 'Update the sentinels in doc/CHANGES and lib/Application.php too.']
         )];

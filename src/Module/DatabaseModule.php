@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Module;
 
+use Horde\Argv\Option;
 use Horde\Components\Component;
 use Horde\Components\Output;
 use Horde\Components\Runner\DatabaseRunner;
@@ -55,21 +56,21 @@ class DatabaseModule extends Base
     public function getOptionGroupOptions(): array
     {
         return [
-            new \Horde\Argv\Option(
+            new Option(
                 '--db-type',
                 [
                     'action' => 'store',
                     'help'   => 'Database type: sqlite, mysql, or postgresql',
                 ]
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--user-type',
                 [
                     'action' => 'store',
                     'help'   => 'User privilege level: admin, power, or restricted',
                 ]
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--auto-password',
                 [
                     'action' => 'store_true',

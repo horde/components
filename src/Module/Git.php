@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Module;
 
+use Horde\Argv\Option;
 use Horde\Components\Component;
 use Horde\Components\ConfigProvider\ConfigProviderFactory;
 use Horde\Components\Helper\Shell;
@@ -72,23 +73,23 @@ class Git extends Base
     public function getOptionGroupOptions(): array
     {
         return [
-            new \Horde\Argv\Option(
+            new Option(
                 '--git-bin',
                 ['action' => 'store', 'help'   => 'Path to git binary.']
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--detect-differences',
                 ['action' => 'store_true', 'help' => 'Detect differences between GitHub and local repositories.']
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--sync',
                 ['action' => 'store_true', 'help' => 'Clone missing repositories after detection.']
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--all-repos',
                 ['action' => 'store_true', 'help' => 'Apply operation to all repositories in checkout directory.']
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--pattern',
                 ['action' => 'store', 'help' => 'Filter repositories by glob pattern (e.g., "Cli*").']
             ),
@@ -202,6 +203,7 @@ Detect and sync missing repositories
 
 Synchronize repositories (fetch, rebase, analyze)
     horde-components git sync                     # Sync current directory repo
+    horde-components git sync -c Data             # Sync specific component
     horde-components git sync --all-repos         # Sync all repos
     horde-components git sync --pattern="Cli*"    # Sync repos matching pattern
 
@@ -215,11 +217,13 @@ Clone a component from an online repo
 
 Fetch metadata from all remotes, including tags
     horde-components git fetch [component]        # Single repo
+    horde-components git fetch -c Data            # Fetch specific component
     horde-components git fetch --all-repos        # All repos
     horde-components git fetch --pattern="Cli*"   # Repos matching pattern
 
 Locally checkout a branch
     horde-components git checkout [component] [branch]    # Single repo
+    horde-components git checkout [branch] -c Data        # Checkout in specific component
     horde-components git checkout [branch] --all-repos    # All repos
     horde-components git checkout [branch] --pattern="Cli*"  # Repos matching pattern
 
@@ -234,6 +238,7 @@ Push a component to a remote
 
 NOTE: --all-repos and --pattern are mutually exclusive.
       --pattern implies operating on all repos that match the pattern.
+      -c/--component specifies a single component by name.
         ';
     }
 
@@ -302,9 +307,47 @@ NOTE: --all-repos and --pattern are mutually exclusive.
             );
 
             $dryRun = isset($options['pretend']) && $options['pretend'];
-            $pattern = $options['pattern'] ?? null;
+            $pattern = isset($options['pattern']) && $options['pattern'] !== '' ? $options['pattern'] : null;
+            $allRepos = isset($options['all_repos']) && $options['all_repos'] === true;
+            $componentFlag = $options['component'] ?? null;
 
-            $runner->run($dryRun, $pattern);
+            // Validate: --all-repos and --pattern are mutually exclusive
+            if ($allRepos && $pattern !== null) {
+                $output->error('--all-repos and --pattern are mutually exclusive');
+                $output->plain('Use --all-repos for all repositories, OR --pattern="glob" to filter repositories by pattern.');
+                return true;
+            }
+
+            // Validate: -c/--component incompatible with --all-repos/--pattern
+            if ($componentFlag && ($allRepos || $pattern !== null)) {
+                $output->error('-c/--component cannot be used with --all-repos or --pattern');
+                $output->plain('Use -c/--component for a single repository, OR --all-repos/--pattern for multiple repositories.');
+                return true;
+            }
+
+            // Determine single repo: from -c flag, or cwd if no pattern/all-repos
+            $singleRepo = null;
+            if ($componentFlag) {
+                // Use -c flag to specify component
+                $componentName = str_contains($componentFlag, '/') ? $componentFlag : 'horde/' . $componentFlag;
+                $singleRepo = $effectiveConfig->getSetting('checkout.dir') . '/' . $componentName;
+
+                if (!is_dir($singleRepo . '/.git')) {
+                    $output->error("Not a git repository: {$singleRepo}");
+                    return true;
+                }
+            } elseif (!$pattern && !$allRepos) {
+                // Try to detect git repo in current directory
+                $cwd = getcwd();
+                if ($cwd && is_dir($cwd . '/.git')) {
+                    $singleRepo = $cwd;
+                } else {
+                    $output->error('Not in a git repository. Use -c/--component, --all-repos, or --pattern, or run from a repo directory.');
+                    return true;
+                }
+            }
+
+            $runner->run($dryRun, $pattern, $allRepos, $singleRepo);
             return true;
         }
 

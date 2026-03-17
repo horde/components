@@ -21,6 +21,7 @@ use Horde\Components\Helper\Git;
 use Horde\Components\Output;
 use Horde\Components\Runner\PackageDependencies;
 use Horde\Cli\Cli;
+use Exception;
 
 /**
  * Horde\Components\Module\Package:: Frontend to check various aspects of the package under test
@@ -127,46 +128,46 @@ class Package extends Base
     private function getPackageHelp(): string
     {
         return <<<'EOT'
-USAGE:
-    horde-components package [subcommand]
+            USAGE:
+                horde-components package [subcommand]
 
-SUBCOMMANDS:
-    status                  Show package information
-    dependencies list       List all dependencies by type
-    dependencies update     Update Horde dependency versions from FRAMEWORK_6_0
+            SUBCOMMANDS:
+                status                  Show package information
+                dependencies list       List all dependencies by type
+                dependencies update     Update Horde dependency versions from FRAMEWORK_6_0
 
-EXAMPLES:
-    # Show helpful recommendations (no subcommand)
-    horde-components package
+            EXAMPLES:
+                # Show helpful recommendations (no subcommand)
+                horde-components package
 
-    # Show package info
-    horde-components package status
+                # Show package info
+                horde-components package status
 
-    # List all dependencies
-    horde-components package dependencies list
+                # List all dependencies
+                horde-components package dependencies list
 
-    # Update dependency versions (pretend mode)
-    horde-components package dependencies update --pretend
-    horde-components package dependencies update -P
+                # Update dependency versions (pretend mode)
+                horde-components package dependencies update --pretend
+                horde-components package dependencies update -P
 
-    # Update dependency versions
-    horde-components package dependencies update
+                # Update dependency versions
+                horde-components package dependencies update
 
-DEPENDENCY UPDATE BEHAVIOR:
-    - Only updates horde/* composer dependencies
-    - Reads versions from FRAMEWORK_6_0 branches in git checkout
-    - Uses checkout.dir config or ~/git by default
-    - Skips components not found or not on FRAMEWORK_6_0
-    - Updates .horde.yml and regenerates composer.json
-    - Uses constraint pattern: version 3.0.5 → constraint ^3
-    - Supports global --pretend|-P flag for preview
+            DEPENDENCY UPDATE BEHAVIOR:
+                - Only updates horde/* composer dependencies
+                - Reads versions from FRAMEWORK_6_0 branches in git checkout
+                - Uses checkout.dir config or ~/git by default
+                - Skips components not found or not on FRAMEWORK_6_0
+                - Updates .horde.yml and regenerates composer.json
+                - Uses constraint pattern: version 3.0.5 → constraint ^3
+                - Supports global --pretend|-P flag for preview
 
-PRETEND MODE:
-    - Use --pretend or -P to preview changes without modifying files
-    - Works with both 'list' (no-op) and 'update' (preview) commands
-    - Consistent with other horde-components commands
+            PRETEND MODE:
+                - Use --pretend or -P to preview changes without modifying files
+                - Works with both 'list' (no-op) and 'update' (preview) commands
+                - Consistent with other horde-components commands
 
-EOT;
+            EOT;
     }
 
     /**
@@ -233,7 +234,7 @@ EOT;
             }
 
             $output->plain('');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $output->error('Error reading package information: ' . $e->getMessage());
         }
     }

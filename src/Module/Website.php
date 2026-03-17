@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Module;
 
+use Horde\Argv\Option;
 use Horde\Components\Component;
 use Horde\Components\ConfigProvider\ConfigProviderFactory;
 use Horde\Components\Runner\Website as WebsiteRunner;
@@ -50,49 +51,49 @@ class Website extends Base
     public function getOptionGroupOptions(): array
     {
         return [
-            new \Horde\Argv\Option(
+            new Option(
                 '--web-input',
                 [
                     'action' => 'store',
                     'help'   => 'Webhook JSON directory (default: data/webhooks)',
                 ]
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--web-output',
                 [
                     'action' => 'store',
                     'help'   => 'Output directory (default: build/dev.horde.org)',
                 ]
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--web-templates',
                 [
                     'action' => 'store',
                     'help'   => 'Templates directory (default: data/website)',
                 ]
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--web-components',
                 [
                     'action' => 'store',
                     'help'   => 'Component catalog JSON (default: data/website/components.json)',
                 ]
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--web-org',
                 [
                     'action' => 'store',
                     'help'   => 'GitHub organization (default: horde)',
                 ]
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--web-git-dir',
                 [
                     'action' => 'store',
                     'help'   => 'Local git repo directory for version info',
                 ]
             ),
-            new \Horde\Argv\Option(
+            new Option(
                 '--web-token',
                 [
                     'action' => 'store',

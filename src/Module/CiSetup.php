@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Module;
 
+use Horde\Argv\Option;
 use Horde\Components\Component;
 
 /**
@@ -46,13 +47,13 @@ class CiSetup extends Base
 
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde\Argv\Option(
+        return [new Option(
             '--cisetup',
             ['action' => 'store', 'help'   => 'generate the basic Hudson project configuration for a Horde PEAR package in CISETUP']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '--ciprebuild',
             ['action' => 'store', 'help'   => 'generate the Hudson build configuration for a Horde PEAR package in CIPREBUILD']
-        ), new \Horde\Argv\Option(
+        ), new Option(
             '-T',
             '--toolsdir',
             ['action' => 'store', 'help'   => 'the path to the PEAR installation holding the required analysis tools']

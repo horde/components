@@ -26,6 +26,7 @@ use Horde\Components\Task\Build\BuildPharTask;
 use Horde\Components\Task\GitHub\UploadGitHubAssetTask;
 use Horde\Components\Task\Context;
 use Horde\Argv\Option;
+use Exception;
 
 /**
  * Phar module - Build and upload PHAR archives.
@@ -274,7 +275,7 @@ SEE ALSO:
             } else {
                 $output->fail($result->message);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $output->fail('Build failed: ' . $e->getMessage());
             return true;
         }
@@ -304,7 +305,7 @@ SEE ALSO:
 
             $context->setFact('github.release_id', $release->id);
             $context->setFact('github.release_tag', $release->tag_name);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $output->fail('Failed to find GitHub release: ' . $e->getMessage());
             return true;
         }
@@ -352,7 +353,7 @@ SEE ALSO:
             } else {
                 $output->fail($result->message);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $output->fail('Upload failed: ' . $e->getMessage());
             return true;
         }

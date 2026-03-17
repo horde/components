@@ -24,10 +24,12 @@ use Horde\Components\Task\Context;
 use Horde\Components\Task\Result;
 use Horde\Components\Wrapper\HordeYml as WrapperHordeYml;
 use Horde\HordeYmlFile\HordeYmlFile;
+use Horde\HordeYmlFile\Dependencies;
 use Horde\Version\ConstraintParser;
 use Horde\Version\Constraint\CompositeConstraint;
 use Horde\Version\Constraint\CaretConstraint;
 use Horde\Version\RelaxedSemanticVersion;
+use Exception;
 
 /**
  * Update Horde dependency versions from FRAMEWORK_6_0 branches.
@@ -235,7 +237,7 @@ class UpdateDependenciesTask extends AbstractTask
                 $this->output->warn("  {$packageName}: Not on FRAMEWORK_6_0 (on: {$branch})");
                 return null;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return null;
         }
 
@@ -250,7 +252,7 @@ class UpdateDependenciesTask extends AbstractTask
             if ($result !== null) {
                 return $result;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->output->warn("  {$packageName}: Could not read .horde.yml: {$e->getMessage()}");
         }
 
@@ -404,10 +406,10 @@ class UpdateDependenciesTask extends AbstractTask
 
         // Stable versions: use major.minor (feature release)
         // But preserve existing bugfix version if it exists and is higher
-        if ($currentParsed !== null &&
-            $currentParsed['major'] === $major &&
-            $currentParsed['minor'] === $minor &&
-            $currentParsed['patch'] > 0) {
+        if ($currentParsed !== null
+            && $currentParsed['major'] === $major
+            && $currentParsed['minor'] === $minor
+            && $currentParsed['patch'] > 0) {
             // Preserve existing bugfix version
             return "^{$major}.{$minor}.{$currentParsed['patch']}";
         }
@@ -563,7 +565,7 @@ class UpdateDependenciesTask extends AbstractTask
 
         // Convert back to stdClass and create new Dependencies object
         $depsStdClass = json_decode(json_encode($depsArray));
-        $newDeps = \Horde\HordeYmlFile\Dependencies::fromStdClass($depsStdClass);
+        $newDeps = Dependencies::fromStdClass($depsStdClass);
 
         // Save the updated dependencies back to the file
         $hordeYml->setDependencies($newDeps);
@@ -605,7 +607,7 @@ class UpdateDependenciesTask extends AbstractTask
 
         try {
             $newVersionObj = new RelaxedSemanticVersion($newVersion);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'version' => $newVersion,
                 'constraint' => $currentConstraint,
@@ -680,7 +682,7 @@ class UpdateDependenciesTask extends AbstractTask
             // No update needed
             return null;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Parse error or other issue - mark as TODO
             return [
                 'version' => $newVersion,

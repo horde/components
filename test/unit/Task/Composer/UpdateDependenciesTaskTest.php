@@ -25,6 +25,7 @@ use Horde\HordeYmlFile\HordeYmlFile;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
+use ReflectionClass;
 
 /**
  * Unit tests for UpdateDependenciesTask.
@@ -381,7 +382,7 @@ class UpdateDependenciesTaskTest extends TestCase
      */
     private function invokePrivateMethod(string $methodName, array $args = []): mixed
     {
-        $reflection = new \ReflectionClass($this->task);
+        $reflection = new ReflectionClass($this->task);
         $method = $reflection->getMethod($methodName);
         $method->setAccessible(true);
         return $method->invokeArgs($this->task, $args);

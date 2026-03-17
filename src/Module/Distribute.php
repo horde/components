@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Module;
 
+use Horde\Argv\Option;
 use Horde\Components\Component;
 
 /**
@@ -61,7 +62,7 @@ class Distribute extends Base
      */
     public function getOptionGroupOptions(): array
     {
-        return [new \Horde\Argv\Option(
+        return [new Option(
             '--distribute',
             ['action' => 'store_true', 'help'   => 'Prepare the package definition for the component in the specified DISTRIBUTE location']
         )];

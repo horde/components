@@ -23,6 +23,7 @@ use Horde\GithubApiClient\GithubApiClient;
 use Horde\GithubApiClient\GithubApiConfig;
 use Horde\GithubApiClient\GithubRepository;
 use Horde\GithubApiClient\GithubPullRequestList;
+use Horde\GithubApiClient\CreateReviewParams;
 use Horde\GithubApiClient\MergePullRequestParams;
 use Horde\Http\Client\Curl as CurlClient;
 use Horde\Http\Client\Options;
@@ -285,7 +286,7 @@ class PullRequestManager
         }
 
         try {
-            $params = new \Horde\GithubApiClient\CreateReviewParams(
+            $params = new CreateReviewParams(
                 event: 'APPROVE',
                 body: $body
             );
@@ -329,7 +330,7 @@ class PullRequestManager
         }
 
         try {
-            $params = new \Horde\GithubApiClient\CreateReviewParams(
+            $params = new CreateReviewParams(
                 event: 'REQUEST_CHANGES',
                 body: $body
             );

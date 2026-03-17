@@ -17,6 +17,9 @@ namespace Horde\Components\Runner;
 
 use Horde\Components\Output;
 use Horde\Components\Website\CatalogGenerator;
+use Horde\Components\Website\EventScanner;
+use Horde\Components\Website\EventNormalizer;
+use Horde\Components\Website\PageGenerator;
 use RuntimeException;
 
 /**
@@ -71,11 +74,11 @@ class Website
 
         // Scan and normalize webhook events
         $this->output->info("Scanning webhook events from {$this->config->inputDir}...");
-        $scanner = new \Horde\Components\Website\EventScanner($this->config->inputDir);
+        $scanner = new EventScanner($this->config->inputDir);
         $rawEvents = $scanner->scan();
         $this->output->plain(sprintf("Found %d raw events.", count($rawEvents)));
 
-        $normalizer = new \Horde\Components\Website\EventNormalizer();
+        $normalizer = new EventNormalizer();
         $events = [];
         foreach ($rawEvents as $rawEvent) {
             $normalized = $normalizer->normalize($rawEvent);
@@ -88,7 +91,7 @@ class Website
         // Generate website
         $this->output->info("Generating complete dev.horde.org page...");
         $cssFilename = 'dev.horde.org-black.css';
-        $generator = new \Horde\Components\Website\PageGenerator(
+        $generator = new PageGenerator(
             $this->config->templatesDir,
             $cssFilename,
             $this->config->componentsFile
