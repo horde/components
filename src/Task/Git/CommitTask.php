@@ -158,8 +158,6 @@ class CommitTask extends AbstractTask
             // Emit fact for later tasks
             $context->setFact('git.commit_sha', $commitSha);
 
-            $this->output->ok("Created commit: {$commitSha}");
-
             return Result::success(
                 "Commit created: " . substr($commitSha, 0, 7),
                 ['commit_sha' => $commitSha]

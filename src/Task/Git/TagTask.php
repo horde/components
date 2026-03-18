@@ -114,8 +114,6 @@ class TagTask extends AbstractTask
             // Store tag name as a fact for other tasks
             $context->setFact('git.tag', $tag);
 
-            $this->output->ok("Tag '{$tag}' created");
-
             return Result::success("Tag '{$tag}' created", ['tag' => $tag]);
 
         } catch (Exception $e) {

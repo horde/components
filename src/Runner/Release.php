@@ -88,7 +88,6 @@ class Release
         } elseif ((count($this->arguments) == 2)
         && $this->arguments[0] == 'release'
         && $this->arguments[1] == 'h6') {
-            $this->output->warn('H6 Release Pipeline');
             $path = new ComponentDirectory($this->component->getComponentDirectory());
             $gitHelper = new GitHelper();
             $composerHelper = new ComposerHelper();

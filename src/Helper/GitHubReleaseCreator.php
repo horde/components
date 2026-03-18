@@ -100,7 +100,6 @@ class GitHubReleaseCreator
             $this->output->info("Creating GitHub release for {$repoFullName} tag {$tagName}...");
             $release = $apiClient->createRelease($repo, $params);
 
-            $this->output->ok("GitHub release created successfully: {$release->htmlUrl}");
             return $release;
         } catch (Exception $e) {
             $this->output->warn("Failed to create GitHub release: " . $e->getMessage());
