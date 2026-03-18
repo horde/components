@@ -22,6 +22,7 @@ use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
 use Horde\Components\Output;
 use Horde\Components\Helper\Shell as ShellHelper;
 use Horde\Components\Helper\GitHubReleaseCreator;
+use Horde\Components\Helper\Git;
 use Horde\Components\Task\Build\BuildPharTask;
 use Horde\Components\Task\GitHub\UploadGitHubAssetTask;
 use Horde\Components\Task\Context;
@@ -286,6 +287,7 @@ SEE ALSO:
     private function handleUpload(Context $context, Output $output, bool $pretend, array $options): bool
     {
         $githubReleaseCreator = $this->dependencies->get(GitHubReleaseCreator::class);
+        $git = $this->dependencies->get(Git::class);
 
         // Need to set up github.release_id fact
         $releaseTag = $options['release_tag'] ?? null;
@@ -293,14 +295,24 @@ SEE ALSO:
 
         try {
             if ($releaseTag === null) {
-                // Find latest release
-                $output->info('Finding latest GitHub release...');
-                $release = $githubReleaseCreator->getLatestRelease($componentPath);
-                $releaseTag = $release->tag_name;
-                $output->info("Using release: {$releaseTag}");
-            } else {
-                // Get specified release
-                $release = $githubReleaseCreator->getRelease($componentPath, $releaseTag);
+                // Find latest release - use last git tag
+                $output->info('Finding latest tag...');
+                $releaseTag = $git->getLastTag($componentPath);
+
+                if ($releaseTag === null) {
+                    $output->fail('No tags found. Create a release first or specify --release-tag.');
+                    return true;
+                }
+
+                $output->info("Using latest tag: {$releaseTag}");
+            }
+
+            // Get release for specified tag
+            $release = $githubReleaseCreator->getReleaseByTag($componentPath, $releaseTag);
+
+            if ($release === null) {
+                $output->fail("GitHub release not found for tag: {$releaseTag}");
+                return true;
             }
 
             $context->setFact('github.release_id', $release->id);

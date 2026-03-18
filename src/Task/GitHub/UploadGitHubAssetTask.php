@@ -75,7 +75,7 @@ class UploadGitHubAssetTask extends AbstractTask
 
     public function getName(): string
     {
-        return "Uploa\1 \2i\1 \2u\1 \2sset";
+        return "Upload GitHub Asset";
     }
     public function run(Context $context): Result
     {
@@ -104,6 +104,14 @@ class UploadGitHubAssetTask extends AbstractTask
         if ($tagName === null) {
             throw new Exception(
                 'version.tag_name fact not found. Run CalculateNextVersionTask first.'
+            );
+        }
+
+        $releaseId = $context->getFact('github.release_id');
+
+        if ($releaseId === null) {
+            throw new Exception(
+                'github.release_id fact not found. Run CreateGitHubReleaseTask first.'
             );
         }
 
