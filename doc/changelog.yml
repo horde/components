@@ -1,4 +1,18 @@
 ---
+1.0.0-alpha41:
+  api: 1.0.0-alpha41
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-03-18
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: |-
+    feat: Make the phar upload more robust and verbose
+    fix: Use box.json to look up built phar file location
+    fix phar build and phar upload commands
+    feat: Mention phar command in help
 1.0.0-alpha40:
   api: 1.0.0-alpha40
   state:
