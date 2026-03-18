@@ -1,4 +1,28 @@
 ---
+1.0.0-alpha40:
+  api: 1.0.0-alpha40
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-03-18
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: |-
+    feat(composer): Improve support for generating composer.json for composer plugins
+    feat(git): GitHub repository sync command and mass commands
+    fix: Use getReleaseByTag
+    fix: CalculateNextVersion should honor user-presented version and report on conflict
+    feat(qc): add composer.lock and others to required gitignore entries
+    fix(release): pass next_relstate option to version calculation
+    test: Copy fixtures to a temporary dir if they might be modified by tests.
+    feat(package): add dependencies subcommand for managing Horde dependencies
+    feat(dependencies): Support compound || version constraints for updating
+    ix(phpstan): Multiple analysis findings Level 0-2 fixed.
+    fix(phpstan): exclude files with external tool dependencies
+    fix(phpstan): fix interface case and parameter order issues
+    fix(phar): improve error messages for missing or invalid subcommands
+    feat(phar): add standalone phar command with build and upload subcommands
 1.0.0-alpha39:
   api: 1.0.0-alpha39
   state:
