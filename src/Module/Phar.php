@@ -315,8 +315,26 @@ SEE ALSO:
                 return true;
             }
 
+            // Validate release object has required properties
+            if (!isset($release->id) || !isset($release->tagName)) {
+                $output->fail("Invalid release object returned for tag: {$releaseTag}");
+                return true;
+            }
+
+            $output->info("Found release ID: {$release->id} for tag: {$release->tagName}");
+
             $context->setFact('github.release_id', $release->id);
-            $context->setFact('github.release_tag', $release->tag_name);
+            $context->setFact('github.release_tag', $release->tagName);
+            $context->setFact('github.release_upload_url', $release->uploadUrl);
+            $context->setFact('version.tag_name', $release->tagName);
+
+            // Verify facts were set correctly
+            $verifyTagName = $context->getFact('version.tag_name');
+            $verifyReleaseId = $context->getFact('github.release_id');
+            if ($verifyTagName === null || $verifyReleaseId === null) {
+                $output->fail("Failed to set required facts (tag_name={$verifyTagName}, release_id={$verifyReleaseId})");
+                return true;
+            }
         } catch (Exception $e) {
             $output->fail('Failed to find GitHub release: ' . $e->getMessage());
             return true;

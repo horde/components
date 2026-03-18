@@ -115,6 +115,14 @@ class UploadGitHubAssetTask extends AbstractTask
             );
         }
 
+        $uploadUrl = $context->getFact('github.release_upload_url');
+
+        if ($uploadUrl === null) {
+            throw new Exception(
+                'github.release_upload_url fact not found. Run CreateGitHubReleaseTask first.'
+            );
+        }
+
         // Check if asset already exists
         $existingAsset = $this->githubReleaseCreator->getAssetByName(
             $componentPath,
@@ -130,14 +138,14 @@ class UploadGitHubAssetTask extends AbstractTask
                 // Same size = probably same file (retry scenario)
                 $context->setFact('github.asset_uploaded', false);
                 $context->setFact('github.asset_id', $existingAsset->id);
-                $context->setFact('github.asset_url', $existingAsset->browser_download_url);
+                $context->setFact('github.asset_url', $existingAsset->browserDownloadUrl);
                 $context->setFact('github.asset_name', $assetName);
 
                 return Result::skipped(
                     "GitHub asset already exists: {$assetName}",
                     [
                         'asset_id' => $existingAsset->id,
-                        'asset_url' => $existingAsset->browser_download_url,
+                        'asset_url' => $existingAsset->browserDownloadUrl,
                         'asset_name' => $assetName,
                         'already_existed' => true,
                     ]
@@ -171,7 +179,7 @@ class UploadGitHubAssetTask extends AbstractTask
 
         $asset = $this->githubReleaseCreator->uploadAsset(
             localDir: $componentPath,
-            releaseId: $releaseId,
+            uploadUrl: $uploadUrl,
             filePath: $filePath,
             assetName: $assetName,
             contentType: $contentType
@@ -180,14 +188,14 @@ class UploadGitHubAssetTask extends AbstractTask
         // Emit facts
         $context->setFact('github.asset_uploaded', true);
         $context->setFact('github.asset_id', $asset->id);
-        $context->setFact('github.asset_url', $asset->browser_download_url);
+        $context->setFact('github.asset_url', $asset->browserDownloadUrl);
         $context->setFact('github.asset_name', $assetName);
 
         return Result::success(
-            "Uploaded GitHub asset: {$asset->browser_download_url}",
+            "Uploaded GitHub asset: {$asset->browserDownloadUrl}",
             [
                 'asset_id' => $asset->id,
-                'asset_url' => $asset->browser_download_url,
+                'asset_url' => $asset->browserDownloadUrl,
                 'asset_name' => $assetName,
                 'asset_size' => $asset->size,
                 'uploaded' => true,

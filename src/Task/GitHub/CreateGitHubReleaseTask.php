@@ -68,7 +68,7 @@ class CreateGitHubReleaseTask extends AbstractTask
 
     public function getName(): string
     {
-        return "Creat\1 \2i\1 \2u\1 \2elease";
+        return "Create GitHub Release";
     }
     public function run(Context $context): Result
     {
@@ -138,6 +138,7 @@ class CreateGitHubReleaseTask extends AbstractTask
         $context->setFact('github.release_created', true);
         $context->setFact('github.release_id', $release->id);
         $context->setFact('github.release_url', $release->htmlUrl);
+        $context->setFact('github.release_upload_url', $release->uploadUrl);
         $context->setFact('github.tag_name', $tagName);
 
         return Result::success(
@@ -183,6 +184,7 @@ class CreateGitHubReleaseTask extends AbstractTask
         $context->setFact('github.release_created', false);
         $context->setFact('github.release_id', $existingRelease->id);
         $context->setFact('github.release_url', $existingRelease->htmlUrl);
+        $context->setFact('github.release_upload_url', $existingRelease->uploadUrl);
         $context->setFact('github.tag_name', $expectedTagName);
 
         return Result::skipped(

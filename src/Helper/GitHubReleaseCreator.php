@@ -317,7 +317,7 @@ class GitHubReleaseCreator
      */
     public function uploadAsset(
         string $localDir,
-        int $releaseId,
+        string $uploadUrl,
         string $filePath,
         string $assetName,
         string $contentType = 'application/octet-stream'
@@ -350,23 +350,15 @@ class GitHubReleaseCreator
         $config = new GithubApiConfig(accessToken: $githubToken);
         $apiClient = new GithubApiClient($httpClient, $requestFactory, $config, $streamFactory);
 
-        $repo = GithubRepository::fromFullName($repoFullName);
-
-        // Get release to get upload URL
-        $release = $apiClient->getRelease($repo, $releaseId);
-        if (!$release) {
-            throw new Exception("Release not found: {$releaseId}");
-        }
-
         // Read file content
         $fileContent = file_get_contents($filePath);
         if ($fileContent === false) {
             throw new Exception("Failed to read file: {$filePath}");
         }
 
-        // Upload asset
+        // Upload asset using provided uploadUrl
         $asset = $apiClient->uploadReleaseAsset(
-            $release->uploadUrl,
+            $uploadUrl,
             $assetName,
             $fileContent,
             $contentType
