@@ -203,6 +203,7 @@ class Help extends Base
         echo "    {$green}composer{$reset}                  Manage composer.json\n";
         echo "    {$green}git{$reset}                       Git operations (clone, fetch, branch, tag, push)\n";
         echo "    {$green}package{$reset}                   Build packages\n";
+        echo "    {$green}phar{$reset}                      Build and upload PHAR archives\n";
         echo "    {$green}web{$reset}                       Start development web server\n\n";
 
         echo "HELP:\n";
@@ -228,7 +229,7 @@ class Help extends Base
             'MULTI-REPOSITORY OPERATIONS' => ['github-clone-org', 'git'],
             'GITHUB INTEGRATION' => ['pullrequest'],
             'PROJECT SETUP' => ['init', 'install', 'config', 'status'],
-            'BUILD & PACKAGING' => ['composer', 'package'],
+            'BUILD & PACKAGING' => ['composer', 'package', 'phar'],
             'UTILITIES' => ['web'],
         ];
 
