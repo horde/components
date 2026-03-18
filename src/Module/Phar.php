@@ -324,20 +324,29 @@ SEE ALSO:
 
         // Find PHAR file
         $pharName = $options['phar_name'] ?? null;
+        $pharPath = null;
 
         if ($pharName === null) {
             // Read from box.json.dist
             $boxConfig = $componentPath . '/box.json.dist';
             if (file_exists($boxConfig)) {
                 $boxJson = json_decode(file_get_contents($boxConfig), true);
-                $pharName = basename($boxJson['output'] ?? 'dist.phar');
+                $pharOutput = $boxJson['output'] ?? 'dist.phar';
+
+                // Use full path from box.json.dist (includes build/ directory)
+                $pharPath = $componentPath . '/' . $pharOutput;
+                $pharName = basename($pharOutput);
             } else {
                 $output->fail('No box.json.dist found and --phar-name not specified');
                 return true;
             }
+        } else {
+            // Check both root and build/ directory for custom name
+            $pharPath = $componentPath . '/' . $pharName;
+            if (!file_exists($pharPath)) {
+                $pharPath = $componentPath . '/build/' . $pharName;
+            }
         }
-
-        $pharPath = $componentPath . '/' . $pharName;
 
         if (!file_exists($pharPath)) {
             $output->fail("PHAR not found: {$pharPath}. Run 'phar build' first.");
