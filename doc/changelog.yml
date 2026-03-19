@@ -1,4 +1,16 @@
 ---
+1.0.0-alpha42:
+  api: 1.0.0-alpha42
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-03-19
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: |-
+    fix: Avoid inconsistent filenames between 'phar upload' and 'release h6' commands
+    fix: Remove excessive duplicate messages in release command
 1.0.0-alpha41:
   api: 1.0.0-alpha41
   state:
