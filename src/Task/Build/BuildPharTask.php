@@ -26,16 +26,17 @@ use Exception;
 /**
  * Build a PHAR archive using Box.
  *
- * Builds PHAR with static filename (e.g., 'horde-components.phar') that
- * overwrites existing local file. Skips if box.json.dist doesn't exist.
+ * Builds PHAR at location specified in box.json.dist (e.g., 'build/horde-components.phar')
+ * and uploads to GitHub with basename only (e.g., 'horde-components.phar'). Skips if
+ * box.json.dist doesn't exist.
  *
  * Optional Options:
  * - phar_name (string) - Override PHAR filename
  *
  * Emitted Facts:
  * - phar.built (bool) - True if PHAR built
- * - phar.file_path (string) - Absolute path to PHAR
- * - phar.file_name (string) - PHAR filename
+ * - phar.file_path (string) - Absolute path to PHAR file on disk
+ * - phar.file_name (string) - Basename for GitHub upload (no directory prefix)
  * - phar.file_size (int) - PHAR size in bytes
  *
  * @author    Ralf Lang <lang@b1-systems.de>
@@ -84,16 +85,20 @@ class BuildPharTask extends AbstractTask
             );
         }
 
-        // Determine PHAR filename
-        $pharName = $context->getOption('phar_name');
+        // Determine PHAR file locations
+        $overrideName = $context->getOption('phar_name');
 
-        if ($pharName === null) {
+        if ($overrideName === null) {
             // Read from box.json.dist
             $boxJson = json_decode(file_get_contents($boxConfig), true);
-            $pharName = $boxJson['output'] ?? 'dist.phar';
+            $localPharFilename = $boxJson['output'] ?? 'dist.phar';
+            $localPath = $componentPath . '/' . $localPharFilename;
+            $uploadedFileName = basename($localPharFilename);
+        } else {
+            $localPath = $componentPath . '/' . $overrideName;
+            $localPharFilename = $overrideName;
+            $uploadedFileName = basename($overrideName);
         }
-
-        $pharPath = $componentPath . '/' . $pharName;
 
         // Build PHAR
         if (!$this->pretend) {
@@ -104,33 +109,33 @@ class BuildPharTask extends AbstractTask
             }
 
             // Verify PHAR was created
-            if (!file_exists($pharPath)) {
-                throw new Exception("PHAR not found after build: {$pharPath}");
+            if (!file_exists($localPath)) {
+                throw new Exception("PHAR not found after build: {$localPath}");
             }
 
             // Quick sanity check: PHAR is valid
-            $result = $this->shellHelper->run("php {$pharName} version 2>&1", $componentPath);
+            $result = $this->shellHelper->run("php {$localPath} version 2>&1", $componentPath);
             if ($result->getReturnValue() !== 0) {
                 throw new Exception('Built PHAR is not valid/executable');
             }
         }
 
-        $pharSize = $this->pretend ? 0 : filesize($pharPath);
+        $pharSize = $this->pretend ? 0 : filesize($localPath);
 
         // Emit facts
         $context->setFact('phar.built', true);
-        $context->setFact('phar.file_path', $pharPath);
-        $context->setFact('phar.file_name', $pharName);
+        $context->setFact('phar.file_path', $localPath);
+        $context->setFact('phar.file_name', $uploadedFileName);
         $context->setFact('phar.file_size', $pharSize);
 
         $action = $this->pretend ? 'Would build' : 'Built';
         $sizeInfo = $this->pretend ? '' : ' (' . $this->formatBytes($pharSize) . ')';
 
         return Result::success(
-            "{$action} PHAR: {$pharName}{$sizeInfo}",
+            "{$action} PHAR: {$uploadedFileName}{$sizeInfo}",
             [
-                'phar_path' => $pharPath,
-                'phar_name' => $pharName,
+                'phar_path' => $localPath,
+                'phar_name' => $uploadedFileName,
                 'phar_size' => $pharSize,
             ]
         );
