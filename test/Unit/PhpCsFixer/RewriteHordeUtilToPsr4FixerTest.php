@@ -19,13 +19,18 @@ declare(strict_types=1);
 namespace Horde\Components\Test\Unit\PhpCsFixer;
 
 use Horde\Components\PhpCsFixer\RewriteHordeUtilToPsr4Fixer;
+use Horde\Components\Test\PhpCsFixerLoader;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use PhpCsFixer\Tokenizer\Tokens;
 use SplFileInfo;
 
 /**
  * Tests for RewriteHordeUtilToPsr4Fixer.
+ *
+ * These tests require PHP-CS-Fixer to be installed (PHAR in known locations).
+ * Tests will be skipped if PHP-CS-Fixer is not available.
  *
  * @category Horde
  * @package  Components
@@ -33,9 +38,20 @@ use SplFileInfo;
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 #[CoversClass(RewriteHordeUtilToPsr4Fixer::class)]
+#[Group('phpcsfixer')]
 class RewriteHordeUtilToPsr4FixerTest extends TestCase
 {
     private RewriteHordeUtilToPsr4Fixer $fixer;
+
+    public static function setUpBeforeClass(): void
+    {
+        if (!PhpCsFixerLoader::load()) {
+            self::markTestSkipped(
+                'PHP-CS-Fixer is not available. Install it to run these tests. ' .
+                'See: https://cs.symfony.com/doc/installation.html'
+            );
+        }
+    }
 
     protected function setUp(): void
     {

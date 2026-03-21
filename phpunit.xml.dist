@@ -3,6 +3,10 @@
   <testsuites>
     <testsuite name="default">
       <directory>test</directory>
+      <exclude>test/Unit/PhpCsFixer</exclude>
+    </testsuite>
+    <testsuite name="phpcsfixer">
+      <directory>test/Unit/PhpCsFixer</directory>
     </testsuite>
   </testsuites>
   <source>
