@@ -56,17 +56,28 @@ class YamlLoader
      * Dump data to YAML string.
      *
      * @param mixed $data Data to dump
-     * @param int $indent Indentation
-     * @param int $wordwrap Column to wrap at
-     * @param bool $exceptionOnInvalidType Whether to throw exception on invalid types
+     * @param array $options Options for YAML dumper
      * @return string YAML string
      */
-    public static function dump(
-        $data,
-        int $indent = 2,
-        int $wordwrap = 0,
-        bool $exceptionOnInvalidType = false
-    ): string {
-        return Yaml::dump($data, $indent, $wordwrap, $exceptionOnInvalidType);
+    public static function dump($data, array $options = []): string
+    {
+        return Yaml::dump($data, $options);
+    }
+
+    /**
+     * Load a YAML string and return parsed data.
+     *
+     * @param string $yaml YAML string
+     * @return array<mixed> Parsed YAML data
+     * @throws Exception If YAML is invalid
+     */
+    public static function load(string $yaml): array
+    {
+        try {
+            $result = Yaml::load($yaml);
+            return is_array($result) ? $result : [];
+        } catch (YamlException $e) {
+            throw new Exception("Failed to parse YAML: " . $e->getMessage(), 0, $e);
+        }
     }
 }

@@ -1242,6 +1242,10 @@ class Source extends Base
     /**
      * Returns a file wrapper.
      *
+     * @deprecated Use dependency injection to instantiate wrappers directly
+     *             instead of accessing them through Component::getWrapper().
+     *             Example: new HordeYmlFile($component->getComponentDirectory() . '/.horde.yml')
+     *
      * @param string $file File wrapper to return.
      *
      * @return WrapperApplicationPhp|WrapperChangelogYml|WrapperChanges|WrapperComposerJson|WrapperHordeYml|WrapperPackageXml The requested file wrapper.

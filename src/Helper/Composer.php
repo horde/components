@@ -719,13 +719,62 @@ class Composer
 
     protected function _setConfig(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
+        // Known Composer plugins (application-level list)
+        $knownPlugins = [
+            'horde/horde-installer-plugin',
+            'composer/installers',
+            'composer/satis',
+        ];
+
+        // Start with plugins from .horde.yml
         $plugins = $package->getAllowedPlugins();
+
+        // Handle wildcard permission
         if (!empty($plugins->all)) {
             $composerDefinition->config = ['allow-plugins' => true];
-        } else {
-            $composerDefinition->config = [
-                'allow-plugins' => $plugins,
-            ];
+            return;
         }
+
+        // Convert to array for manipulation
+        $allowedPlugins = (array) $plugins;
+
+        // Auto-allow known plugins that are in require or require-dev
+        foreach ($knownPlugins as $knownPlugin) {
+            // Check if plugin is in require
+            if (isset($composerDefinition->require) && property_exists($composerDefinition->require, $knownPlugin)) {
+                if (!array_key_exists($knownPlugin, $allowedPlugins)) {
+                    $allowedPlugins[$knownPlugin] = true;
+                }
+            }
+            // Check if plugin is in require-dev
+            if (isset($composerDefinition->{'require-dev'}) && property_exists($composerDefinition->{'require-dev'}, $knownPlugin)) {
+                if (!array_key_exists($knownPlugin, $allowedPlugins)) {
+                    $allowedPlugins[$knownPlugin] = true;
+                }
+            }
+        }
+
+        // Start with allow-plugins config
+        $config = [
+            'allow-plugins' => (object) $allowedPlugins,
+        ];
+
+        // Deep merge with explicit config section from .horde.yml if present
+        if (!empty($package['config'])) {
+            $existingConfig = $config;
+            $ymlConfig = $package['config'];
+
+            // Convert to arrays for deep merge
+            $existingConfigArray = json_decode(json_encode($existingConfig), true);
+            $ymlConfigArray = is_array($ymlConfig) ? $ymlConfig : (array)$ymlConfig;
+
+            // Deep merge: .horde.yml values overlay on generated values
+            $mergedConfig = array_replace_recursive($existingConfigArray, $ymlConfigArray);
+
+            // Convert back to stdClass structure
+            $config = json_decode(json_encode($mergedConfig));
+        }
+
+        $composerDefinition->config = $config;
     }
 }

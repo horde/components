@@ -331,6 +331,21 @@ class Injector extends HordeInjector implements Dependencies
     {
         return $this->getInstance(RunnerDependencies::class);
     }
+
+    /**
+     * Create a RunnerDependencies with a specific component and options.
+     *
+     * @param \Horde\Components\Component $component The component
+     * @param array $options CLI options
+     * @return RunnerDependencies The dependency handler
+     */
+    public function createRunnerDependencies(\Horde\Components\Component $component, array $options): RunnerDependencies
+    {
+        $dependenciesHelper = $this->getInstance(\Horde\Components\Helper\Dependencies::class);
+        $componentFactory = $this->getInstance(ComponentFactory::class);
+        return new RunnerDependencies($component, $options, $dependenciesHelper, $componentFactory);
+    }
+
     /**
      * Returns the dependency list handler for a package.
      *

@@ -3,6 +3,8 @@
 // Load custom fixers
 require_once __DIR__ . '/src/PhpCsFixer/RemovePhpVersionCommentFixer.php';
 require_once __DIR__ . '/src/PhpCsFixer/UpdateCopyrightYearFixer.php';
+require_once __DIR__ . '/src/PhpCsFixer/MarkDeprecatedHordeCallsFixer.php';
+require_once __DIR__ . '/src/PhpCsFixer/RewriteHordeUtilToPsr4Fixer.php';
 
 // Only format src/ and test/ directories (exclude lib/ for legacy PSR-0 code)
 $potentialDirs = ['/src', '/test', '/tests'];
@@ -31,6 +33,8 @@ $config = (new PhpCsFixer\Config())
         ],
         'Horde/remove_php_version_comment' => true,
         'Horde/update_copyright_year' => true,
+        'Horde/mark_deprecated_horde_calls' => true,
+        'Horde/rewrite_horde_util_to_psr4' => false, // RISKY - disabled by default
     ])
     ->setFinder($finder)
 ;
@@ -39,6 +43,8 @@ $config = (new PhpCsFixer\Config())
 $config->registerCustomFixers([
     new \Horde\Components\PhpCsFixer\RemovePhpVersionCommentFixer(),
     new \Horde\Components\PhpCsFixer\UpdateCopyrightYearFixer(),
+    new \Horde\Components\PhpCsFixer\MarkDeprecatedHordeCallsFixer(),
+    new \Horde\Components\PhpCsFixer\RewriteHordeUtilToPsr4Fixer(),
 ]);
 
 return $config;

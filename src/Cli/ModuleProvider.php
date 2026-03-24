@@ -16,6 +16,7 @@ use Horde\Components\Module\Composer;
 use Horde\Components\Module\ConventionalCommit;
 use Horde\Components\Module\Change;
 use Horde\Components\Module\DatabaseModule;
+use Horde\Components\Module\Dependencies;
 use Horde\Components\Module\Init;
 use Horde\Components\Module\InstallModule;
 use Horde\Components\Module\Package;
@@ -58,6 +59,7 @@ class ModuleProvider implements CliModuleProvider
             $this->injector->get(ConfigModule::class),
             $this->injector->get(Composer::class),
             $this->injector->get(DatabaseModule::class),
+            $this->injector->get(Dependencies::class),
             $this->injector->get(Git::class),
             $this->injector->get(ConventionalCommit::class),
             $this->injector->get(Help::class),

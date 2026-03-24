@@ -18,6 +18,8 @@ namespace Horde\Components\Module;
 
 use Horde\Argv\Option;
 use Horde\Components\Component;
+use Horde\Components\Component\ComponentDirectory;
+use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
 
 /**
  * Components_Moduledependencies:: generates a dependency listing for the
@@ -62,20 +64,37 @@ class Dependencies extends Base
      */
     public function getOptionGroupOptions(): array
     {
-        return [new Option(
-            '-L',
-            '--list-deps',
-            ['action' => 'store_true', 'help'   => 'generate a dependency listing']
-        ), new Option(
-            '--short',
-            ['action' => 'store_true', 'help'   => 'Generate a brief dependency list.']
-        ), new Option(
-            '--alldeps',
-            ['action' => 'store_true', 'help'   => 'Include all optional dependencies into the dependency list.']
-        ), new Option(
-            '--no-tree',
-            ['action' => 'store_true', 'help'   => 'Just print the dependencies of this package (YAML format) rather than generating a complete tree.']
-        )];
+        return [
+            new Option(
+                '-L',
+                '--list-deps',
+                ['action' => 'store_true', 'help' => 'generate a dependency listing']
+            ),
+            new Option(
+                '--short',
+                ['action' => 'store_true', 'help' => 'Generate a brief dependency list.']
+            ),
+            new Option(
+                '--alldeps',
+                ['action' => 'store_true', 'help' => 'Include all optional dependencies into the dependency list.']
+            ),
+            new Option(
+                '--no-tree',
+                ['action' => 'store_true', 'help' => 'Just print the dependencies of this package (YAML format) rather than generating a complete tree.']
+            ),
+            new Option(
+                '--export-yaml',
+                ['action' => 'store', 'help' => 'Export dependency graph to YAML file (e.g., --export-yaml=deps.yml)']
+            ),
+            new Option(
+                '--detect-plugins',
+                ['action' => 'store_true', 'help' => 'Detect Composer plugins in the dependency tree.']
+            ),
+            new Option(
+                '--allow-network-requests',
+                ['action' => 'store_true', 'help' => 'Allow network requests to resolve dependencies from remote sources (Packagist, etc.).']
+            ),
+        ];
     }
 
     /**
@@ -127,7 +146,15 @@ class Dependencies extends Base
      */
     public function getContextOptionHelp(): array
     {
-        return ['--short' => '', '--alldeps' => '', '--no-tree' => '', '--allow-remote' => 'The dependency list should also resolve the dependency tree of components from remote channels.'];
+        return [
+            '--short' => '',
+            '--alldeps' => '',
+            '--no-tree' => '',
+            '--export-yaml' => 'Export the dependency graph to a YAML file for analysis.',
+            '--detect-plugins' => 'Automatically detect Composer plugins in the dependency tree.',
+            '--allow-network-requests' => 'Allow network requests to resolve dependencies from remote sources (Packagist, PEAR channels, etc.). By default, only local git checkout is used.',
+            '--allow-remote' => 'Legacy option: use --allow-network-requests instead.',
+        ];
     }
 
     /**
@@ -144,7 +171,19 @@ class Dependencies extends Base
     {
         if (!empty($options['list_deps'])
             || (isset($arguments[0]) && $arguments[0] == 'deps')) {
-            $this->dependencies->getRunnerDependencies()->run();
+
+            // Resolve component from working directory if not provided
+            if ($component === null) {
+                $componentDirectory = new ComponentDirectory(new CurrentWorkingDirectory());
+                $component = $this->dependencies
+                    ->getComponentFactory()
+                    ->createSource($componentDirectory);
+            }
+
+            // Create runner with component
+            $runner = $this->dependencies->createRunnerDependencies($component, $options);
+            $runner->run();
+
             return true;
         }
         return false;

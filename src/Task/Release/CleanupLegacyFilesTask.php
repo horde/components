@@ -28,13 +28,14 @@ use Exception;
 /**
  * Delete legacy H5 files that are no longer needed in H6.
  *
- * Removes package.xml and CHANGES files. This task assumes CHANGES has
- * already been migrated to changelog.yml if needed. The runner is
- * responsible for migration before calling this task.
+ * Removes package.xml, CHANGES, and .travis.yml files. This task assumes
+ * CHANGES has already been migrated to changelog.yml if needed. The runner
+ * is responsible for migration before calling this task.
  *
  * Files Removed:
  * - package.xml (PEAR package descriptor, replaced by composer.json)
  * - doc/CHANGES (old changelog format, replaced by changelog.yml)
+ * - .travis.yml (Travis CI configuration, replaced by GitHub Actions)
  *
  * Emitted Facts:
  * - files.deleted (array) - List of deleted files
@@ -74,6 +75,15 @@ class CleanupLegacyFilesTask extends AbstractTask
                 $this->gitHelper->deleteFile($packageXml);
             }
             $deleted[] = 'package.xml';
+        }
+
+        // Delete .travis.yml if exists
+        $travisYml = $componentPath . '/.travis.yml';
+        if (file_exists($travisYml)) {
+            if (!$this->pretend) {
+                $this->gitHelper->deleteFile($travisYml);
+            }
+            $deleted[] = '.travis.yml';
         }
 
         // Search for CHANGES file (may be nested in doc/ subdirectories)
