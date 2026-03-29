@@ -393,6 +393,9 @@ class Composer
             $composerDefinition->type = 'horde-application';
         } elseif ($package['type'] == 'horde-theme') {
             $composerDefinition->type = 'horde-theme';
+        } elseif ($package['type'] == 'extension') {
+            // PIE-compatible PHP extension
+            $composerDefinition->type = 'php-ext';
         } else {
             $composerDefinition->type = $package['type'];
         }
@@ -424,6 +427,11 @@ class Composer
      */
     protected function _setAutoload(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
+        // Extensions don't need PHP autoloading (they're compiled C code)
+        if ($package['type'] === 'extension') {
+            return;
+        }
+
         $composerDefinition->autoload = [];
 
         $Psr0Name = $package['type'] == 'library' ? 'Horde_' . $package['name'] : $package['name'];
@@ -468,6 +476,11 @@ class Composer
      */
     protected function _setAutoloadDev(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
+        // Extensions don't need PHP autoloading (they're compiled C code)
+        if ($package['type'] === 'extension') {
+            return;
+        }
+
         $composerDefinition->{'autoload-dev'} = [];
         $parts = explode('_', (string) $package['name']);
         $parts[] = 'Test';
@@ -528,7 +541,7 @@ class Composer
 
         if (!$isInstallerPlugin
             && property_exists($composerDefinition, 'type')
-            && !in_array($composerDefinition->type, ['library', 'project', 'application'])) {
+            && !in_array($composerDefinition->type, ['library', 'project', 'application', 'php-ext'])) {
             $composerDefinition->require = ['horde/horde-installer-plugin' => $version];
         }
 
@@ -749,6 +762,11 @@ class Composer
 
     protected function _setConfig(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
+        // Extensions don't need Composer plugins
+        if ($package['type'] === 'extension') {
+            return;
+        }
+
         // Known Composer plugins (application-level list)
         $knownPlugins = [
             'horde/horde-installer-plugin',
