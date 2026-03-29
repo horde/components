@@ -175,35 +175,46 @@ class DependencyTreeBuilder
             $component->getName(),
             $component->getChannel(),
             $component->getVersion(),
-            '', // Type will be determined from component if available
+            '', // Type will be determined below
             'git' // Resolved from git checkout
         );
 
-        // Try to get type from component
-        try {
-            // Use reflection to check if method exists (not on interface)
-            if (method_exists($component, 'getWrapper')) {
-                $wrapper = $component->getWrapper('HordeYml');
-                if ($wrapper && isset($wrapper['type'])) {
-                    $node->type = $wrapper['type'];
-                }
-            }
-        } catch (\Exception $e) {
-            // Type not available, leave empty
+        // Get component directory for reading files
+        $componentDir = null;
+        if (method_exists($component, 'getComponentDirectory')) {
+            $componentDir = $component->getComponentDirectory();
         }
 
-        // Store component path for plugin detection
-        try {
-            // Use reflection to check if method exists (not on interface)
-            if (method_exists($component, 'getComponentDirectory')) {
-                $path = $component->getComponentDirectory();
-                $composerJsonPath = $path . '/composer.json';
-                if (file_exists($composerJsonPath)) {
+        // Try to get type from composer.json first (most accurate)
+        if ($componentDir) {
+            $composerJsonPath = $componentDir . '/composer.json';
+            if (file_exists($composerJsonPath)) {
+                try {
+                    $composerJson = json_decode(file_get_contents($composerJsonPath), true);
+                    if (isset($composerJson['type'])) {
+                        $node->type = $composerJson['type'];
+                    }
+                    // Store path for plugin detection
                     $node->metadata['composer_json_path'] = $composerJsonPath;
+                } catch (\Throwable $e) {
+                    // Could not read composer.json
                 }
             }
-        } catch (\Exception $e) {
-            // Path not available
+        }
+
+        // Fallback: try to get type from .horde.yml
+        if (empty($node->type)) {
+            try {
+                if ($componentDir && file_exists($componentDir . '/.horde.yml')) {
+                    $hordeYmlFile = new HordeYmlFile($componentDir . '/.horde.yml');
+                    $hordeYml = $hordeYmlFile->toArray();
+                    if (isset($hordeYml['type'])) {
+                        $node->type = $hordeYml['type'];
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Type not available, leave empty
+            }
         }
 
         return $node;
@@ -411,10 +422,19 @@ class DependencyTreeBuilder
     private function createNodeFromDependencyInfo(array $depInfo): DependencyNode
     {
         $source = 'unknown';
+        $composerType = $depInfo['type'] ?? '';
 
-        // If it's a Horde component, try to resolve from git
-        if ($depInfo['channel'] === 'pear.horde.org' && $this->resolveHordeComponent($depInfo['name']) !== false) {
-            $source = 'git';
+        // If it's a Horde component, try to get type from git checkout
+        if ($depInfo['channel'] === 'pear.horde.org') {
+            $gitDir = $this->findHordeComponentDirectory($depInfo['name']);
+            if ($gitDir !== false) {
+                $source = 'git';
+                // Try to read composer type
+                $type = $this->detectComposerTypeFromDirectory($gitDir);
+                if ($type !== null) {
+                    $composerType = $type;
+                }
+            }
         } elseif ($depInfo['type'] === 'ext') {
             $source = 'ext';
         }
@@ -423,18 +443,18 @@ class DependencyTreeBuilder
             $depInfo['name'],
             $depInfo['channel'],
             $depInfo['version'] ?? '',
-            $depInfo['type'] ?? '',
+            $composerType,
             $source
         );
     }
 
     /**
-     * Try to resolve a Horde component from git checkout.
+     * Find the git directory for a Horde component.
      *
      * @param string $name Component name (e.g., "horde/alarm")
-     * @return Component|false Component if found, false otherwise
+     * @return string|false Directory path if found, false otherwise
      */
-    private function resolveHordeComponent(string $name): Component|false
+    private function findHordeComponentDirectory(string $name): string|false
     {
         // Extract component name from horde/name format
         $componentName = $name;
@@ -447,23 +467,63 @@ class DependencyTreeBuilder
             ucfirst(strtolower($componentName)), // Alarm, Core
             strtoupper($componentName),            // If all caps
             $componentName,                         // Original case
+            // Special case: horde-installer-plugin
+            str_replace('_', '-', strtolower($componentName)),
         ];
 
         foreach ($possibleNames as $tryName) {
             $gitDir = $_SERVER['HOME'] . '/php/git/horde/' . $tryName;
-
             if (is_dir($gitDir) && file_exists($gitDir . '/.horde.yml')) {
-                try {
-                    // Use factory to create component from git directory
-                    return $this->componentFactory->createSource($gitDir);
-                } catch (\Throwable $e) {
-                    // Component has errors (bad composer.json, etc), skip it
-                    return false;
-                }
+                return $gitDir;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Detect composer type from a component directory.
+     *
+     * @param string $dir Component directory path
+     * @return string|null Composer type or null if not found
+     */
+    private function detectComposerTypeFromDirectory(string $dir): ?string
+    {
+        $composerJsonPath = $dir . '/composer.json';
+        if (file_exists($composerJsonPath)) {
+            try {
+                $composerJson = json_decode(file_get_contents($composerJsonPath), true);
+                if (isset($composerJson['type'])) {
+                    return $composerJson['type'];
+                }
+            } catch (\Throwable $e) {
+                // Could not read composer.json
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Try to resolve a Horde component from git checkout.
+     *
+     * @param string $name Component name (e.g., "horde/alarm")
+     * @return Component|false Component if found, false otherwise
+     */
+    private function resolveHordeComponent(string $name): Component|false
+    {
+        $gitDir = $this->findHordeComponentDirectory($name);
+        if ($gitDir === false) {
+            return false;
+        }
+
+        try {
+            // Use factory to create component from git directory
+            return $this->componentFactory->createSource($gitDir);
+        } catch (\Throwable $e) {
+            // Component has errors (bad composer.json, etc), skip it
+            return false;
+        }
     }
 
     /**

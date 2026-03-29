@@ -472,49 +472,26 @@ class Phpstan extends Base
      */
     private function testLevel(string $binary, string $componentPath, int $level, array $options = []): array
     {
+        // Generate temporary config file with auto-detected paths
+        $tempConfig = $this->generateTempConfig($componentPath, $level);
+
         $cmd = [
             escapeshellarg($binary),
             'analyse',
-            '--level=' . $level,
+            '--configuration=' . escapeshellarg($tempConfig),
             '--error-format=json',
             '--no-progress',
             '--no-ansi',
             '--memory-limit=512M',
         ];
 
-        // Do NOT use config file when testing levels
-        // Config files may contain level settings that override --level argument
-        // Always explicitly specify paths instead
-        $configPath = $this->findConfiguration($componentPath, $options);
-        if ($configPath !== null) {
-            // Parse paths from config, but don't use config file
-            $paths = $this->getPathsFromConfig($configPath);
-            if (!empty($paths)) {
-                foreach ($paths as $path) {
-                    if ($path[0] !== '/') {
-                        // Relative path
-                        $path = $componentPath . '/' . $path;
-                    }
-                    $cmd[] = escapeshellarg($path);
-                }
-            } else {
-                // Config exists but no paths - use src/
-                $cmd[] = escapeshellarg($componentPath . '/src');
-            }
-        } else {
-            // No config - default to src/
-            $srcPath = $componentPath . '/src';
-            if (is_dir($srcPath)) {
-                $cmd[] = escapeshellarg($srcPath);
-            } else {
-                $cmd[] = escapeshellarg($componentPath);
-            }
-        }
-
         $command = implode(' ', $cmd);
 
         // Execute and capture output
         exec($command . ' 2>&1', $output, $exitCode);
+
+        // Clean up temp config
+        @unlink($tempConfig);
 
         // Parse JSON output
         $fullOutput = implode("\n", $output);
@@ -537,7 +514,7 @@ class Phpstan extends Base
         }
 
         return [
-            'passed' => ($exitCode === 0 || $errors === 0),
+            'passed' => ($exitCode === 0 && $errors === 0),
             'errors' => $errors,
             'exit_code' => $exitCode,
             'results' => $results,
@@ -578,6 +555,67 @@ class Phpstan extends Base
         }
 
         return $paths;
+    }
+
+    /**
+     * Generate temporary PHPStan config with auto-detected paths.
+     *
+     * @param string $componentPath Path to component directory.
+     * @param int    $level         PHPStan level to enforce.
+     *
+     * @return string Path to temporary config file.
+     */
+    private function generateTempConfig(string $componentPath, int $level): string
+    {
+        // Auto-detect paths to analyze (use absolute paths)
+        $paths = [];
+        $candidates = ['src', 'migration'];
+
+        foreach ($candidates as $candidate) {
+            $path = $componentPath . '/' . $candidate;
+            if (is_dir($path)) {
+                $paths[] = "        - " . $path;
+            }
+        }
+
+        // If no standard paths found, analyze entire component
+        if (empty($paths)) {
+            $paths[] = "        - " . $componentPath;
+        }
+
+        $pathsYaml = implode("\n", $paths);
+
+        // Generate NEON config
+        $phpunitExtension = '';
+        if (file_exists($componentPath . '/vendor/phpstan/phpstan-phpunit/extension.neon')) {
+            $phpunitExtension = "includes:\n    - {$componentPath}/vendor/phpstan/phpstan-phpunit/extension.neon\n";
+        }
+
+        $config = <<<NEON
+{$phpunitExtension}parameters:
+    level: $level
+    paths:
+$pathsYaml
+    excludePaths:
+        - vendor (?)
+        - build (?)
+    tmpDir: build/phpstan
+    bootstrapFiles:
+        - {$componentPath}/vendor/autoload.php
+NEON;
+
+        // Write to temporary file
+        $tempFile = $componentPath . '/build/phpstan-temp-' . getmypid() . '.neon';
+
+        // Ensure build directory exists
+        $buildDir = $componentPath . '/build';
+        if (!is_dir($buildDir)) {
+            mkdir($buildDir, 0755, true);
+        }
+
+        file_put_contents($tempFile, $config);
+
+        return $tempFile;
     }
 
     /**

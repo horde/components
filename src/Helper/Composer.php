@@ -206,6 +206,7 @@ class Composer
         $composerDefinition->homepage = $package['homepage'] ?? 'https://www.horde.org';
         $composerDefinition->license = $package['license']['identifier'];
         $this->_setAuthors($package, $composerDefinition);
+        $this->_setKeywords($package, $composerDefinition, $options);
         // cut off any -git or similar
         [$version] = explode('-', (string) $package['version']['release']);
         // Composer docs advise against writing the version tag to file
@@ -292,6 +293,35 @@ class Composer
                 $composerDefinition->provide = [];
             }
             $composerDefinition->provide[$impl] = $version;
+        }
+    }
+
+    /**
+     * Set keywords for Packagist discoverability
+     */
+    protected function _setKeywords(WrapperHordeYml $package, stdClass $composerDefinition, array $options): void
+    {
+        $keywords = $package['keywords'] ?? [];
+
+        // Ensure keywords is an array
+        if (!is_array($keywords)) {
+            return;
+        }
+
+        // Filter out empty strings and normalize to lowercase
+        $keywords = array_filter($keywords, fn($k) => !empty($k) && is_string($k));
+        $keywords = array_map('strtolower', $keywords);
+        $keywords = array_map('trim', $keywords);
+        $keywords = array_unique($keywords);
+        $keywords = array_values($keywords);
+
+        if (!empty($keywords)) {
+            $composerDefinition->keywords = $keywords;
+        } elseif (isset($options['logger'])) {
+            // Info-level reminder when keywords are missing
+            $options['logger']->info(
+                'Consider adding keywords to .horde.yml for better Packagist discoverability.'
+            );
         }
     }
     /**
@@ -741,13 +771,13 @@ class Composer
         // Auto-allow known plugins that are in require or require-dev
         foreach ($knownPlugins as $knownPlugin) {
             // Check if plugin is in require
-            if (isset($composerDefinition->require) && property_exists($composerDefinition->require, $knownPlugin)) {
+            if (isset($composerDefinition->require) && is_array($composerDefinition->require) && array_key_exists($knownPlugin, $composerDefinition->require)) {
                 if (!array_key_exists($knownPlugin, $allowedPlugins)) {
                     $allowedPlugins[$knownPlugin] = true;
                 }
             }
             // Check if plugin is in require-dev
-            if (isset($composerDefinition->{'require-dev'}) && property_exists($composerDefinition->{'require-dev'}, $knownPlugin)) {
+            if (isset($composerDefinition->{'require-dev'}) && is_array($composerDefinition->{'require-dev'}) && array_key_exists($knownPlugin, $composerDefinition->{'require-dev'})) {
                 if (!array_key_exists($knownPlugin, $allowedPlugins)) {
                     $allowedPlugins[$knownPlugin] = true;
                 }

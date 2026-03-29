@@ -190,19 +190,52 @@ class Dependencies
         $name = $node->name;
         $version = $node->version;
 
-        // Determine the source/type label
+        // Determine the source/type label with composer type if available
         if ($node->channel === 'ext') {
             $sourceLabel = 'PHP extension';
         } elseif ($node->channel === 'pear.horde.org') {
-            $sourceLabel = 'Horde (composer)';
+            // Horde packages - show composer type if available
+            if (!empty($node->type) && $node->type !== 'pkg') {
+                $sourceLabel = $this->formatComposerType($node->type);
+            } else {
+                $sourceLabel = 'Horde (composer)';
+            }
         } elseif ($node->channel === 'packagist.org') {
-            $sourceLabel = 'Packagist';
+            // Packagist packages - show composer type if available
+            if (!empty($node->type) && $node->type !== 'pkg') {
+                $sourceLabel = $this->formatComposerType($node->type);
+            } else {
+                $sourceLabel = 'Packagist';
+            }
         } else {
             // PEAR channel
             $sourceLabel = 'PEAR: ' . $node->channel;
         }
 
         return sprintf("%s-%s [%s]", $name, $version, $sourceLabel);
+    }
+
+    /**
+     * Format composer package type for display.
+     *
+     * @param string $type Composer package type
+     * @return string Formatted type label
+     */
+    private function formatComposerType(string $type): string
+    {
+        // Map composer types to display labels
+        $typeMap = [
+            'library' => 'Library',
+            'composer-plugin' => 'Composer Plugin',
+            'project' => 'Application',
+            'metapackage' => 'Metapackage',
+            'horde-library' => 'Horde Library',
+            'horde-application' => 'Horde Application',
+            'horde-theme' => 'Horde Theme',
+            'horde-languagepack' => 'Horde Language Pack',
+        ];
+
+        return $typeMap[$type] ?? ucfirst(str_replace('-', ' ', $type));
     }
 
     /**

@@ -60,6 +60,11 @@ class Qc
             $sequence[] = 'gitignore';
         }
 
+        // HordeYml check - validates .horde.yml metadata quality
+        if ($this->_doTask('hordeyml', $this->arguments)) {
+            $sequence[] = 'hordeyml';
+        }
+
         if ($this->_doTask('lint', $this->arguments)) {
             $sequence[] = 'lint';
         }
