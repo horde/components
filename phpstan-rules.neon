@@ -1,0 +1,34 @@
+# Shared Horde PHPStan Rules
+#
+# This file contains ONLY the custom Horde architecture rules.
+#
+# Custom rule classes must be loaded before PHPStan processes this config.
+# When using horde-components qc phpstan, the classes are automatically
+# loaded via the phpstan-bootstrap.php file.
+
+parameters:
+    # Tell PHPStan where to find our custom rule classes for reflection
+    # Use absolute path from components root
+    scanFiles:
+        - %rootDir%/../../../src/PhpStan/Rules/NoDirectGlobalAccessRule.php
+        - %rootDir%/../../../src/PhpStan/Rules/RequireImmutableUriUsageRule.php
+        - %rootDir%/../../../src/PhpStan/Rules/NoDeprecatedHordeUtilRule.php
+
+rules:
+  - Horde\Components\PhpStan\Rules\NoDirectGlobalAccessRule
+  - Horde\Components\PhpStan\Rules\RequireImmutableUriUsageRule
+  - Horde\Components\PhpStan\Rules\NoDeprecatedHordeUtilRule
+
+services:
+  -
+    class: Horde\Components\PhpStan\Rules\NoDirectGlobalAccessRule
+    tags:
+      - phpstan.rules.rule
+  -
+    class: Horde\Components\PhpStan\Rules\RequireImmutableUriUsageRule
+    tags:
+      - phpstan.rules.rule
+  -
+    class: Horde\Components\PhpStan\Rules\NoDeprecatedHordeUtilRule
+    tags:
+      - phpstan.rules.rule

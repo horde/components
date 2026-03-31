@@ -1,0 +1,30 @@
+# PHPStan configuration for Horde components
+#
+# When running via `horde-components qc phpstan`, the custom Horde
+# architecture rules are automatically applied. This file only needs
+# to configure component-specific settings.
+
+parameters:
+  level: 4  # Adjust based on component's current compliance
+  paths:
+    - src
+    - test
+  excludePaths:
+    # Add component-specific exclusions if needed
+    # - src/Legacy/*
+
+# Note: Horde architecture rules (NoDirectGlobalAccessRule,
+# RequireImmutableUriUsageRule, NoDeprecatedHordeUtilRule) are
+# automatically included when running via horde-components.
+# No manual configuration needed!
+
+# Component-specific custom rules can be added here if needed:
+# rules:
+#   - YourComponent\PhpStan\Rules\YourCustomRule
+#
+# services:
+#   -
+#     class: YourComponent\PhpStan\Rules\YourCustomRule
+#     tags:
+#       - phpstan.rules.rule
+

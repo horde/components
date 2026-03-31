@@ -1,0 +1,22 @@
+# Example component phpstan.neon that includes shared Horde rules
+#
+# This demonstrates how individual components can:
+# 1. Define their own level and paths
+# 2. Include the shared Horde architecture rules
+# 3. Add component-specific rules if needed
+
+includes:
+  # Include shared Horde architecture violation rules
+  - vendor/horde/components/phpstan-rules.neon
+
+parameters:
+  level: 5  # Component can choose its own strictness level
+  paths:
+    - src
+    - test
+  excludePaths:
+    - src/Legacy/*  # Component-specific exclusions
+
+# Component can add its own custom rules here if needed
+# rules:
+#   - MyComponent\PhpStan\Rules\MyCustomRule

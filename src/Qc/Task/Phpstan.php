@@ -475,15 +475,27 @@ class Phpstan extends Base
         // Generate temporary config file with auto-detected paths
         $tempConfig = $this->generateTempConfig($componentPath, $level);
 
+        // Get horde-components rules bootstrap
+        $componentsRoot = __DIR__ . '/../../..';
+        $componentsBootstrap = realpath($componentsRoot . '/phpstan-bootstrap.php');
+
         $cmd = [
             escapeshellarg($binary),
             'analyse',
             '--configuration=' . escapeshellarg($tempConfig),
+        ];
+
+        // Add autoload file for custom rules
+        if ($componentsBootstrap && file_exists($componentsBootstrap)) {
+            $cmd[] = '--autoload-file=' . escapeshellarg($componentsBootstrap);
+        }
+
+        $cmd = array_merge($cmd, [
             '--error-format=json',
             '--no-progress',
             '--no-ansi',
             '--memory-limit=512M',
-        ];
+        ]);
 
         $command = implode(' ', $cmd);
 
@@ -585,14 +597,16 @@ class Phpstan extends Base
 
         $pathsYaml = implode("\n", $paths);
 
-        // Generate NEON config
-        $phpunitExtension = '';
+        // Check for PHPUnit extension
+        $includesSection = '';
         if (file_exists($componentPath . '/vendor/phpstan/phpstan-phpunit/extension.neon')) {
-            $phpunitExtension = "includes:\n    - {$componentPath}/vendor/phpstan/phpstan-phpunit/extension.neon\n";
+            $includesSection = "includes:\n    - {$componentPath}/vendor/phpstan/phpstan-phpunit/extension.neon\n\n";
         }
 
+        // Note: Custom Horde rules are loaded via --autoload-file CLI parameter
+        // See testLevel() method where phpstan-bootstrap.php is passed
         $config = <<<NEON
-{$phpunitExtension}parameters:
+{$includesSection}parameters:
     level: $level
     paths:
 $pathsYaml
@@ -602,6 +616,25 @@ $pathsYaml
     tmpDir: build/phpstan
     bootstrapFiles:
         - {$componentPath}/vendor/autoload.php
+
+rules:
+    - Horde\\Components\\PhpStan\\Rules\\NoDirectGlobalAccessRule
+    - Horde\\Components\\PhpStan\\Rules\\RequireImmutableUriUsageRule
+    - Horde\\Components\\PhpStan\\Rules\\NoDeprecatedHordeUtilRule
+
+services:
+    -
+        class: Horde\\Components\\PhpStan\\Rules\\NoDirectGlobalAccessRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Horde\\Components\\PhpStan\\Rules\\RequireImmutableUriUsageRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Horde\\Components\\PhpStan\\Rules\\NoDeprecatedHordeUtilRule
+        tags:
+            - phpstan.rules.rule
 NEON;
 
         // Write to temporary file

@@ -1,3 +1,9 @@
+includes:
+  # Include base PHPStan rules at level 4
+  - phar://phpstan.phar/conf/config.level4.neon
+  # Include shared Horde architecture rules
+  - phpstan-rules.neon
+
 parameters:
   errorFormat: github
   treatPhpDocTypesAsCertain: false
@@ -6,6 +12,8 @@ parameters:
     - test
   excludePaths:
     - src/PhpCsFixer/*
+    - src/PhpStan/*  # Don't analyze the analyzers themselves
     - src/Qc/Task/Cs.php
     - src/Qc/Task/Md.php
     - src/Qc/Task/Loc.php
+
