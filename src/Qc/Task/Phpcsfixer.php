@@ -496,7 +496,7 @@ class Phpcsfixer extends Base
      */
     private function resolveConfigPath(string $componentPath, array $options): ?string
     {
-        $preference = $options['prefer_config_from'] ?? null;
+        $preference = $options['prefer_config_from'] ?? 'tool';
 
         // If explicit path provided, use it
         if ($preference !== null && $preference !== 'tool' && $preference !== 'uut') {
