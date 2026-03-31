@@ -235,6 +235,14 @@ class HordeYml extends ArrayObject implements Wrapper, Stringable
     }
 
     /**
+     * Get the underlying HordeYmlFile library object
+     */
+    public function getHordeYmlFile(): LibraryHordeYmlFile
+    {
+        return $this->hordeYmlFile;
+    }
+
+    /**
      * Refresh the ArrayObject data from library
      *
      * Called after modifications to keep ArrayObject in sync

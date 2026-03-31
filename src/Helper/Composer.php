@@ -23,6 +23,7 @@ use Horde\Components\Component\Task\SystemCallResult;
 use Horde\Components\Helper\Shell;
 use stdClass;
 use DirectoryIterator;
+use Horde\HordeYmlFile\Support as HordeYmlSupport;
 use Horde_Date;
 use Horde_String;
 
@@ -207,6 +208,7 @@ class Composer
         $composerDefinition->license = $package['license']['identifier'];
         $this->_setAuthors($package, $composerDefinition);
         $this->_setKeywords($package, $composerDefinition, $options);
+        $this->_setSupport($package, $composerDefinition);
         // cut off any -git or similar
         [$version] = explode('-', (string) $package['version']['release']);
         // Composer docs advise against writing the version tag to file
@@ -324,6 +326,29 @@ class Composer
             );
         }
     }
+
+    /**
+     * Set support section for package contact and resources
+     */
+    protected function _setSupport(WrapperHordeYml $package, stdClass $composerDefinition): void
+    {
+        if (empty($package['support'])) {
+            return;
+        }
+
+        // Get HordeYmlFile\Support from the wrapper
+        $hordeYmlFile = $package->getHordeYmlFile();
+        $hordeYmlSupport = $hordeYmlFile->getSupport();
+
+        if ($hordeYmlSupport === null || $hordeYmlSupport->isEmpty()) {
+            return;
+        }
+
+        // Convert to Composer\Support and set on composer definition
+        $composerSupport = $hordeYmlSupport->toComposerSupport();
+        $composerDefinition->support = $composerSupport->toStdClass();
+    }
+
     /**
      * Build a list of commands which should be exposed to vendor/bin.
      *
@@ -376,7 +401,17 @@ class Composer
 
     protected function _setType(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
-        if (!isset($package['type']) || ($package['type'] == 'library')) {
+        $type = $package['type'] ?? 'library';
+
+        // Direct composer types - pass through as-is
+        $directTypes = ['metapackage', 'composer-plugin', 'project', 'php-ext', 'php-ext-zend'];
+        if (in_array($type, $directTypes, true)) {
+            $composerDefinition->type = $type;
+            return;
+        }
+
+        // Horde type mappings
+        if ($type === 'library') {
             // Only use custom type horde-library if we have to
             // expose something under /web/
             $dir = dirname($package->getFullPath());
@@ -385,21 +420,17 @@ class Composer
             } else {
                 $composerDefinition->type = 'library';
             }
-        }
-        // Debatable. We should probably drop this auto-upgrade soon and rely on the developer to know the difference.
-        elseif ($package['type'] == 'application') {
+        } elseif ($type === 'application' || $type === 'component') {
             $composerDefinition->type = 'horde-application';
-        } elseif ($package['type'] == 'component') {
-            $composerDefinition->type = 'horde-application';
-        } elseif ($package['type'] == 'horde-theme') {
+        } elseif ($type === 'horde-theme') {
             $composerDefinition->type = 'horde-theme';
-        } elseif ($package['type'] == 'extension') {
-            // PIE-compatible PHP extension
+        } elseif ($type === 'extension') {
+            // PIE-compatible PHP extension (standard, not Zend)
             $composerDefinition->type = 'php-ext';
         } else {
-            $composerDefinition->type = $package['type'];
+            // Unknown type - pass through as-is
+            $composerDefinition->type = $type;
         }
-        // No type is perfectly valid for composer. Types for bundles?
     }
 
     protected function _setAuthors(WrapperHordeYml $package, stdClass $composerDefinition): void
@@ -814,7 +845,7 @@ class Composer
 
             // Convert to arrays for deep merge
             $existingConfigArray = json_decode(json_encode($existingConfig), true);
-            $ymlConfigArray = is_array($ymlConfig) ? $ymlConfig : (array)$ymlConfig;
+            $ymlConfigArray = is_array($ymlConfig) ? $ymlConfig : (array) $ymlConfig;
 
             // Deep merge: .horde.yml values overlay on generated values
             $mergedConfig = array_replace_recursive($existingConfigArray, $ymlConfigArray);
