@@ -373,6 +373,50 @@ $data = Horde_Util::dispelMagicQuotes($input);';
         $this->doTest($input);
     }
 
+    public function testIdempotencyForRemovedMethods(): void
+    {
+        $input = '<?php
+namespace MyApp;
+
+$data = Horde_Util::dispelMagicQuotes($input);';
+
+        $file = new SplFileInfo('test.php');
+
+        // First run
+        $tokens = Tokens::fromCode($input);
+        $this->fixer->fix($file, $tokens);
+        $firstRun = $tokens->generateCode();
+
+        // Second run on the output of the first run
+        $tokens = Tokens::fromCode($firstRun);
+        $this->fixer->fix($file, $tokens);
+        $secondRun = $tokens->generateCode();
+
+        $this->assertSame($firstRun, $secondRun, 'Fixer should be idempotent: running twice must produce identical output');
+    }
+
+    public function testIdempotencyForSupportedMethods(): void
+    {
+        $input = '<?php
+namespace MyApp;
+
+$data = Horde_Util::getFormData("key");';
+
+        $file = new SplFileInfo('test.php');
+
+        // First run
+        $tokens = Tokens::fromCode($input);
+        $this->fixer->fix($file, $tokens);
+        $firstRun = $tokens->generateCode();
+
+        // Second run on the output of the first run
+        $tokens = Tokens::fromCode($firstRun);
+        $this->fixer->fix($file, $tokens);
+        $secondRun = $tokens->generateCode();
+
+        $this->assertSame($firstRun, $secondRun, 'Fixer should be idempotent for supported methods');
+    }
+
     /**
      * Test helper to run fixer and compare output.
      *

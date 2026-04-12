@@ -274,6 +274,55 @@ $log = Horde::log("message");';
         $this->doTest($input);
     }
 
+    public function testIdempotency(): void
+    {
+        $input = '<?php
+class Foo {
+    public function bar() {
+        $img = Horde::img("icon.png", "Icon");
+    }
+}';
+
+        $file = new SplFileInfo('test.php');
+
+        // First run
+        $tokens = Tokens::fromCode($input);
+        $this->fixer->fix($file, $tokens);
+        $firstRun = $tokens->generateCode();
+
+        // Second run on the output of the first run
+        $tokens = Tokens::fromCode($firstRun);
+        $this->fixer->fix($file, $tokens);
+        $secondRun = $tokens->generateCode();
+
+        $this->assertSame($firstRun, $secondRun, 'Fixer should be idempotent: running twice must produce identical output');
+    }
+
+    public function testIdempotencyWithMultipleCalls(): void
+    {
+        $input = '<?php
+class Foo {
+    public function bar() {
+        $img = Horde::img("icon.png");
+        $hook = Horde::callHook("hook_name");
+    }
+}';
+
+        $file = new SplFileInfo('test.php');
+
+        // First run
+        $tokens = Tokens::fromCode($input);
+        $this->fixer->fix($file, $tokens);
+        $firstRun = $tokens->generateCode();
+
+        // Second run
+        $tokens = Tokens::fromCode($firstRun);
+        $this->fixer->fix($file, $tokens);
+        $secondRun = $tokens->generateCode();
+
+        $this->assertSame($firstRun, $secondRun, 'Fixer should be idempotent with multiple calls');
+    }
+
     public function testIsCandidateReturnsTrueForHordeCode(): void
     {
         $code = '<?php Horde::img("icon.png");';
