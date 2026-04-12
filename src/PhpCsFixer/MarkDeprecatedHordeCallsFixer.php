@@ -186,8 +186,8 @@ class Foo {
         // Find the start of the statement
         $statementStart = $this->findStatementStart($tokens, $index);
 
-        // Check if there's already a docblock
-        if ($this->hasExistingDocblock($tokens, $statementStart)) {
+        // Check if there's already a violation docblock near this call
+        if ($this->hasExistingDocblock($tokens, $statementStart, $index)) {
             return;
         }
 
@@ -287,25 +287,36 @@ class Foo {
     }
 
     /**
-     * Check if there's already a docblock before the given index.
+     * Check if there's already a docblock near the given call.
      *
-     * @param Tokens $tokens The token stream
-     * @param int    $index  The index to check before
+     * Scans both forward from statementStart (catching docblocks that
+     * findStatementStart walked past) and backward (original position check).
+     * This prevents stacking violation docblocks on repeated fixer runs.
+     *
+     * @param Tokens $tokens         The token stream
+     * @param int    $statementStart The index of the statement start
+     * @param int    $callIndex      The index of the Horde call token
      *
      * @return bool True if a docblock already exists
      */
-    private function hasExistingDocblock(Tokens $tokens, int $index): bool
+    private function hasExistingDocblock(Tokens $tokens, int $statementStart, int $callIndex): bool
     {
-        // Look backwards for a docblock, skipping only whitespace
-        for ($i = $index - 1; $i >= 0; $i--) {
+        // Scan forward from statementStart toward the call for any docblock
+        // (either our violation marker or a user-written docblock)
+        for ($i = $statementStart; $i < $callIndex; $i++) {
+            if ($tokens[$i]->isGivenKind(T_DOC_COMMENT)) {
+                return true;
+            }
+        }
+
+        // Check backward from statementStart for any docblock (our marker or user-written)
+        for ($i = $statementStart - 1; $i >= 0; $i--) {
             $token = $tokens[$i];
 
-            // Found a docblock
             if ($token->isGivenKind(T_DOC_COMMENT)) {
                 return true;
             }
 
-            // Found non-whitespace that's not a docblock
             if (!$token->isGivenKind(T_WHITESPACE)) {
                 return false;
             }

@@ -399,7 +399,7 @@ class Source extends Base
 
         // Update texts.
         $name = $yaml['id'];
-        if ($yaml['type'] == 'library') {
+        if (in_array($yaml['type'], ['library', 'horde-library'])) {
             $name = 'Horde_' . $name;
         }
         $xml->replaceTextNode('/p:package/p:name', $name);
@@ -1219,7 +1219,7 @@ class Source extends Base
         }
         try {
             $info = $this->getHordeYml();
-            if ($info['type'] == 'library') {
+            if (in_array($info['type'], ['library', 'horde-library'])) {
                 $dir .= '/Horde/' . str_replace('_', '/', (string) $info['id']);
             }
         } catch (NotFound) {

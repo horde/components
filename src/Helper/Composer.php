@@ -269,6 +269,33 @@ class Composer
             $composerDefinition->extra = json_decode(json_encode($mergedExtra));
         }
 
+        // Vendor assets: write horde-vendor-assets to extra after validating
+        $vendorAssets = $package->getHordeYmlFile()->getVendorAssets();
+        if ($vendorAssets !== []) {
+            // Collect declared composer dependencies for validation
+            $requiredComposer = $package['dependencies']['required']['composer'] ?? [];
+            $devComposer = $package['dependencies']['dev']['composer'] ?? [];
+            $allComposerDeps = array_merge(
+                array_map('strtolower', array_keys($requiredComposer)),
+                array_map('strtolower', array_keys($devComposer)),
+            );
+
+            if (empty($composerDefinition->extra)) {
+                $composerDefinition->extra = new stdClass();
+            }
+            $assetEntries = [];
+            foreach ($vendorAssets as $asset) {
+                $pkg = strtolower($asset->package);
+                if (!in_array($pkg, $allComposerDeps, true)) {
+                    throw new Exception(
+                        "vendor-assets references package \"{$asset->package}\" which is not declared in dependencies.required.composer or dependencies.dev.composer"
+                    );
+                }
+                $assetEntries[] = $asset->toStdClass();
+            }
+            $composerDefinition->extra->{'horde-vendor-assets'} = $assetEntries;
+        }
+
         $jsonDefinition = json_encode($composerDefinition, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         file_put_contents($filename, $jsonDefinition);
@@ -465,7 +492,7 @@ class Composer
 
         $composerDefinition->autoload = [];
 
-        $Psr0Name = $package['type'] == 'library' ? 'Horde_' . $package['name'] : $package['name'];
+        $Psr0Name = in_array($package['type'], ['library', 'horde-library']) ? 'Horde_' . $package['name'] : $package['name'];
         /**
          * TODO: Support other vendor strings
          */

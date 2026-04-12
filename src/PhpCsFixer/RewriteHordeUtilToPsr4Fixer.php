@@ -225,7 +225,7 @@ $data = Horde_Util::getFormData("key");
         $statementStart = $this->findStatementStart($tokens, $classIndex);
 
         // Check if there's already a docblock or comment
-        if ($this->hasExistingComment($tokens, $statementStart)) {
+        if ($this->hasExistingComment($tokens, $statementStart, $classIndex)) {
             return;
         }
 
@@ -456,16 +456,30 @@ $data = Horde_Util::getFormData("key");
     }
 
     /**
-     * Check if there's already a comment before the given index.
+     * Check if there's already a comment near the given call.
      *
-     * @param Tokens $tokens The token stream
-     * @param int    $index  The index to check before
+     * Scans both forward from statementStart (catching comments that
+     * findStatementStart walked past) and backward (original position check).
+     * This prevents stacking warning comments on repeated fixer runs.
+     *
+     * @param Tokens $tokens         The token stream
+     * @param int    $statementStart The index of the statement start
+     * @param int    $callIndex      The index of the Horde_Util call token
      *
      * @return bool True if a comment already exists
      */
-    private function hasExistingComment(Tokens $tokens, int $index): bool
+    private function hasExistingComment(Tokens $tokens, int $statementStart, int $callIndex): bool
     {
-        for ($i = $index - 1; $i >= 0; $i--) {
+        // Scan forward from statementStart toward the call for any comment
+        // (either our warning marker or a user-written comment)
+        for ($i = $statementStart; $i < $callIndex; $i++) {
+            if ($tokens[$i]->isGivenKind([T_DOC_COMMENT, T_COMMENT])) {
+                return true;
+            }
+        }
+
+        // Check backward from statementStart for any comment (our marker or user-written)
+        for ($i = $statementStart - 1; $i >= 0; $i--) {
             $token = $tokens[$i];
 
             if ($token->isGivenKind([T_DOC_COMMENT, T_COMMENT])) {
