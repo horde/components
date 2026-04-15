@@ -5,13 +5,17 @@ require_once __DIR__ . '/src/PhpCsFixer/RemovePhpVersionCommentFixer.php';
 require_once __DIR__ . '/src/PhpCsFixer/UpdateCopyrightYearFixer.php';
 require_once __DIR__ . '/src/PhpCsFixer/MarkDeprecatedHordeCallsFixer.php';
 require_once __DIR__ . '/src/PhpCsFixer/RewriteHordeUtilToPsr4Fixer.php';
+require_once __DIR__ . '/src/PhpCsFixer/RewriteHordeToPsr4Fixer.php';
 
-// Only format src/ and test/ directories (exclude lib/ for legacy PSR-0 code)
-$potentialDirs = ['/src', '/test', '/tests'];
+// When invoked by horde-components, HORDE_COMPONENT_PATH points to the target
+// component.  Fall back to __DIR__ for standalone / direct invocation.
+$basePath = getenv('HORDE_COMPONENT_PATH') ?: __DIR__;
+
+$potentialDirs = ['/lib', '/src', '/bin', '/app', '/templates', '/migration', '/test', '/tests'];
 
 $finder = (new PhpCsFixer\Finder());
 foreach ($potentialDirs as $dir) {
-    $full = __DIR__ . $dir;
+    $full = $basePath . $dir;
     if (is_dir($full)) {
         $finder->in($full);
     }
@@ -35,6 +39,7 @@ $config = (new PhpCsFixer\Config())
         'Horde/update_copyright_year' => true,
         'Horde/mark_deprecated_horde_calls' => true,
         'Horde/rewrite_horde_util_to_psr4' => false, // RISKY - disabled by default
+        'Horde/rewrite_horde_to_psr4' => false, // RISKY - disabled by default
     ])
     ->setFinder($finder)
 ;
@@ -45,6 +50,7 @@ $config->registerCustomFixers([
     new \Horde\Components\PhpCsFixer\UpdateCopyrightYearFixer(),
     new \Horde\Components\PhpCsFixer\MarkDeprecatedHordeCallsFixer(),
     new \Horde\Components\PhpCsFixer\RewriteHordeUtilToPsr4Fixer(),
+    new \Horde\Components\PhpCsFixer\RewriteHordeToPsr4Fixer(),
 ]);
 
 return $config;
