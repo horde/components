@@ -18,6 +18,7 @@ use Horde\Components\Component\Identify;
 use Horde\Components\ConfigProvider\BuiltinConfigProvider;
 use Horde\Components\ConfigProvider\CliConfigProvider;
 use Horde\Components\ConfigProvider\ConfigProvider;
+use Horde\Components\ConfigProvider\EffectiveConfigProvider;
 use Horde\Components\ConfigProvider\EnvironmentConfigProvider;
 use Horde\Components\ConfigProvider\PhpConfigFileProvider;
 use Horde\Components\ConfigProvider\ConfigProviderFactory;
@@ -108,7 +109,16 @@ class Components
         $injector->setInstance(EnvironmentConfigProvider::class, $environmentConfig);
         $injector->setInstance(BuiltinConfigProvider::class, new BuiltinConfigProvider(
             [
-                'checkout.dir' => $environmentConfig->hasSetting('HOME') ? $environmentConfig->getSetting('HOME') . '/git' : '/srv/git',
+                'checkout.dir' => $environmentConfig->hasSetting('HORDE_GIT_DIR')
+                    ? $environmentConfig->getSetting('HORDE_GIT_DIR')
+                    : ($environmentConfig->hasSetting('HOME')
+                        ? $environmentConfig->getSetting('HOME') . '/git'
+                        : '/srv/git'),
+                'install.dir' => $environmentConfig->hasSetting('HORDE_INSTALL_DIR')
+                    ? $environmentConfig->getSetting('HORDE_INSTALL_DIR')
+                    : ($environmentConfig->hasSetting('HOME')
+                        ? $environmentConfig->getSetting('HOME') . '/www/horde-dev'
+                        : '/srv/www/horde-dev'),
                 'repo.org' => 'horde',
                 'scm.domain' => 'https://github.com',
                 'scm.type' => 'github',
@@ -186,6 +196,7 @@ class Components
         // Get ConfigProvider and register it
         $configProvider = $configFactoryWithCli->createDefault();
         $injector->setInstance(ConfigProvider::class, $configProvider);
+        $injector->setInstance(EffectiveConfigProvider::class, $configProvider);
 
         // Store parsed options for Output factory
         $injector->setInstance('parsed_options', $optionsArray);

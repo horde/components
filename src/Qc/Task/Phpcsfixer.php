@@ -116,8 +116,14 @@ class Phpcsfixer extends Base
             'files_skipped' => 0,
         ];
 
-        // Setup config extraction for PHAR context or resolve config based on options
-        $configPath = $this->setupConfigForPhar($componentPath, $options);
+        // Expose component path to the config file so it can build the Finder
+        // against the target component instead of __DIR__ (which points at
+        // horde-components' own tree when using the tool config).
+        putenv('HORDE_COMPONENT_PATH=' . $componentPath);
+
+        // Setup config extraction for PHAR context or resolve config based on options.
+        // In fix mode, risky rewrite fixers are enabled via a wrapper config.
+        $configPath = $this->setupConfigForPhar($componentPath, $options, $isDryRun);
 
         // Execute PHP CS Fixer
         $exitCode = $this->executePhpCsFixer($binary, $componentPath, $isDryRun, $configPath);
@@ -132,6 +138,7 @@ class Phpcsfixer extends Base
 
         // Cleanup temp config if created
         $this->cleanupTempConfig();
+        putenv('HORDE_COMPONENT_PATH');
 
         // Return number of files with issues as error count
         return $this->stats['files_with_issues'];
@@ -201,7 +208,7 @@ class Phpcsfixer extends Base
     private function executePhpCsFixer(string $binary, string $componentPath, bool $isDryRun, ?string $configPath = null): int
     {
         // First, get total file count using list-files
-        $this->stats['files_checked'] = $this->getTotalFileCount($binary, $componentPath);
+        $this->stats['files_checked'] = $this->getTotalFileCount($binary, $componentPath, $configPath);
 
         // Build command
         $cmd = [
@@ -274,7 +281,7 @@ class Phpcsfixer extends Base
      *
      * @return int Total number of files to be checked.
      */
-    private function getTotalFileCount(string $binary, string $componentPath): int
+    private function getTotalFileCount(string $binary, string $componentPath, ?string $configPath = null): int
     {
         $cmd = [
             'cd',
@@ -282,8 +289,13 @@ class Phpcsfixer extends Base
             '&&',
             escapeshellarg($binary),
             'list-files',
-            '2>/dev/null',
         ];
+
+        if ($configPath !== null) {
+            $cmd[] = '--config=' . escapeshellarg($configPath);
+        }
+
+        $cmd[] = '2>/dev/null';
 
         $command = implode(' ', $cmd);
         $output = shell_exec($command);
@@ -565,20 +577,77 @@ class Phpcsfixer extends Base
     }
 
     /**
+     * Create a wrapper config that enables risky rewrite fixers for fix mode.
+     *
+     * The wrapper requires the base config file, then overrides the risky
+     * rewrite rules to `true` so they run during `--fix-qc-issues`.
+     *
+     * @param string $baseConfigPath Absolute path to the base config file.
+     *
+     * @return string|null Path to the wrapper config, or null on failure.
+     */
+    private function createFixModeConfig(string $baseConfigPath): ?string
+    {
+        if ($this->tempConfigDir === null) {
+            $tempDir = sys_get_temp_dir() . '/horde-cs-fixer-' . uniqid();
+            if (!mkdir($tempDir, 0o755, true)) {
+                $this->getOutput()->warn('Failed to create temp directory for fix-mode config');
+                return $baseConfigPath;
+            }
+            $this->tempConfigDir = $tempDir;
+        }
+
+        $wrapperPath = $this->tempConfigDir . '/.php-cs-fixer.fix-mode.php';
+        $escapedBase = addslashes($baseConfigPath);
+
+        $content = "<?php\n"
+            . "// Generated wrapper — enables risky rewrite fixers for fix mode.\n"
+            . "\$config = require '{$escapedBase}';\n"
+            . "\$rules = \$config->getRules();\n"
+            . "\$rules['Horde/rewrite_horde_util_to_psr4'] = true;\n"
+            // rewrite_horde_to_psr4 is kept disabled until the interaction
+            // with global_namespace_import in mixed files is resolved.
+            // See: Horde:: vs \Horde\Core\Horde:: ambiguity when both
+            // forwarded and non-forwarded calls coexist.
+            // . "\$rules['Horde/rewrite_horde_to_psr4'] = true;\n"
+            . "\$config->setRules(\$rules);\n"
+            . "return \$config;\n";
+
+        if (file_put_contents($wrapperPath, $content) === false) {
+            $this->getOutput()->warn('Failed to write fix-mode config wrapper');
+            return $baseConfigPath;
+        }
+
+        $this->getOutput()->info('Fix mode: risky rewrite fixers enabled');
+
+        return $wrapperPath;
+    }
+
+    /**
      * Setup config for PHAR context by extracting config and custom fixers.
+     *
+     * When running in fix mode ($isDryRun = false), risky rewrite fixers are
+     * enabled via a wrapper config that overrides the base config's rules.
      *
      * @param string $componentPath Path to component being checked.
      * @param array $options CLI options including prefer_config_from.
+     * @param bool $isDryRun Whether running in check mode (true) or fix mode (false).
      *
      * @return string|null Path to config file (null to use default discovery).
      */
-    private function setupConfigForPhar(string $componentPath, array $options = []): ?string
+    private function setupConfigForPhar(string $componentPath, array $options = [], bool $isDryRun = true): ?string
     {
         $pharPath = Phar::running(false);
 
         // Not running from PHAR - resolve config path based on options
         if ($pharPath === '') {
-            return $this->resolveConfigPath($componentPath, $options);
+            $configPath = $this->resolveConfigPath($componentPath, $options);
+
+            if (!$isDryRun && $configPath !== null) {
+                return $this->createFixModeConfig($configPath);
+            }
+
+            return $configPath;
         }
 
         $this->getOutput()->info('Running from PHAR - extracting custom fixers...');
@@ -604,6 +673,9 @@ class Phpcsfixer extends Base
         $fixerFiles = [
             'RemovePhpVersionCommentFixer.php',
             'UpdateCopyrightYearFixer.php',
+            'MarkDeprecatedHordeCallsFixer.php',
+            'RewriteHordeUtilToPsr4Fixer.php',
+            'RewriteHordeToPsr4Fixer.php',
         ];
 
         foreach ($fixerFiles as $file) {
@@ -629,6 +701,10 @@ class Phpcsfixer extends Base
 
         if ($this->getOutput()->isVerbose()) {
             $this->getOutput()->info('Extracted config to: ' . $configDest);
+        }
+
+        if (!$isDryRun) {
+            return $this->createFixModeConfig($configDest);
         }
 
         return $configDest;

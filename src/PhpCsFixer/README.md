@@ -140,6 +140,78 @@ This ensures PHP Version comments are removed before copyright years are updated
 
 ## Extending to Other Components
 
+### RewriteHordeToPsr4Fixer
+
+**Rule name:** `Horde/rewrite_horde_to_psr4`  
+**Risky:** Yes (disabled by default)
+
+**Purpose:** Rewrites `Horde::method()` calls to `\Horde\Core\Horde::method()` for methods
+that the legacy global Horde class now forwards to the namespaced PSR-4 class.
+
+**Affected methods:** `signQueryString`, `verifySignedQueryString`, `verifySignedUrl`,
+`escapeJson`, `isConnectionSecure`, `requireSecureConnection`, `getDriverConfig`,
+`assertDriverConfig`, `externalUrl`, `link`, `linkTooltip`, `widget`, `getTempDir`,
+`getTempFile`, `webServerID`, `getAccessKey`, `stripAccessKey`, `highlightAccessKey`,
+`getAccessKeyAndTitle`, `label`, `wrapInlineScript`, `popupJs`, `startBuffer`,
+`endBuffer`, `contentSent`, `sidebar`, `permissionDeniedError`
+
+**What it does:**
+- If all `Horde::` calls in a namespaced file are forwarded methods: adds
+  `use Horde\Core\Horde;` (the bare `Horde::` calls then resolve to the namespaced class)
+- If the file has a mix of forwarded and non-forwarded `Horde::` calls: rewrites
+  only the forwarded calls to FQCN `\Horde\Core\Horde::method()`
+- Skips files that already have `use Horde\Core\Horde;`
+- Skips files inside `lib/` (legacy PSR-0 code)
+- Skips the Horde class files themselves
+
+**Example (all calls forwarded):**
+
+Before:
+```php
+<?php
+namespace MyApp;
+
+Horde::startBuffer();
+$json = Horde::escapeJson($data);
+$output = Horde::endBuffer();
+```
+
+After:
+```php
+<?php
+namespace MyApp;
+
+use Horde\Core\Horde;
+
+Horde::startBuffer();
+$json = Horde::escapeJson($data);
+$output = Horde::endBuffer();
+```
+
+**Example (mixed calls):**
+
+Before:
+```php
+<?php
+namespace MyApp;
+
+$url = Horde::url('/path');
+$json = Horde::escapeJson($data);
+```
+
+After:
+```php
+<?php
+namespace MyApp;
+
+$url = Horde::url('/path');
+$json = \Horde\Core\Horde::escapeJson($data);
+```
+
+**Enable with:** `--allow-risky=yes` and set the rule to `true` in configuration.
+
+## Extending to Other Components
+
 These custom fixers can be reused across other Horde components:
 
 1. Copy the fixer files to the component's `src/PhpCsFixer/` directory
