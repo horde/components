@@ -1,4 +1,15 @@
 ---
+1.0.0-alpha44:
+  api: 1.0.0-alpha44
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-04-15
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: |-
+    fix: phar build wasn't valid due to symlinks
 1.0.0-alpha43:
   api: 1.0.0-alpha43
   state:
