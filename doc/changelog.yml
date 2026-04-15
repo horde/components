@@ -1,4 +1,26 @@
 ---
+1.0.0-alpha43:
+  api: 1.0.0-alpha43
+  state:
+    release: alpha
+    api: alpha
+  date: 2026-04-15
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: |-
+    feat: run php-cs-fixer on the typical dirs
+    fix: Dependency issues in config assembly.
+    test: Amend fixers
+    feat: Support external asset references
+    feat: PHPStan runs with custom architecture checks
+    feat: By default prefer builtin php-cs-fixer config over component's own file
+    feat: Now can implement "support" field by relying on HordeYmlFile and Composer libraries.
+    feat: Support HordeYmlFile type "extension" as composer php-ext types
+    feat: Support composer/packagist keywords in .horde.yml
+    feat: Dependency tree builder now supports composer
+    test(phpcsfixer): add conditional PHAR loading and separate test suite
+    feat: php-cs-fixer rules for deprecated statics
 1.0.0-alpha42:
   api: 1.0.0-alpha42
   state:
