@@ -16,12 +16,15 @@ declare(strict_types=1);
 
 namespace Horde\Components\Task\Build;
 
+use DirectoryIterator;
 use Horde\Components\Helper\Shell as ShellHelper;
 use Horde\Components\Output;
 use Horde\Components\Task\AbstractTask;
 use Horde\Components\Task\Context;
 use Horde\Components\Task\Result;
 use Exception;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 /**
  * Build a PHAR archive using Box.
@@ -102,21 +105,34 @@ class BuildPharTask extends AbstractTask
 
         // Build PHAR
         if (!$this->pretend) {
-            $result = $this->shellHelper->run('box compile', $componentPath);
-
-            if ($result->getReturnValue() !== 0) {
-                throw new Exception('Failed to build PHAR: ' . $result->getOutputString());
+            // Box does not follow symlinks. Replace symlinked vendor
+            // directories with real copies so they are included in the PHAR.
+            $resolvedSymlinks = $this->resolveVendorSymlinks($componentPath);
+            if ($resolvedSymlinks) {
+                $this->output->info(
+                    'Resolved ' . count($resolvedSymlinks) . ' vendor symlink(s) for PHAR build'
+                );
             }
 
-            // Verify PHAR was created
-            if (!file_exists($localPath)) {
-                throw new Exception("PHAR not found after build: {$localPath}");
-            }
+            try {
+                $result = $this->shellHelper->run('box compile', $componentPath);
 
-            // Quick sanity check: PHAR is valid
-            $result = $this->shellHelper->run("php {$localPath} version 2>&1", $componentPath);
-            if ($result->getReturnValue() !== 0) {
-                throw new Exception('Built PHAR is not valid/executable');
+                if ($result->getReturnValue() !== 0) {
+                    throw new Exception('Failed to build PHAR: ' . $result->getOutputString());
+                }
+
+                // Verify PHAR was created
+                if (!file_exists($localPath)) {
+                    throw new Exception("PHAR not found after build: {$localPath}");
+                }
+
+                // Quick sanity check: PHAR is valid
+                $result = $this->shellHelper->run("php {$localPath} version 2>&1", $componentPath);
+                if ($result->getReturnValue() !== 0) {
+                    throw new Exception('Built PHAR is not valid/executable');
+                }
+            } finally {
+                $this->restoreVendorSymlinks($resolvedSymlinks);
             }
         }
 
@@ -153,5 +169,109 @@ class BuildPharTask extends AbstractTask
         $bytes /= (1 << (10 * $pow));
 
         return round($bytes, 2) . ' ' . $units[$pow];
+    }
+
+    /**
+     * Replace symlinked vendor directories with real file copies.
+     *
+     * Box does not follow symlinks, so symlinked packages would be
+     * silently excluded from the PHAR. This scans vendor/ for symlinked
+     * directories two levels deep (vendor/org/package) and replaces each
+     * with a recursive copy of the target.
+     *
+     * @return array<string, string> Map of link path => original target
+     */
+    private function resolveVendorSymlinks(string $componentPath): array
+    {
+        $vendorDir = $componentPath . '/vendor';
+        $resolved = [];
+
+        if (!is_dir($vendorDir)) {
+            return $resolved;
+        }
+
+        foreach (new DirectoryIterator($vendorDir) as $org) {
+            if ($org->isDot() || !$org->isDir()) {
+                continue;
+            }
+            foreach (new DirectoryIterator($org->getPathname()) as $pkg) {
+                if ($pkg->isDot() || !$pkg->isLink()) {
+                    continue;
+                }
+                $linkPath = $pkg->getPathname();
+                $target = realpath($linkPath);
+                if ($target === false || !is_dir($target)) {
+                    continue;
+                }
+
+                $resolved[$linkPath] = $target;
+                unlink($linkPath);
+                $this->copyDirectory($target, $linkPath);
+            }
+        }
+
+        return $resolved;
+    }
+
+    /**
+     * Restore symlinks after PHAR build.
+     *
+     * @param array<string, string> $resolved Map from resolveVendorSymlinks
+     */
+    private function restoreVendorSymlinks(array $resolved): void
+    {
+        foreach ($resolved as $linkPath => $target) {
+            if (is_dir($linkPath) && !is_link($linkPath)) {
+                $this->removeDirectory($linkPath);
+            }
+            symlink($target, $linkPath);
+        }
+    }
+
+    /**
+     * Recursively copy a directory, skipping dev-only subdirectories.
+     *
+     * Excludes .git, vendor, test, tests, and build directories since
+     * Box would also exclude them from the PHAR.
+     */
+    private function copyDirectory(string $source, string $dest): void
+    {
+        $skip = ['.git', 'vendor', 'test', 'tests', 'build'];
+        mkdir($dest, 0755);
+
+        foreach (new DirectoryIterator($source) as $item) {
+            if ($item->isDot()) {
+                continue;
+            }
+            $targetPath = $dest . '/' . $item->getFilename();
+            if ($item->isDir()) {
+                if (in_array($item->getFilename(), $skip, true)) {
+                    continue;
+                }
+                $this->copyDirectory($item->getPathname(), $targetPath);
+            } else {
+                copy($item->getPathname(), $targetPath);
+            }
+        }
+    }
+
+    /**
+     * Recursively remove a directory.
+     */
+    private function removeDirectory(string $dir): void
+    {
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($iterator as $item) {
+            if ($item->isDir()) {
+                rmdir($item->getPathname());
+            } else {
+                unlink($item->getPathname());
+            }
+        }
+        rmdir($dir);
     }
 }
