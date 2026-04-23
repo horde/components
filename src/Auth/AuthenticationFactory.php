@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Horde\Components\Auth;
 
 use Horde\Components\ConfigProvider\ConfigProvider;
+use Horde\GithubApiClient\Auth\GitHubAppAuthenticationService;
+use Horde\GithubApiClient\Auth\GitHubAppConfig;
+use Horde\GithubApiClient\Auth\GitHubJwtGenerator;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;

@@ -23,7 +23,7 @@ use Horde\Components\Composer\InstallationDirectory;
 use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 use Horde\Components\Auth\AuthenticationFactory;
 use Horde\Components\Auth\GitHubAppAuthenticationStrategy;
-use Horde\Components\Auth\GitHubAppAuthenticationService;
+use Horde\GithubApiClient\Auth\GitHubAppAuthenticationService;
 use Horde\GithubApiClient\GithubApiClient;
 use Horde\GithubApiClient\GithubApiConfig;
 use Throwable;

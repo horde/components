@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Auth;
 
+use Horde\GithubApiClient\Auth\GitHubAppAuthenticationService;
 use Horde\GithubApiClient\GithubApiClient;
 use RuntimeException;
 use Exception;
