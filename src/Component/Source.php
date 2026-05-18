@@ -1047,7 +1047,7 @@ class Source extends Base
         if (empty($options['keep_version'])) {
             $version = preg_replace(
                 '/([.0-9]+).*/',
-                '\1dev' . strftime('%Y%m%d%H%M'),
+                '\1dev' . date('YmdHi'),
                 $this->getVersion()
             );
         } else {
