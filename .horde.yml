@@ -52,7 +52,7 @@ dependencies:
       horde/release: ^4
       horde/version: ^1.0.0-beta1
       horde/yaml: '*'
-      horde/hordeymlfile: ^0.0.1-alpha3
+      horde/hordeymlfile: ^1
       horde/eventdispatcher: '*'
       horde/githubapiclient: '*'
       horde/composer: '*'
