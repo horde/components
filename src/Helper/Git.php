@@ -773,8 +773,13 @@ class Git
         foreach ($this->added as $path) {
             $this->shell->system('git add ' . $path, $localDir);
         }
-        // TODO: Use a message file instead. Command line escaping might be brittle
-        $this->shell->system('git commit -m "' . $log . '"', $localDir);
+        $msgFile = tempnam(sys_get_temp_dir(), 'horde_commit_');
+        file_put_contents($msgFile, $log);
+        try {
+            $this->shell->system('git commit -F ' . escapeshellarg($msgFile), $localDir);
+        } finally {
+            unlink($msgFile);
+        }
         $this->added = [];
     }
 
@@ -789,11 +794,17 @@ class Git
     public function tag(string $localDir, string $tag, string $message, bool $force = false): void
     {
         $forceSwitch = $force ? '--force ' : '';
-        $cmd = $this->gitBin . ' tag ' . $forceSwitch . '-m "' . $message . '" ' . $tag;
-        $this->shell->system(
-            $cmd,
-            $localDir
-        );
+        $msgFile = tempnam(sys_get_temp_dir(), 'horde_tag_');
+        file_put_contents($msgFile, $message);
+        try {
+            $cmd = $this->gitBin . ' tag ' . $forceSwitch . '-F ' . escapeshellarg($msgFile) . ' ' . escapeshellarg($tag);
+            $this->shell->system(
+                $cmd,
+                $localDir
+            );
+        } finally {
+            unlink($msgFile);
+        }
     }
 
     /**
