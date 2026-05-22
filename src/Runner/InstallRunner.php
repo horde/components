@@ -6,6 +6,7 @@ namespace Horde\Components\Runner;
 
 use Horde\Components\Composer\InstallationDirectory;
 use Horde\Components\Composer\PathRepositoryDefinition;
+use Horde\Components\Composer\RootComposerJsonFile;
 use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 use Horde\Components\Output;
 use Horde\Components\Wrapper\HordeYml;
@@ -79,9 +80,22 @@ class InstallRunner
             filter: [
                 'vendor',
                 'composer.lock',
+                'composer.json',
             ],
         );
         $copyHelper->copy();
+
+        // Handle composer.json individually for idempotency
+        if (!$this->installationDirectory->hasComposerJson()) {
+            copy(
+                $baseComponentGitDir . '/composer.json',
+                $this->installationDirectory->getComposerJsonPath()
+            );
+            $this->output->ok('Copied composer.json from bundle');
+        } else {
+            $this->output->info('Existing composer.json found — merging bundle dependencies');
+        }
+
         // Inject all horde apps as local sources.
         try {
             $composerJson = $this->installationDirectory->getComposerJson();
@@ -89,6 +103,10 @@ class InstallRunner
             $this->output->fail('Could not read composer.json file from installation directory: ' . $this->installationDirectory);
             return;
         }
+
+        // Merge bundle's baseline sections into existing file (noop for fresh installs)
+        $bundleJson = RootComposerJsonFile::loadFile($baseComponentGitDir . '/composer.json');
+        $composerJson->mergeFrom($bundleJson);
         foreach ($this->gitCheckoutDirectory->getHordeYmlDirs() as $hordeYmlDir) {
             // Load HordeYml to get the ComponentVersion
             $hordeYml = new HordeYml($hordeYmlDir);
