@@ -108,9 +108,12 @@ class InstallRunner
         $bundleJson = RootComposerJsonFile::loadFile($baseComponentGitDir . '/composer.json');
         $composerJson->mergeFrom($bundleJson);
         foreach ($this->gitCheckoutDirectory->getHordeYmlDirs() as $hordeYmlDir) {
-            // Load HordeYml to get the ComponentVersion
             $hordeYml = new HordeYml($hordeYmlDir);
-            $pathRepositoryOptions = ['versions' => [$hordeYml->getComposerName() => $hordeYml->getReleaseVersion()->toHordeTag()]];
+            // Extensions require compilation (phpize/configure/make) — skip them as path repos
+            if (($hordeYml['type'] ?? 'library') === 'extension') {
+                continue;
+            }
+            $pathRepositoryOptions = ['versions' => [$hordeYml->getComposerName() => $hordeYml->getReleaseVersion()->normalizeComposerVersion()]];
             $composerJson->getRepositoryList()->ensurePresent(new PathRepositoryDefinition($hordeYmlDir, (object) $pathRepositoryOptions));
         }
         $composerJson->setPreferStable()->setMinimumStability('dev');
