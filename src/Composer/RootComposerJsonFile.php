@@ -73,4 +73,65 @@ class RootComposerJsonFile
     {
         file_put_contents($path, $this->render());
     }
+
+    /**
+     * Get the raw content object
+     */
+    public function getContent(): stdClass
+    {
+        return $this->content;
+    }
+
+    /**
+     * Deep-merge sections from a source composer.json into this one.
+     *
+     * Adds missing keys from source without overwriting existing entries.
+     * Used to ensure bundle baseline deps are present while preserving
+     * user-added dependencies.
+     */
+    public function mergeFrom(self $source): self
+    {
+        $sourceContent = $source->getContent();
+
+        foreach (['require', 'require-dev', 'suggest'] as $section) {
+            if (!isset($sourceContent->$section)) {
+                continue;
+            }
+            if (!isset($this->content->$section)) {
+                $this->content->$section = new stdClass();
+            }
+            foreach ($sourceContent->$section as $package => $constraint) {
+                if (!isset($this->content->$section->$package)) {
+                    $this->content->$section->$package = $constraint;
+                }
+            }
+        }
+
+        if (isset($sourceContent->config->{'allow-plugins'})) {
+            if (!isset($this->content->config)) {
+                $this->content->config = new stdClass();
+            }
+            if (!isset($this->content->config->{'allow-plugins'})) {
+                $this->content->config->{'allow-plugins'} = new stdClass();
+            }
+            foreach ($sourceContent->config->{'allow-plugins'} as $plugin => $allowed) {
+                if (!isset($this->content->config->{'allow-plugins'}->$plugin)) {
+                    $this->content->config->{'allow-plugins'}->$plugin = $allowed;
+                }
+            }
+        }
+
+        if (isset($sourceContent->extra->{'installer-types'})) {
+            if (!isset($this->content->extra)) {
+                $this->content->extra = new stdClass();
+            }
+            $existing = (array) ($this->content->extra->{'installer-types'} ?? []);
+            $sourceTypes = (array) $sourceContent->extra->{'installer-types'};
+            $this->content->extra->{'installer-types'} = array_values(
+                array_unique(array_merge($existing, $sourceTypes))
+            );
+        }
+
+        return $this;
+    }
 }
