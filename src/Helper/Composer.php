@@ -485,8 +485,9 @@ class Composer
      */
     protected function _setAutoload(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
-        // Extensions don't need PHP autoloading (they're compiled C code)
-        if ($package['type'] === 'extension') {
+        // Extensions and themes don't need PHP autoloading
+        if (in_array($package['type'], ['extension', 'horde-theme'], true)) {
+            $composerDefinition->autoload = new stdClass();
             return;
         }
 
@@ -523,6 +524,9 @@ class Composer
                 $composerDefinition->autoload['psr-4']  = [$Psr4Name  => 'src/'];
             }
         }
+        if (empty($composerDefinition->autoload)) {
+            $composerDefinition->autoload = new stdClass();
+        }
     }
     /**
      * Configure Autoloading
@@ -534,8 +538,9 @@ class Composer
      */
     protected function _setAutoloadDev(WrapperHordeYml $package, stdClass $composerDefinition): void
     {
-        // Extensions don't need PHP autoloading (they're compiled C code)
-        if ($package['type'] === 'extension') {
+        // Extensions and themes don't need PHP autoloading
+        if (in_array($package['type'], ['extension', 'horde-theme'], true)) {
+            $composerDefinition->{'autoload-dev'} = new stdClass();
             return;
         }
 

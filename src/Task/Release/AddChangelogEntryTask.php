@@ -69,10 +69,31 @@ class AddChangelogEntryTask extends AbstractTask
     }
 
 
+    /**
+     * Component types that do not use doc/changelog.yml.
+     */
+    private const TYPES_WITHOUT_CHANGELOG = [
+        'horde-theme',
+    ];
+
     public function getName(): string
     {
         return "Ad\1 \2hangelo\1 \2ntry";
     }
+
+    public function shouldSkip(Context $context): bool
+    {
+        $componentPath = $context->getComponentPath();
+        $hordeYmlPath = $componentPath . '/.horde.yml';
+        if (file_exists($hordeYmlPath)) {
+            $hordeYml = new HordeYmlFile($hordeYmlPath);
+            if (in_array($hordeYml->getType(), self::TYPES_WITHOUT_CHANGELOG, true)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function run(Context $context): Result
     {
         $componentPath = $context->getComponentPath();
