@@ -698,6 +698,23 @@
     [gwr] Fix appending the snapshot date for pre-releases.
     [gwr] Allow to keep the version when generating snapshots.
     [gwr] Accept an empty initial note.
+1.0.0-RC1:
+  api: 1.0.0-RC1
+  state:
+    release: RC
+    api: RC
+  date: 2026-05-25
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: |-
+    chore: Update workflow dependency
+    feat: Exclude extensions from path repos and render path repos with composer-style version strings
+    feat: Implement idempotent install command
+    feat: Properly support theme packages for release action
+    refactor(strftime): Migrate to native usage of IntlDateFormatter and DateTime (#21)
+    refactor(release): Fix open TODO, use message file instead of inline message to avoid escaping troubles.
+    refactor: horde/Core#91 — Rebase components github features on code extracted to GithubApiClient
 0.0.1:
   api: 0.0.1
   state:

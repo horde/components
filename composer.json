@@ -21,7 +21,7 @@
             "role": "contributor"
         }
     ],
-    "time": "2026-04-15",
+    "time": "2026-05-25",
     "repositories": [],
     "require": {
         "horde/horde-installer-plugin": "^2.6 || dev-FRAMEWORK_6_0",
@@ -39,7 +39,7 @@
         "horde/release": "^4 || dev-FRAMEWORK_6_0",
         "horde/version": "^1.0.0-beta1 || dev-FRAMEWORK_6_0",
         "horde/yaml": "* || dev-FRAMEWORK_6_0",
-        "horde/hordeymlfile": "^0.0.1-alpha3 || dev-FRAMEWORK_6_0",
+        "horde/hordeymlfile": "^1 || dev-FRAMEWORK_6_0",
         "horde/eventdispatcher": "* || dev-FRAMEWORK_6_0",
         "horde/githubapiclient": "* || dev-FRAMEWORK_6_0",
         "horde/composer": "* || dev-FRAMEWORK_6_0",
