@@ -342,7 +342,10 @@ MORE INFO:
      * @param array $arguments CLI arguments
      * @param Component|null $component The selected component (if any)
      *
-     * @return bool True if the module performed some action.
+     * @return bool True if the module recognized this invocation.
+     *               This is *only* a "did I match" signal. Failures are
+     *               reported by throwing Horde\Components\Exception; its
+     *               getCode() drives the process exit code (0 → 1).
      */
     public function handle(array $options, array $arguments, ?Component $component = null): bool
     {
@@ -360,28 +363,23 @@ MORE INFO:
         // Get output handler
         $output = $this->dependencies->get(Output::class);
 
-        try {
-            switch ($subcommand) {
-                case 'init':
-                    return $this->handleInit($options, $output);
+        switch ($subcommand) {
+            case 'init':
+                return $this->handleInit($options, $output);
 
-                case 'check':
-                    return $this->handleCheck($options, $output);
+            case 'check':
+                return $this->handleCheck($options, $output);
 
-                case 'setup':
-                    return $this->handleSetup($options, $output);
+            case 'setup':
+                return $this->handleSetup($options, $output);
 
-                case 'run':
-                    return $this->handleRun($options, $output);
+            case 'run':
+                return $this->handleRun($options, $output);
 
-                default:
-                    $output->error("Unknown subcommand: {$subcommand}");
-                    $output->info('Valid subcommands: init, check, setup, run');
-                    return false;
-            }
-        } catch (Exception $e) {
-            $output->error('CI command failed: ' . $e->getMessage());
-            return false;
+            default:
+                $output->error("Unknown subcommand: {$subcommand}");
+                $output->info('Valid subcommands: init, check, setup, run');
+                throw new Exception("Unknown ci subcommand: {$subcommand}", 2);
         }
     }
 
@@ -419,7 +417,10 @@ MORE INFO:
         $dryRun = isset($options['dry-run']) && $options['dry-run'];
 
         $initCommand = new InitCommand($output);
-        return $initCommand->execute($componentPath, $mode, $force, $dryRun);
+        if (!$initCommand->execute($componentPath, $mode, $force, $dryRun)) {
+            throw new Exception('ci init failed', 2);
+        }
+        return true;
     }
 
     /**
@@ -434,7 +435,10 @@ MORE INFO:
         $componentPath = $options['local-path'] ?? getcwd();
 
         $initCommand = new InitCommand($output);
-        return $initCommand->check($componentPath);
+        if (!$initCommand->check($componentPath)) {
+            throw new Exception('ci check: files are outdated', 1);
+        }
+        return true;
     }
 
     /**
@@ -477,7 +481,10 @@ MORE INFO:
             new LaneScriptGenerator($output)
         );
 
-        return $setupCommand->execute($config);
+        if (!$setupCommand->execute($config)) {
+            throw new Exception('ci setup reported failed lanes', 1);
+        }
+        return true;
     }
 
     /**
@@ -495,7 +502,7 @@ MORE INFO:
         if (!is_dir($workDir)) {
             $output->fail("Work directory does not exist: {$workDir}");
             $output->info("Run 'horde-components ci setup' first to prepare test lanes.");
-            return false;
+            throw new Exception("Work directory does not exist: {$workDir}", 2);
         }
 
         // Determine horde-components path
@@ -508,7 +515,7 @@ MORE INFO:
             $componentsPath = realpath(__DIR__ . '/../../bin/horde-components');
             if ($componentsPath === false) {
                 $output->fail("Could not locate horde-components binary");
-                return false;
+                throw new Exception('Could not locate horde-components binary', 2);
             }
         }
 
@@ -526,12 +533,10 @@ MORE INFO:
         $collector = new ResultCollector($output);
         $runCommand = new RunCommand($output, $collector, $componentsPath, $workDir, $apiClient);
 
-        try {
-            $exitCode = $runCommand->execute($workDir);
-            return $exitCode === 0;
-        } catch (Exception $e) {
-            $output->fail("CI run failed: " . $e->getMessage());
-            return false;
+        $exitCode = $runCommand->execute($workDir);
+        if ($exitCode !== 0) {
+            throw new Exception("ci run reported test failures", $exitCode);
         }
+        return true;
     }
 }
