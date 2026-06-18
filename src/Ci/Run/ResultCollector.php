@@ -272,8 +272,11 @@ class ResultCollector
 
             case 'phpstan':
                 $parts = [];
-                if (isset($stats['files_analyzed'])) {
-                    $parts[] = "{$stats['files_analyzed']} files";
+                if (isset($stats['files_scanned'])) {
+                    $parts[] = "{$stats['files_scanned']} scanned";
+                }
+                if (isset($stats['files_with_errors']) && $stats['files_with_errors'] > 0) {
+                    $parts[] = "{$stats['files_with_errors']} with errors";
                 }
                 if (isset($stats['errors'])) {
                     $parts[] = "{$stats['errors']} errors";

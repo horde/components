@@ -34,7 +34,8 @@ class Phpstan extends Base
      * Statistics collected during execution.
      */
     private array $stats = [
-        'files_analyzed' => 0,
+        'files_scanned' => 0,
+        'files_with_errors' => 0,
         'errors' => 0,
         'file_errors' => 0,
     ];
@@ -116,7 +117,8 @@ class Phpstan extends Base
 
             // Reset statistics
             $this->stats = [
-                'files_analyzed' => 0,
+                'files_scanned' => 0,
+                'files_with_errors' => 0,
                 'errors' => 0,
                 'file_errors' => 0,
             ];
@@ -602,6 +604,68 @@ class Phpstan extends Base
     }
 
     /**
+     * Resolve which directories to analyze for a given component.
+     *
+     * Mirrors {@see generateTempConfig()} so a separate scanned-file
+     * count can be computed without re-parsing the NEON.
+     *
+     * @param string $componentPath Path to component directory.
+     * @return array<string> Absolute directory paths.
+     */
+    private function resolveAnalysisPaths(string $componentPath): array
+    {
+        $paths = [];
+        foreach (['src', 'migration'] as $candidate) {
+            $path = $componentPath . '/' . $candidate;
+            if (is_dir($path)) {
+                $paths[] = $path;
+            }
+        }
+        if (empty($paths)) {
+            $paths[] = $componentPath;
+        }
+        return $paths;
+    }
+
+    /**
+     * Count `.php` files under a list of directories, excluding vendor/
+     * and build/ to match the NEON excludePaths.
+     *
+     * @param array<string> $paths Absolute directory paths.
+     * @return int Count of `.php` files reachable from those paths.
+     */
+    private function countPhpFiles(array $paths): int
+    {
+        $count = 0;
+        foreach ($paths as $root) {
+            if (!is_dir($root)) {
+                if (is_file($root) && str_ends_with($root, '.php')) {
+                    $count++;
+                }
+                continue;
+            }
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator(
+                    $root,
+                    \FilesystemIterator::SKIP_DOTS
+                )
+            );
+            foreach ($iterator as $file) {
+                $path = (string) $file;
+                if (!str_ends_with($path, '.php')) {
+                    continue;
+                }
+                // Match the NEON excludePaths: anything under vendor/ or build/.
+                if (str_contains($path, '/vendor/') || str_contains($path, '/build/')) {
+                    continue;
+                }
+                $count++;
+            }
+        }
+        return $count;
+    }
+
+    /**
      * Generate temporary PHPStan config with auto-detected paths.
      *
      * @param string $componentPath Path to component directory.
@@ -612,20 +676,10 @@ class Phpstan extends Base
     private function generateTempConfig(string $componentPath, int $level): string
     {
         // Auto-detect paths to analyze (use absolute paths)
-        $paths = [];
-        $candidates = ['src', 'migration'];
-
-        foreach ($candidates as $candidate) {
-            $path = $componentPath . '/' . $candidate;
-            if (is_dir($path)) {
-                $paths[] = "        - " . $path;
-            }
-        }
-
-        // If no standard paths found, analyze entire component
-        if (empty($paths)) {
-            $paths[] = "        - " . $componentPath;
-        }
+        $paths = array_map(
+            static fn (string $p): string => "        - " . $p,
+            $this->resolveAnalysisPaths($componentPath)
+        );
 
         $pathsYaml = implode("\n", $paths);
 
@@ -764,9 +818,18 @@ NEON;
             }
         }
 
-        // Count files analyzed
+        // PHPStan's JSON `files` map only lists files that produced errors,
+        // not every file scanned. The total scanned count is computed
+        // separately via filesystem traversal of the configured paths.
         if (isset($this->nativeResults['files'])) {
-            $this->stats['files_analyzed'] = count($this->nativeResults['files']);
+            $this->stats['files_with_errors'] = count($this->nativeResults['files']);
+        }
+
+        $componentPath = $this->getPath() ?: getcwd();
+        if (is_string($componentPath) && $componentPath !== '') {
+            $this->stats['files_scanned'] = $this->countPhpFiles(
+                $this->resolveAnalysisPaths($componentPath)
+            );
         }
     }
 
@@ -835,8 +898,16 @@ NEON;
     {
         $parts = [];
 
-        if ($this->stats['files_analyzed'] > 0) {
-            $parts[] = $this->stats['files_analyzed'] . ' file' . ($this->stats['files_analyzed'] !== 1 ? 's' : '') . ' analyzed';
+        if ($this->stats['files_scanned'] > 0) {
+            $parts[] = $this->stats['files_scanned']
+                . ' file' . ($this->stats['files_scanned'] !== 1 ? 's' : '')
+                . ' scanned';
+        }
+
+        if ($this->stats['files_with_errors'] > 0) {
+            $parts[] = $this->stats['files_with_errors']
+                . ' file' . ($this->stats['files_with_errors'] !== 1 ? 's' : '')
+                . ' with errors';
         }
 
         if ($this->stats['errors'] > 0) {
