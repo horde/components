@@ -10,6 +10,7 @@
   "files": [
     "LICENSE",
     "bin/horde-components",
+    "phpstan-bootstrap.php",
     ".php-cs-fixer.dist.php"
   ],
   "finder": [

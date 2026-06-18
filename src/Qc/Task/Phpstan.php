@@ -11,6 +11,7 @@
 
 namespace Horde\Components\Qc\Task;
 
+use Horde\Components\Qc\PhpStanRuleExtractor;
 use Horde\Components\Qc\ToolFinder;
 use Throwable;
 
@@ -73,7 +74,7 @@ class Phpstan extends Base
      */
     public function validate(array $options = []): array
     {
-        $binary = $this->findPhpStanBinary();
+        $binary = $this->findPhpStanBinary($options['tools_dir'] ?? null);
 
         if ($binary === null) {
             return ['PHPStan is not installed!'];
@@ -125,13 +126,30 @@ class Phpstan extends Base
             $watermarkResult = $this->testLevel($binary, $componentPath, $watermark, $options);
 
             if (!$watermarkResult['passed']) {
-                // CODE REGRESSION - fails at watermark!
-                $this->getOutput()->regression(
-                    'Code fails at watermark level ' . $watermark
-                    . ' (' . $watermarkResult['errors'] . ' error'
-                    . ($watermarkResult['errors'] !== 1 ? 's' : '') . ')'
-                );
-                $this->getOutput()->warn('Watermark level MUST pass - fix these errors!');
+                if ($watermarkResult['errors'] > 0) {
+                    // CODE REGRESSION - fails at watermark with concrete errors
+                    $this->getOutput()->regression(
+                        'Code fails at watermark level ' . $watermark
+                        . ' (' . $watermarkResult['errors'] . ' error'
+                        . ($watermarkResult['errors'] !== 1 ? 's' : '') . ')'
+                    );
+                    $this->getOutput()->warn('Watermark level MUST pass - fix these errors!');
+                } else {
+                    // TOOLING FAILURE - PHPStan refused to start (config error,
+                    // missing autoload-file, unloadable rule classes, etc.).
+                    // Surface the raw output so the caller can diagnose.
+                    $this->getOutput()->error(
+                        'PHPStan exited with code ' . $watermarkResult['exit_code']
+                        . ' before producing results. This is a tooling failure '
+                        . 'rather than a code regression.'
+                    );
+                    $rawOutput = (string) ($watermarkResult['raw_output'] ?? '');
+                    if ($rawOutput !== '') {
+                        foreach (array_slice(explode("\n", $rawOutput), 0, 20) as $line) {
+                            $this->getOutput()->plain($line);
+                        }
+                    }
+                }
 
                 // Parse results for output
                 $this->nativeResults = $watermarkResult['results'];
@@ -140,7 +158,7 @@ class Phpstan extends Base
                 $this->writeJsonResults($componentPath, $watermarkResult['exit_code'], $watermark);
                 $this->outputStatistics();
 
-                return $watermarkResult['errors']; // Non-zero = failure
+                return max(1, $watermarkResult['errors']); // Non-zero = failure
             }
 
             // Watermark passed - discover highest passing level
@@ -475,9 +493,17 @@ class Phpstan extends Base
         // Generate temporary config file with auto-detected paths
         $tempConfig = $this->generateTempConfig($componentPath, $level);
 
-        // Get horde-components rules bootstrap
-        $componentsRoot = __DIR__ . '/../../..';
-        $componentsBootstrap = realpath($componentsRoot . '/phpstan-bootstrap.php');
+        // Materialize the horde-components custom-rules bootstrap on disk.
+        // When running from a phar, the bootstrap and rule files have to be
+        // copied out before we hand the path to a separate phpstan process.
+        $extractor = new PhpStanRuleExtractor();
+        $extractCacheDir = $options['tools_dir'] ?? sys_get_temp_dir() . '/horde-components-phpstan';
+        try {
+            $componentsBootstrap = $extractor->extract($extractCacheDir);
+        } catch (Throwable $e) {
+            $this->getOutput()->warn('PHPStan rule extraction failed: ' . $e->getMessage());
+            $componentsBootstrap = null;
+        }
 
         $cmd = [
             escapeshellarg($binary),
@@ -486,7 +512,7 @@ class Phpstan extends Base
         ];
 
         // Add autoload file for custom rules
-        if ($componentsBootstrap && file_exists($componentsBootstrap)) {
+        if ($componentsBootstrap !== null && file_exists($componentsBootstrap)) {
             $cmd[] = '--autoload-file=' . escapeshellarg($componentsBootstrap);
         }
 
@@ -525,11 +551,17 @@ class Phpstan extends Base
             }
         }
 
+        // `passed` reflects only that PHPStan exited cleanly. Code-regression
+        // detection (errors > 0 at the watermark level) is the caller's job.
+        // Conflating the two — old contract was `passed = (exit==0 && errors==0)`
+        // — caused tooling failures (e.g. autoload-file unreachable in phar
+        // context) to be reported as code regressions with "0 errors".
         return [
-            'passed' => ($exitCode === 0 && $errors === 0),
+            'passed' => ($exitCode === 0),
             'errors' => $errors,
             'exit_code' => $exitCode,
             'results' => $results,
+            'raw_output' => $fullOutput,
         ];
     }
 
