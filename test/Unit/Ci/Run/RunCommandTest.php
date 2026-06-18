@@ -368,10 +368,10 @@ class RunCommandTest extends TestCase
 
         // No result files created
 
-        // Mock collector to expect skipped reports
+        // Mock collector to expect missing-result reports
         $this->collector
             ->expects($this->atLeast(2)) // PHPUnit and PHPStan
-            ->method('addSkipped')
+            ->method('addMissing')
             ->with(
                 $this->stringContains('php8.4-dev'),
                 $this->anything(),

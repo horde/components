@@ -66,11 +66,9 @@ class CheckReporter
 
         foreach ($results as $laneName => $tools) {
             foreach ($tools as $toolName => $result) {
-                // Skip skipped tools
-                if (isset($result['skipped']) && $result['skipped']) {
-                    continue;
-                }
-
+                // Missing-result and real failures are both reported.
+                // (W4 will introduce deliberate skips; those will be filtered
+                // here when their carrier flag lands.)
                 $this->createCheckRun(
                     owner: $owner,
                     repo: $repo,

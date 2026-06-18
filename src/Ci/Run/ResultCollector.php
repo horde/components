@@ -93,18 +93,27 @@ class ResultCollector
     }
 
     /**
-     * Add result for missing/skipped test.
+     * Record a missing result for a tool.
+     *
+     * Used when a result JSON was expected but never produced (lane script
+     * absent, lane script crashed before writing JSON, etc.). Counted as a
+     * lane failure: a missing JSON cannot be distinguished from a tool that
+     * succeeded silently and is therefore treated as the worst case.
+     *
+     * Deliberate, value-judged skips (e.g. PHPUnit constraint not satisfiable
+     * on the lane's PHP version) belong in a future addSkipped() with
+     * `success: true`; they are not modeled here.
      *
      * @param string $laneName Lane name
      * @param string $tool Tool name
-     * @param string $reason Reason for skipping
+     * @param string $reason Reason the result is missing
      */
-    public function addSkipped(string $laneName, string $tool, string $reason): void
+    public function addMissing(string $laneName, string $tool, string $reason): void
     {
         $this->results[$laneName][$tool] = [
-            'success' => true,
-            'exit_code' => 0,
-            'skipped' => true,
+            'success' => false,
+            'exit_code' => 1,
+            'missing' => true,
             'reason' => $reason,
         ];
     }
@@ -174,9 +183,9 @@ class ResultCollector
     {
         $toolName = ucfirst($tool);
 
-        // Handle skipped
-        if (isset($result['skipped']) && $result['skipped']) {
-            $this->output->warn("  ⊘ {$toolName}: Skipped ({$result['reason']})");
+        // Handle missing result file
+        if (isset($result['missing']) && $result['missing']) {
+            $this->output->error("  ✗ {$toolName}: Missing result ({$result['reason']})");
             return;
         }
 
@@ -267,12 +276,8 @@ class ResultCollector
             $lanePassed = true;
 
             foreach ($tools as $tool => $result) {
-                // Skipped is not a failure
-                if (isset($result['skipped']) && $result['skipped']) {
-                    continue;
-                }
-
-                // Check for failure
+                // success: false covers both real tool failures and missing
+                // result files (W2 — addMissing records success: false).
                 if (!$result['success']) {
                     $lanePassed = false;
                     break;

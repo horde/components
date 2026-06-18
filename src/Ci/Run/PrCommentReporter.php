@@ -164,7 +164,7 @@ class PrCommentReporter
                 $tools = $results[$laneName] ?? [];
 
                 foreach ($tools as $toolName => $result) {
-                    if (!($result['success'] ?? false) && !isset($result['skipped'])) {
+                    if (!($result['success'] ?? false)) {
                         $md .= "- " . $this->formatToolFailure($toolName, $result) . "\n";
                     }
                 }
@@ -289,10 +289,6 @@ class PrCommentReporter
     private function isLanePassed(array $tools): bool
     {
         foreach ($tools as $result) {
-            if (isset($result['skipped']) && $result['skipped']) {
-                continue;
-            }
-
             if (!($result['success'] ?? false)) {
                 return false;
             }
@@ -362,7 +358,8 @@ class PrCommentReporter
 
             $result = $tools[$tool];
 
-            if (isset($result['skipped']) || isset($result['error'])) {
+            // Skip lanes with no usable statistics (missing JSON or load error)
+            if (isset($result['missing']) || isset($result['error'])) {
                 continue;
             }
 
