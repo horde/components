@@ -210,11 +210,19 @@ class Phpcsfixer extends Base
         // First, get total file count using list-files
         $this->stats['files_checked'] = $this->getTotalFileCount($binary, $componentPath, $configPath);
 
-        // Build command
+        // Build command — invoke from inside the component dir so relative
+        // config paths resolve correctly. We deliberately do NOT pass a
+        // positional path argument: passing one would override the config's
+        // Finder includes/excludes (PHP-CS-Fixer treats positional paths as
+        // an alternative to the Finder, not an intersection by default), and
+        // would pull in transient directories such as build/ that the config
+        // explicitly excludes.
         $cmd = [
+            'cd',
+            escapeshellarg($componentPath),
+            '&&',
             escapeshellarg($binary),
             'fix',
-            escapeshellarg($componentPath),
         ];
 
         if ($isDryRun) {
@@ -378,10 +386,21 @@ class Phpcsfixer extends Base
             return;
         }
 
-        // Count files with issues (files_checked is already set in executePhpCsFixer)
+        // PHP-CS-Fixer's JSON output for `--dry-run` lists files in `files`
+        // by name only (no `appliedFixers` key) — they are files that
+        // *would* be modified. The fix-mode JSON adds `appliedFixers` per
+        // file. Count both shapes as files_with_issues; only fix-mode
+        // entries are counted as files_fixed.
         foreach ($this->nativeResults['files'] as $file) {
-            if (isset($file['appliedFixers']) && is_array($file['appliedFixers']) && count($file['appliedFixers']) > 0) {
+            $isModified = isset($file['appliedFixers'])
+                && is_array($file['appliedFixers'])
+                && count($file['appliedFixers']) > 0;
+            $isDryRunHit = !isset($file['appliedFixers']) && isset($file['name']);
+
+            if ($isModified || $isDryRunHit) {
                 $this->stats['files_with_issues']++;
+            }
+            if ($isModified) {
                 $this->stats['files_fixed']++;
             }
         }
@@ -431,7 +450,8 @@ class Phpcsfixer extends Base
             'tool_source' => $binary ?: 'unknown',
             'mode' => $isDryRun ? 'check' : 'fix',
             'exit_code' => $exitCode,
-            'success' => ($exitCode === 0),
+            'success' => $this->isSuccessExitCode($exitCode, $isDryRun),
+            'tooling_error' => $this->isToolingErrorExitCode($exitCode),
             'statistics' => $this->stats,
         ];
 
@@ -759,5 +779,43 @@ class Phpcsfixer extends Base
         }
 
         return rmdir($dir);
+    }
+
+    /**
+     * Decide whether a PHP-CS-Fixer exit code means "style is clean".
+     *
+     * PHP-CS-Fixer 3.x exit codes (combinable bit flags):
+     *   0   OK
+     *   1   General error
+     *   4   Some files have invalid syntax
+     *   8   In dry-run/check mode: some files would be modified
+     *   16  Configuration error
+     *   32  Configuration of a fixer is invalid
+     *   64  Exception raised within the application
+     *
+     * For CI gating "is style clean":
+     *   exit 0   → success
+     *   exit 8 in dry-run → real style issues → failure
+     *   anything else → failure (covers tooling errors and unknowns)
+     *
+     * Note that exit code 1 is reserved by PHP-CS-Fixer for general errors;
+     * we treat it as a non-success too because we cannot tell otherwise.
+     */
+    private function isSuccessExitCode(int $exitCode, bool $isDryRun): bool
+    {
+        return $exitCode === 0;
+    }
+
+    /**
+     * Whether an exit code indicates a tooling failure (as opposed to
+     * a real style finding). Used by reporters to distinguish "code has
+     * style issues" from "the fixer itself blew up".
+     *
+     * Tooling errors per PHP-CS-Fixer 3.x: 16 (config), 32 (fixer config),
+     * 64 (uncaught exception). Bits may be combined with other flags.
+     */
+    private function isToolingErrorExitCode(int $exitCode): bool
+    {
+        return ($exitCode & (16 | 32 | 64)) !== 0;
     }
 }
