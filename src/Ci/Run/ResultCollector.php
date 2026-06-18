@@ -101,7 +101,7 @@ class ResultCollector
      * succeeded silently and is therefore treated as the worst case.
      *
      * Deliberate, value-judged skips (e.g. PHPUnit constraint not satisfiable
-     * on the lane's PHP version) belong in a future addSkipped() with
+     * on the lane's PHP version) belong in {@see addSkipped()} with
      * `success: true`; they are not modeled here.
      *
      * @param string $laneName Lane name
@@ -114,6 +114,30 @@ class ResultCollector
             'success' => false,
             'exit_code' => 1,
             'missing' => true,
+            'reason' => $reason,
+        ];
+    }
+
+    /**
+     * Record a deliberate skip for a tool.
+     *
+     * Use when a tool was intentionally not run because no version of it
+     * satisfies the lane's constraints (e.g. PHPUnit ^12 on PHP 8.2). The
+     * lane is NOT counted as failed — there is nothing to fail.
+     *
+     * Distinct from {@see addMissing()}: that one signals an unexpected
+     * absence and IS a failure.
+     *
+     * @param string $laneName Lane name
+     * @param string $tool Tool name
+     * @param string $reason Why the tool was skipped
+     */
+    public function addSkipped(string $laneName, string $tool, string $reason): void
+    {
+        $this->results[$laneName][$tool] = [
+            'success' => true,
+            'exit_code' => 0,
+            'deliberate_skip' => true,
             'reason' => $reason,
         ];
     }
@@ -158,18 +182,22 @@ class ResultCollector
         $this->output->bold("\n=== Summary ===");
 
         if ($summary['passed'] > 0) {
-            $this->output->ok("✅ Passed: {$summary['passed']}/{$summary['total']} lanes");
+            $this->output->ok("Passed: {$summary['passed']}/{$summary['total']} lanes");
+        }
+
+        if ($summary['skipped'] > 0) {
+            $this->output->skip("Skipped: {$summary['skipped']}/{$summary['total']} lanes");
         }
 
         if ($summary['failed'] > 0) {
-            $this->output->error("❌ Failed: {$summary['failed']}/{$summary['total']} lanes");
+            $this->output->error("Failed: {$summary['failed']}/{$summary['total']} lanes");
             foreach ($summary['failed_lanes'] as $laneName) {
                 $this->output->plain("  - {$laneName}");
             }
         }
 
         if ($summary['failed'] === 0) {
-            $this->output->ok("\n✨ All lanes passed!");
+            $this->output->ok("\nAll lanes passed!");
         }
     }
 
@@ -183,15 +211,21 @@ class ResultCollector
     {
         $toolName = ucfirst($tool);
 
+        // Handle deliberate skip (lane is incompatible with this tool)
+        if (isset($result['deliberate_skip']) && $result['deliberate_skip']) {
+            $this->output->skip("  {$toolName}: Skipped ({$result['reason']})");
+            return;
+        }
+
         // Handle missing result file
         if (isset($result['missing']) && $result['missing']) {
-            $this->output->error("  ✗ {$toolName}: Missing result ({$result['reason']})");
+            $this->output->error("  {$toolName}: Missing result ({$result['reason']})");
             return;
         }
 
         // Handle errors
         if (isset($result['error'])) {
-            $this->output->error("  ✗ {$toolName}: {$result['error']}");
+            $this->output->error("  {$toolName}: {$result['error']}");
             return;
         }
 
@@ -200,9 +234,9 @@ class ResultCollector
         $statsStr = $stats ? " ({$stats})" : '';
 
         if ($result['success']) {
-            $this->output->ok("  ✓ {$toolName}: Passed{$statsStr}");
+            $this->output->ok("  {$toolName}: Passed{$statsStr}");
         } else {
-            $this->output->error("  ✗ {$toolName}: FAILED{$statsStr}");
+            $this->output->error("  {$toolName}: FAILED{$statsStr}");
         }
     }
 
@@ -264,18 +298,23 @@ class ResultCollector
     /**
      * Get summary statistics.
      *
-     * @return array{passed: int, failed: int, total: int, failed_lanes: array<string>}
+     * @return array{passed: int, failed: int, skipped: int, total: int, failed_lanes: array<string>}
      */
     public function getSummary(): array
     {
         $passed = 0;
         $failed = 0;
+        $skipped = 0;
         $failedLanes = [];
 
         foreach ($this->results as $laneName => $tools) {
             $lanePassed = true;
+            $laneAllSkipped = !empty($tools);
 
             foreach ($tools as $tool => $result) {
+                if (empty($result['deliberate_skip'])) {
+                    $laneAllSkipped = false;
+                }
                 // success: false covers both real tool failures and missing
                 // result files (W2 — addMissing records success: false).
                 if (!$result['success']) {
@@ -284,7 +323,9 @@ class ResultCollector
                 }
             }
 
-            if ($lanePassed) {
+            if ($laneAllSkipped) {
+                $skipped++;
+            } elseif ($lanePassed) {
                 $passed++;
             } else {
                 $failed++;
@@ -295,6 +336,7 @@ class ResultCollector
         return [
             'passed' => $passed,
             'failed' => $failed,
+            'skipped' => $skipped,
             'total' => count($this->results),
             'failed_lanes' => $failedLanes,
         ];
