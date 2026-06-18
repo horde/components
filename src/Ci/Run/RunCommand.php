@@ -173,16 +173,16 @@ class RunCommand
         if (!file_exists($scriptPath)) {
             $this->output->error("[{$lane['name']}] Script not found: {$scriptPath}");
             $this->output->info("  Run 'horde-components ci setup' first");
-            $this->collector->addSkipped($lane['name'], 'phpunit', 'Script not found');
-            $this->collector->addSkipped($lane['name'], 'phpstan', 'Script not found');
+            $this->collector->addMissing($lane['name'], 'phpunit', 'Script not found');
+            $this->collector->addMissing($lane['name'], 'phpstan', 'Script not found');
             return;
         }
 
         // Check if script is executable
         if (!is_executable($scriptPath)) {
             $this->output->error("[{$lane['name']}] Script not executable: {$scriptPath}");
-            $this->collector->addSkipped($lane['name'], 'phpunit', 'Script not executable');
-            $this->collector->addSkipped($lane['name'], 'phpstan', 'Script not executable');
+            $this->collector->addMissing($lane['name'], 'phpunit', 'Script not executable');
+            $this->collector->addMissing($lane['name'], 'phpstan', 'Script not executable');
             return;
         }
 
@@ -224,7 +224,7 @@ class RunCommand
             if (file_exists($phpunitFile)) {
                 $this->collector->addResultFromFile($lane['name'], 'phpunit', $phpunitFile);
             } else {
-                $this->collector->addSkipped($lane['name'], 'phpunit', 'No result file found');
+                $this->collector->addMissing($lane['name'], 'phpunit', 'No result file found');
             }
 
             // Read PHPStan results
@@ -232,7 +232,7 @@ class RunCommand
             if (file_exists($phpstanFile)) {
                 $this->collector->addResultFromFile($lane['name'], 'phpstan', $phpstanFile);
             } else {
-                $this->collector->addSkipped($lane['name'], 'phpstan', 'No result file found');
+                $this->collector->addMissing($lane['name'], 'phpstan', 'No result file found');
             }
 
             // Read PHP CS Fixer results (only php8.4-dev)
@@ -241,7 +241,7 @@ class RunCommand
                 if (file_exists($csFixerFile)) {
                     $this->collector->addResultFromFile($lane['name'], 'phpcsfixer', $csFixerFile);
                 } else {
-                    $this->collector->addSkipped($lane['name'], 'phpcsfixer', 'No result file found');
+                    $this->collector->addMissing($lane['name'], 'phpcsfixer', 'No result file found');
                 }
             }
         }
@@ -323,11 +323,8 @@ class RunCommand
     private function isLanePassed(array $tools): bool
     {
         foreach ($tools as $result) {
-            // Skipped is not a failure
-            if (isset($result['skipped']) && $result['skipped']) {
-                continue;
-            }
-
+            // success: false now covers both real tool failures and missing
+            // result files (W2 — addMissing records success: false).
             if (!($result['success'] ?? false)) {
                 return false;
             }
@@ -348,9 +345,9 @@ class RunCommand
             return '—';
         }
 
-        // Skipped
-        if (isset($result['skipped']) && $result['skipped']) {
-            return '⊘ Skipped';
+        // Missing result file (lane crashed before writing JSON, etc.)
+        if (isset($result['missing']) && $result['missing']) {
+            return '❌ Missing';
         }
 
         // Error
@@ -462,8 +459,8 @@ class RunCommand
 
             $result = $tools[$tool];
 
-            // Skip skipped/errored lanes
-            if (isset($result['skipped']) || isset($result['error'])) {
+            // Skip lanes with no usable statistics (missing JSON or load error)
+            if (isset($result['missing']) || isset($result['error'])) {
                 continue;
             }
 
@@ -792,9 +789,9 @@ class RunCommand
             return '<span class="status-skip">—</span>';
         }
 
-        // Skipped
-        if (isset($result['skipped']) && $result['skipped']) {
-            return '<span class="status-skip">⊘ Skipped</span>';
+        // Missing result file (lane crashed before writing JSON, etc.)
+        if (isset($result['missing']) && $result['missing']) {
+            return '<span class="status-fail">❌ Missing</span>';
         }
 
         // Error
