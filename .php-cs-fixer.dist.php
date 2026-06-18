@@ -21,7 +21,7 @@ foreach ($potentialDirs as $dir) {
     }
 }
 
-$finder->exclude(['fixtures']);
+$finder->exclude(['fixtures', 'build', 'vendor']);
 
 $config = (new PhpCsFixer\Config())
     ->setRules([
