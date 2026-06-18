@@ -38,7 +38,7 @@ class TemplateRenderer
      * This version is embedded in generated files and used to detect
      * when components are using outdated templates.
      */
-    private const TEMPLATE_VERSION = '1.1.0';
+    private const TEMPLATE_VERSION = '1.2.0';
 
     /**
      * Constructor.
