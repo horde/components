@@ -59,7 +59,8 @@ class SetupCommand
         private readonly LaneCopier $laneCopier,
         private readonly ComposerInstaller $composerInstaller,
         private readonly ToolCache $toolCache,
-        private readonly LaneScriptGenerator $laneScriptGenerator
+        private readonly LaneScriptGenerator $laneScriptGenerator,
+        private readonly PhpUnitMatrix $phpUnitMatrix = new PhpUnitMatrix(),
     ) {}
 
     /**
@@ -146,6 +147,15 @@ class SetupCommand
         $this->laneCopier->copyToLanes($config);
         $this->output->plain('');
 
+        // Detect lanes deliberately incompatible with the component's
+        // declared PHPUnit constraint. Each such lane gets a sidecar
+        // build/skip.json so RunCommand can mark it as a deliberate skip
+        // (NOT a failure) without ever invoking composer install.
+        $skippedLanes = $this->markIncompatibleLanes($lanes);
+        if (!empty($skippedLanes)) {
+            $this->output->plain('');
+        }
+
         // Run composer install for each lane
         $this->output->bold('=== Running composer install ===');
         $successful = 0;
@@ -155,6 +165,12 @@ class SetupCommand
             $num = $index + 1;
             $total = count($lanes);
             $this->output->info("[{$num}/{$total}] PHP {$lane['php']} ({$lane['stability']})");
+
+            if (in_array($index, $skippedLanes, true)) {
+                $this->output->skip('Skipped (incompatible PHPUnit constraint)');
+                $this->output->plain('');
+                continue;
+            }
 
             try {
                 $phpBinary = $this->phpInstaller->getPhpBinary($lane['php']);
@@ -196,6 +212,11 @@ class SetupCommand
 
             $this->output->info("[{$num}/{$total}] {$laneName}");
 
+            if (in_array($index, $skippedLanes, true)) {
+                $this->output->skip('Skipped (no script generated)');
+                continue;
+            }
+
             $laneConfig = [
                 'lane_name' => $laneName,
                 'php_version' => $lane['php'],
@@ -221,6 +242,10 @@ class SetupCommand
         $this->output->bold('=== Setup Summary ===');
         $this->output->ok("Successful lanes: {$successful}");
 
+        if (!empty($skippedLanes)) {
+            $this->output->info("Skipped lanes: " . count($skippedLanes) . " (incompatible PHPUnit constraint)");
+        }
+
         if ($failed > 0) {
             $this->output->warn("Failed lanes: {$failed}");
         }
@@ -234,7 +259,9 @@ class SetupCommand
         // Download QC tools to cache
         $this->output->bold('=== Downloading QC Tools ===');
         try {
-            $this->toolCache->ensureAllTools($testableVersions);
+            $this->toolCache->ensureAllTools(
+                $this->collectPhpUnitTags($lanes, $skippedLanes)
+            );
             $this->output->ok('All tools downloaded');
         } catch (Exception $e) {
             $this->output->error("Tool download failed: " . $e->getMessage());
@@ -305,5 +332,104 @@ class SetupCommand
             'component_stability' => $stability,
             'required_extensions' => $extensions,
         ];
+    }
+
+    /**
+     * Detect which lanes are deliberately incompatible with the component's
+     * PHPUnit constraint and write a sidecar build/skip.json so RunCommand
+     * marks them as deliberate skips rather than running them.
+     *
+     * @param array<int,array{php: string, stability: string, dir: string}> $lanes
+     * @return array<int> Indexes of lanes that were marked as skipped
+     */
+    private function markIncompatibleLanes(array $lanes): array
+    {
+        $skipped = [];
+
+        foreach ($lanes as $index => $lane) {
+            $composerJson = $lane['dir'] . '/composer.json';
+            if (!is_file($composerJson)) {
+                // Lane directory not yet populated, or component lacks
+                // composer.json. Either way we cannot decide; let
+                // composer install fail naturally.
+                continue;
+            }
+
+            try {
+                $selection = $this->phpUnitMatrix->pickWithSource(
+                    $composerJson,
+                    $lane['php']
+                );
+            } catch (Exception $e) {
+                $this->output->warn(
+                    "Could not evaluate PHPUnit compatibility for {$lane['dir']}: "
+                    . $e->getMessage()
+                );
+                continue;
+            }
+
+            if ($selection->isSatisfied()) {
+                continue;
+            }
+
+            // Persist the skip reason so RunCommand can pick it up.
+            $buildDir = $lane['dir'] . '/build';
+            if (!is_dir($buildDir) && !mkdir($buildDir, 0o755, true) && !is_dir($buildDir)) {
+                throw new Exception("Failed to create build directory: {$buildDir}");
+            }
+            file_put_contents(
+                $buildDir . '/skip.json',
+                json_encode(
+                    [
+                        'deliberate_skip' => true,
+                        'tools' => ['phpunit', 'phpstan'],
+                        'reason' => $selection->skipReason,
+                    ],
+                    JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR
+                )
+            );
+
+            $laneName = 'php' . $lane['php'] . '-' . $lane['stability'];
+            $this->output->skip("{$laneName}: " . $selection->skipReason);
+            $skipped[] = $index;
+        }
+
+        return $skipped;
+    }
+
+    /**
+     * Compute the set of PHPUnit tags surviving lanes will need.
+     *
+     * Iterates the lanes that were not deliberately skipped, asks the
+     * matrix which PHPUnit tag fits each, and returns the deduped list.
+     *
+     * @param array<int,array{php: string, stability: string, dir: string}> $lanes
+     * @param array<int> $skippedLanes Indexes of lanes that were skipped
+     * @return array<string> Unique PHPUnit tags (e.g. ["11.5", "12.5"])
+     */
+    private function collectPhpUnitTags(array $lanes, array $skippedLanes): array
+    {
+        $tags = [];
+        foreach ($lanes as $index => $lane) {
+            if (in_array($index, $skippedLanes, true)) {
+                continue;
+            }
+            $composerJson = $lane['dir'] . '/composer.json';
+            if (!is_file($composerJson)) {
+                continue;
+            }
+            try {
+                $selection = $this->phpUnitMatrix->pickWithSource(
+                    $composerJson,
+                    $lane['php']
+                );
+            } catch (Exception) {
+                continue;
+            }
+            if ($selection->tag !== null) {
+                $tags[] = $selection->tag;
+            }
+        }
+        return array_values(array_unique($tags));
     }
 }

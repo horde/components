@@ -37,19 +37,6 @@ use Throwable;
 class ToolCache
 {
     /**
-     * PHPUnit version mapping for PHP versions.
-     *
-     * PHPUnit 11.x for PHP 8.2-8.3
-     * PHPUnit 12.x for PHP 8.4+
-     */
-    private const PHPUNIT_VERSIONS = [
-        '8.2' => '11.5',
-        '8.3' => '11.5',
-        '8.4' => '12.5',
-        '8.5' => '12.5',
-    ];
-
-    /**
      * Constructor.
      *
      * @param string $cacheDir Directory to store tool PHARs
@@ -61,21 +48,25 @@ class ToolCache
     ) {}
 
     /**
-     * Ensure all required tools are cached for given PHP versions.
+     * Ensure all required tools are cached for the given PHPUnit tags.
      *
-     * @param array<string> $phpVersions PHP versions to prepare tools for
+     * @param array<string> $phpUnitTags PHPUnit major.minor tags to download
+     *                                   (e.g. ["11.5", "12.5"]). Caller is
+     *                                   responsible for picking these via
+     *                                   {@see PhpUnitMatrix}; this method
+     *                                   does not do version selection.
      * @throws Exception If download fails
      */
-    public function ensureAllTools(array $phpVersions): void
+    public function ensureAllTools(array $phpUnitTags): void
     {
         // Create cache directory
         if (!is_dir($this->cacheDir)) {
             mkdir($this->cacheDir, 0o755, true);
         }
 
-        // Download PHPUnit for each PHP version
-        foreach ($phpVersions as $phpVersion) {
-            $this->ensurePhpUnit($phpVersion);
+        // Download each requested PHPUnit tag, deduped.
+        foreach (array_unique($phpUnitTags) as $tag) {
+            $this->ensurePhpUnit($tag);
         }
 
         // Download PHPStan (single version for all PHP versions)
@@ -86,33 +77,28 @@ class ToolCache
     }
 
     /**
-     * Ensure PHPUnit is cached for specific PHP version.
+     * Ensure PHPUnit is cached at the given tag.
      *
-     * @param string $phpVersion PHP version (e.g., "8.4")
+     * @param string $tag PHPUnit major.minor tag (e.g. "12.5")
      * @return string Path to PHPUnit PHAR
-     * @throws Exception If version not supported or download fails
+     * @throws Exception If download fails
      */
-    public function ensurePhpUnit(string $phpVersion): string
+    public function ensurePhpUnit(string $tag): string
     {
-        if (!isset(self::PHPUNIT_VERSIONS[$phpVersion])) {
-            throw new Exception("No PHPUnit version mapped for PHP {$phpVersion}");
-        }
-
-        $phpunitVersion = self::PHPUNIT_VERSIONS[$phpVersion];
-        $pharName = "phpunit-{$phpunitVersion}.phar";
+        $pharName = "phpunit-{$tag}.phar";
         $pharPath = $this->cacheDir . '/' . $pharName;
 
         if (file_exists($pharPath)) {
-            $this->output->plain("  ✓ PHPUnit {$phpunitVersion} (cached)");
+            $this->output->plain("  PHPUnit {$tag} (cached)");
             return $pharPath;
         }
 
-        $this->output->info("  ⬇ Downloading PHPUnit {$phpunitVersion}...");
+        $this->output->info("  Downloading PHPUnit {$tag}...");
 
-        $url = "https://phar.phpunit.de/phpunit-{$phpunitVersion}.phar";
+        $url = "https://phar.phpunit.de/phpunit-{$tag}.phar";
         $this->downloadPhar($url, $pharPath);
 
-        $this->output->ok("  ✓ PHPUnit {$phpunitVersion}");
+        $this->output->ok("  PHPUnit {$tag}");
         return $pharPath;
     }
 
@@ -128,16 +114,16 @@ class ToolCache
         $pharPath = $this->cacheDir . '/' . $pharName;
 
         if (file_exists($pharPath)) {
-            $this->output->plain("  ✓ PHPStan (cached)");
+            $this->output->plain("  PHPStan (cached)");
             return $pharPath;
         }
 
-        $this->output->info("  ⬇ Downloading PHPStan (latest)...");
+        $this->output->info("  Downloading PHPStan (latest)...");
 
         $url = 'https://github.com/phpstan/phpstan/releases/latest/download/phpstan.phar';
         $this->downloadPhar($url, $pharPath);
 
-        $this->output->ok("  ✓ PHPStan");
+        $this->output->ok("  PHPStan");
         return $pharPath;
     }
 
@@ -153,34 +139,28 @@ class ToolCache
         $pharPath = $this->cacheDir . '/' . $pharName;
 
         if (file_exists($pharPath)) {
-            $this->output->plain("  ✓ PHP-CS-Fixer (cached)");
+            $this->output->plain("  PHP-CS-Fixer (cached)");
             return $pharPath;
         }
 
-        $this->output->info("  ⬇ Downloading PHP-CS-Fixer (latest)...");
+        $this->output->info("  Downloading PHP-CS-Fixer (latest)...");
 
         $url = 'https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/latest/download/php-cs-fixer.phar';
         $this->downloadPhar($url, $pharPath);
 
-        $this->output->ok("  ✓ PHP-CS-Fixer");
+        $this->output->ok("  PHP-CS-Fixer");
         return $pharPath;
     }
 
     /**
-     * Get the path to PHPUnit for a specific PHP version.
+     * Get the path to a cached PHPUnit PHAR by tag.
      *
-     * @param string $phpVersion PHP version (e.g., "8.4")
+     * @param string $tag PHPUnit major.minor tag (e.g. "12.5")
      * @return string|null Path to PHPUnit PHAR or null if not cached
      */
-    public function getPhpUnitPath(string $phpVersion): ?string
+    public function getPhpUnitPath(string $tag): ?string
     {
-        if (!isset(self::PHPUNIT_VERSIONS[$phpVersion])) {
-            return null;
-        }
-
-        $phpunitVersion = self::PHPUNIT_VERSIONS[$phpVersion];
-        $pharPath = $this->cacheDir . "/phpunit-{$phpunitVersion}.phar";
-
+        $pharPath = $this->cacheDir . "/phpunit-{$tag}.phar";
         return file_exists($pharPath) ? $pharPath : null;
     }
 

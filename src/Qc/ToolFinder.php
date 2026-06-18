@@ -11,6 +11,7 @@
 
 namespace Horde\Components\Qc;
 
+use Horde\Components\Ci\Setup\PhpUnitMatrix;
 use Phar;
 use PharException;
 use Throwable;
@@ -83,19 +84,14 @@ class ToolFinder
 
         // 0. Tools directory (highest priority - for CI mode)
         if (!empty($this->toolsDir)) {
-            // For PHPUnit, prefer version-specific PHARs based on PHP version
+            // For PHPUnit, ask PhpUnitMatrix for the right tag based on the
+            // component's composer.json constraint and the running PHP. Falls
+            // back to "highest compatible" when the component does not declare
+            // a constraint (matrix returns the highest tag for the PHP).
             if ($toolName === 'phpunit' && $checkPhar) {
-                $phpVersion = PHP_VERSION_ID;
-
-                // PHPUnit 11.x for PHP 8.2-8.3, PHPUnit 12.x for PHP 8.4+
-                if ($phpVersion < 80400) {
-                    // PHP 8.2-8.3: Try PHPUnit 11.5 first
-                    $locations[] = $this->toolsDir . '/phpunit-11.5.phar';
-                    $locations[] = $this->toolsDir . '/phpunit-11.phar';
-                } else {
-                    // PHP 8.4+: Try PHPUnit 12.5 first
-                    $locations[] = $this->toolsDir . '/phpunit-12.5.phar';
-                    $locations[] = $this->toolsDir . '/phpunit-12.phar';
+                $tag = $this->resolvePhpUnitTag();
+                if ($tag !== null) {
+                    $locations[] = $this->toolsDir . '/phpunit-' . $tag . '.phar';
                 }
             }
 
@@ -348,5 +344,31 @@ class ToolFinder
         }
 
         return null;
+    }
+
+    /**
+     * Resolve which PHPUnit tag this lane should run via PhpUnitMatrix.
+     *
+     * Reads the component's composer.json (if present) and intersects the
+     * declared phpunit/phpunit constraint with the lane's running PHP.
+     *
+     * @return string|null Tag like "12.5", or null when neither the
+     *                    constraint nor the PHP version yields a hit
+     *                    (caller's lookup falls through to vendor/bin etc.).
+     */
+    private function resolvePhpUnitTag(): ?string
+    {
+        $matrix = new PhpUnitMatrix();
+        $phpVersion = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
+
+        $composerJson = $this->getComponentPath() . '/composer.json';
+        if (is_file($composerJson)) {
+            try {
+                return $matrix->pickWithSource($composerJson, $phpVersion)->tag;
+            } catch (Throwable) {
+                // Fall through to constraint-less lookup below.
+            }
+        }
+        return $matrix->pick(null, $phpVersion);
     }
 }

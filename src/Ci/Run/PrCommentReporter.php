@@ -358,8 +358,8 @@ class PrCommentReporter
 
             $result = $tools[$tool];
 
-            // Skip lanes with no usable statistics (missing JSON or load error)
-            if (isset($result['missing']) || isset($result['error'])) {
+            // Skip lanes with no usable statistics
+            if (isset($result['missing']) || isset($result['error']) || isset($result['deliberate_skip'])) {
                 continue;
             }
 

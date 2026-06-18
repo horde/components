@@ -84,6 +84,37 @@ class ResultCollectorTest extends TestCase
         }
     }
 
+    public function testAddSkippedDoesNotFailLane(): void
+    {
+        $collector = new ResultCollector($this->mockOutput());
+        $collector->addSkipped('php8.2-dev', 'phpunit', 'PHPUnit ^12 not satisfiable on PHP 8.2');
+
+        $this->assertTrue($collector->allPassed());
+        $summary = $collector->getSummary();
+        // A lane whose only result is a deliberate skip is counted as
+        // skipped, not passed.
+        $this->assertSame(0, $summary['passed']);
+        $this->assertSame(1, $summary['skipped']);
+        $this->assertSame(0, $summary['failed']);
+    }
+
+    public function testDeliberateSkipShape(): void
+    {
+        $collector = new ResultCollector($this->mockOutput());
+        $collector->addSkipped('php8.2-dev', 'phpunit', 'incompatible');
+
+        $results = $collector->getResults();
+        $this->assertSame(
+            [
+                'success' => true,
+                'exit_code' => 0,
+                'deliberate_skip' => true,
+                'reason' => 'incompatible',
+            ],
+            $results['php8.2-dev']['phpunit']
+        );
+    }
+
     private function mockOutput(): Output
     {
         // Output is only used for displaySummary(); these tests hit

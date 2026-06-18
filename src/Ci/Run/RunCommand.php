@@ -167,6 +167,15 @@ class RunCommand
     {
         $scriptPath = $lane['dir'] . '/run-lane.sh';
 
+        // Honour deliberate skips written by SetupCommand: don't try to run
+        // a script that was never generated, and don't print Script-not-found
+        // errors. Result aggregation will record the skip from skip.json.
+        $skipFile = $lane['component_dir'] . '/build/skip.json';
+        if (file_exists($skipFile)) {
+            $this->output->skip("[{$lane['name']}] Deliberately skipped");
+            return;
+        }
+
         $this->output->info("[{$lane['name']}] Executing lane script...");
 
         // Check if script exists
@@ -218,6 +227,19 @@ class RunCommand
 
         foreach ($lanes as $lane) {
             $buildDir = $lane['component_dir'] . '/build';
+
+            // Honour deliberate skips written by SetupCommand.
+            $skipFile = $buildDir . '/skip.json';
+            if (file_exists($skipFile)) {
+                $skipData = json_decode((string) file_get_contents($skipFile), true);
+                if (is_array($skipData) && ($skipData['deliberate_skip'] ?? false)) {
+                    $reason = (string) ($skipData['reason'] ?? 'Lane deliberately skipped');
+                    foreach ((array) ($skipData['tools'] ?? ['phpunit', 'phpstan']) as $tool) {
+                        $this->collector->addSkipped($lane['name'], (string) $tool, $reason);
+                    }
+                    continue;
+                }
+            }
 
             // Read PHPUnit results
             $phpunitFile = $buildDir . '/phpunit-results-summary.json';
@@ -345,6 +367,11 @@ class RunCommand
             return '—';
         }
 
+        // Deliberately skipped (lane incompatible with this tool)
+        if (isset($result['deliberate_skip']) && $result['deliberate_skip']) {
+            return '⊘ Skipped';
+        }
+
         // Missing result file (lane crashed before writing JSON, etc.)
         if (isset($result['missing']) && $result['missing']) {
             return '❌ Missing';
@@ -459,8 +486,8 @@ class RunCommand
 
             $result = $tools[$tool];
 
-            // Skip lanes with no usable statistics (missing JSON or load error)
-            if (isset($result['missing']) || isset($result['error'])) {
+            // Skip lanes with no usable statistics
+            if (isset($result['missing']) || isset($result['error']) || isset($result['deliberate_skip'])) {
                 continue;
             }
 
@@ -787,6 +814,11 @@ class RunCommand
     {
         if ($result === null) {
             return '<span class="status-skip">—</span>';
+        }
+
+        // Deliberately skipped (lane incompatible with this tool)
+        if (isset($result['deliberate_skip']) && $result['deliberate_skip']) {
+            return '<span class="status-skip">⊘ Skipped</span>';
         }
 
         // Missing result file (lane crashed before writing JSON, etc.)
