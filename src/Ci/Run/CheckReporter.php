@@ -251,18 +251,21 @@ class CheckReporter
      */
     private function formatPhpStanOutput(array $stats, bool $success): array
     {
-        $filesAnalyzed = $stats['files_analyzed'] ?? 0;
+        $filesScanned = $stats['files_scanned'] ?? 0;
+        $filesWithErrors = $stats['files_with_errors'] ?? 0;
         $errors = $stats['errors'] ?? 0;
 
         if ($success) {
             return [
                 'title' => "✅ No errors found",
-                'summary' => "**Files analyzed**: {$filesAnalyzed}\n**Errors**: 0\n\n✨ Static analysis passed!",
+                'summary' => "**Files scanned**: {$filesScanned}\n**Errors**: 0\n\n✨ Static analysis passed!",
             ];
         }
 
-        $summary = "**Files analyzed**: {$filesAnalyzed}\n**Errors**: {$errors}\n\n";
-        $summary .= "⚠️ PHPStan found issues that need attention.";
+        $summary = "**Files scanned**: {$filesScanned}\n"
+            . "**Files with errors**: {$filesWithErrors}\n"
+            . "**Errors**: {$errors}\n\n"
+            . "⚠️ PHPStan found issues that need attention.";
 
         return [
             'title' => "⚠️ {$errors} errors found",

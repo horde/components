@@ -442,13 +442,13 @@ class RunCommand
         if (!empty($phpstanStats)) {
             $md .= "#### PHPStan\n\n";
             $totalErrors = $phpstanStats['errors'] ?? 0;
-            $filesAnalyzed = $phpstanStats['files_analyzed'] ?? 0;
+            $filesScanned = $phpstanStats['files_scanned'] ?? 0;
             $lanesRun = $phpstanStats['lanes_run'] ?? 0;
 
             if ($totalErrors === 0) {
-                $md .= "✅ **No errors found** in {$filesAnalyzed} files ({$lanesRun} lanes)\n\n";
+                $md .= "✅ **No errors found** in {$filesScanned} files ({$lanesRun} lanes)\n\n";
             } else {
-                $md .= "⚠️ **{$totalErrors} errors found** in {$filesAnalyzed} files ({$lanesRun} lanes)\n\n";
+                $md .= "⚠️ **{$totalErrors} errors found** ({$filesScanned} files scanned, {$lanesRun} lanes)\n\n";
             }
         }
 
@@ -923,7 +923,8 @@ class RunCommand
         // PHPStan section
         if (!empty($phpstanStats)) {
             $totalErrors = $phpstanStats['errors'] ?? 0;
-            $filesAnalyzed = $phpstanStats['files_analyzed'] ?? 0;
+            $filesScanned = $phpstanStats['files_scanned'] ?? 0;
+            $filesWithErrors = $phpstanStats['files_with_errors'] ?? 0;
             $lanesRun = $phpstanStats['lanes_run'] ?? 0;
 
             $statusIcon = $totalErrors === 0 ? '✅' : '⚠️';
@@ -939,8 +940,12 @@ class RunCommand
                                 <span class="metric-value">{$lanesRun}</span>
                             </div>
                             <div class="metric-row">
-                                <span class="metric-label">Files analyzed:</span>
-                                <span class="metric-value">{$filesAnalyzed}</span>
+                                <span class="metric-label">Files scanned:</span>
+                                <span class="metric-value">{$filesScanned}</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Files with errors:</span>
+                                <span class="metric-value">{$filesWithErrors}</span>
                             </div>
                             <div class="metric-row">
                                 <span class="metric-label">Errors:</span>
