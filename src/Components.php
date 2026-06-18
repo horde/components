@@ -224,7 +224,12 @@ class Components
             }
         } catch (Exception $e) {
             $injector->getInstance(Output::class)->fail($e);
-            return;
+            // Module::handle() bool reports "did I match" only. Failure is
+            // reported by throwing an exception; its code drives the process
+            // exit code (0 is normalized to 1 since success-via-throw is a
+            // contradiction).
+            $code = $e->getCode();
+            exit(is_int($code) && $code !== 0 ? $code : 1);
         }
 
         if (!$ran) {
