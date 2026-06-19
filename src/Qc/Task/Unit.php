@@ -314,8 +314,10 @@ class Unit extends Base
             $argv[] = $testDir;
         }
 
-        // Add JSON log output to build/phpunit-results.json
-        $jsonLogPath = $componentPath . '/build/phpunit-results.json';
+        // Path for PHPUnit's JUnit XML log. The file is read back below
+        // to recover the assertions count, which is not surfaced through
+        // the event subscriber API.
+        $junitXmlPath = $componentPath . '/build/phpunit-results.xml';
         $buildDir = $componentPath . '/build';
 
         // Create build directory if it doesn't exist
@@ -325,7 +327,7 @@ class Unit extends Base
 
         $argv[] = '--no-output';
         $argv[] = '--log-junit';
-        $argv[] = $jsonLogPath;
+        $argv[] = $junitXmlPath;
 
         // Use PHPUnit's Application class for modern in-process execution
         $app = new \PHPUnit\TextUI\Application();
@@ -334,6 +336,11 @@ class Unit extends Base
         ob_start();
         $exitCode = $app->run($argv);
         ob_end_clean();
+
+        // Recover assertions from the JUnit XML log (the event subscriber
+        // API does not emit per-assertion events; the count lives in the
+        // XML's top-level testsuites attribute).
+        $this->stats['assertions'] = self::parseAssertionsFromJunit($junitXmlPath);
 
         // Write our own JSON results file with additional metadata
         $this->writeJsonResults($componentPath, $exitCode);
@@ -413,5 +420,50 @@ class Unit extends Base
                 $this->getOutput()->ok($message);
             }
         }
+    }
+
+    /**
+     * Recover the assertion count from a PHPUnit JUnit XML log.
+     *
+     * PHPUnit's event-subscriber API does not emit per-assertion events,
+     * so the per-test counter we keep in {@see registerEventSubscribers}
+     * stays at the count of tests, not assertions. The JUnit XML log
+     * carries `assertions` as an attribute on the root `<testsuites>`
+     * element (and on each nested `<testsuite>`). Reading it back is the
+     * supported, version-stable way to surface the count.
+     *
+     * @param string $junitXmlPath Path to the JUnit XML file.
+     * @return int Assertion count, or 0 when the file is missing/unparseable.
+     */
+    public static function parseAssertionsFromJunit(string $junitXmlPath): int
+    {
+        if (!is_file($junitXmlPath) || !is_readable($junitXmlPath)) {
+            return 0;
+        }
+        $previous = libxml_use_internal_errors(true);
+        try {
+            $xml = simplexml_load_file($junitXmlPath);
+        } finally {
+            libxml_use_internal_errors($previous);
+        }
+        if ($xml === false) {
+            return 0;
+        }
+        // Root <testsuites> usually carries the aggregated count.
+        $assertions = isset($xml['assertions']) ? (int) $xml['assertions'] : 0;
+        if ($assertions > 0) {
+            return $assertions;
+        }
+        // Fallback for variants that emit a single <testsuite> root or
+        // omit the aggregated attribute: sum the per-suite counts.
+        $suites = $xml->getName() === 'testsuites'
+            ? $xml->children()
+            : [$xml];
+        foreach ($suites as $suite) {
+            if (isset($suite['assertions'])) {
+                $assertions += (int) $suite['assertions'];
+            }
+        }
+        return $assertions;
     }
 }

@@ -25,6 +25,7 @@ use Horde\Components\Ci\Setup\PhpInstaller;
 use Horde\Components\Ci\Setup\ExtensionInstaller;
 use Horde\Components\Ci\Setup\LaneCopier;
 use Horde\Components\Ci\Setup\ComposerInstaller;
+use Horde\GithubApiClient\GithubApiClient;
 use Horde\Components\Ci\Setup\ToolCache;
 use Horde\Components\Ci\Setup\LaneScriptGenerator;
 use Horde\Components\Ci\Init\InitCommand;
@@ -519,13 +520,17 @@ MORE INFO:
             }
         }
 
-        // Get GitHub API client (if available)
+        // Get GitHub API client (if available). Resolved via the injector so
+        // GithubApiConfig (set up in Components::__construct from the
+        // GITHUB_TOKEN env / github.token config key) flows through.
         $apiClient = null;
         if (getenv('GITHUB_TOKEN') !== false) {
             try {
-                $apiClient = $this->dependencies->getGithubClient();
-            } catch (\Exception $e) {
-                // GitHub client not available, continue without it
+                $apiClient = $this->dependencies->get(GithubApiClient::class);
+            } catch (\Throwable $e) {
+                // Don't silently swallow: a maintainer running into a real
+                // misconfiguration should see why the PR comment didn't post.
+                $output->warn('Could not initialize GitHub API client: ' . $e->getMessage());
             }
         }
 

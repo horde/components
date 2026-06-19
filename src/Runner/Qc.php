@@ -51,7 +51,7 @@ class Qc
         private readonly QcTasks $qc
     ) {}
 
-    public function run(): void
+    public function run(): int
     {
         $sequence = [];
 
@@ -105,14 +105,14 @@ class Qc
         }
 
         if (!empty($sequence)) {
-            $this->qc->run(
+            return $this->qc->run(
                 $sequence,
                 $this->component,
                 $this->options
             );
-        } else {
-            $this->output->warn('Huh?! No tasks selected... All done!');
         }
+        $this->output->warn('Huh?! No tasks selected... All done!');
+        return 0;
     }
 
     /**

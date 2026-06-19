@@ -11,6 +11,7 @@
 
 namespace Horde\Components\Qc\Task;
 
+use Horde\Components\Ci\GitHubAnnotations;
 use Horde\Components\Qc\ToolFinder;
 use Phar;
 
@@ -132,6 +133,11 @@ class Phpcsfixer extends Base
         if ($this->nativeResults !== null) {
             $this->parseResults();
             $this->writeJsonResults($componentPath, $exitCode, $isDryRun);
+            // Annotate dry-run hits on the PR diff. In fix mode the issues
+            // were just fixed, so annotating them as findings would be wrong.
+            if ($isDryRun) {
+                $this->emitPhpCsFixerAnnotations($componentPath);
+            }
         }
 
         $this->outputStatistics($isDryRun);
@@ -817,5 +823,48 @@ class Phpcsfixer extends Base
     private function isToolingErrorExitCode(int $exitCode): bool
     {
         return ($exitCode & (16 | 32 | 64)) !== 0;
+    }
+
+    /**
+     * Emit one GitHub Actions `::warning` annotation per file that
+     * php-cs-fixer flagged in dry-run mode.
+     *
+     * The native JSON in dry-run mode has shape:
+     *   { files: [ { name: "<path>" }, ... ] }
+     * Names are relative to the component path (cwd of the spawn).
+     * php-cs-fixer does NOT report line numbers in JSON output, so the
+     * annotation anchors at the file level (sidebar entry only — no
+     * diff-line marker).
+     *
+     * No-op outside GitHub Actions.
+     *
+     * @param string $componentPath Component root directory; used only to
+     *                              resolve any absolute paths back to
+     *                              repo-relative form.
+     */
+    private function emitPhpCsFixerAnnotations(string $componentPath): void
+    {
+        if (!GitHubAnnotations::isActive()) {
+            return;
+        }
+        if (!isset($this->nativeResults['files']) || !is_array($this->nativeResults['files'])) {
+            return;
+        }
+
+        foreach ($this->nativeResults['files'] as $file) {
+            if (!is_array($file) || !isset($file['name']) || !is_string($file['name'])) {
+                continue;
+            }
+            $name = $file['name'];
+            // The path may be absolute or repo-relative depending on
+            // how php-cs-fixer was invoked; both shapes are handled.
+            $relPath = GitHubAnnotations::relativizeForAnnotation($name, $componentPath);
+            GitHubAnnotations::warning(
+                "File would be reformatted by php-cs-fixer (run 'horde-components qc phpcsfixer --fix-qc-issues' to apply).",
+                $relPath,
+                null,
+                'PHP-CS-Fixer'
+            );
+        }
     }
 }

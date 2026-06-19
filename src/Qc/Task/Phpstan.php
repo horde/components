@@ -11,6 +11,7 @@
 
 namespace Horde\Components\Qc\Task;
 
+use Horde\Components\Ci\GitHubAnnotations;
 use Horde\Components\Qc\PhpStanRuleExtractor;
 use Horde\Components\Qc\ToolFinder;
 use Throwable;
@@ -136,6 +137,13 @@ class Phpstan extends Base
                         . ($watermarkResult['errors'] !== 1 ? 's' : '') . ')'
                     );
                     $this->getOutput()->warn('Watermark level MUST pass - fix these errors!');
+
+                    // Annotate each finding on the PR diff for GitHub Actions.
+                    $this->emitPhpStanAnnotations(
+                        $watermarkResult['results'] ?? null,
+                        $componentPath,
+                        $watermark
+                    );
                 } else {
                     // TOOLING FAILURE - PHPStan refused to start (config error,
                     // missing autoload-file, unloadable rule classes, etc.).
@@ -157,7 +165,7 @@ class Phpstan extends Base
                 $this->nativeResults = $watermarkResult['results'];
                 $this->level = $watermark;
                 $this->parseResults();
-                $this->writeJsonResults($componentPath, $watermarkResult['exit_code'], $watermark);
+                $this->writeJsonResults($componentPath, $watermarkResult['exit_code'], $watermark, $options);
                 $this->outputStatistics();
 
                 return max(1, $watermarkResult['errors']); // Non-zero = failure
@@ -231,7 +239,7 @@ class Phpstan extends Base
             // Parse and output results
             if ($this->nativeResults !== null) {
                 $this->parseResults();
-                $this->writeJsonResults($componentPath, 0, $this->level);
+                $this->writeJsonResults($componentPath, 0, $this->level, $options);
             }
 
             $this->outputStatistics();
@@ -842,7 +850,7 @@ NEON;
      *
      * @return void
      */
-    private function writeJsonResults(string $componentPath, int $exitCode, int $level): void
+    private function writeJsonResults(string $componentPath, int $exitCode, int $level, array $options = []): void
     {
         $buildDir = $componentPath . '/build';
 
@@ -851,9 +859,11 @@ NEON;
             mkdir($buildDir, 0o755, true);
         }
 
-        // Write native PHPStan JSON
+        // Write native PHPStan JSON only when the caller explicitly asked
+        // for it. The CI lane runner sets --dump-native; local invocations
+        // get only the summary so a developer's working tree stays tidy.
         $nativeJsonPath = $buildDir . '/phpstan-native.json';
-        if ($this->nativeResults !== null) {
+        if (!empty($options['dump_native']) && $this->nativeResults !== null) {
             $json = json_encode($this->nativeResults, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
             file_put_contents($nativeJsonPath, $json);
         }
@@ -921,6 +931,64 @@ NEON;
             } else {
                 $message = 'No problems found. PHPStan results (level ' . $this->level . '): ' . implode(', ', $parts);
                 $this->getOutput()->ok($message);
+            }
+        }
+    }
+
+    /**
+     * Emit one GitHub Actions `::error` annotation per PHPStan finding.
+     *
+     * The native PHPStan JSON has shape:
+     *   { files: { "<absolute path>": { errors: int, messages: [
+     *       { message, line, identifier, ignorable }, ... ] } } }
+     *
+     * Paths are absolute on the running system (e.g. inside a CI lane:
+     * /tmp/horde-ci/lanes/php8.3-dev/Victim/src/Foo.php). For the runner
+     * to anchor an annotation to a diff line, the path must be relative
+     * to $GITHUB_WORKSPACE. We strip the component root prefix to get
+     * the repo-relative path the diff uses.
+     *
+     * No-op outside GitHub Actions.
+     *
+     * @param array<string,mixed>|null $native The decoded PHPStan JSON.
+     * @param string $componentPath Component root directory.
+     * @param int $level Watermark level (used for the annotation title).
+     */
+    private function emitPhpStanAnnotations(?array $native, string $componentPath, int $level): void
+    {
+        if (!GitHubAnnotations::isActive()) {
+            return;
+        }
+        if (!is_array($native) || !isset($native['files']) || !is_array($native['files'])) {
+            return;
+        }
+
+        foreach ($native['files'] as $absolutePath => $fileEntry) {
+            if (!is_string($absolutePath) || !is_array($fileEntry)) {
+                continue;
+            }
+            $relPath = GitHubAnnotations::relativizeForAnnotation($absolutePath, $componentPath);
+            $messages = $fileEntry['messages'] ?? [];
+            if (!is_array($messages)) {
+                continue;
+            }
+            foreach ($messages as $msg) {
+                if (!is_array($msg)) {
+                    continue;
+                }
+                $text = (string) ($msg['message'] ?? '');
+                $line = isset($msg['line']) && is_int($msg['line']) && $msg['line'] > 0
+                    ? $msg['line']
+                    : null;
+                $identifier = isset($msg['identifier']) && is_string($msg['identifier'])
+                    ? ' [' . $msg['identifier'] . ']'
+                    : '';
+                GitHubAnnotations::error(
+                    $text . $identifier,
+                    $relPath,
+                    $line,
+                    'PHPStan level ' . $level
+                );
             }
         }
     }

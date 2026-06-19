@@ -215,8 +215,10 @@ class LaneScriptGenerator
             cd "$COMPONENT_DIR"
             "$PHP_BINARY" "$COMPONENTS_PATH" qc phpstan \
                 --tools-dir="$TOOLS_DIR" \
+                --dump-native \
                 2>&1 || PHPSTAN_EXIT=$?
             # JSON written to: $BUILD_DIR/phpstan-results.json
+            # Native JSON written to: $BUILD_DIR/phpstan-native.json (--dump-native)
 
 
             BASH;
@@ -259,13 +261,13 @@ class LaneScriptGenerator
 
         // Add exit code display for each task
         if (in_array('phpunit', $tasks)) {
-            $summary .= 'echo "PHPUnit: ${PHPUNIT_EXIT:-0}"' . "\n";
+            $summary .= 'echo "PHPUnit exit: ${PHPUNIT_EXIT:-0}"' . "\n";
         }
         if (in_array('phpstan', $tasks)) {
-            $summary .= 'echo "PHPStan: ${PHPSTAN_EXIT:-0}"' . "\n";
+            $summary .= 'echo "PHPStan exit: ${PHPSTAN_EXIT:-0}"' . "\n";
         }
         if (in_array('phpcsfixer', $tasks)) {
-            $summary .= 'echo "PHP-CS-Fixer: ${PHPCS_EXIT:-0}"' . "\n";
+            $summary .= 'echo "PHP-CS-Fixer exit: ${PHPCS_EXIT:-0}"' . "\n";
         }
 
         $summary .= "\n# Exit with first non-zero exit code\n";

@@ -18,7 +18,12 @@ on:
 
 jobs:
   ci:
+    name: CI
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
 
     steps:
       - name: Checkout code
@@ -46,7 +51,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: ci-results-${{ github.run_number }}
+          name: ci-results-pr${{ github.event.pull_request.number || github.run_number }}-${{ github.sha }}
           path: |
             {{WORK_DIR}}/lanes/*/{{COMPONENT_NAME}}/build/*.json
           retention-days: 30
