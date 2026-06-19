@@ -18,6 +18,7 @@ namespace Horde\Components\Module;
 use Horde\Argv\Option;
 use Horde\Components\Component;
 use Horde\Components\Component\ComponentDirectory;
+use Horde\Components\Exception;
 use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
 use Horde\Components\Runner\Qc as RunnerQc;
 use Horde\Components\Output;
@@ -72,6 +73,13 @@ class Qc extends Base
                 [
                     'action' => 'store',
                     'help' => 'Config file preference: "tool" (horde-components), "uut" (component being tested), or path to specific config. Applies to PHP CS Fixer and PHPStan.',
+                ]
+            ),
+            new Option(
+                '--dump-native',
+                [
+                    'action' => 'store_true',
+                    'help' => 'Persist the underlying tool\'s native JSON next to the summary (e.g. phpstan-native.json). Used by the CI lane runner so per-finding aggregation can read findings from disk; off by default for local invocations.',
                 ]
             ),
         ];
@@ -325,7 +333,15 @@ NOTE:
                 $output,
                 $qcTasks
             );
-            $runner->run();
+            $numErrors = $runner->run();
+            if ($numErrors > 0) {
+                // Per the Module::handle() contract: bool=matched, exception=failure.
+                // The shell exit code is the exception's getCode() (W1).
+                throw new Exception(
+                    "qc reported {$numErrors} error" . ($numErrors === 1 ? '' : 's'),
+                    1
+                );
+            }
             return true;
         }
         return false;

@@ -84,12 +84,16 @@ class Tasks
      * @param array                $sequence The task sequence.
      * @param Component $component The component to be checked.
      * @param array                $options  Additional options.
+     *
+     * @return int Sum of error counts reported by each task. Zero when
+     *             every task ran cleanly. Used by Module\Qc to decide
+     *             whether to throw and make the process exit non-zero.
      */
     public function run(
         array $sequence,
         Component $component,
         $options = []
-    ): void {
+    ): int {
         $this->_options = $options;
         $this->_sequence = $sequence;
 
@@ -118,6 +122,7 @@ class Tasks
             }
         }
         $output = $this->_dependencies->getInstance(Output::class);
+        $totalErrors = 0;
         foreach ($selected_tasks as $task) {
             $output->bold(str_repeat('-', 30));
             $output->ok(
@@ -126,6 +131,7 @@ class Tasks
             $output->plain('');
 
             $numErrors = $task->run($options);
+            $totalErrors += max(0, (int) $numErrors);
 
             $output->plain('');
             if ($numErrors == 1) {
@@ -135,5 +141,6 @@ class Tasks
             }
             $output->bold(str_repeat('-', 30) . "\n");
         }
+        return $totalErrors;
     }
 }

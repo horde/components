@@ -17,7 +17,9 @@ declare(strict_types=1);
 namespace Horde\Components\Ci\Run;
 
 use Horde\Components\Output;
-use Horde\GithubApiClient\GithubClient;
+use Horde\GithubApiClient\CreateCheckRunParams;
+use Horde\GithubApiClient\GithubApiClient;
+use Horde\GithubApiClient\GithubRepository;
 use Exception;
 
 /**
@@ -37,11 +39,11 @@ class CheckReporter
      * Constructor.
      *
      * @param Output $output Output handler
-     * @param GithubClient $apiClient GitHub API client
+     * @param GithubApiClient $apiClient GitHub API client
      */
     public function __construct(
         private readonly Output $output,
-        private readonly GithubClient $apiClient
+        private readonly GithubApiClient $apiClient
     ) {}
 
     /**
@@ -62,6 +64,11 @@ class CheckReporter
     ): void {
         $this->output->info('Creating GitHub Check Runs...');
 
+        // The typed API takes a GithubRepository value object. The
+        // description and clone-URL fields aren't used by the check-runs
+        // endpoint; pass empty strings.
+        $repository = new GithubRepository($repo, "{$owner}/{$repo}", '', '');
+
         $checkCount = 0;
 
         foreach ($results as $laneName => $tools) {
@@ -72,8 +79,7 @@ class CheckReporter
                 }
 
                 $this->createCheckRun(
-                    owner: $owner,
-                    repo: $repo,
+                    repository: $repository,
                     sha: $sha,
                     laneName: $laneName,
                     toolName: $toolName,
@@ -88,18 +94,16 @@ class CheckReporter
     }
 
     /**
-     * Create a single check run.
+     * Create a single check run via the GithubApiClient typed surface.
      *
-     * @param string $owner Repository owner
-     * @param string $repo Repository name
-     * @param string $sha Commit SHA
-     * @param string $laneName Lane name (e.g., "php8.4-dev")
-     * @param string $toolName Tool name (e.g., "phpunit")
-     * @param array<string,mixed> $result Tool result
+     * @param GithubRepository $repository Target repository.
+     * @param string $sha Commit SHA the check anchors on.
+     * @param string $laneName Lane name (e.g., "php8.4-dev").
+     * @param string $toolName Tool name (e.g., "phpunit").
+     * @param array<string,mixed> $result Tool result from ResultCollector.
      */
     private function createCheckRun(
-        string $owner,
-        string $repo,
+        GithubRepository $repository,
         string $sha,
         string $laneName,
         string $toolName,
@@ -109,19 +113,16 @@ class CheckReporter
         $conclusion = $this->determineConclusion($result);
         $output = $this->formatOutput($toolName, $result);
 
-        $data = [
-            'name' => $checkName,
-            'head_sha' => $sha,
-            'status' => 'completed',
-            'conclusion' => $conclusion,
-            'output' => $output,
-        ];
+        $params = new CreateCheckRunParams(
+            name: $checkName,
+            headSha: $sha,
+            status: 'completed',
+            conclusion: $conclusion,
+            output: $output,
+        );
 
         try {
-            $this->apiClient->post(
-                "/repos/{$owner}/{$repo}/check-runs",
-                $data
-            );
+            $this->apiClient->createCheckRun($repository, $params);
         } catch (Exception $e) {
             $this->output->warn("Failed to create check run '{$checkName}': " . $e->getMessage());
         }

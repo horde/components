@@ -18,7 +18,7 @@ namespace Horde\Components\Ci\Run;
 
 use Horde\Components\Exception;
 use Horde\Components\Output;
-use Horde\GithubApiClient\GithubClient;
+use Horde\GithubApiClient\GithubApiClient;
 use Horde\Http\Uri;
 
 /**
@@ -38,15 +38,24 @@ class RunCommand
      * @param ResultCollector $collector Result collector
      * @param string $componentsPath Path to horde-components binary
      * @param string $workDir Work directory (for tools path)
-     * @param GithubClient|null $apiClient GitHub API client (optional)
+     * @param GithubApiClient|null $apiClient GitHub API client (optional)
      */
     public function __construct(
         private readonly Output $output,
         private readonly ResultCollector $collector,
         private readonly string $componentsPath,
         private readonly string $workDir,
-        private readonly ?GithubClient $apiClient = null
+        private readonly ?GithubApiClient $apiClient = null
     ) {}
+
+    /**
+     * Map of lane name → build directory, populated by aggregateResults.
+     * Used downstream by generateDetailedMetrics to read per-lane native
+     * tool JSON for findings deduplication.
+     *
+     * @var array<string,string>
+     */
+    private array $laneBuildDirs = [];
 
     /**
      * Execute tests across all lanes.
@@ -204,7 +213,16 @@ class RunCommand
 
         // Log output
         foreach ($output as $line) {
-            $this->output->plain("[{$lane['name']}] {$line}");
+            // GitHub Actions workflow commands must start the line for the
+            // runner to parse them. Lines like `::error file=...::msg` from
+            // a lane script have to pass through verbatim — prefixing with
+            // `[lane-name]` turns them into ordinary log output and breaks
+            // annotation rendering.
+            if (str_starts_with($line, '::')) {
+                $this->output->plain($line);
+            } else {
+                $this->output->plain("[{$lane['name']}] {$line}");
+            }
         }
 
         // Report result
@@ -227,6 +245,7 @@ class RunCommand
 
         foreach ($lanes as $lane) {
             $buildDir = $lane['component_dir'] . '/build';
+            $this->laneBuildDirs[$lane['name']] = $buildDir;
 
             // Honour deliberate skips written by SetupCommand.
             $skipFile = $buildDir . '/skip.json';
@@ -364,7 +383,7 @@ class RunCommand
     private function formatToolForTable(?array $result): string
     {
         if ($result === null) {
-            return '—';
+            return '-';
         }
 
         // Deliberately skipped (lane incompatible with this tool)
@@ -417,7 +436,9 @@ class RunCommand
         // PHPUnit section
         if (!empty($phpunitStats)) {
             $md .= "#### PHPUnit\n\n";
-            $totalTests = $phpunitStats['tests'] ?? 0;
+            // tests is per-lane; show the max so a 6-lane matrix reads
+            // "54 tests in 6 lanes" rather than the summed "324".
+            $totalTests = $phpunitStats['tests_max'] ?? 0;
             $totalFailures = $phpunitStats['failures'] ?? 0;
             $totalErrors = $phpunitStats['errors'] ?? 0;
             $lanesRun = $phpunitStats['lanes_run'] ?? 0;
@@ -428,7 +449,7 @@ class RunCommand
                 $md .= "❌ **Tests failed**\n";
             }
 
-            $md .= "- Total tests: {$totalTests}\n";
+            $md .= "- Tests per lane: {$totalTests}\n";
             if ($totalFailures > 0) {
                 $md .= "- Failures: {$totalFailures}\n";
             }
@@ -442,30 +463,96 @@ class RunCommand
         if (!empty($phpstanStats)) {
             $md .= "#### PHPStan\n\n";
             $totalErrors = $phpstanStats['errors'] ?? 0;
-            $filesScanned = $phpstanStats['files_scanned'] ?? 0;
+            // files_scanned is per-lane; max == the actual codebase size.
+            $filesScanned = $phpstanStats['files_scanned_max'] ?? 0;
             $lanesRun = $phpstanStats['lanes_run'] ?? 0;
 
             if ($totalErrors === 0) {
                 $md .= "✅ **No errors found** in {$filesScanned} files ({$lanesRun} lanes)\n\n";
             } else {
                 $md .= "⚠️ **{$totalErrors} errors found** ({$filesScanned} files scanned, {$lanesRun} lanes)\n\n";
+                $md .= $this->renderPhpStanFindingsTable();
             }
         }
 
         // PHP-CS-Fixer section
         if (!empty($csFixerStats)) {
             $md .= "#### PHP-CS-Fixer\n\n";
-            $filesChecked = $csFixerStats['files_checked'] ?? 0;
-            $filesWithIssues = $csFixerStats['files_with_issues'] ?? 0;
+            // files_checked/files_with_issues are per-lane; max == unique.
+            $filesChecked = $csFixerStats['files_checked_max'] ?? 0;
+            $filesWithIssues = $csFixerStats['files_with_issues_max'] ?? 0;
 
             if ($filesWithIssues === 0) {
                 $md .= "✅ **No style issues** in {$filesChecked} files\n\n";
             } else {
                 $md .= "⚠️ **{$filesWithIssues} files** with style issues (of {$filesChecked} checked)\n\n";
+                $md .= $this->renderPhpCsFixerFindingsTable();
             }
         }
 
         return $md;
+    }
+
+    /**
+     * Render a deduplicated PHPStan findings table.
+     *
+     * @return string Markdown
+     */
+    private function renderPhpStanFindingsTable(): string
+    {
+        $aggregator = new FindingsAggregator();
+        $findings = $aggregator->aggregatePhpStan($this->laneBuildDirs);
+        if ($findings === []) {
+            return '';
+        }
+
+        $md = "| File | Line | Identifier | Message | Lanes |\n";
+        $md .= "|------|------|------------|---------|-------|\n";
+        foreach ($findings as $f) {
+            $md .= sprintf(
+                "| %s | %s | %s | %s | %s |\n",
+                $this->escapeMd($f['file']),
+                $f['line'] !== null ? (string) $f['line'] : '-',
+                $f['identifier'] !== null ? '`' . $this->escapeMd($f['identifier']) . '`' : '-',
+                $this->escapeMd($f['message']),
+                $this->escapeMd(implode(', ', $f['lanes']))
+            );
+        }
+        return $md . "\n";
+    }
+
+    /**
+     * Render a deduplicated PHP-CS-Fixer findings table.
+     *
+     * @return string Markdown
+     */
+    private function renderPhpCsFixerFindingsTable(): string
+    {
+        $aggregator = new FindingsAggregator();
+        $findings = $aggregator->aggregatePhpCsFixer($this->laneBuildDirs);
+        if ($findings === []) {
+            return '';
+        }
+
+        $md = "| File | Lanes |\n";
+        $md .= "|------|-------|\n";
+        foreach ($findings as $f) {
+            $md .= sprintf(
+                "| %s | %s |\n",
+                $this->escapeMd($f['file']),
+                $this->escapeMd(implode(', ', $f['lanes']))
+            );
+        }
+        return $md . "\n";
+    }
+
+    /**
+     * Lightly escape a value for use in a markdown table cell.
+     */
+    private function escapeMd(string $value): string
+    {
+        // Pipes and newlines would break the table layout.
+        return strtr($value, ['|' => '\\|', "\n" => ' ', "\r" => '']);
     }
 
     /**
@@ -493,12 +580,22 @@ class RunCommand
 
             $aggregated['lanes_run']++;
 
-            // Aggregate statistics
             $stats = $result['statistics'] ?? [];
             foreach ($stats as $key => $value) {
-                if (is_numeric($value)) {
-                    $aggregated[$key] = ($aggregated[$key] ?? 0) + $value;
+                if (!is_numeric($value)) {
+                    continue;
                 }
+                // Two views per numeric stat: `$key` sum across lanes
+                // (meaningful for finding counts that stack), `${key}_max`
+                // highest seen on any single lane (meaningful for
+                // unit-of-work counts like tests/files which are
+                // per-lane and would be overstated by the lane count).
+                $aggregated[$key] = ($aggregated[$key] ?? 0) + $value;
+                $maxKey = $key . '_max';
+                $aggregated[$maxKey] = max(
+                    $aggregated[$maxKey] ?? 0,
+                    $value
+                );
             }
         }
 
@@ -813,7 +910,7 @@ class RunCommand
     private function formatToolForHtml(?array $result): string
     {
         if ($result === null) {
-            return '<span class="status-skip">—</span>';
+            return '<span class="status-skip">-</span>';
         }
 
         // Deliberately skipped (lane incompatible with this tool)
@@ -868,11 +965,13 @@ class RunCommand
 
         // PHPUnit section
         if (!empty($phpunitStats)) {
-            $totalTests = $phpunitStats['tests'] ?? 0;
+            // Tests/assertions are per-lane; show the per-lane max so the
+            // HTML report doesn't multiply by the matrix size.
+            $totalTests = $phpunitStats['tests_max'] ?? 0;
             $totalFailures = $phpunitStats['failures'] ?? 0;
             $totalErrors = $phpunitStats['errors'] ?? 0;
             $lanesRun = $phpunitStats['lanes_run'] ?? 0;
-            $assertions = $phpunitStats['assertions'] ?? 0;
+            $assertions = $phpunitStats['assertions_max'] ?? 0;
 
             $statusIcon = ($totalFailures === 0 && $totalErrors === 0) ? '✅' : '❌';
             $statusText = ($totalFailures === 0 && $totalErrors === 0)
@@ -887,11 +986,11 @@ class RunCommand
                                 <span class="metric-value">{$lanesRun}</span>
                             </div>
                             <div class="metric-row">
-                                <span class="metric-label">Total tests:</span>
+                                <span class="metric-label">Tests per lane:</span>
                                 <span class="metric-value">{$totalTests}</span>
                             </div>
                             <div class="metric-row">
-                                <span class="metric-label">Total assertions:</span>
+                                <span class="metric-label">Assertions per lane:</span>
                                 <span class="metric-value">{$assertions}</span>
                             </div>
 
@@ -923,8 +1022,9 @@ class RunCommand
         // PHPStan section
         if (!empty($phpstanStats)) {
             $totalErrors = $phpstanStats['errors'] ?? 0;
-            $filesScanned = $phpstanStats['files_scanned'] ?? 0;
-            $filesWithErrors = $phpstanStats['files_with_errors'] ?? 0;
+            // Files scanned/with errors are per-lane; max == codebase.
+            $filesScanned = $phpstanStats['files_scanned_max'] ?? 0;
+            $filesWithErrors = $phpstanStats['files_with_errors_max'] ?? 0;
             $lanesRun = $phpstanStats['lanes_run'] ?? 0;
 
             $statusIcon = $totalErrors === 0 ? '✅' : '⚠️';
@@ -958,8 +1058,8 @@ class RunCommand
 
         // PHP-CS-Fixer section
         if (!empty($csFixerStats)) {
-            $filesChecked = $csFixerStats['files_checked'] ?? 0;
-            $filesWithIssues = $csFixerStats['files_with_issues'] ?? 0;
+            $filesChecked = $csFixerStats['files_checked_max'] ?? 0;
+            $filesWithIssues = $csFixerStats['files_with_issues_max'] ?? 0;
 
             $statusIcon = $filesWithIssues === 0 ? '✅' : '⚠️';
             $statusText = $filesWithIssues === 0
@@ -1068,6 +1168,14 @@ class RunCommand
             ->withPath("/{$repo}/actions/runs/{$runId}")
             ->__toString();
 
+        // Build deduped findings once so the comment can show "1 unique
+        // error in 6 lanes" rather than the lanes-summed "6 errors".
+        $aggregator = new FindingsAggregator();
+        $findingsByTool = [
+            'phpstan' => $aggregator->aggregatePhpStan($this->laneBuildDirs),
+            'phpcsfixer' => $aggregator->aggregatePhpCsFixer($this->laneBuildDirs),
+        ];
+
         $reporter = new PrCommentReporter($this->output, $this->apiClient);
         $reporter->postComment(
             owner: $owner,
@@ -1075,7 +1183,8 @@ class RunCommand
             prNumber: (int) $prNumber,
             results: $this->collector->getResults(),
             summary: $this->collector->getSummary(),
-            runUrl: $runUrl
+            runUrl: $runUrl,
+            findingsByTool: $findingsByTool
         );
     }
 }

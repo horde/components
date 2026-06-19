@@ -25,10 +25,13 @@ use Horde\Components\Output\Presenter;
  * where colored output doesn't render well and special annotations
  * are preferred.
  *
- * GitHub Actions format:
- *   ::notice::Success message
- *   ::warning::Warning message
- *   ::error::Error message
+ * GitHub Actions: log lines are written as plain text. Per-finding
+ * annotations are emitted through {@see \Horde\Components\Ci\GitHubAnnotations}
+ * which knows how to construct workflow commands with file=/line= so
+ * the resulting annotations anchor to the PR diff. Routing summary
+ * decoration (ok/warn/info/error) through the workflow-command
+ * channel as well floods the Annotations panel with duplicate entries
+ * that have no diff anchor — see F24 in the CI strategy doc.
  *
  * Plain CI format (GitLab, Jenkins, etc.):
  *   [OK] Success message
@@ -38,7 +41,6 @@ use Horde\Components\Output\Presenter;
  *
  * This format is optimized for:
  * - No ANSI color codes (clean logs)
- * - GitHub Actions workflow commands for annotations
  * - Concise brackets without padding
  * - Easy parsing by CI tools
  *
@@ -86,7 +88,12 @@ class Ci implements Presenter
     public function ok(string $message): void
     {
         if ($this->githubActions) {
-            $this->writeln("::notice::{$message}");
+            // Under GitHub Actions, route log decoration through plain text.
+            // Findings reach the Annotations panel via the explicit
+            // {@see \Horde\Components\Ci\GitHubAnnotations} helper which
+            // populates file= and line= — bare ::-markup would flood the
+            // panel with duplicate-summary entries that have no diff anchor.
+            $this->writeln($message);
         } else {
             $this->writeln("[OK] {$message}");
         }
@@ -103,7 +110,7 @@ class Ci implements Presenter
     public function warn(string $message): void
     {
         if ($this->githubActions) {
-            $this->writeln("::warning::{$message}");
+            $this->writeln($message);
         } else {
             $this->writeln("[WARN] {$message}");
         }
@@ -123,7 +130,7 @@ class Ci implements Presenter
     public function info(string $message): void
     {
         if ($this->githubActions) {
-            $this->writeln("::notice::{$message}");
+            $this->writeln($message);
         } else {
             $this->writeln("[INFO] {$message}");
         }
@@ -140,7 +147,7 @@ class Ci implements Presenter
     public function error(string $message): void
     {
         if ($this->githubActions) {
-            $this->writeln("::error::{$message}");
+            $this->writeln($message);
         } else {
             $this->writeln("[ERROR] {$message}");
         }
@@ -238,13 +245,10 @@ class Ci implements Presenter
         }
 
         if ($this->githubActions) {
-            // Map to GitHub Actions workflow commands
-            $command = match ($category) {
-                'regression', 'validation' => '::error::',
-                'improvement', 'auto', 'created' => '::notice::',
-                default => '::debug::',  // Most semantic categories are debug-level
-            };
-            $this->writeln("{$command}{$message}");
+            // Same rationale as ok/warn/info/error above: plain text,
+            // no workflow-command markup. Findings are emitted as
+            // annotations explicitly via GitHubAnnotations elsewhere.
+            $this->writeln($message);
         } else {
             // Plain CI format with category labels
             $label = match ($category) {

@@ -17,7 +17,9 @@ declare(strict_types=1);
 namespace Horde\Components\Ci\Run;
 
 use Horde\Components\Output;
-use Horde\GithubApiClient\GithubClient;
+use Horde\GithubApiClient\GithubApiClient;
+use Horde\GithubApiClient\GithubComment;
+use Horde\GithubApiClient\GithubRepository;
 use Exception;
 
 /**
@@ -41,11 +43,11 @@ class PrCommentReporter
      * Constructor.
      *
      * @param Output $output Output handler
-     * @param GithubClient $apiClient GitHub API client
+     * @param GithubApiClient $apiClient GitHub API client
      */
     public function __construct(
         private readonly Output $output,
-        private readonly GithubClient $apiClient
+        private readonly GithubApiClient $apiClient
     ) {}
 
     /**
@@ -57,6 +59,12 @@ class PrCommentReporter
      * @param array<string,array<string,array<string,mixed>>> $results Results by lane and tool
      * @param array{passed: int, failed: int, total: int, failed_lanes: array<string>} $summary Summary statistics
      * @param string $runUrl URL to the GitHub Actions run
+     * @param array<string,array<int,array<string,mixed>>> $findingsByTool
+     *        Per-tool deduplicated findings list produced by
+     *        {@see \Horde\Components\Ci\Run\FindingsAggregator}. Keys are
+     *        tool names ("phpstan", "phpcsfixer"). When empty (e.g.
+     *        because the aggregator wasn't run), the comment falls back to
+     *        summed counts.
      */
     public function postComment(
         string $owner,
@@ -64,29 +72,26 @@ class PrCommentReporter
         int $prNumber,
         array $results,
         array $summary,
-        string $runUrl
+        string $runUrl,
+        array $findingsByTool = []
     ): void {
         $this->output->info("Posting CI results comment to PR #{$prNumber}...");
 
-        $markdown = $this->generateCommentMarkdown($results, $summary, $runUrl);
+        $markdown = $this->generateCommentMarkdown($results, $summary, $runUrl, $findingsByTool);
+        // The typed API takes a GithubRepository value object. Only owner +
+        // name are used by the comment endpoints; description and clone-URL
+        // can be empty.
+        $repository = new GithubRepository($repo, "{$owner}/{$repo}", '', '');
 
         try {
-            // Find existing comment
-            $existingComment = $this->findExistingComment($owner, $repo, $prNumber);
+            // Find existing comment (idempotency marker lives in the body).
+            $existingComment = $this->findExistingComment($repository, $prNumber);
 
             if ($existingComment !== null) {
-                // Update existing comment
-                $this->apiClient->patch(
-                    "/repos/{$owner}/{$repo}/issues/comments/{$existingComment['id']}",
-                    ['body' => $markdown]
-                );
+                $this->apiClient->updateComment($repository, $existingComment->id, $markdown);
                 $this->output->ok("Updated existing PR comment");
             } else {
-                // Create new comment
-                $this->apiClient->post(
-                    "/repos/{$owner}/{$repo}/issues/{$prNumber}/comments",
-                    ['body' => $markdown]
-                );
+                $this->apiClient->createPullRequestComment($repository, $prNumber, $markdown);
                 $this->output->ok("Created new PR comment");
             }
         } catch (Exception $e) {
@@ -95,27 +100,31 @@ class PrCommentReporter
     }
 
     /**
-     * Find existing bot comment on PR.
+     * Find an existing horde-components CI comment on the PR.
      *
-     * @param string $owner Repository owner
-     * @param string $repo Repository name
-     * @param int $prNumber PR number
-     * @return array<string,mixed>|null Comment data or null if not found
+     * Identifies a previous comment by the HTML marker we plant at the top
+     * of every CI comment body. Returns null when no such comment exists or
+     * the lookup fails.
+     *
+     * @param GithubRepository $repository Target repository.
+     * @param int $prNumber PR number.
+     * @return GithubComment|null
      */
-    private function findExistingComment(string $owner, string $repo, int $prNumber): ?array
+    private function findExistingComment(GithubRepository $repository, int $prNumber): ?GithubComment
     {
         try {
-            $comments = $this->apiClient->get(
-                "/repos/{$owner}/{$repo}/issues/{$prNumber}/comments"
-            );
-
+            $comments = $this->apiClient->listPullRequestComments($repository, $prNumber);
             foreach ($comments as $comment) {
-                if (strpos($comment['body'] ?? '', self::COMMENT_MARKER) !== false) {
+                if (str_contains($comment->body, self::COMMENT_MARKER)) {
                     return $comment;
                 }
             }
         } catch (Exception $e) {
-            // Ignore errors finding existing comment
+            // Lookup failure isn't fatal; the worst case is a duplicate
+            // comment on the PR rather than a swallowed run.
+            $this->output->warn(
+                'Could not list PR comments to find existing CI comment: ' . $e->getMessage()
+            );
         }
 
         return null;
@@ -132,17 +141,23 @@ class PrCommentReporter
     private function generateCommentMarkdown(
         array $results,
         array $summary,
-        string $runUrl
+        string $runUrl,
+        array $findingsByTool = []
     ): string {
         $md = self::COMMENT_MARKER . "\n";
         $md .= "## 🔍 CI Results\n\n";
 
-        // Overall status
+        // Overall status — the count line.
         if ($summary['failed'] === 0) {
             $md .= "**Overall**: ✅ All {$summary['total']} lanes passed\n\n";
         } else {
             $md .= "**Overall**: ❌ {$summary['failed']}/{$summary['total']} lanes failed\n\n";
         }
+
+        // TL;DR — the tool breakdown. Drops the lane count (already on
+        // Overall) and uses deduplicated finding counts where the
+        // aggregator provided them.
+        $md .= $this->generateTldr($results, $summary, $findingsByTool) . "\n\n";
 
         // Summary by PHP version
         $md .= "### Summary by PHP Version\n\n";
@@ -151,7 +166,7 @@ class PrCommentReporter
 
         // Quality metrics
         $md .= "### Quality Metrics\n\n";
-        $md .= $this->generateQualityMetrics($results);
+        $md .= $this->generateQualityMetrics($results, $findingsByTool);
         $md .= "\n";
 
         // Failed lanes detail (if any)
@@ -181,6 +196,127 @@ class PrCommentReporter
         $md .= "[View full results]({$runUrl})*\n";
 
         return $md;
+    }
+
+    /**
+     * Build the TL;DR line at the top of the PR comment.
+     *
+     * Drops the lane count (already on the Overall line above) and shows
+     * the per-tool breakdown.
+     *
+     * Green case:
+     *   `**TL;DR:** ✅ All clean: 54 tests, 15 files scanned, 19 files styled.`
+     *
+     * Red case (with deduped findings):
+     *   `**TL;DR:** ❌ Quality issues: PHPStan: 1 unique error in 6 lanes;
+     *   PHP-CS-Fixer: 4 files.`
+     *
+     * Red case (no aggregator data, falls back to summed counts):
+     *   `**TL;DR:** ❌ Quality issues: PHPStan: 6 errors.`
+     *
+     * @param array<string,array<string,array<string,mixed>>> $results Results by lane and tool
+     * @param array{passed: int, failed: int, total: int, failed_lanes: array<string>} $summary
+     * @param array<string,array<int,array<string,mixed>>> $findingsByTool Deduped findings per tool, optional
+     * @return string Markdown line (no trailing newline).
+     */
+    private function generateTldr(array $results, array $summary, array $findingsByTool = []): string
+    {
+        $phpunit = $this->aggregateToolStats($results, 'phpunit');
+        $phpstan = $this->aggregateToolStats($results, 'phpstan');
+        $pcf = $this->aggregateToolStats($results, 'phpcsfixer');
+
+        if ($summary['failed'] === 0) {
+            $parts = [];
+            // Tests/files are per-lane unit counts. Use the per-lane max so
+            // a 6-lane matrix doesn't read as `324 tests`. Lane count from
+            // either tool (whichever ran) frames the matrix size.
+            $phpunitLanes = $phpunit['lanes_run'] ?? 0;
+            $tests = $phpunit['tests_max'] ?? 0;
+            $assertions = $phpunit['assertions_max'] ?? 0;
+            if ($tests > 0) {
+                $testsFragment = $assertions > 0
+                    ? "{$tests} tests ({$assertions} assertions)"
+                    : "{$tests} tests";
+                $parts[] = $phpunitLanes > 1
+                    ? "{$testsFragment} in {$phpunitLanes} lanes"
+                    : $testsFragment;
+            }
+            $scanned = $phpstan['files_scanned_max'] ?? 0;
+            if ($scanned > 0) {
+                $parts[] = "{$scanned} files scanned";
+            }
+            $checked = $pcf['files_checked_max'] ?? 0;
+            if ($checked > 0) {
+                $parts[] = "{$checked} files styled";
+            }
+            $detail = $parts === [] ? '' : ': ' . implode(', ', $parts);
+            return "**TL;DR:** ✅ All clean{$detail}.";
+        }
+
+        $reasons = [];
+        $phpunitFailures = ($phpunit['failures'] ?? 0) + ($phpunit['errors'] ?? 0);
+        if ($phpunitFailures > 0) {
+            $reasons[] = "PHPUnit: {$phpunitFailures} test"
+                . ($phpunitFailures === 1 ? '' : 's')
+                . ' failed';
+        }
+
+        // PHPStan: prefer the deduped finding count (one row per distinct
+        // file/line/identifier) over the lanes-summed count. Without dedup
+        // a single bug repeated across 6 lanes reads as "6 errors", which
+        // overstates the work.
+        $phpstanFindings = $findingsByTool['phpstan'] ?? null;
+        if (is_array($phpstanFindings) && $phpstanFindings !== []) {
+            $unique = count($phpstanFindings);
+            $laneCount = count($this->collectLanes($phpstanFindings));
+            $reasons[] = sprintf(
+                'PHPStan: %d unique error%s in %d lane%s',
+                $unique,
+                $unique === 1 ? '' : 's',
+                $laneCount,
+                $laneCount === 1 ? '' : 's'
+            );
+        } else {
+            $phpstanErrors = $phpstan['errors'] ?? 0;
+            if ($phpstanErrors > 0) {
+                $reasons[] = "PHPStan: {$phpstanErrors} error"
+                    . ($phpstanErrors === 1 ? '' : 's');
+            }
+        }
+
+        // PHP-CS-Fixer: prefer the deduped file count too.
+        $pcfFindings = $findingsByTool['phpcsfixer'] ?? null;
+        if (is_array($pcfFindings) && $pcfFindings !== []) {
+            $uniqueFiles = count($pcfFindings);
+            $reasons[] = "PHP-CS-Fixer: {$uniqueFiles} file"
+                . ($uniqueFiles === 1 ? '' : 's');
+        } else {
+            $pcfHits = $pcf['files_with_issues_max'] ?? 0;
+            if ($pcfHits > 0) {
+                $reasons[] = "PHP-CS-Fixer: {$pcfHits} file"
+                    . ($pcfHits === 1 ? '' : 's');
+            }
+        }
+
+        $detail = $reasons === [] ? '' : ': ' . implode('; ', $reasons);
+        return "**TL;DR:** ❌ Quality issues{$detail}.";
+    }
+
+    /**
+     * Count the unique lanes referenced by a list of deduped findings.
+     *
+     * @param array<int,array<string,mixed>> $findings
+     * @return array<int,string>
+     */
+    private function collectLanes(array $findings): array
+    {
+        $lanes = [];
+        foreach ($findings as $finding) {
+            foreach ((array) ($finding['lanes'] ?? []) as $lane) {
+                $lanes[(string) $lane] = true;
+            }
+        }
+        return array_keys($lanes);
     }
 
     /**
@@ -218,8 +354,8 @@ class PrCommentReporter
             $md .= sprintf(
                 "| %s | %s | %s |\n",
                 $version,
-                $stabilities['dev'] ?? '—',
-                $stabilities['alpha'] ?? '—'
+                $stabilities['dev'] ?? '-',
+                $stabilities['alpha'] ?? '-'
             );
         }
 
@@ -230,9 +366,10 @@ class PrCommentReporter
      * Generate quality metrics section.
      *
      * @param array<string,array<string,array<string,mixed>>> $results Results by lane and tool
+     * @param array<string,array<int,array<string,mixed>>> $findingsByTool Deduped findings per tool, optional
      * @return string Markdown content
      */
-    private function generateQualityMetrics(array $results): string
+    private function generateQualityMetrics(array $results, array $findingsByTool = []): string
     {
         $md = '';
 
@@ -243,37 +380,76 @@ class PrCommentReporter
 
         // PHPUnit
         if (!empty($phpunitStats)) {
-            $tests = $phpunitStats['tests'] ?? 0;
+            $tests = $phpunitStats['tests_max'] ?? 0;
+            $assertions = $phpunitStats['assertions_max'] ?? 0;
             $failures = $phpunitStats['failures'] ?? 0;
             $errors = $phpunitStats['errors'] ?? 0;
+            $lanes = $phpunitStats['lanes_run'] ?? 0;
 
             if ($failures === 0 && $errors === 0) {
-                $md .= "- **PHPUnit**: {$tests} tests passed ✅\n";
+                $testsFragment = $assertions > 0
+                    ? "{$tests} tests ({$assertions} assertions)"
+                    : "{$tests} tests";
+                $md .= $lanes > 1
+                    ? "- **PHPUnit**: {$testsFragment} passed in {$lanes} lanes ✅\n"
+                    : "- **PHPUnit**: {$testsFragment} passed ✅\n";
             } else {
                 $md .= "- **PHPUnit**: {$failures} failures, {$errors} errors ❌\n";
             }
         }
 
-        // PHPStan
+        // PHPStan: prefer deduped finding count when the aggregator
+        // provided it. "1 unique error in 6 lanes" reads more honestly
+        // than "6 errors found" when the same bug repeats across the matrix.
         if (!empty($phpstanStats)) {
-            $errors = $phpstanStats['errors'] ?? 0;
-
-            if ($errors === 0) {
-                $md .= "- **PHPStan**: No errors found ✅\n";
+            $phpstanFindings = $findingsByTool['phpstan'] ?? null;
+            if (is_array($phpstanFindings) && $phpstanFindings !== []) {
+                $unique = count($phpstanFindings);
+                $laneCount = count($this->collectLanes($phpstanFindings));
+                $md .= sprintf(
+                    "- **PHPStan**: %d unique error%s in %d lane%s ⚠️\n",
+                    $unique,
+                    $unique === 1 ? '' : 's',
+                    $laneCount,
+                    $laneCount === 1 ? '' : 's'
+                );
             } else {
-                $md .= "- **PHPStan**: {$errors} errors found ⚠️\n";
+                $errors = $phpstanStats['errors'] ?? 0;
+                if ($errors === 0) {
+                    $md .= "- **PHPStan**: No errors found ✅\n";
+                } else {
+                    $md .= sprintf(
+                        "- **PHPStan**: %d error%s found ⚠️\n",
+                        $errors,
+                        $errors === 1 ? '' : 's'
+                    );
+                }
             }
         }
 
         // PHP-CS-Fixer
         if (!empty($csFixerStats)) {
-            $filesChecked = $csFixerStats['files_checked'] ?? 0;
-            $filesWithIssues = $csFixerStats['files_with_issues'] ?? 0;
-
-            if ($filesWithIssues === 0) {
-                $md .= "- **PHP-CS-Fixer**: {$filesChecked} files checked, no issues ✅\n";
+            $filesChecked = $csFixerStats['files_checked_max'] ?? 0;
+            $pcfFindings = $findingsByTool['phpcsfixer'] ?? null;
+            if (is_array($pcfFindings) && $pcfFindings !== []) {
+                $uniqueFiles = count($pcfFindings);
+                $md .= sprintf(
+                    "- **PHP-CS-Fixer**: %d unique file%s with issues (of %d checked) ⚠️\n",
+                    $uniqueFiles,
+                    $uniqueFiles === 1 ? '' : 's',
+                    $filesChecked
+                );
             } else {
-                $md .= "- **PHP-CS-Fixer**: {$filesWithIssues} files with issues ⚠️\n";
+                $filesWithIssues = $csFixerStats['files_with_issues_max'] ?? 0;
+                if ($filesWithIssues === 0) {
+                    $md .= "- **PHP-CS-Fixer**: {$filesChecked} files checked, no issues ✅\n";
+                } else {
+                    $md .= sprintf(
+                        "- **PHP-CS-Fixer**: %d file%s with issues ⚠️\n",
+                        $filesWithIssues,
+                        $filesWithIssues === 1 ? '' : 's'
+                    );
+                }
             }
         }
 
@@ -321,20 +497,24 @@ class PrCommentReporter
 
         return match ($toolName) {
             'phpunit' => sprintf(
-                "%s: %d failures, %d errors",
+                '%s: %d failure%s, %d error%s',
                 $toolDisplay,
                 $stats['failures'] ?? 0,
-                $stats['errors'] ?? 0
+                ($stats['failures'] ?? 0) === 1 ? '' : 's',
+                $stats['errors'] ?? 0,
+                ($stats['errors'] ?? 0) === 1 ? '' : 's'
             ),
             'phpstan' => sprintf(
-                "%s: %d errors found",
+                '%s: %d error%s found',
                 $toolDisplay,
-                $stats['errors'] ?? 0
+                $stats['errors'] ?? 0,
+                ($stats['errors'] ?? 0) === 1 ? '' : 's'
             ),
             'phpcsfixer' => sprintf(
-                "%s: %d files with issues",
+                '%s: %d file%s with issues',
                 $toolDisplay,
-                $stats['files_with_issues'] ?? 0
+                $stats['files_with_issues'] ?? 0,
+                ($stats['files_with_issues'] ?? 0) === 1 ? '' : 's'
             ),
             default => "{$toolDisplay}: Failed",
         };
@@ -349,7 +529,7 @@ class PrCommentReporter
      */
     private function aggregateToolStats(array $results, string $tool): array
     {
-        $aggregated = [];
+        $aggregated = ['lanes_run' => 0];
 
         foreach ($results as $laneName => $tools) {
             if (!isset($tools[$tool])) {
@@ -363,11 +543,28 @@ class PrCommentReporter
                 continue;
             }
 
+            $aggregated['lanes_run']++;
             $stats = $result['statistics'] ?? [];
             foreach ($stats as $key => $value) {
-                if (is_numeric($value)) {
-                    $aggregated[$key] = ($aggregated[$key] ?? 0) + $value;
+                if (!is_numeric($value)) {
+                    continue;
                 }
+                // Two views per numeric stat:
+                //   `$key`        sum across lanes — meaningful for
+                //                 finding counts (failures, errors)
+                //                 that legitimately stack.
+                //   `${key}_max`  highest value seen on any single
+                //                 lane — meaningful for unit-of-work
+                //                 counts (tests, assertions, files
+                //                 scanned/checked) which are constant
+                //                 per lane and would otherwise be
+                //                 overstated by the lane count.
+                $aggregated[$key] = ($aggregated[$key] ?? 0) + $value;
+                $maxKey = $key . '_max';
+                $aggregated[$maxKey] = max(
+                    $aggregated[$maxKey] ?? 0,
+                    $value
+                );
             }
         }
 

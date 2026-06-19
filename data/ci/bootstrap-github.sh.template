@@ -25,11 +25,13 @@ NC=''
 
 # Logging functions
 log_info() {
-    if [ -n "$GITHUB_ACTIONS" ]; then
-        echo "::notice::$*"
-    else
-        echo "[INFO] $*"
-    fi
+    # Bootstrap-stage progress lines stay as plain stdout under
+    # GitHub Actions. Routing them through ::notice:: would flood the
+    # Annotations panel with non-actionable entries. log_warn and
+    # log_error still emit workflow commands because bootstrap-level
+    # problems (missing GITHUB_TOKEN, download failure, etc.) belong
+    # in the panel.
+    echo "[INFO] $*"
 }
 
 log_warn() {

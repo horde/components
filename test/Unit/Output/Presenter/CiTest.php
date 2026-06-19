@@ -79,7 +79,7 @@ class CiTest extends TestCase
         $presenter = new Ci($this->output);
         $presenter->ok('Success message');
 
-        $this->assertEquals("::notice::Success message\n", $this->getOutput());
+        $this->assertEquals("Success message\n", $this->getOutput());
     }
 
     /**
@@ -103,7 +103,7 @@ class CiTest extends TestCase
         $presenter = new Ci($this->output);
         $presenter->warn('Warning message');
 
-        $this->assertEquals("::warning::Warning message\n", $this->getOutput());
+        $this->assertEquals("Warning message\n", $this->getOutput());
     }
 
     /**
@@ -127,7 +127,7 @@ class CiTest extends TestCase
         $presenter = new Ci($this->output);
         $presenter->info('Info message');
 
-        $this->assertEquals("::notice::Info message\n", $this->getOutput());
+        $this->assertEquals("Info message\n", $this->getOutput());
     }
 
     /**
@@ -151,7 +151,7 @@ class CiTest extends TestCase
         $presenter = new Ci($this->output);
         $presenter->error('Error message');
 
-        $this->assertEquals("::error::Error message\n", $this->getOutput());
+        $this->assertEquals("Error message\n", $this->getOutput());
     }
 
     /**
@@ -275,9 +275,9 @@ class CiTest extends TestCase
         $presenter->warn('Second');
         $presenter->error('Third');
 
-        $expected = "::notice::First\n"
-                  . "::warning::Second\n"
-                  . "::error::Third\n";
+        $expected = "First\n"
+                  . "Second\n"
+                  . "Third\n";
 
         $this->assertEquals($expected, $this->getOutput());
     }
@@ -342,7 +342,7 @@ class CiTest extends TestCase
         $presenter = new Ci($this->output);
         $presenter->semantic('detected', 'Found tool');
 
-        $this->assertEquals("::debug::Found tool\n", $this->getOutput());
+        $this->assertEquals("Found tool\n", $this->getOutput());
     }
 
     public function testSemanticRegressionPlain(): void
@@ -360,7 +360,7 @@ class CiTest extends TestCase
         $presenter = new Ci($this->output);
         $presenter->semantic('regression', 'Quality degraded');
 
-        $this->assertEquals("::error::Quality degraded\n", $this->getOutput());
+        $this->assertEquals("Quality degraded\n", $this->getOutput());
     }
 
     public function testSemanticImprovementGitHub(): void
@@ -369,7 +369,7 @@ class CiTest extends TestCase
         $presenter = new Ci($this->output);
         $presenter->semantic('improvement', 'Quality improved');
 
-        $this->assertEquals("::notice::Quality improved\n", $this->getOutput());
+        $this->assertEquals("Quality improved\n", $this->getOutput());
     }
 
     public function testSemanticRunningPlain(): void
@@ -463,7 +463,7 @@ class CiTest extends TestCase
         $presenter = new Ci($this->output);
         $presenter->semantic('ok', 'Success message');
 
-        $this->assertEquals("::notice::Success message\n", $this->getOutput());
+        $this->assertEquals("Success message\n", $this->getOutput());
     }
 
     public function testSemanticAcceptsTraditionalErrorWithGitHub(): void
@@ -472,6 +472,6 @@ class CiTest extends TestCase
         $presenter = new Ci($this->output);
         $presenter->semantic('error', 'Error message');
 
-        $this->assertEquals("::error::Error message\n", $this->getOutput());
+        $this->assertEquals("Error message\n", $this->getOutput());
     }
 }

@@ -159,18 +159,26 @@ class CiConfig
         $testablePhpVersions = $this->getTestablePhpVersions();
 
         foreach ($testablePhpVersions as $phpVersion) {
-            // Dev lane
+            // Dev lane — minimum-stability=dev so transitive deps may
+            // resolve to dev branches.
             $lanes[] = [
                 'php' => $phpVersion,
                 'stability' => 'dev',
                 'dir' => $this->workDir . '/lanes/php' . $phpVersion . '-dev/' . $this->componentName,
             ];
 
-            // Stable lane (or component's own stability)
+            // Second lane uses the component's own declared stability
+            // (alpha, beta, RC, stable). The directory name carries the
+            // same string so downstream readers (RunCommand::discoverLanes,
+            // log labels, artifact globs) all see one consistent label.
+            // Previously this was hardcoded to "-stable" while the
+            // stability field carried the component's value, causing the
+            // same lane to appear as both "php8.5-stable" and
+            // "php8.5-alpha" in different log lines.
             $lanes[] = [
                 'php' => $phpVersion,
                 'stability' => $this->componentStability,
-                'dir' => $this->workDir . '/lanes/php' . $phpVersion . '-stable/' . $this->componentName,
+                'dir' => $this->workDir . '/lanes/php' . $phpVersion . '-' . $this->componentStability . '/' . $this->componentName,
             ];
         }
 
