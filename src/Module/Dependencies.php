@@ -94,6 +94,17 @@ class Dependencies extends Base
                 '--allow-network-requests',
                 ['action' => 'store_true', 'help' => 'Allow network requests to resolve dependencies from remote sources (Packagist, etc.).']
             ),
+            new Option(
+                '--platform',
+                [
+                    'action' => 'store_true',
+                    'help' => 'Resolve platform requirements (PHP version, ext-*, lib-*, composer-*) '
+                        . 'per supported PHP minor version and write them into .horde.yml under the '
+                        . 'ci-platform key. Uses synthesized throwaway composer projects to resolve '
+                        . 'against Packagist. Combine with --pretend to print the resulting YAML '
+                        . 'fragment without writing.',
+                ]
+            ),
         ];
     }
 
@@ -154,6 +165,7 @@ class Dependencies extends Base
             '--detect-plugins' => 'Automatically detect Composer plugins in the dependency tree.',
             '--allow-network-requests' => 'Allow network requests to resolve dependencies from remote sources (Packagist, PEAR channels, etc.). By default, only local git checkout is used.',
             '--allow-remote' => 'Legacy option: use --allow-network-requests instead.',
+            '--platform' => 'Resolve transitive platform requirements and update .horde.yml ci-platform.',
         ];
     }
 
