@@ -37,7 +37,7 @@ license:
   uri: http://www.horde.org/licenses/lgpl21
 dependencies:
   required:
-    php: ^8.2
+    php: ^8.1
     composer:
       horde/autoloader: '*'
       horde/argv: '*'
@@ -58,6 +58,7 @@ dependencies:
       horde/composer: '*'
       horde/phpconfigfile: ^0.0.1-alpha4
       horde/horde-installer-plugin: ^2.6
+      psr/log: '*'
   optional:
     composer:
       horde/test: ^3
@@ -66,10 +67,6 @@ dependencies:
       phploc/phploc: ^7
       phpmd/phpmd: ^2.9
       phpunit/phpunit: ^9
-  dev:
-    composer:
-      horde/test: ^3
-      phpunit/phpunit: ^12 || ^11 || ^10 || ^9
 nocommands:
   - bin/horde-bootstrap
   - bin/horde-components-prototype-transpile

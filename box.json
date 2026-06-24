@@ -18,7 +18,10 @@
       "name": "*.php",
       "exclude": [
         "tests",
-        "test"
+        "test",
+        "phpunit",
+        "phpstan",
+        "php-cs-fixer"
       ],
       "in": "vendor"
     },

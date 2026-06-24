@@ -43,19 +43,15 @@
         "horde/eventdispatcher": "* || dev-FRAMEWORK_6_0",
         "horde/githubapiclient": "* || dev-FRAMEWORK_6_0",
         "horde/composer": "* || dev-FRAMEWORK_6_0",
-        "horde/phpconfigfile": "^0.0.1-alpha4 || dev-FRAMEWORK_6_0"
-    },
-    "require-dev": {
-        "horde/test": "^3 || dev-FRAMEWORK_6_0",
-        "phpunit/phpunit": "^12 || ^11 || ^10 || ^9"
+        "horde/phpconfigfile": "^0.0.1-alpha4 || dev-FRAMEWORK_6_0",
+        "psr/log": "^3.0@dev"
     },
     "suggest": {
         "horde/test": "^3 || dev-FRAMEWORK_6_0",
         "squizlabs/php_codesniffer": "^3.5",
         "pear/archive_tar": "^1.4",
         "phploc/phploc": "^7",
-        "phpmd/phpmd": "^2.9",
-        "phpunit/phpunit": "^9"
+        "phpmd/phpmd": "^2.9"
     },
     "autoload": {
         "psr-0": {
@@ -83,5 +79,6 @@
         "branch-alias": {
             "dev-FRAMEWORK_6_0": "1.x-dev"
         }
-    }
+    },
+    "minimum-stability": "dev"
 }
