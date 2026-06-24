@@ -20,7 +20,9 @@ use Horde\Components\Component\DependencyGraph;
 use Horde\Components\Component\Factory as ComponentFactory;
 use Horde\Components\Helper\Dependencies as HelperDependencies;
 use Horde\Components\Helper\DependencyTreeBuilder;
+use Horde\Components\Helper\PlatformResolver;
 use Horde\Components\Helper\PluginDetector;
+use Horde\Components\Helper\Shell;
 use Horde\Components\Output;
 use Horde\Components\Util\YamlLoader;
 use Horde\HordeYmlFile\HordeYmlFile;
@@ -57,6 +59,14 @@ class Dependencies
 
     public function run(): void
     {
+        // Resolve platform requirements per supported PHP minor version
+        // and update .horde.yml. Must come before the tree-output branches
+        // because --platform composes with neither.
+        if (!empty($this->options['platform'])) {
+            $this->runPlatformResolve();
+            return;
+        }
+
         // Check if we should export to YAML file
         if (!empty($this->options['export_yaml'])) {
             $this->runGraphExport();
@@ -71,6 +81,89 @@ class Dependencies
 
         // Default: print tree to stdout
         $this->runTreeOutput();
+    }
+
+    /**
+     * Resolve transitive platform requirements per supported PHP minor
+     * version and write the result into .horde.yml under `ci-platform`.
+     *
+     * In `--dry-run` mode the resolved YAML fragment is printed to
+     * stdout instead of being written.
+     */
+    private function runPlatformResolve(): void
+    {
+        $output = $this->getOutput();
+
+        if (!method_exists($this->component, 'getComponentDirectory')) {
+            $output->fail('Cannot resolve platform deps: component has no on-disk directory.');
+            return;
+        }
+
+        $componentDir = $this->component->getComponentDirectory();
+        $hordeYmlPath = $componentDir . '/.horde.yml';
+
+        if (!file_exists($hordeYmlPath)) {
+            $output->fail("No .horde.yml at {$hordeYmlPath}");
+            return;
+        }
+
+        $hordeYml = new HordeYmlFile($hordeYmlPath);
+        $resolver = new PlatformResolver(new Shell($output), $output);
+
+        $resolved = $resolver->resolveRangeFromHordeYml($hordeYml);
+
+        // Build the YAML-friendly representation. Per the agreed shape:
+        // - ext-* / lib-* render as bare list items (string scalars).
+        // - php / composer-* render as single-key maps so the version
+        //   constraint is preserved alongside the name.
+        // - 'not resolvable' renders as a scalar string under the key.
+        $ciPlatform = [];
+        foreach ($resolved as $minor => $entries) {
+            if (is_string($entries)) {
+                $ciPlatform[$minor] = $entries;
+                continue;
+            }
+            $list = [];
+            foreach ($entries as [$name, $constraint]) {
+                if (str_starts_with($name, 'ext-') || str_starts_with($name, 'lib-')) {
+                    $list[] = $name;
+                } else {
+                    $list[] = [$name => $constraint ?? '*'];
+                }
+            }
+            $ciPlatform[$minor] = $list;
+        }
+
+        if (!empty($this->options['pretend'])) {
+            // Preview mode: surface the fragment that would be written.
+            $output->plain('--- ci-platform (preview, not written) ---');
+            $output->plain(YamlLoader::dump(['ci-platform' => $ciPlatform]));
+            return;
+        }
+
+        $hordeYml->set('ci-platform', $ciPlatform);
+        $hordeYml->save();
+
+        $output->ok(sprintf(
+            'Wrote ci-platform for %d PHP version(s) to %s',
+            count($ciPlatform),
+            $hordeYmlPath,
+        ));
+    }
+
+    /**
+     * Pull the Output helper out of HelperDependencies via the same
+     * reflection trick the rest of this runner uses. The helper holds
+     * the configured output sink for the current run; we cannot inject
+     * it through the constructor because Module/Dependencies wires the
+     * runner through a generic factory.
+     */
+    private function getOutput(): Output
+    {
+        $reflection = new \ReflectionClass($this->dependenciesHelper);
+        $outputProperty = $reflection->getProperty('_output');
+        $outputProperty->setAccessible(true);
+        return $outputProperty->getValue($this->dependenciesHelper);
     }
 
     /**
