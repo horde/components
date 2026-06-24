@@ -246,6 +246,62 @@ class ComposerInstaller
     }
 
     /**
+     * Classify a composer install failure message into a coarse category
+     * so downstream reporting can present "stability-gated" failures
+     * differently from "ext-* missing" and from "no idea".
+     *
+     * The classification is best-effort: composer's text is a moving
+     * target. Categories returned:
+     *
+     * - `stability_gate`: a transitive dependency is only available at a
+     *   stability lower than the lane's `minimum-stability`. Composer
+     *   prints `does not match your minimum-stability`. Working as
+     *   designed — the ecosystem is not yet ready for that lane's
+     *   stability level. Maintainer action: wait for the upstream package
+     *   to release at the required stability or accept the failure.
+     *
+     * - `platform_missing`: a `ext-*` (or `lib-*`) requirement is not
+     *   installed on the runner. Composer prints `is missing from your
+     *   system. Install or enable PHP's <ext> extension`. The fix lives
+     *   in `.horde.yml`'s `ci-platform` (rerun
+     *   `horde-components dependencies --platform`) or in the bootstrap
+     *   if the resolver caught it but the apt-get install path missed
+     *   the package.
+     *
+     * - `php_version`: the resolver couldn't satisfy a PHP version
+     *   constraint. Composer prints `your php version (X.Y.Z) does not
+     *   satisfy that requirement`. Usually a stale `^7` constraint
+     *   surviving on a transitive horde/* package.
+     *
+     * - `unknown`: anything else. UI falls back to the generic
+     *   "Setup failed" rendering with the raw message.
+     */
+    public static function classifyError(string $output): string
+    {
+        // The composer error messages contain literal newlines and the
+        // workflow-command-escaped %0A variant; normalise both before
+        // pattern matching so the classifier works whether the caller
+        // hands us live output or the lane-prefixed copy from the
+        // CI log.
+        $normalised = str_replace(['%0A', '\\n'], "\n", $output);
+
+        if (stripos($normalised, 'does not match your minimum-stability') !== false) {
+            return 'stability_gate';
+        }
+        if (preg_match('/is missing from your system\\. Install or enable PHP/i', $normalised) === 1) {
+            return 'platform_missing';
+        }
+        // Composer's pre-resolution platform-requirement rejection.
+        if (preg_match('/require ext-\\S+ \\* -> it is missing from your system/i', $normalised) === 1) {
+            return 'platform_missing';
+        }
+        if (preg_match('/your php version \\(\\S+\\) does not satisfy/i', $normalised) === 1) {
+            return 'php_version';
+        }
+        return 'unknown';
+    }
+
+    /**
      * Verify composer installation succeeded.
      *
      * @param string $laneDir Lane directory

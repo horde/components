@@ -134,15 +134,15 @@ class SetupCommandTest extends TestCase
                 return "/usr/bin/php{$version}";
             });
 
-        // Mock extension installer
+        // Mock extension installer (F28: per-version resolution)
         $this->extensionInstaller
             ->expects($this->once())
-            ->method('detectExtensions')
-            ->willReturn([]);
+            ->method('detectExtensionsPerVersion')
+            ->willReturn(['8.4' => []]);
 
         $this->extensionInstaller
             ->expects($this->once())
-            ->method('install');
+            ->method('installPerVersion');
 
         // Mock lane copier
         $this->laneCopier
@@ -211,8 +211,8 @@ class SetupCommandTest extends TestCase
         $this->phpInstaller->method('getPhpBinary')->willReturnCallback(function ($v) {
             return "/usr/bin/php{$v}";
         });
-        $this->extensionInstaller->method('detectExtensions')->willReturn([]);
-        $this->extensionInstaller->method('install');
+        $this->extensionInstaller->method('detectExtensionsPerVersion')->willReturn([]);
+        $this->extensionInstaller->method('installPerVersion');
         $this->laneCopier->method('copyToLanes');
         $this->composerInstaller->method('install');
         $this->composerInstaller->method('verifyInstallation')->willReturn(true);
@@ -261,8 +261,8 @@ class SetupCommandTest extends TestCase
         $this->phpInstaller->method('getPhpBinary')->willReturnCallback(function ($v) {
             return "/usr/bin/php{$v}";
         });
-        $this->extensionInstaller->method('detectExtensions')->willReturn([]);
-        $this->extensionInstaller->method('install');
+        $this->extensionInstaller->method('detectExtensionsPerVersion')->willReturn([]);
+        $this->extensionInstaller->method('installPerVersion');
         $this->laneCopier->method('copyToLanes');
         $this->composerInstaller->method('install');
         $this->composerInstaller->method('verifyInstallation')->willReturn(true);
@@ -338,8 +338,8 @@ class SetupCommandTest extends TestCase
         $this->phpInstaller->method('getPhpBinary')->willReturnCallback(function ($v) {
             return "/usr/bin/php{$v}";
         });
-        $this->extensionInstaller->method('detectExtensions')->willReturn([]);
-        $this->extensionInstaller->method('install');
+        $this->extensionInstaller->method('detectExtensionsPerVersion')->willReturn([]);
+        $this->extensionInstaller->method('installPerVersion');
         $this->laneCopier->method('copyToLanes');
 
         $this->composerInstaller->method('install')->willReturnCallback(function () use (&$callOrder) {
@@ -389,8 +389,8 @@ class SetupCommandTest extends TestCase
         $this->phpInstaller->method('getPhpBinary')->willReturnCallback(function ($v) {
             return "/usr/bin/php{$v}";
         });
-        $this->extensionInstaller->method('detectExtensions')->willReturn([]);
-        $this->extensionInstaller->method('install');
+        $this->extensionInstaller->method('detectExtensionsPerVersion')->willReturn([]);
+        $this->extensionInstaller->method('installPerVersion');
         $this->laneCopier->method('copyToLanes');
 
         // Composer install succeeds but verification fails
@@ -399,17 +399,112 @@ class SetupCommandTest extends TestCase
 
         $this->toolCache->method('ensureAllTools');
 
-        // Lane script generator should still be called (we generate scripts even if composer has issues)
-        // This allows debugging of composer issues by inspecting the lane
+        // F30: a lane whose composer install or verification failed is
+        // recorded as setup-failed and gets no run-lane.sh. RunCommand
+        // surfaces it as ❌ via the build/setup-failed.json sidecar
+        // instead of running a broken script.
         $this->laneScriptGenerator
-            ->expects($this->atLeastOnce())
-            ->method('generate')
-            ->willReturn(true);
+            ->expects($this->never())
+            ->method('generate');
 
         // Execute setup
         $result = $this->setupCommand->execute($config);
 
-        // Setup reports failure due to composer issues
-        $this->assertFalse($result, 'Setup should report failure when composer verification fails');
+        // Both lanes fail setup → no usable lanes → return false so
+        // Module/Ci raises the fatal-error exception (every lane dead).
+        $this->assertFalse($result, 'Setup should report failure when every lane fails composer verification');
+    }
+
+    /**
+     * F30: partial setup must not abort. Half the lanes fail composer
+     * install, the other half succeed; setup returns true (some lanes
+     * are still runnable) and the failing lanes carry a build/setup-failed.json
+     * marker so RunCommand reports them as ❌ in the PR comment instead
+     * of dying before any tests run.
+     */
+    public function testPartialSetupSucceedsAndMarksFailedLanes(): void
+    {
+        $workDir = $this->tempDir . '/work';
+        $config = new CiConfig([
+            'mode' => 'local',
+            'component_name' => 'TestComponent',
+            'component_path' => $this->testComponentPath,
+            'work_dir' => $workDir,
+            'php_versions' => ['8.4'],
+            'min_php_version' => '8.2',
+            'component_stability' => 'stable',
+            'local_components_path' => '/usr/bin/horde-components',
+            'components_path' => '/usr/bin/horde-components',
+        ]);
+
+        $this->phpInstaller->method('install');
+        $this->phpInstaller->method('getPhpBinary')->willReturnCallback(function ($v) {
+            return "/usr/bin/php{$v}";
+        });
+        $this->extensionInstaller->method('detectExtensionsPerVersion')->willReturn([]);
+        $this->extensionInstaller->method('installPerVersion');
+
+        // LaneCopier is mocked so the lane directories don't actually
+        // get created by the test infrastructure. Create them by hand
+        // so writeSetupFailureMarker has somewhere to land its sidecar.
+        $devLane = $workDir . '/lanes/php8.4-dev/TestComponent';
+        $stableLane = $workDir . '/lanes/php8.4-stable/TestComponent';
+        $this->laneCopier
+            ->method('copyToLanes')
+            ->willReturnCallback(function () use ($devLane, $stableLane): bool {
+                mkdir($devLane, 0o755, true);
+                mkdir($stableLane, 0o755, true);
+                return true;
+            });
+
+        // Dev lane installs cleanly; stable lane verification fails.
+        // The matching call to writeSetupFailureMarker must produce a
+        // sidecar JSON at $stableLane/build/setup-failed.json.
+        $this->composerInstaller->method('install');
+        $this->composerInstaller
+            ->method('verifyInstallation')
+            ->willReturnCallback(function (string $dir) use ($devLane): bool {
+                return $dir === $devLane;
+            });
+        $this->composerInstaller
+            ->method('getInstalledPackageCount')
+            ->willReturn(42);
+
+        $this->toolCache->method('ensureAllTools');
+
+        // Only the dev lane should get a run-lane.sh; the failed lane is
+        // skipped at script-generation time.
+        $generatedFor = [];
+        $this->laneScriptGenerator
+            ->method('generate')
+            ->willReturnCallback(function (string $scriptPath, array $cfg) use (&$generatedFor): bool {
+                $generatedFor[] = $cfg['lane_name'];
+                return true;
+            });
+
+        $result = $this->setupCommand->execute($config);
+
+        $this->assertTrue(
+            $result,
+            'Setup should return true when at least one lane is usable'
+        );
+        $this->assertSame(
+            ['php8.4-dev'],
+            $generatedFor,
+            'Only successful lanes should get run-lane.sh'
+        );
+        $this->assertFileExists(
+            $stableLane . '/build/setup-failed.json',
+            'Failed lane must carry a setup-failed.json sidecar'
+        );
+
+        $marker = json_decode(
+            (string) file_get_contents($stableLane . '/build/setup-failed.json'),
+            true
+        );
+        $this->assertIsArray($marker);
+        $this->assertTrue($marker['setup_failed'] ?? false);
+        $this->assertSame(['phpunit', 'phpstan'], $marker['tools'] ?? null);
+        $this->assertNotEmpty($marker['reason'] ?? '');
     }
 }

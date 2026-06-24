@@ -104,17 +104,29 @@ class ResultCollector
      * on the lane's PHP version) belong in {@see addSkipped()} with
      * `success: true`; they are not modeled here.
      *
+     * `$category` is the F29 classifier output for setup-failed lanes
+     * (`stability_gate`, `platform_missing`, `php_version`, `unknown`).
+     * PrCommentReporter uses it to render `stability_gate` failures as
+     * "⚠️ Stability-gated (working as designed)" rather than the generic
+     * "❌ Setup failed".
+     *
      * @param string $laneName Lane name
      * @param string $tool Tool name
      * @param string $reason Reason the result is missing
+     * @param string $category Classifier output; empty string when N/A
      */
-    public function addMissing(string $laneName, string $tool, string $reason): void
-    {
+    public function addMissing(
+        string $laneName,
+        string $tool,
+        string $reason,
+        string $category = ''
+    ): void {
         $this->results[$laneName][$tool] = [
             'success' => false,
             'exit_code' => 1,
             'missing' => true,
             'reason' => $reason,
+            'category' => $category,
         ];
     }
 

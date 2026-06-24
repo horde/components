@@ -130,13 +130,30 @@ class SetupCommand
 
         // Install extensions
         $this->output->info('[4/5] Installing PHP extensions...');
-        $extensions = $this->extensionInstaller->detectExtensions(
+        // Per-PHP-minor resolution: when the component has a resolved
+        // ci-platform block in .horde.yml (written by
+        // `horde-components dependencies --platform`), each lane installs
+        // exactly the transitively-required extensions for its PHP minor.
+        // Otherwise the helper falls back to flat baseline+composer.json
+        // detection per version.
+        $extensionsPerVersion = $this->extensionInstaller->detectExtensionsPerVersion(
             $config->componentPath,
-            $config->componentName
+            $config->componentName,
+            $testableVersions
         );
-        $this->output->info('Required extensions: ' . implode(', ', $extensions));
 
-        $this->extensionInstaller->install($extensions, $testableVersions);
+        // Log the resolved sets so a failed-extension story in the
+        // composer install step downstream has a paper trail right
+        // here.
+        foreach ($extensionsPerVersion as $minor => $exts) {
+            $this->output->info(sprintf(
+                'PHP %s extensions: %s',
+                $minor,
+                $exts === [] ? '(none)' : implode(', ', $exts)
+            ));
+        }
+
+        $this->extensionInstaller->installPerVersion($extensionsPerVersion);
         $this->output->plain('');
 
         // Copy to lanes
@@ -160,6 +177,10 @@ class SetupCommand
         $this->output->bold('=== Running composer install ===');
         $successful = 0;
         $failed = 0;
+        // Indexes of lanes whose composer-install failed. RunCommand will
+        // pick the build/setup-failed.json sidecar up and surface the lane
+        // as ❌ rather than aborting the whole run.
+        $setupFailedLanes = [];
 
         foreach ($lanes as $index => $lane) {
             $num = $index + 1;
@@ -188,10 +209,23 @@ class SetupCommand
                     $successful++;
                 } else {
                     $this->output->warn("  ⚠ Installation verification failed");
+                    $this->writeSetupFailureMarker(
+                        $lane['dir'],
+                        'composer install verification failed',
+                        'unknown'
+                    );
+                    $setupFailedLanes[] = $index;
                     $failed++;
                 }
             } catch (Exception $e) {
-                $this->output->error("  ✗ Failed: " . $e->getMessage());
+                $category = ComposerInstaller::classifyError($e->getMessage());
+                $this->output->error("  ✗ Failed [{$category}]: " . $e->getMessage());
+                $this->writeSetupFailureMarker(
+                    $lane['dir'],
+                    $e->getMessage(),
+                    $category
+                );
+                $setupFailedLanes[] = $index;
                 $failed++;
             }
 
@@ -214,6 +248,15 @@ class SetupCommand
 
             if (in_array($index, $skippedLanes, true)) {
                 $this->output->skip('Skipped (no script generated)');
+                continue;
+            }
+
+            if (in_array($index, $setupFailedLanes, true)) {
+                // Lane's composer install failed; no run-lane.sh is written.
+                // The sidecar setup-failed.json (from
+                // writeSetupFailureMarker above) tells RunCommand to mark
+                // the lane as ❌ in the PR summary without trying to run it.
+                $this->output->skip('Skipped (setup failed, no script generated)');
                 continue;
             }
 
@@ -274,7 +317,29 @@ class SetupCommand
         $this->output->info("Tools cache: {$config->workDir}/tools");
         $this->output->info("Next step: horde-components ci run --work-dir={$config->workDir}");
 
-        return $failed === 0;
+        // F30: tolerate partial setup.
+        //
+        // The CI value of this run is the per-lane breakdown, not "did
+        // every lane install cleanly". Lanes that failed composer install
+        // carry a build/setup-failed.json marker; RunCommand surfaces them
+        // as ❌ in the PR comment alongside any lanes that ran. We only
+        // signal global setup failure (which Module\Ci translates into a
+        // throw + non-zero exit) when no non-skipped lane is usable —
+        // there is then nothing for ci run to do.
+        $usableLanes = $successful;
+        $totalNonSkipped = count($lanes) - count($skippedLanes);
+        if ($usableLanes === 0 && $totalNonSkipped > 0) {
+            return false;
+        }
+        if ($failed > 0) {
+            $this->output->warn(sprintf(
+                'Continuing with %d/%d usable lanes; %d lane(s) marked as setup-failed.',
+                $usableLanes,
+                $totalNonSkipped,
+                $failed
+            ));
+        }
+        return true;
     }
 
     /**
@@ -332,6 +397,59 @@ class SetupCommand
             'component_stability' => $stability,
             'required_extensions' => $extensions,
         ];
+    }
+
+    /**
+     * Persist a setup-failure marker for a lane.
+     *
+     * Writes `<laneDir>/build/setup-failed.json` so RunCommand can pick
+     * the lane up, register it as ❌ for both phpunit and phpstan, and
+     * surface the reason in the PR comment. Distinct from
+     * `build/skip.json` which means "deliberately not run". A
+     * setup-failed lane is a real failure that the maintainer needs to
+     * fix; we just don't let it prevent other lanes from running.
+     *
+     * The optional `$category` is one of the strings returned by
+     * {@see ComposerInstaller::classifyError()}; downstream reporting
+     * uses it to render `stability_gate` failures as ⚠️ (working as
+     * designed) rather than ❌ (real bug).
+     *
+     * @param string $laneDir Lane component directory (where build/ lives)
+     * @param string $reason Human-readable failure summary
+     * @param string $category Classifier output: stability_gate /
+     *                          platform_missing / php_version / unknown
+     */
+    private function writeSetupFailureMarker(
+        string $laneDir,
+        string $reason,
+        string $category = 'unknown'
+    ): void {
+        $buildDir = $laneDir . '/build';
+        if (!is_dir($buildDir) && !mkdir($buildDir, 0o755, true) && !is_dir($buildDir)) {
+            // The lane dir may not exist if copy-to-lane failed earlier;
+            // in that case we cannot persist a marker. RunCommand's
+            // lane-discovery will not see the lane at all and the warn()
+            // above is the only surface for the failure.
+            return;
+        }
+        try {
+            $payload = json_encode(
+                [
+                    'setup_failed' => true,
+                    // PHPUnit and PHPStan are the two tools that would
+                    // have run; both inherit the failure so the
+                    // aggregator and PR comment present a coherent
+                    // story.
+                    'tools' => ['phpunit', 'phpstan'],
+                    'reason' => $reason,
+                    'category' => $category,
+                ],
+                JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR
+            );
+        } catch (\JsonException) {
+            return;
+        }
+        @file_put_contents($buildDir . '/setup-failed.json', $payload);
     }
 
     /**
