@@ -21,7 +21,7 @@
             "role": "contributor"
         }
     ],
-    "time": "2026-05-25",
+    "time": "2026-06-24",
     "repositories": [],
     "require": {
         "horde/horde-installer-plugin": "^2.6 || dev-FRAMEWORK_6_0",
@@ -43,8 +43,7 @@
         "horde/eventdispatcher": "* || dev-FRAMEWORK_6_0",
         "horde/githubapiclient": "* || dev-FRAMEWORK_6_0",
         "horde/composer": "* || dev-FRAMEWORK_6_0",
-        "horde/phpconfigfile": "^0.0.1-alpha4 || dev-FRAMEWORK_6_0",
-        "psr/log": "^1.1 || ^2 || ^3"
+        "horde/phpconfigfile": "^0.0.1-alpha4 || dev-FRAMEWORK_6_0"
     },
     "require-dev": {
         "horde/test": "^3 || dev-FRAMEWORK_6_0",
@@ -84,7 +83,5 @@
         "branch-alias": {
             "dev-FRAMEWORK_6_0": "1.x-dev"
         }
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    }
 }

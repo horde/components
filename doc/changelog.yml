@@ -1,4 +1,40 @@
 ---
+1.0.0-RC2:
+  api: 1.0.0-RC2
+  state:
+    release: RC
+    api: RC
+  date: 2026-06-24
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: |-
+    feat(ci): emit GitHub Actions annotations for PHPStan and PHP-CS-Fixer findings
+    feat(ci): honor PHP-CS-Fixer dry-run exit codes and exclude build/
+    feat(ci): report scanned vs error-bearing file counts separately
+    feat(ci): make PHPStan work when launched from a phar
+    feat(ci): bump GitHub Actions to v5 (Node 24 native)
+    feat(ci): pick PHPUnit version from component constraint, skip incompatible lanes
+    feat(ci): treat missing result file as lane failure
+    feat(ci): exit non-zero when ci subcommand fails
+    feat(ci): prefer repo-bundled phar over download in github bootstrap
+1.0.0-RC1:
+  api: 1.0.0-RC1
+  state:
+    release: RC
+    api: RC
+  date: 2026-05-25
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: |-
+    chore: Update workflow dependency
+    feat: Exclude extensions from path repos and render path repos with composer-style version strings
+    feat: Implement idempotent install command
+    feat: Properly support theme packages for release action
+    refactor(strftime): Migrate to native usage of IntlDateFormatter and DateTime (#21)
+    refactor(release): Fix open TODO, use message file instead of inline message to avoid escaping troubles.
+    refactor: horde/Core#91 — Rebase components github features on code extracted to GithubApiClient
 1.0.0-alpha44:
   api: 1.0.0-alpha44
   state:
@@ -698,23 +734,6 @@
     [gwr] Fix appending the snapshot date for pre-releases.
     [gwr] Allow to keep the version when generating snapshots.
     [gwr] Accept an empty initial note.
-1.0.0-RC1:
-  api: 1.0.0-RC1
-  state:
-    release: RC
-    api: RC
-  date: 2026-05-25
-  license:
-    identifier: LGPL-2.1-only
-    uri: https://spdx.org/licenses/LGPL-2.1-only.html
-  notes: |-
-    chore: Update workflow dependency
-    feat: Exclude extensions from path repos and render path repos with composer-style version strings
-    feat: Implement idempotent install command
-    feat: Properly support theme packages for release action
-    refactor(strftime): Migrate to native usage of IntlDateFormatter and DateTime (#21)
-    refactor(release): Fix open TODO, use message file instead of inline message to avoid escaping troubles.
-    refactor: horde/Core#91 — Rebase components github features on code extracted to GithubApiClient
 0.0.1:
   api: 0.0.1
   state:
