@@ -8,26 +8,23 @@ description: >-
 list: horde
 type: component
 authors:
-  -
-    name: Jan Schneider
+  - name: Jan Schneider
     user: jan
     email: jan@horde.org
     active: true
     role: lead
-  -
-    name: Gunnar Wrobel
+  - name: Gunnar Wrobel
     user: wrobel
     email: p@rdus.de
     active: false
     role: lead
-  -
-    name: Ralf Lang
+  - name: Ralf Lang
     user: rlang
     email: ralf.lang@ralf-lang.de
     active: true
     role: contributor
 version:
-  release: 1.0.0-RC3
+  release: 1.0.0-RC4
   api: 1.0.0alpha1
 state:
   release: RC

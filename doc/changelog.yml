@@ -1,4 +1,14 @@
 ---
+1.0.0-RC4:
+  api: 1.0.0-RC4
+  state:
+    release: RC
+    api: RC
+  date: 2026-06-24
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: 'test: Build command'
 1.0.0-RC3:
   api: 1.0.0-RC3
   state:
@@ -8,12 +18,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: https://spdx.org/licenses/LGPL-2.1-only.html
-  notes: |-
-    feat: Support platform requirements of dependencies in CI
-    feat(deps): add --platform resolver writing ci-platform to .horde.yml
-    feat: Implement CI bootstrap file rewrite during release
-    fix(ci): ci init exits 0 when files exist and --force is not given
-    fix(release): use a 60s HTTP timeout for release asset uploads
+  notes: "feat: Support platform requirements of dependencies in CI\nfeat(deps): add --platform resolver writing ci-platform to .horde.yml\nfeat: Implement CI bootstrap file rewrite during release\nfix(ci): ci init exits 0 when files exist and --force is not given\nfix(release): use a 60s HTTP timeout for release asset uploads"
 1.0.0-RC2:
   api: 1.0.0-RC2
   state:
@@ -23,16 +28,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: https://spdx.org/licenses/LGPL-2.1-only.html
-  notes: |-
-    feat(ci): emit GitHub Actions annotations for PHPStan and PHP-CS-Fixer findings
-    feat(ci): honor PHP-CS-Fixer dry-run exit codes and exclude build/
-    feat(ci): report scanned vs error-bearing file counts separately
-    feat(ci): make PHPStan work when launched from a phar
-    feat(ci): bump GitHub Actions to v5 (Node 24 native)
-    feat(ci): pick PHPUnit version from component constraint, skip incompatible lanes
-    feat(ci): treat missing result file as lane failure
-    feat(ci): exit non-zero when ci subcommand fails
-    feat(ci): prefer repo-bundled phar over download in github bootstrap
+  notes: "feat(ci): emit GitHub Actions annotations for PHPStan and PHP-CS-Fixer findings\nfeat(ci): honor PHP-CS-Fixer dry-run exit codes and exclude build/\nfeat(ci): report scanned vs error-bearing file counts separately\nfeat(ci): make PHPStan work when launched from a phar\nfeat(ci): bump GitHub Actions to v5 (Node 24 native)\nfeat(ci): pick PHPUnit version from component constraint, skip incompatible lanes\nfeat(ci): treat missing result file as lane failure\nfeat(ci): exit non-zero when ci subcommand fails\nfeat(ci): prefer repo-bundled phar over download in github bootstrap"
 1.0.0-RC1:
   api: 1.0.0-RC1
   state:
@@ -42,14 +38,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: https://spdx.org/licenses/LGPL-2.1-only.html
-  notes: |-
-    chore: Update workflow dependency
-    feat: Exclude extensions from path repos and render path repos with composer-style version strings
-    feat: Implement idempotent install command
-    feat: Properly support theme packages for release action
-    refactor(strftime): Migrate to native usage of IntlDateFormatter and DateTime (#21)
-    refactor(release): Fix open TODO, use message file instead of inline message to avoid escaping troubles.
-    refactor: horde/Core#91 — Rebase components github features on code extracted to GithubApiClient
+  notes: "chore: Update workflow dependency\nfeat: Exclude extensions from path repos and render path repos with composer-style version strings\nfeat: Implement idempotent install command\nfeat: Properly support theme packages for release action\nrefactor(strftime): Migrate to native usage of IntlDateFormatter and DateTime (#21)\nrefactor(release): Fix open TODO, use message file instead of inline message to avoid escaping troubles.\nrefactor: horde/Core#91 — Rebase components github features on code extracted to GithubApiClient"
 1.0.0-alpha44:
   api: 1.0.0-alpha44
   state:
@@ -59,8 +48,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: https://spdx.org/licenses/LGPL-2.1-only.html
-  notes: |-
-    fix: phar build wasn't valid due to symlinks
+  notes: 'fix: phar build wasn''t valid due to symlinks'
 1.0.0-alpha43:
   api: 1.0.0-alpha43
   state:
@@ -70,19 +58,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: https://spdx.org/licenses/LGPL-2.1-only.html
-  notes: |-
-    feat: run php-cs-fixer on the typical dirs
-    fix: Dependency issues in config assembly.
-    test: Amend fixers
-    feat: Support external asset references
-    feat: PHPStan runs with custom architecture checks
-    feat: By default prefer builtin php-cs-fixer config over component's own file
-    feat: Now can implement "support" field by relying on HordeYmlFile and Composer libraries.
-    feat: Support HordeYmlFile type "extension" as composer php-ext types
-    feat: Support composer/packagist keywords in .horde.yml
-    feat: Dependency tree builder now supports composer
-    test(phpcsfixer): add conditional PHAR loading and separate test suite
-    feat: php-cs-fixer rules for deprecated statics
+  notes: "feat: run php-cs-fixer on the typical dirs\nfix: Dependency issues in config assembly.\ntest: Amend fixers\nfeat: Support external asset references\nfeat: PHPStan runs with custom architecture checks\nfeat: By default prefer builtin php-cs-fixer config over component's own file\nfeat: Now can implement \"support\" field by relying on HordeYmlFile and Composer libraries.\nfeat: Support HordeYmlFile type \"extension\" as composer php-ext types\nfeat: Support composer/packagist keywords in .horde.yml\nfeat: Dependency tree builder now supports composer\ntest(phpcsfixer): add conditional PHAR loading and separate test suite\nfeat: php-cs-fixer rules for deprecated statics"
 1.0.0-alpha42:
   api: 1.0.0-alpha42
   state:
@@ -92,9 +68,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: https://spdx.org/licenses/LGPL-2.1-only.html
-  notes: |-
-    fix: Avoid inconsistent filenames between 'phar upload' and 'release h6' commands
-    fix: Remove excessive duplicate messages in release command
+  notes: "fix: Avoid inconsistent filenames between 'phar upload' and 'release h6' commands\nfix: Remove excessive duplicate messages in release command"
 1.0.0-alpha41:
   api: 1.0.0-alpha41
   state:
@@ -104,11 +78,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: https://spdx.org/licenses/LGPL-2.1-only.html
-  notes: |-
-    feat: Make the phar upload more robust and verbose
-    fix: Use box.json to look up built phar file location
-    fix phar build and phar upload commands
-    feat: Mention phar command in help
+  notes: "feat: Make the phar upload more robust and verbose\nfix: Use box.json to look up built phar file location\nfix phar build and phar upload commands\nfeat: Mention phar command in help"
 1.0.0-alpha40:
   api: 1.0.0-alpha40
   state:
@@ -118,21 +88,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: https://spdx.org/licenses/LGPL-2.1-only.html
-  notes: |-
-    feat(composer): Improve support for generating composer.json for composer plugins
-    feat(git): GitHub repository sync command and mass commands
-    fix: Use getReleaseByTag
-    fix: CalculateNextVersion should honor user-presented version and report on conflict
-    feat(qc): add composer.lock and others to required gitignore entries
-    fix(release): pass next_relstate option to version calculation
-    test: Copy fixtures to a temporary dir if they might be modified by tests.
-    feat(package): add dependencies subcommand for managing Horde dependencies
-    feat(dependencies): Support compound || version constraints for updating
-    ix(phpstan): Multiple analysis findings Level 0-2 fixed.
-    fix(phpstan): exclude files with external tool dependencies
-    fix(phpstan): fix interface case and parameter order issues
-    fix(phar): improve error messages for missing or invalid subcommands
-    feat(phar): add standalone phar command with build and upload subcommands
+  notes: "feat(composer): Improve support for generating composer.json for composer plugins\nfeat(git): GitHub repository sync command and mass commands\nfix: Use getReleaseByTag\nfix: CalculateNextVersion should honor user-presented version and report on conflict\nfeat(qc): add composer.lock and others to required gitignore entries\nfix(release): pass next_relstate option to version calculation\ntest: Copy fixtures to a temporary dir if they might be modified by tests.\nfeat(package): add dependencies subcommand for managing Horde dependencies\nfeat(dependencies): Support compound || version constraints for updating\nix(phpstan): Multiple analysis findings Level 0-2 fixed.\nfix(phpstan): exclude files with external tool dependencies\nfix(phpstan): fix interface case and parameter order issues\nfix(phar): improve error messages for missing or invalid subcommands\nfeat(phar): add standalone phar command with build and upload subcommands"
 1.0.0-alpha39:
   api: 1.0.0-alpha39
   state:
@@ -142,9 +98,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: https://spdx.org/licenses/LGPL-2.1-only.html
-  notes: |-
-    fix(cli): restore --pretend global option
-    fix(build): correct SystemCallResult method calls in BuildPharTask
+  notes: "fix(cli): restore --pretend global option\nfix(build): correct SystemCallResult method calls in BuildPharTask"
 1.0.0-alpha38:
   api: 1.0.0-alpha38
   state:
@@ -154,9 +108,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: https://spdx.org/licenses/LGPL-2.1-only.html
-  notes: |-
-    feat(database): Add database test setup commands (#17)
-    feat(ci): add GitHub Check Runs and PR comment integration
+  notes: "feat(database): Add database test setup commands (#17)\nfeat(ci): add GitHub Check Runs and PR comment integration"
 1.0.0-alpha37:
   api: 1.0.0-alpha1
   state:
@@ -166,9 +118,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    feat(ci): add HTML report for local CI runs
-    feat(ci): add GitHub Actions job summary markdown report
+  notes: "feat(ci): add HTML report for local CI runs\nfeat(ci): add GitHub Actions job summary markdown report\n"
 1.0.0-alpha36:
   api: 1.0.0-alpha1
   state:
@@ -178,8 +128,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix(ci): add intl to baseline extensions for horde/core dependency
+  notes: "fix(ci): add intl to baseline extensions for horde/core dependency\n"
 1.0.0-alpha35:
   api: 1.0.0-alpha1
   state:
@@ -189,8 +138,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix(ci): add ci run command to bootstrap script
+  notes: "fix(ci): add ci run command to bootstrap script\n"
 1.0.0-alpha34:
   api: 1.0.0-alpha1
   state:
@@ -200,8 +148,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix(build): include data/ci in PHAR and fix sudo helper extraction
+  notes: "fix(build): include data/ci in PHAR and fix sudo helper extraction\n"
 1.0.0-alpha33:
   api: 1.0.0-alpha1
   state:
@@ -211,8 +158,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix(build): use directories-bin for data/ci templates
+  notes: "fix(build): use directories-bin for data/ci templates\n"
 1.0.0-alpha32:
   api: 1.0.0-alpha1
   state:
@@ -222,8 +168,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix(build): include data/ci in PHAR for sudo helper script
+  notes: "fix(build): include data/ci in PHAR for sudo helper script\n"
 1.0.0-alpha31:
   api: 1.0.0-alpha1
   state:
@@ -233,20 +178,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix(helper): replace systemInDirectory with shell->system in Git helper
-    refactor(ci): simplify GitHub workflow to use runner's default PHP
-    feat: Add a smoke test for horde's local CI pipeline
-    feat: Scaffolds for libraries and themes
-    feat: Upgrade Init module to feature parity with old git-tools
-    refactor(task): remove SystemCall trait, use Shell directly
-    refactor(helper): migrate all helpers to use Shell class
-    feat(helper): add universal Shell executor class
-    fix(deps): use dev-FRAMEWORK_6_0 for phpconfigfile
-    fix(ci): detect phar context in ci run command
-    fix(ci): use correct method name getExtensions() in SetupCommand
-    fix: use upstream packages and fix HordeYml save bug
-    refactor!: Delegate functionality to libraries
+  notes: "fix(helper): replace systemInDirectory with shell->system in Git helper\nrefactor(ci): simplify GitHub workflow to use runner's default PHP\nfeat: Add a smoke test for horde's local CI pipeline\nfeat: Scaffolds for libraries and themes\nfeat: Upgrade Init module to feature parity with old git-tools\nrefactor(task): remove SystemCall trait, use Shell directly\nrefactor(helper): migrate all helpers to use Shell class\nfeat(helper): add universal Shell executor class\nfix(deps): use dev-FRAMEWORK_6_0 for phpconfigfile\nfix(ci): detect phar context in ci run command\nfix(ci): use correct method name getExtensions() in SetupCommand\nfix: use upstream packages and fix HordeYml save bug\nrefactor!: Delegate functionality to libraries\n"
 1.0.0-alpha30:
   api: 1.0.0-alpha1
   state:
@@ -256,8 +188,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    feat(ci): bundle and install sudo helper script in bootstrap
+  notes: "feat(ci): bundle and install sudo helper script in bootstrap\n"
 1.0.0-alpha29:
   api: 1.0.0-alpha1
   state:
@@ -267,8 +198,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix(ci): check isRoot() before requiring sudo helper for PHP installation
+  notes: "fix(ci): check isRoot() before requiring sudo helper for PHP installation\n"
 1.0.0-alpha28:
   api: 1.0.0-alpha1
   state:
@@ -278,8 +208,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix(ci): Fix bootstrap script and sudo helper for GitHub Actions (#16)
+  notes: "fix(ci): Fix bootstrap script and sudo helper for GitHub Actions (#16)\n"
 1.0.0-alpha27:
   api: 1.0.0-alpha1
   state:
@@ -289,35 +218,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    feat(ci): complete GitHub Actions workflow template integration
-    feat(ci): disable platform check and prioritize version-specific PHPUnit
-    fix(ci): remove phpunit from components dev dependencies
-    feat(ci): add tools cache system for QC binaries
-    fix(ci): correct QC command syntax and path handling
-    feat(ci): implement CI run command (Phase 2)
-    refactor(ci): use Horde\Composer\ComposerJsonFile for JSON manipulation
-    refactor(ci): use stdClass for JSON manipulation in ComposerInstaller
-    docs(ci): add TODO for JSON empty object/array handling
-    fix(ci): preserve empty objects in composer.json during stability modification
-    refactor(ci): integrate SudoHelper for all privileged operations
-    feat(ci): register Ci module in ModuleProvider
-    feat(ci): add CLI module for ci commands
-    feat(ci): add SetupCommand and InitCommand orchestrators
-    feat(ci): add Phase 1 core infrastructure classes
-    feat(ci): add Phase 0 template infrastructure
-    style: php-cs-fixer removes outdated 'PHP Version 7' comments
-    chore(build): include PHP CS Fixer config in PHAR build
-    feat(qc): add PHAR support for PHP CS Fixer custom fixers
-    fix(qc): report correct total file count for PHP CS Fixer task
-    feat(cs-fixer): add custom fixers for PHP version comments and copyright years
-    feat: Finalize migration from old Configs interface to new ConfigProvider interface
-    feat: Implement authentication flow using Github App
-    feat(changed): add helpful usage message when run without arguments
-    fix: restore broken commands after config refactoring
-    refactor(config)!: remove legacy Config system and update runners
-    refactor(modules)!: remove Config dependency from Module system
-    feat(config): add ConfigProvider system with layered configuration
+  notes: "feat(ci): complete GitHub Actions workflow template integration\nfeat(ci): disable platform check and prioritize version-specific PHPUnit\nfix(ci): remove phpunit from components dev dependencies\nfeat(ci): add tools cache system for QC binaries\nfix(ci): correct QC command syntax and path handling\nfeat(ci): implement CI run command (Phase 2)\nrefactor(ci): use Horde\\Composer\\ComposerJsonFile for JSON manipulation\nrefactor(ci): use stdClass for JSON manipulation in ComposerInstaller\ndocs(ci): add TODO for JSON empty object/array handling\nfix(ci): preserve empty objects in composer.json during stability modification\nrefactor(ci): integrate SudoHelper for all privileged operations\nfeat(ci): register Ci module in ModuleProvider\nfeat(ci): add CLI module for ci commands\nfeat(ci): add SetupCommand and InitCommand orchestrators\nfeat(ci): add Phase 1 core infrastructure classes\nfeat(ci): add Phase 0 template infrastructure\nstyle: php-cs-fixer removes outdated 'PHP Version 7' comments\nchore(build): include PHP CS Fixer config in PHAR build\nfeat(qc): add PHAR support for PHP CS Fixer custom fixers\nfix(qc): report correct total file count for PHP CS Fixer task\nfeat(cs-fixer): add custom fixers for PHP version comments and copyright years\nfeat: Finalize migration from old Configs interface to new ConfigProvider interface\nfeat: Implement authentication flow using Github App\nfeat(changed): add helpful usage message when run without arguments\nfix: restore broken commands after config refactoring\nrefactor(config)!: remove legacy Config system and update runners\nrefactor(modules)!: remove Config dependency from Module system\nfeat(config): add ConfigProvider system with layered configuration\n"
 1.0.0-alpha26:
   api: 1.0.0-alpha1
   state:
@@ -327,14 +228,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    style(website): add card styling for component details
-    feat(website): add component detail pages for all catalog entries
-    feat(website): make component names clickable in event cards
-    fix(website): use relative links for API docs and component pages
-    feat(website): add support for pull requests and new event types
-    refactor(website): extract classes to PSR-4 and remove redundancy
-    chore: remove standalone web-catalog-github script
+  notes: "style(website): add card styling for component details\nfeat(website): add component detail pages for all catalog entries\nfeat(website): make component names clickable in event cards\nfix(website): use relative links for API docs and component pages\nfeat(website): add support for pull requests and new event types\nrefactor(website): extract classes to PSR-4 and remove redundancy\nchore: remove standalone web-catalog-github script\n"
 1.0.0-alpha25:
   api: 1.0.0-alpha1
   state:
@@ -344,9 +238,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix(release): use correct PHAR file from box.json.dist output
-    fix(release): only add lib/Application.php if it exists
+  notes: "fix(release): use correct PHAR file from box.json.dist output\nfix(release): only add lib/Application.php if it exists\n"
 1.0.0-alpha24:
   api: 1.0.0-alpha1
   state:
@@ -356,38 +248,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix(release): create build dir and include .gitignore in release h6
-    chore(build): exclude build and webhooks from phar and git
-    feat(web): add website generation assets and standalone scripts
-    feat(web): add web module for dev.horde.org generation
-    feat(webhook): refactor webhook handler into components codebase
-    fix: correct glob pattern for flat git checkout structure
-    fix: align GitCheckoutDirectory default path with documentation
-    fix(test): clear all CI env vars in PresenterFactory tests
-    fix: prevent Horde_Cli exception handler in test environment
-    refactor(http): migrate from PSR-0 Horde_Http_Client to PSR-4 HordeClientWrapper
-    refactor: migrate from PSR-0 to PSR-4 Horde\Exception classes
-    fix: replace strlen with mb_strlen for null safety and Unicode support
-    fix: resolve PHP 8.4 dynamic property and PHPUnit deprecations
-    test: skip CurrentSentinelTest pretend tests requiring version normalization
-    test: normalize fixture version formats for changelog.yml
-    test: fix NextVersionTest::testPretend conventional commit expectation
-    test: fix changelog-new-2.yml version ordering
-    test: fix FileTest to load config from repository
-    test: update NextVersionTest for conventional commits and skip CHANGES test
-    test: update output stub for Presenter pattern
-    fix: add missing dot separator in nextMinorVersion()
-    test: fix remaining fixture path references
-    fix: wrap directory in ComponentDirectory in Factory::createSource
-    test: fix fixture path in RootTest
-    test: fix fixture directory paths in tests
-    test: fix ComponentDirectory type hint in test helper
-    test: fix PHPUnit 12 returnValue() deprecation
-    test: remove obsolete tests for disabled modules
-    feat(pr): improve error handling for PR approval with enhanced GitHub API messages
-    fix: Deprecation warning when running on own repository
-    feat: Add pull request management to the cli
+  notes: "fix(release): create build dir and include .gitignore in release h6\nchore(build): exclude build and webhooks from phar and git\nfeat(web): add website generation assets and standalone scripts\nfeat(web): add web module for dev.horde.org generation\nfeat(webhook): refactor webhook handler into components codebase\nfix: correct glob pattern for flat git checkout structure\nfix: align GitCheckoutDirectory default path with documentation\nfix(test): clear all CI env vars in PresenterFactory tests\nfix: prevent Horde_Cli exception handler in test environment\nrefactor(http): migrate from PSR-0 Horde_Http_Client to PSR-4 HordeClientWrapper\nrefactor: migrate from PSR-0 to PSR-4 Horde\\Exception classes\nfix: replace strlen with mb_strlen for null safety and Unicode support\nfix: resolve PHP 8.4 dynamic property and PHPUnit deprecations\ntest: skip CurrentSentinelTest pretend tests requiring version normalization\ntest: normalize fixture version formats for changelog.yml\ntest: fix NextVersionTest::testPretend conventional commit expectation\ntest: fix changelog-new-2.yml version ordering\ntest: fix FileTest to load config from repository\ntest: update NextVersionTest for conventional commits and skip CHANGES test\ntest: update output stub for Presenter pattern\nfix: add missing dot separator in nextMinorVersion()\ntest: fix remaining fixture path references\nfix: wrap directory in ComponentDirectory in Factory::createSource\ntest: fix fixture path in RootTest\ntest: fix fixture directory paths in tests\ntest: fix ComponentDirectory type hint in test helper\ntest: fix PHPUnit 12 returnValue() deprecation\ntest: remove obsolete tests for disabled modules\nfeat(pr): improve error handling for PR approval with enhanced GitHub API messages\nfix: Deprecation warning when running on own repository\nfeat: Add pull request management to the cli\n"
 1.0.0-alpha23:
   api: 1.0.0-alpha1
   state:
@@ -397,8 +258,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    feat: Rename the local phar file after upload to release
+  notes: "feat: Rename the local phar file after upload to release\n"
 1.0.0-alpha22:
   api: 1.0.0-alpha1
   state:
@@ -408,11 +268,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    chore(phar): Explicitly distribute phar to build/ dir
-    feat: Build and upload a phar after release if setup
-    feat: Improve handling of PHPUnit from phar or composer
-    chore: Update the box tool configuration
+  notes: "chore(phar): Explicitly distribute phar to build/ dir\nfeat: Build and upload a phar after release if setup\nfeat: Improve handling of PHPUnit from phar or composer\nchore: Update the box tool configuration\n"
 1.0.0-alpha21:
   api: 1.0.0-alpha1
   state:
@@ -422,9 +278,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix(release): use existing SystemCallResult API instead of adding aliases
-    fix(release): add getExitCode() and getStdOut() aliases to SystemCallResult
+  notes: "fix(release): use existing SystemCallResult API instead of adding aliases\nfix(release): add getExitCode() and getStdOut() aliases to SystemCallResult\n"
 1.0.0-alpha20:
   api: 1.0.0-alpha1
   state:
@@ -434,8 +288,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix(release): use getStability() method instead of direct property access
+  notes: "fix(release): use getStability() method instead of direct property access\n"
 1.0.0-alpha19:
   api: 1.0.0-alpha1
   state:
@@ -445,8 +298,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix(release): add missing getName() method to HordeYml wrapper
+  notes: "fix(release): add missing getName() method to HordeYml wrapper\n"
 1.0.0-alpha18:
   api: 1.0.0-alpha1
   state:
@@ -456,25 +308,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix(qc): analyze primary source directory only for accurate metrics
-    fix(qc): add pretend() method to QC Tasks for SystemCall trait compatibility
-    feat(qc): add global Composer paths to PHPMetrics detection
-    fix(qc): improve spacing and visual consistency for deactivated tasks
-    feat(qc): add metrics to default QC pipeline
-    fix: escape apostrophe in help text causing parse error
-    feat(qc): deprecate phploc, add modern PHPMetrics task
-    feat(output): add pluggable CLI presentation layer
-    feat(qc): add PHPStan task with self-discovering watermark system
-    fix: escape apostrophe in help text causing parse error
-    feat: implement PHP CS Fixer QC task with CLI-based strategy
-    feat: add gitignore QC task and --fix-qc-issues mode
-    feat: modernize PHPUnit task to use PHPUnit 11/12 API
-    docs: update qc help text with comprehensive documentation
-    feat: integrate and modernize QC module
-    fix: resolve circular dependency in injector initialization
-    feat: add GitHub Release creation to release pipeline
-    feat: add GitHub URL checker for components
+  notes: "fix(qc): analyze primary source directory only for accurate metrics\nfix(qc): add pretend() method to QC Tasks for SystemCall trait compatibility\nfeat(qc): add global Composer paths to PHPMetrics detection\nfix(qc): improve spacing and visual consistency for deactivated tasks\nfeat(qc): add metrics to default QC pipeline\nfix: escape apostrophe in help text causing parse error\nfeat(qc): deprecate phploc, add modern PHPMetrics task\nfeat(output): add pluggable CLI presentation layer\nfeat(qc): add PHPStan task with self-discovering watermark system\nfix: escape apostrophe in help text causing parse error\nfeat: implement PHP CS Fixer QC task with CLI-based strategy\nfeat: add gitignore QC task and --fix-qc-issues mode\nfeat: modernize PHPUnit task to use PHPUnit 11/12 API\ndocs: update qc help text with comprehensive documentation\nfeat: integrate and modernize QC module\nfix: resolve circular dependency in injector initialization\nfeat: add GitHub Release creation to release pipeline\nfeat: add GitHub URL checker for components\n"
 1.0.0-alpha17:
   api: 1.0.0-alpha1
   state:
@@ -484,12 +318,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    refactor(release): use Conventional Commit format for release commits
-    feat(release): add --next-version parameter support to release h6 command
-    feat(release): add precheck for existing tags in release h6 command
-    feat: add polyfill for mb_ucfirst() function
-    fix: Package not linking js/ with type sometimes read when unset
+  notes: "refactor(release): use Conventional Commit format for release commits\nfeat(release): add --next-version parameter support to release h6 command\nfeat(release): add precheck for existing tags in release h6 command\nfeat: add polyfill for mb_ucfirst() function\nfix: Package not linking js/ with type sometimes read when unset\n"
 1.0.0-alpha16:
   api: 1.0.0-alpha1
   state:
@@ -499,12 +328,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    feat: Allow horde/horde-installer-plugin versions 2.x and 3.x - add release branch to allowed versions by default
-    style: Apply php-cs-fixer php 8.3 ruleset
-    fix: Run the Application.php updater for horde-application types, too
-    feat: Alias the FRAMEWORK_6_0 branch to the package's current major version. This could benefit from more generalisation.
-    feat: Autogenerate autoload-dev by looking for lowercase phpunit test suite folders under test
+  notes: "feat: Allow horde/horde-installer-plugin versions 2.x and 3.x - add release branch to allowed versions by default\nstyle: Apply php-cs-fixer php 8.3 ruleset\nfix: Run the Application.php updater for horde-application types, too\nfeat: Alias the FRAMEWORK_6_0 branch to the package's current major version. This could benefit from more generalisation.\nfeat: Autogenerate autoload-dev by looking for lowercase phpunit test suite folders under test\n"
 1.0.0-alpha15:
   api: 1.0.0-alpha1
   state:
@@ -514,11 +338,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix: Changelog stability should be string, not true
-    fix: autoload-dev should read from autoload-dev definition, not read from autoload definition
-    fix: Explicitly scope int conversion for Helper Version prerelease handling
-    fix: Prepend branch versions with dev-
+  notes: "fix: Changelog stability should be string, not true\nfix: autoload-dev should read from autoload-dev definition, not read from autoload definition\nfix: Explicitly scope int conversion for Helper Version prerelease handling\nfix: Prepend branch versions with dev-\n"
 1.0.0-alpha14:
   api: 1.0.0-alpha1
   state:
@@ -528,8 +348,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    feat: handle application.php version string
+  notes: "feat: handle application.php version string\n"
 1.0.0-alpha13:
   api: 1.0.0-alpha1
   state:
@@ -539,10 +358,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix: Don't write empty array where empty object is expected
-    feat: Improved plugin definition in horde.yml format
-    feat: github-clone-org now also tries to refresh existing clones
+  notes: "fix: Don't write empty array where empty object is expected\nfeat: Improved plugin definition in horde.yml format\nfeat: github-clone-org now also tries to refresh existing clones\n"
 1.0.0-alpha12:
   api: 1.0.0-alpha1
   state:
@@ -552,12 +368,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    refactor: Use GitCheckoutDirectory factory rather than duplicating code
-    fix: Installer can handle install dir's initial setup
-    feat: Install command now respects HORDE_INSTALL_DIR environment variable
-    fix: Satis action unnecessary default
-    fix: Make wrapper explicitly nullable
+  notes: "refactor: Use GitCheckoutDirectory factory rather than duplicating code\nfix: Installer can handle install dir's initial setup\nfeat: Install command now respects HORDE_INSTALL_DIR environment variable\nfix: Satis action unnecessary default\nfix: Make wrapper explicitly nullable\n"
 1.0.0-alpha11:
   api: 1.0.0-alpha1
   state:
@@ -567,10 +378,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix: Various phpstan level 1 issues
-    fix: Autoload-dev autosensing and .horde.yml files no longer ignored
-    fix: Missing parameter when deleting package.xml
+  notes: "fix: Various phpstan level 1 issues\nfix: Autoload-dev autosensing and .horde.yml files no longer ignored\nfix: Missing parameter when deleting package.xml\n"
 1.0.0-alpha10:
   api: 1.0.0-alpha1
   state:
@@ -580,10 +388,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    fix: Installer command paths
-    fix(syntax): ChangesWrapper
-    fix: Stop trying to run git push if parameter is missing
+  notes: "fix: Installer command paths\nfix(syntax): ChangesWrapper\nfix: Stop trying to run git push if parameter is missing\n"
 1.0.0-alpha9:
   api: 1.0.0-alpha1
   state:
@@ -593,8 +398,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    feat: Write composer file update before release
+  notes: "feat: Write composer file update before release\n"
 1.0.0-alpha8:
   api: 1.0.0-alpha1
   state:
@@ -604,23 +408,7 @@
   license:
     identifier: LGPL-2.1-only
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    feat: push & tag
-    feat: Conventional Release helper (partial implementation). Run horde-components release h6.
-    fix(ci): Remove unnecessary steps
-    fix: install does not understand prefer-stable
-    ci: Drop old PHP and ubuntu
-    fix: Remove duplicate calculation of next version ignoring stability
-    feat: Parse ConventionalCommit footers
-    fix: HordeTag format doesn't use hyphen
-    fix: Leftover undefined variable from refactor
-    feat: Add CLI for exposing conventionalcommit summary, last version, next version
-    feat: Render version object to horde git tag format
-    fix: Trim right brackets in commit scope
-    feat!: Breaking without ()
-    feat(api): Add ConventionalCommitReader
-    fix: Don't break on subpatch update
-    feat: version object next version logic
+  notes: "feat: push & tag\nfeat: Conventional Release helper (partial implementation). Run horde-components release h6.\nfix(ci): Remove unnecessary steps\nfix: install does not understand prefer-stable\nci: Drop old PHP and ubuntu\nfix: Remove duplicate calculation of next version ignoring stability\nfeat: Parse ConventionalCommit footers\nfix: HordeTag format doesn't use hyphen\nfix: Leftover undefined variable from refactor\nfeat: Add CLI for exposing conventionalcommit summary, last version, next version\nfeat: Render version object to horde git tag format\nfix: Trim right brackets in commit scope\nfeat!: Breaking without ()\nfeat(api): Add ConventionalCommitReader\nfix: Don't break on subpatch update\nfeat: version object next version logic\n"
 1.0.0-alpha7:
   api: 1.0.0alpha1
   state:
@@ -630,10 +418,7 @@
   license:
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    Original version string was 1.0.0alpha7
-    [rla] Fix Bug: Composer file contained array instead of object for empty autoload-dev section.
-    |+
+  notes: "Original version string was 1.0.0alpha7\n[rla] Fix Bug: Composer file contained array instead of object for empty autoload-dev section.\n|+\n"
 1.0.0-alpha6:
   api: 1.0.0alpha1
   state:
@@ -643,10 +428,7 @@
   license:
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    Original version string was 1.0.0alpha6
-    [rla] Re-Added changed command after re-architecture.
-    |+
+  notes: "Original version string was 1.0.0alpha6\n[rla] Re-Added changed command after re-architecture.\n|+\n"
 1.0.0-alpha5:
   api: 1.0.0alpha1
   state:
@@ -656,14 +438,7 @@
   license:
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    Original version string was 1.0.0alpha5
-    [rla][Breaking] Drop PHP 7.4 support due to used builtins.
-    [rla] Removed PHPCPD as it is abandoned by maintainers.
-    [rla] Support PHPMD 2.14.
-    [rla] Unbundled all external tools. They should be either optional or directly managed via composer.
-    [rla][breaking] Removed PHPDCD - the dead code detector is dead code now
-    |+
+  notes: "Original version string was 1.0.0alpha5\n[rla][Breaking] Drop PHP 7.4 support due to used builtins.\n[rla] Removed PHPCPD as it is abandoned by maintainers.\n[rla] Support PHPMD 2.14.\n[rla] Unbundled all external tools. They should be either optional or directly managed via composer.\n[rla][breaking] Removed PHPDCD - the dead code detector is dead code now\n|+\n"
 1.0.0-alpha4:
   api: 1.0.0alpha1
   state:
@@ -673,11 +448,7 @@
   license:
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    Original version string was 1.0.0alpha4
-    [rla] .horde.yml now supports composer's 'provide' statement.
-    [rla] Add autoload-dev support to composer generator
-    |+
+  notes: "Original version string was 1.0.0alpha4\n[rla] .horde.yml now supports composer's 'provide' statement.\n[rla] Add autoload-dev support to composer generator\n|+\n"
 1.0.0-alpha3:
   api: 1.0.0alpha1
   state:
@@ -687,10 +458,7 @@
   license:
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    Original version string was 1.0.0alpha3
-    [rla] Added github actions for phpdoc and unit testing.
-    |+
+  notes: "Original version string was 1.0.0alpha3\n[rla] Added github actions for phpdoc and unit testing.\n|+\n"
 1.0.0-alpha2:
   api: 1.0.0alpha1
   state:
@@ -700,9 +468,7 @@
   license:
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |-
-    Original version string was 1.0.0alpha2
-    |+
+  notes: "Original version string was 1.0.0alpha2\n|+"
 1.0.0-alpha1:
   api: 1.0.0alpha1
   state:
@@ -712,43 +478,7 @@
   license:
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    Original version string was 1.0.0alpha1
-    [rla] Composer command now generates composer files independent of pirum.
-    [rla] Introduce configurable release pipelines.
-    [rla] Add a new git action for automation tasks.
-    [rla] Refactor to namespaced PSR-4 compliant code.
-    [rla] Add an init command to start new apps or libraries.
-    [jan] Remove next-sentinel release task.
-    [jan] In the 'update' command, update composer.json from .horde.yml.
-    [jan] In the 'update' command, update package.xml from .horde.yml.
-    [jan] Don't use underscores in command line arguments.
-    [jan] Officially support PHP 7.
-    [jan] Use coloring capabilities of Horde_Cli_Modular.
-    [jan] Add --theme argument to 'update' command to package themes.
-    [jan] Add --dump switch to release module to dump the release notes.
-    [jan] Add --sentinel argument to 'update' command.
-    [jan] Fix using --pretend with --new-version or --new-state.
-    [jan] Allow to set component and release information via YAML files.
-    [jan] Add Components_Helper_Version::parsePearVersion().
-    [jan] Add Components_Component#getPreviousVersion().
-    [jan] Bundle QC tools.
-    [jan] Remove Freecode support.
-    [jan] Update website versions after releasing a package.
-    [mms] Run unit tests before releasing a package.
-    [mms] Composer file is now generated/updated before releasing.
-    [mms] Add PHP Composer generator.
-    [mms] Added PHPDCD QC test.
-    [mms] Added PHPLOC QC test.
-    [jan] Fix post-release incrementing of version numbers (Bug #11659).
-    [jan] Increment release state instead of version after releasing unstable versions.
-    [jan] Use new version name scheme, matching PEAR's.
-    [gwr] Replaced use of PEAR_PackageFileManager for updating package.xml with Horde_Pear.
-    [gwr] Better help display for context modules.
-    [gwr] Extracted the .gitignore handling for content lists to the Horde_Pear packages.
-    [gwr] Fix appending the snapshot date for pre-releases.
-    [gwr] Allow to keep the version when generating snapshots.
-    [gwr] Accept an empty initial note.
+  notes: "Original version string was 1.0.0alpha1\n[rla] Composer command now generates composer files independent of pirum.\n[rla] Introduce configurable release pipelines.\n[rla] Add a new git action for automation tasks.\n[rla] Refactor to namespaced PSR-4 compliant code.\n[rla] Add an init command to start new apps or libraries.\n[jan] Remove next-sentinel release task.\n[jan] In the 'update' command, update composer.json from .horde.yml.\n[jan] In the 'update' command, update package.xml from .horde.yml.\n[jan] Don't use underscores in command line arguments.\n[jan] Officially support PHP 7.\n[jan] Use coloring capabilities of Horde_Cli_Modular.\n[jan] Add --theme argument to 'update' command to package themes.\n[jan] Add --dump switch to release module to dump the release notes.\n[jan] Add --sentinel argument to 'update' command.\n[jan] Fix using --pretend with --new-version or --new-state.\n[jan] Allow to set component and release information via YAML files.\n[jan] Add Components_Helper_Version::parsePearVersion().\n[jan] Add Components_Component#getPreviousVersion().\n[jan] Bundle QC tools.\n[jan] Remove Freecode support.\n[jan] Update website versions after releasing a package.\n[mms] Run unit tests before releasing a package.\n[mms] Composer file is now generated/updated before releasing.\n[mms] Add PHP Composer generator.\n[mms] Added PHPDCD QC test.\n[mms] Added PHPLOC QC test.\n[jan] Fix post-release incrementing of version numbers (Bug #11659).\n[jan] Increment release state instead of version after releasing unstable versions.\n[jan] Use new version name scheme, matching PEAR's.\n[gwr] Replaced use of PEAR_PackageFileManager for updating package.xml with Horde_Pear.\n[gwr] Better help display for context modules.\n[gwr] Extracted the .gitignore handling for content lists to the Horde_Pear packages.\n[gwr] Fix appending the snapshot date for pre-releases.\n[gwr] Allow to keep the version when generating snapshots.\n[gwr] Accept an empty initial note.\n"
 0.0.1:
   api: 0.0.1
   state:
@@ -758,5 +488,4 @@
   license:
     identifier: LGPL-2.1
     uri: http://www.horde.org/licenses/lgpl21
-  notes: |
-    Initial release
+  notes: "Initial release\n"
