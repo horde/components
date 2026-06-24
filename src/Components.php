@@ -285,7 +285,13 @@ This is a list of available actions (use "help ACTION" to get additional informa
 
         $injector->setInstance(StreamFactoryInterface::class, $streamFactory);
         $injector->setInstance(RequestFactoryInterface::class, $requestFactory);
-        $injector->setInstance(ClientInterface::class, new CurlClient($responseFactory, $streamFactory, new Options()));
+        // Build the HTTP Options as a shared instance so subsystems that
+        // need a longer per-call timeout (release-asset upload of a 4 MB
+        // phar in particular) can mutate it via setOption() rather than
+        // having to construct a parallel CurlClient.
+        $httpOptions = new Options();
+        $injector->setInstance(Options::class, $httpOptions);
+        $injector->setInstance(ClientInterface::class, new CurlClient($responseFactory, $streamFactory, $httpOptions));
 
         // Get GitHub token from ConfigProvider hierarchy
         // Precedence: CLI args > GITHUB_TOKEN env var > github.token config key
