@@ -495,6 +495,23 @@ class PrCommentReporter
             return "{$toolDisplay}: Error - {$result['error']}";
         }
 
+        // Setup-failed lanes (F30) arrive here as `missing: true` with
+        // a reason prefixed by "Setup failed: " by RunCommand. The
+        // ResultCollector::addMissing contract carries that reason in
+        // the `reason` key. We classify the user-facing rendering by
+        // category if available; otherwise fall back to the raw reason.
+        if (!empty($result['missing'])) {
+            $reason = (string) ($result['reason'] ?? 'Missing result file');
+            $category = (string) ($result['category'] ?? '');
+            $tag = match ($category) {
+                'stability_gate'   => '⚠️ Stability-gated',
+                'platform_missing' => '❌ Platform requirement missing',
+                'php_version'      => '❌ PHP version conflict',
+                default            => '❌ Setup failed',
+            };
+            return "{$toolDisplay}: {$tag} ({$reason})";
+        }
+
         return match ($toolName) {
             'phpunit' => sprintf(
                 '%s: %d failure%s, %d error%s',

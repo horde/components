@@ -56,9 +56,27 @@ class ResultCollectorTest extends TestCase
                 'exit_code' => 1,
                 'missing' => true,
                 'reason' => 'Script not found',
+                // F29: category defaults to '' when the caller doesn't
+                // supply one. PrCommentReporter falls back to the
+                // generic "Setup failed" rendering in that case.
+                'category' => '',
             ],
             $results['php8.4-dev']['phpunit']
         );
+    }
+
+    public function testMissingResultCarriesCategoryWhenSupplied(): void
+    {
+        $collector = new ResultCollector($this->mockOutput());
+        $collector->addMissing(
+            'php8.4-RC',
+            'phpunit',
+            'Setup failed: minimum-stability mismatch',
+            'stability_gate'
+        );
+
+        $results = $collector->getResults();
+        $this->assertSame('stability_gate', $results['php8.4-RC']['phpunit']['category']);
     }
 
     public function testMissingFromAddResultFromFileWhenJsonAbsent(): void

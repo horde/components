@@ -185,6 +185,15 @@ class RunCommand
             return;
         }
 
+        // F30: lane with build/setup-failed.json never had a run-lane.sh
+        // generated. Stay silent here; aggregateResults emits the ❌ with
+        // the failure reason.
+        $setupFailFile = $lane['component_dir'] . '/build/setup-failed.json';
+        if (file_exists($setupFailFile)) {
+            $this->output->error("[{$lane['name']}] Setup failed; no lane script to run");
+            return;
+        }
+
         $this->output->info("[{$lane['name']}] Executing lane script...");
 
         // Check if script exists
@@ -255,6 +264,33 @@ class RunCommand
                     $reason = (string) ($skipData['reason'] ?? 'Lane deliberately skipped');
                     foreach ((array) ($skipData['tools'] ?? ['phpunit', 'phpstan']) as $tool) {
                         $this->collector->addSkipped($lane['name'], (string) $tool, $reason);
+                    }
+                    continue;
+                }
+            }
+
+            // F30: surface setup-failed lanes as ❌ for every tool that
+            // would have run. The reason from setup-failed.json lands in
+            // the PR comment so the maintainer sees *why* the lane never
+            // executed without having to scroll through composer logs.
+            //
+            // F29: the category (stability_gate / platform_missing /
+            // php_version / unknown) lets PrCommentReporter render
+            // "ecosystem not yet at this stability" failures distinctly
+            // from real-bug failures.
+            $setupFailFile = $buildDir . '/setup-failed.json';
+            if (file_exists($setupFailFile)) {
+                $failData = json_decode((string) file_get_contents($setupFailFile), true);
+                if (is_array($failData) && ($failData['setup_failed'] ?? false)) {
+                    $reason = (string) ($failData['reason'] ?? 'Lane setup failed');
+                    $category = (string) ($failData['category'] ?? 'unknown');
+                    foreach ((array) ($failData['tools'] ?? ['phpunit', 'phpstan']) as $tool) {
+                        $this->collector->addMissing(
+                            $lane['name'],
+                            (string) $tool,
+                            'Setup failed: ' . $reason,
+                            $category
+                        );
                     }
                     continue;
                 }
