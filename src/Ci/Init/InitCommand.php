@@ -93,7 +93,11 @@ class InitCommand
             }
             $this->output->plain('');
             $this->output->warn('Use --force to overwrite existing files.');
-            return false;
+            // The command ran and decided "no-op, hint to use --force".
+            // That is a user-recoverable outcome, not a failure: return
+            // true so Module/Ci doesn't translate it into a fatal-error
+            // exception via the W1 convention.
+            return true;
         }
 
         // Generate files
