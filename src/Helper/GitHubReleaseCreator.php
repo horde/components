@@ -133,8 +133,15 @@ class GitHubReleaseCreator
         }
 
         try {
-            // Initialize GitHub API client
-            $httpClient = new CurlClient(new ResponseFactory(), new StreamFactory(), new Options());
+            // Initialize GitHub API client with a longer timeout. The
+            // default 5s in Options is fine for most API calls but too
+            // short for release-asset uploads: a 4 MB phar over
+            // residential broadband easily blows past 5s on the response
+            // read even when the upload itself completes. Bump to 60s
+            // for the asset upload path only.
+            $uploadOptions = new Options();
+            $uploadOptions->setOption('timeout', 60);
+            $httpClient = new CurlClient(new ResponseFactory(), new StreamFactory(), $uploadOptions);
             $requestFactory = new RequestFactory();
             $streamFactory = new StreamFactory();
             $config = new GithubApiConfig(accessToken: $githubToken);
@@ -342,8 +349,11 @@ class GitHubReleaseCreator
             throw new Exception('GitHub token not configured');
         }
 
-        // Initialize GitHub API client
-        $httpClient = new CurlClient(new ResponseFactory(), new StreamFactory(), new Options());
+        // Initialize GitHub API client with a longer timeout (see the
+        // PHAR-upload path above for the rationale).
+        $uploadOptions = new Options();
+        $uploadOptions->setOption('timeout', 60);
+        $httpClient = new CurlClient(new ResponseFactory(), new StreamFactory(), $uploadOptions);
         $requestFactory = new RequestFactory();
         $streamFactory = new StreamFactory();
         $config = new GithubApiConfig(accessToken: $githubToken);
