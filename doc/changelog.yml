@@ -1,4 +1,19 @@
 ---
+1.0.0-RC3:
+  api: 1.0.0-RC3
+  state:
+    release: RC
+    api: RC
+  date: 2026-06-24
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: |-
+    feat: Support platform requirements of dependencies in CI
+    feat(deps): add --platform resolver writing ci-platform to .horde.yml
+    feat: Implement CI bootstrap file rewrite during release
+    fix(ci): ci init exits 0 when files exist and --force is not given
+    fix(release): use a 60s HTTP timeout for release asset uploads
 1.0.0-RC2:
   api: 1.0.0-RC2
   state:
