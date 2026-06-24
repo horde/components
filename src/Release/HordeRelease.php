@@ -20,6 +20,7 @@ use Horde\Components\Task\Release\AddChangelogEntryTask;
 use Horde\Components\Task\Release\UpdateComposerJsonTask;
 use Horde\Components\Task\Release\UpdateApplicationSentinelTask;
 use Horde\Components\Task\Release\CleanupLegacyFilesTask;
+use Horde\Components\Task\Release\RefreshCiBootstrapTask;
 use Horde\Components\Task\Composer\ComposerValidateTask;
 use Horde\Components\Task\Git\CommitTask;
 use Horde\Components\Task\Git\TagTask;
@@ -106,6 +107,13 @@ class HordeRelease
 
             // Clean up legacy files
             $this->runTask(new CleanupLegacyFilesTask($this->output, $this->gitHelper, $this->pretend), $context);
+
+            // Refresh CI bootstrap files if their template version is outdated.
+            // The bootstrap script and workflow embed a generation timestamp,
+            // so they always textually diff against the templates; the
+            // embedded `# Template version:` marker is the only meaningful
+            // signal of whether they need rewriting.
+            $this->runTask(new RefreshCiBootstrapTask($this->output, null, $this->pretend), $context);
 
             // Validate composer.json
             $this->runTask(new ComposerValidateTask($this->output, $this->shellHelper, $this->pretend), $context);
