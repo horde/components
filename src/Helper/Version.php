@@ -78,16 +78,27 @@ class Version
     }
 
     /**
-     * Reconstruct a normalized string representation from parts.
+     * Reconstruct a normalized composer-style version string from parts.
      *
-     * Always format to major.minor.patch without leading zero.
-     * Only show fourth version part if greater than 0.
-     * Append stability with a hyphen unless it is empty or 'stable'
-     * Append stability version only if it is 2 or higher and stability != stable
-     * Append buildinfo with + if present
+     * Format: `major.minor.patch[.subpatch][-stability[count]][+buildinfo]`
      *
-     * This will lose any "other" that cannot be parsed to stability and buildinfo
-     * This will lose the prefix
+     * Always format to `major.minor.patch` without leading zero. The
+     * fourth version part is appended only when greater than 0.
+     * Stability tag is appended with a hyphen unless empty or 'stable'.
+     * Stability count is appended whenever it is non-zero (composer
+     * rejects a bare "RC" - it needs the count). Buildinfo is appended
+     * with `+`.
+     *
+     * Loses any "other" that cannot be parsed to stability and buildinfo;
+     * loses the prefix.
+     *
+     * TODO: this method duplicates work already done correctly by
+     * {@see \Horde\Version\RelaxedSemanticVersion} (3-component output)
+     * and {@see \Horde\Version\ComposerNormalizedVersion} (4-component
+     * output). The two callers in horde-components (InstallRunner for
+     * path-repo identity, Transpile for platform-tag builder) should
+     * be migrated to the library; this method then disappears.
+     * Tracked in `~/php/horde-development/libraries/version/helper-version-consolidation-2026-06-25.md`.
      *
      * @return string
      */
@@ -99,7 +110,15 @@ class Version
         }
         if ($this->stability && $this->stability != 'stable') {
             $versionString .= '-' . $this->stability;
-            if ($this->stabilityVersion > 1) {
+            // Issue #28: previously gated on `> 1`, which truncated
+            // "3.0.0-RC1" to "3.0.0-RC". Composer's resolver parses a
+            // bare "RC" as an invalid version, then a path repository
+            // configured with `options.versions: horde/yaml: 3.0.0-RC`
+            // claims to provide a version no other consumer's
+            // constraint can match. `fromComposerString` defaults a
+            // bare "RC" prerelease to count=1, so emitting on `> 0`
+            // gives correct round-trip and never produces a bare tag.
+            if ($this->stabilityVersion > 0) {
                 $versionString .= $this->stabilityVersion;
             }
         }
