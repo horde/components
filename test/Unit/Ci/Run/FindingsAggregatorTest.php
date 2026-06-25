@@ -199,6 +199,138 @@ class FindingsAggregatorTest extends TestCase
         $this->assertSame('src/Z.php', $findings[1]['file']);
     }
 
+    public function testPhpUnitSameFailureAcrossLanesCollapsesToOne(): void
+    {
+        // Same test, same message, four lanes - dedup to a single
+        // finding with all four lanes listed.
+        $record = [
+            'type' => 'failure',
+            'test_class' => 'Horde\\ActiveSync\\StateTest',
+            'test_method' => 'testHierarchy',
+            'file' => '/tmp/horde-ci/lanes/php8.2-dev/ActiveSync/test/unit/StateTest.php',
+            'line' => 137,
+            'exception_class' => 'PHPUnit\\Framework\\AssertionFailedError',
+            'message' => 'Failed asserting that null is not null.',
+            'trace' => 'stack trace lines...',
+        ];
+
+        $lanes = ['php8.2-dev', 'php8.3-dev', 'php8.4-dev', 'php8.5-dev'];
+        $laneBuildDirs = [];
+        foreach ($lanes as $laneName) {
+            $perLane = $record;
+            $perLane['file'] = "/tmp/horde-ci/lanes/{$laneName}/ActiveSync/test/unit/StateTest.php";
+            $laneBuildDirs[$laneName] = $this->writeBuild(
+                $laneName,
+                'phpunit-results-summary.json',
+                ['failures' => [$perLane], 'errors' => []]
+            );
+        }
+
+        $findings = (new FindingsAggregator())->aggregatePhpUnit($laneBuildDirs);
+
+        $this->assertCount(1, $findings);
+        $this->assertSame('Horde\\ActiveSync\\StateTest', $findings[0]['test_class']);
+        $this->assertSame('testHierarchy', $findings[0]['test_method']);
+        $this->assertSame($lanes, $findings[0]['lanes']);
+        // Path should be lane-relative: "test/unit/StateTest.php"
+        // rather than "/tmp/horde-ci/lanes/<lane>/ActiveSync/...".
+        $this->assertSame('test/unit/StateTest.php', $findings[0]['file']);
+    }
+
+    public function testPhpUnitDifferentMessageSplitsToTwoFindings(): void
+    {
+        // Same test name fails with different messages on different
+        // PHP versions - two distinct entries, each tagging the lanes
+        // that saw it.
+        $base = [
+            'type' => 'failure',
+            'test_class' => 'Horde\\ActiveSync\\StateTest',
+            'test_method' => 'testHierarchy',
+            'file' => '/tmp/horde-ci/lanes/php8.2-dev/ActiveSync/test/unit/StateTest.php',
+            'line' => 137,
+            'exception_class' => 'PHPUnit\\Framework\\AssertionFailedError',
+            'trace' => '',
+        ];
+
+        $laneA = $this->writeBuild('php8.2-dev', 'phpunit-results-summary.json', [
+            'failures' => [['message' => 'Expected null'] + $base],
+            'errors' => [],
+        ]);
+        $laneB = $this->writeBuild('php8.3-dev', 'phpunit-results-summary.json', [
+            'failures' => [['message' => 'Expected array'] + $base],
+            'errors' => [],
+        ]);
+
+        $findings = (new FindingsAggregator())->aggregatePhpUnit([
+            'php8.2-dev' => $laneA,
+            'php8.3-dev' => $laneB,
+        ]);
+
+        $this->assertCount(2, $findings);
+        // Findings are sorted by (class, method); both have the same
+        // pair here, so order is whatever PHP's stable sort produced.
+        $messages = array_map(static fn (array $f): string => $f['message'], $findings);
+        sort($messages);
+        $this->assertSame(['Expected array', 'Expected null'], $messages);
+    }
+
+    public function testPhpUnitFailureAndErrorAreBothCaptured(): void
+    {
+        // A failure (assertion) and an error (uncaught throwable) on
+        // the same lane should both end up in the result, each carrying
+        // its own `type`.
+        $laneA = $this->writeBuild('php8.3-dev', 'phpunit-results-summary.json', [
+            'failures' => [[
+                'type' => 'failure',
+                'test_class' => 'FooTest',
+                'test_method' => 'testAssert',
+                'file' => '',
+                'line' => 0,
+                'exception_class' => 'AssertionFailedError',
+                'message' => 'asserted false',
+                'trace' => '',
+            ]],
+            'errors' => [[
+                'type' => 'error',
+                'test_class' => 'BarTest',
+                'test_method' => 'testThrow',
+                'file' => '',
+                'line' => 0,
+                'exception_class' => 'RuntimeException',
+                'message' => 'boom',
+                'trace' => '',
+            ]],
+        ]);
+
+        $findings = (new FindingsAggregator())->aggregatePhpUnit(['php8.3-dev' => $laneA]);
+
+        $this->assertCount(2, $findings);
+        $types = array_map(static fn (array $f): string => $f['type'], $findings);
+        sort($types);
+        $this->assertSame(['error', 'failure'], $types);
+    }
+
+    public function testPhpUnitMissingSummaryFileIsSkipped(): void
+    {
+        // Lane wrote nothing (setup-failed or crashed before write):
+        // aggregator must not throw, just skip the lane.
+        $findings = (new FindingsAggregator())->aggregatePhpUnit([
+            'php8.2-dev' => $this->tempBase . '/nonexistent/build',
+        ]);
+        $this->assertSame([], $findings);
+    }
+
+    public function testPhpUnitEmptyArraysProduceNoFindings(): void
+    {
+        // The "clean run" shape: summary exists, both arrays empty.
+        $laneA = $this->writeBuild('php8.3-dev', 'phpunit-results-summary.json', [
+            'failures' => [],
+            'errors' => [],
+        ]);
+        $findings = (new FindingsAggregator())->aggregatePhpUnit(['php8.3-dev' => $laneA]);
+        $this->assertSame([], $findings);
+    }
+
     /**
      * @param array<string,mixed> $payload
      */

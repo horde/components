@@ -198,6 +198,38 @@ class PrCommentReporterTest extends TestCase
         $this->assertStringContainsString('❌', $md);
     }
 
+    public function testFailedPhpUnitLinksCountToArtifacts(): void
+    {
+        // When the run URL is supplied (we're in a real GitHub Actions
+        // context), the failure/error count fragment in the PHPUnit
+        // metric line links to the workflow's artifacts section so a
+        // maintainer can fetch the raw JUnit XML in one click.
+        $results = [
+            'php8.4-dev' => [
+                'phpunit' => [
+                    'success' => false,
+                    'exit_code' => 2,
+                    'statistics' => [
+                        'tests' => 100,
+                        'assertions' => 300,
+                        'failures' => 2,
+                        'errors' => 1,
+                        'skipped' => 0,
+                    ],
+                ],
+            ],
+        ];
+        $runUrl = 'https://github.com/horde/ActiveSync/actions/runs/12345';
+
+        $md = $this->generateQualityMetrics($results, [], $runUrl);
+
+        $this->assertStringContainsString(
+            "[2 failures, 1 errors]({$runUrl}#artifacts)",
+            $md,
+            'Counts should link to the workflow artifacts section.'
+        );
+    }
+
     /**
      * Additional safety: a "missing" lane (RunCommand wrote nothing
      * because the setup-failed marker fired upstream) must not slip
@@ -293,11 +325,11 @@ class PrCommentReporterTest extends TestCase
      *
      * @param array<string,array<string,array<string,mixed>>> $results
      */
-    private function generateQualityMetrics(array $results): string
+    private function generateQualityMetrics(array $results, array $findingsByTool = [], string $runUrl = ''): string
     {
         $method = $this->refl->getMethod('generateQualityMetrics');
         $method->setAccessible(true);
-        return (string) $method->invoke($this->reporter, $results, []);
+        return (string) $method->invoke($this->reporter, $results, $findingsByTool, $runUrl);
     }
 
     /**

@@ -93,6 +93,12 @@ class ResultCollector
             // legacy-only components so the PR comment can label
             // findings as non-blocking. Other tools never set it.
             'mode' => $data['mode'] ?? 'enforced',
+            // PHPUnit writes per-test detail captured from event
+            // subscribers; other tools leave these arrays empty for
+            // schema stability. The aggregator uses them to render the
+            // "which tests failed" view across lanes.
+            'failures' => $data['failures'] ?? [],
+            'errors_detail' => $data['errors'] ?? [],
         ];
     }
 

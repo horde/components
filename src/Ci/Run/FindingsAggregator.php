@@ -153,6 +153,85 @@ class FindingsAggregator
     }
 
     /**
+     * Walk each lane's `phpunit-results-summary.json` and produce a
+     * deduplicated list of failed/errored tests.
+     *
+     * Dedup key is `(test_class, test_method, message)`. Same test
+     * failing the same way in 4 lanes collapses to one entry whose
+     * `lanes` list names the four lanes. Same test failing with
+     * different messages on different PHP versions stays as separate
+     * entries.
+     *
+     * Returns an empty list when no lane has any failures or errors.
+     * The renderer is expected to skip the section in that case.
+     *
+     * @param array<string,string> $laneBuildDirs Map of laneName => build dir
+     * @return list<array{type:string,test_class:string,test_method:string,file:string,line:int,exception_class:string,message:string,trace:string,lanes:list<string>}>
+     */
+    public function aggregatePhpUnit(array $laneBuildDirs): array
+    {
+        $byKey = [];
+
+        foreach ($laneBuildDirs as $laneName => $buildDir) {
+            $summary = $this->loadJson($buildDir . '/phpunit-results-summary.json');
+            if (!is_array($summary)) {
+                continue;
+            }
+            // The summary carries two arrays - one for failed
+            // assertions, one for thrown exceptions. Merge them for
+            // the dedup pass; the `type` field on each entry keeps
+            // the distinction so the renderer can colour-code rows.
+            $records = [];
+            foreach (['failures', 'errors'] as $bucket) {
+                if (isset($summary[$bucket]) && is_array($summary[$bucket])) {
+                    foreach ($summary[$bucket] as $record) {
+                        if (is_array($record)) {
+                            $records[] = $record;
+                        }
+                    }
+                }
+            }
+            foreach ($records as $record) {
+                $class = (string) ($record['test_class'] ?? '');
+                $method = (string) ($record['test_method'] ?? '');
+                $message = (string) ($record['message'] ?? '');
+                // Skip records too damaged to dedup meaningfully.
+                if ($class === '' && $method === '') {
+                    continue;
+                }
+                $key = $class . '::' . $method . '|' . $message;
+                if (!isset($byKey[$key])) {
+                    $byKey[$key] = [
+                        'type' => (string) ($record['type'] ?? 'error'),
+                        'test_class' => $class,
+                        'test_method' => $method,
+                        // Strip the lane prefix so the rendered table
+                        // shows component-relative paths.
+                        'file' => $this->stripLanePrefix((string) ($record['file'] ?? ''), $laneName),
+                        'line' => (int) ($record['line'] ?? 0),
+                        'exception_class' => (string) ($record['exception_class'] ?? ''),
+                        'message' => $message,
+                        'trace' => (string) ($record['trace'] ?? ''),
+                        'lanes' => [],
+                    ];
+                }
+                if (!in_array($laneName, $byKey[$key]['lanes'], true)) {
+                    $byKey[$key]['lanes'][] = $laneName;
+                }
+            }
+        }
+
+        $findings = array_values($byKey);
+        usort(
+            $findings,
+            fn (array $a, array $b): int =>
+                ($a['test_class'] . '::' . $a['test_method'])
+                    <=> ($b['test_class'] . '::' . $b['test_method'])
+        );
+        return $findings;
+    }
+
+    /**
      * Best-effort: strip a `/.../<lane>/<Component>/` prefix from an
      * absolute path so the rendered table shows repo-relative paths.
      */

@@ -12,7 +12,9 @@
 namespace Horde\Components\Qc\Task;
 
 use Horde\Components\Qc\ToolFinder;
+use PHPUnit\Event\Code\Test as PhpUnitTest;
 use PHPUnit\Event\Code\TestMethod;
+use PHPUnit\Event\Code\Throwable as PhpUnitThrowable;
 use PHPUnit\Event\Test\Errored;
 use PHPUnit\Event\Test\Failed;
 use PHPUnit\Event\Test\Finished;
@@ -46,6 +48,20 @@ class Unit extends Base
         'errors' => 0,
         'skipped' => 0,
     ];
+
+    /**
+     * Per-failure detail captured from PHPUnit's Failed event.
+     *
+     * @var list<array{type:string,test_class:string,test_method:string,file:string,line:int,exception_class:string,message:string,trace:string}>
+     */
+    private array $failureRecords = [];
+
+    /**
+     * Per-error detail captured from PHPUnit's Errored event.
+     *
+     * @var list<array{type:string,test_class:string,test_method:string,file:string,line:int,exception_class:string,message:string,trace:string}>
+     */
+    private array $errorRecords = [];
 
     /**
      * Track whether PHPUnit source has been reported.
@@ -209,54 +225,148 @@ class Unit extends Base
     private function registerEventSubscribers(): void
     {
         $facade = \PHPUnit\Event\Facade::instance();
+        $task = $this; // captured by the closures below
 
         // Subscribe to test finished events to count tests
         $facade->registerSubscriber(
-            new class ($this->stats) implements \PHPUnit\Event\Test\FinishedSubscriber {
-                public function __construct(private array &$stats) {}
+            new class ($task) implements \PHPUnit\Event\Test\FinishedSubscriber {
+                public function __construct(private Unit $task) {}
 
                 public function notify(Finished $event): void
                 {
-                    $this->stats['tests']++;
+                    $this->task->onTestFinished($event);
                 }
             }
         );
 
-        // Subscribe to test failed events
+        // Subscribe to test failed events: count and capture detail.
         $facade->registerSubscriber(
-            new class ($this->stats) implements \PHPUnit\Event\Test\FailedSubscriber {
-                public function __construct(private array &$stats) {}
+            new class ($task) implements \PHPUnit\Event\Test\FailedSubscriber {
+                public function __construct(private Unit $task) {}
 
                 public function notify(Failed $event): void
                 {
-                    $this->stats['failures']++;
+                    $this->task->onTestFailed($event);
                 }
             }
         );
 
-        // Subscribe to test errored events
+        // Subscribe to test errored events: count and capture detail.
         $facade->registerSubscriber(
-            new class ($this->stats) implements \PHPUnit\Event\Test\ErroredSubscriber {
-                public function __construct(private array &$stats) {}
+            new class ($task) implements \PHPUnit\Event\Test\ErroredSubscriber {
+                public function __construct(private Unit $task) {}
 
                 public function notify(Errored $event): void
                 {
-                    $this->stats['errors']++;
+                    $this->task->onTestErrored($event);
                 }
             }
         );
 
         // Subscribe to test skipped events
         $facade->registerSubscriber(
-            new class ($this->stats) implements \PHPUnit\Event\Test\SkippedSubscriber {
-                public function __construct(private array &$stats) {}
+            new class ($task) implements \PHPUnit\Event\Test\SkippedSubscriber {
+                public function __construct(private Unit $task) {}
 
                 public function notify(Skipped $event): void
                 {
-                    $this->stats['skipped']++;
+                    $this->task->onTestSkipped($event);
                 }
             }
         );
+    }
+
+    /**
+     * Tally a finished test.
+     *
+     * @internal Only PHPUnit event subscribers should call this.
+     */
+    public function onTestFinished(Finished $event): void
+    {
+        $this->stats['tests']++;
+    }
+
+    /**
+     * Tally a failed test and capture its detail.
+     *
+     * The detail (test name, throwable info, source location) goes into
+     * `phpunit-results-summary.json` so the PR comment and Step Summary
+     * can name which tests failed instead of only showing aggregate
+     * counts. Truncation happens at render time, not here - the JSON
+     * carries the authoritative data.
+     *
+     * @internal Only PHPUnit event subscribers should call this.
+     */
+    public function onTestFailed(Failed $event): void
+    {
+        $this->stats['failures']++;
+        $this->failureRecords[] = $this->captureRecord('failure', $event->test(), $event->throwable());
+    }
+
+    /**
+     * Tally an errored test and capture its detail.
+     *
+     * @internal Only PHPUnit event subscribers should call this.
+     */
+    public function onTestErrored(Errored $event): void
+    {
+        $this->stats['errors']++;
+        $this->errorRecords[] = $this->captureRecord('error', $event->test(), $event->throwable());
+    }
+
+    /**
+     * Tally a skipped test.
+     *
+     * @internal Only PHPUnit event subscribers should call this.
+     */
+    public function onTestSkipped(Skipped $event): void
+    {
+        $this->stats['skipped']++;
+    }
+
+    /**
+     * Build one record describing a failed or errored test.
+     *
+     * Best-effort accessors: PHPUnit's `Test` parent class only guarantees
+     * `name()`; `TestMethod` adds `className()`, `methodName()`, `file()`,
+     * `line()`. We default missing fields to empty rather than throwing -
+     * a degraded record is more useful than a broken Unit task.
+     *
+     * @return array{type:string,test_class:string,test_method:string,file:string,line:int,exception_class:string,message:string,trace:string}
+     */
+    private function captureRecord(string $type, PhpUnitTest $test, PhpUnitThrowable $throwable): array
+    {
+        if ($test instanceof TestMethod) {
+            $class = $test->className();
+            $method = $test->methodName();
+            $file = $test->file();
+            // TestMethod::line() exists; some PHPUnit edges return 0
+            // when the test is generated from a data provider without
+            // a concrete location. Coerce to int defensively.
+            $line = (int) $test->line();
+        } else {
+            // Fallback: split "ClassName::methodName" out of name().
+            // Some PHPUnit edge cases (test-double tests, etc.) emit
+            // non-TestMethod Test values. Better a degraded record
+            // than no record.
+            $name = $test->name();
+            $sep = strrpos($name, '::');
+            $class = $sep !== false ? substr($name, 0, $sep) : $name;
+            $method = $sep !== false ? substr($name, $sep + 2) : '';
+            $file = '';
+            $line = 0;
+        }
+
+        return [
+            'type' => $type,
+            'test_class' => $class,
+            'test_method' => $method,
+            'file' => $file,
+            'line' => $line,
+            'exception_class' => $throwable->className(),
+            'message' => $throwable->message(),
+            'trace' => $throwable->stackTrace(),
+        ];
     }
 
     /**
@@ -290,7 +400,7 @@ class Unit extends Base
             return 0;
         }
 
-        // Reset statistics
+        // Reset statistics and failure capture for this run.
         $this->stats = [
             'tests' => 0,
             'assertions' => 0,
@@ -298,6 +408,8 @@ class Unit extends Base
             'errors' => 0,
             'skipped' => 0,
         ];
+        $this->failureRecords = [];
+        $this->errorRecords = [];
 
         // Register event subscribers to collect statistics
         $this->registerEventSubscribers();
@@ -388,6 +500,14 @@ class Unit extends Base
                 'errors' => $this->stats['errors'],
                 'skipped' => $this->stats['skipped'],
             ],
+            // Per-test detail captured from PHPUnit events. Two arrays
+            // even though renderers may merge them, so the JSON's grain
+            // matches PHPUnit's own classification. Truncation is a
+            // rendering concern - the JSON carries the authoritative
+            // data so an artifact-download workflow gets the full
+            // story.
+            'failures' => $this->failureRecords,
+            'errors' => $this->errorRecords,
         ];
 
         $json = json_encode($results, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
@@ -438,6 +558,10 @@ class Unit extends Base
                 'errors' => 0,
                 'skipped' => 0,
             ],
+            // Empty for schema stability: consumers (FindingsAggregator,
+            // ResultCollector) can rely on the keys always being present.
+            'failures' => [],
+            'errors' => [],
         ];
 
         file_put_contents(

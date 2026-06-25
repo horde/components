@@ -166,7 +166,7 @@ class PrCommentReporter
 
         // Quality metrics
         $md .= "### Quality Metrics\n\n";
-        $md .= $this->generateQualityMetrics($results, $findingsByTool);
+        $md .= $this->generateQualityMetrics($results, $findingsByTool, $runUrl);
         $md .= "\n";
 
         // Failed lanes detail (if any)
@@ -456,7 +456,7 @@ class PrCommentReporter
      * @param array<string,array<int,array<string,mixed>>> $findingsByTool Deduped findings per tool, optional
      * @return string Markdown content
      */
-    private function generateQualityMetrics(array $results, array $findingsByTool = []): string
+    private function generateQualityMetrics(array $results, array $findingsByTool = [], string $runUrl = ''): string
     {
         $md = '';
 
@@ -525,14 +525,31 @@ class PrCommentReporter
                     ? "- **PHPUnit**: {$testsFragment} passed in {$lanes} lanes ✅\n"
                     : "- **PHPUnit**: {$testsFragment} passed ✅\n";
             } else {
+                // Link the failures/errors counts to the workflow run's
+                // artifacts section so the maintainer can fetch the raw
+                // JUnit XML and per-lane JSON in one click. The deduped
+                // table below answers "which tests" - the artifact link
+                // answers "give me the stack trace and full message".
+                $countFragment = sprintf('%d failures, %d errors', $failures, $errors);
+                $linkedCount = ($runUrl !== '')
+                    ? sprintf('[%s](%s#artifacts)', $countFragment, $runUrl)
+                    : $countFragment;
                 $md .= sprintf(
-                    "- **PHPUnit**: %d failures, %d errors out of %d tests in %d lane%s ❌\n",
-                    $failures,
-                    $errors,
+                    "- **PHPUnit**: %s out of %d tests in %d lane%s ❌\n",
+                    $linkedCount,
                     $tests,
                     $lanes,
                     $lanes === 1 ? '' : 's'
                 );
+                $phpunitFindings = $findingsByTool['phpunit'] ?? null;
+                if (is_array($phpunitFindings) && $phpunitFindings !== []) {
+                    $hint = 'Per-test detail in the table below. ';
+                    $hint .= ($runUrl !== '')
+                        ? sprintf('[Raw JUnit XML and JSON are uploaded as workflow artifacts](%s#artifacts).', $runUrl)
+                        : 'Raw JUnit XML and JSON are uploaded as workflow artifacts.';
+                    $md .= '  ' . $hint . "\n";
+                    $md .= $this->renderPhpUnitFailuresDetails($phpunitFindings);
+                }
             }
         }
 
@@ -618,6 +635,56 @@ class PrCommentReporter
         }
 
         return true;
+    }
+
+    /**
+     * Render the collapsed "which tests failed" block for the PR comment.
+     *
+     * One row per deduplicated finding; lanes column lists which PHP
+     * versions saw the same test fail the same way. Trace is omitted -
+     * the JUnit XML artifact carries the full stack for offline triage.
+     *
+     * @param list<array{type:string,test_class:string,test_method:string,file:string,line:int,exception_class:string,message:string,trace:string,lanes:list<string>}> $findings
+     */
+    private function renderPhpUnitFailuresDetails(array $findings): string
+    {
+        $md = "  <details>\n";
+        $md .= "  <summary>Which tests failed</summary>\n\n";
+        $md .= "  | Type | Test | Lanes | Message |\n";
+        $md .= "  |---|---|---|---|\n";
+        foreach ($findings as $f) {
+            $type = $f['type'] === 'failure' ? '❌ failure' : '⚠️ error';
+            $testName = $this->escapeMd($f['test_class'] . '::' . $f['test_method']);
+            $lanes = $this->escapeMd(implode(', ', $f['lanes']));
+            $exception = $f['exception_class'] !== ''
+                ? '[' . $this->escapeMd($f['exception_class']) . '] '
+                : '';
+            $message = $exception . $this->truncate($this->escapeMd($f['message']), 200);
+            $md .= "  | {$type} | {$testName} | {$lanes} | {$message} |\n";
+        }
+        $md .= "  </details>\n";
+        return $md;
+    }
+
+    /**
+     * Lightly escape a string for inline markdown table content.
+     */
+    private function escapeMd(string $s): string
+    {
+        // Pipes and newlines would break the table layout; backticks are
+        // tolerated.
+        return strtr($s, ['|' => '\\|', "\n" => ' ', "\r" => '', "\t" => ' ']);
+    }
+
+    /**
+     * Truncate to a max length with a trailing ellipsis when shortened.
+     */
+    private function truncate(string $s, int $max): string
+    {
+        if (mb_strlen($s) <= $max) {
+            return $s;
+        }
+        return mb_substr($s, 0, $max - 1) . '…';
     }
 
     /**

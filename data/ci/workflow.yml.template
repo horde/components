@@ -54,4 +54,5 @@ jobs:
           name: ci-results-pr${{ github.event.pull_request.number || github.run_number }}-${{ github.sha }}
           path: |
             {{WORK_DIR}}/lanes/*/{{COMPONENT_NAME}}/build/*.json
+            {{WORK_DIR}}/lanes/*/{{COMPONENT_NAME}}/build/*.xml
           retention-days: 30

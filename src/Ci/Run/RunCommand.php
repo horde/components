@@ -573,13 +573,43 @@ class RunCommand
             }
 
             $md .= "- Tests per lane: {$totalTests}\n";
+            // When the run URL is available we link the failure and
+            // error counts to the workflow's artifacts section. One
+            // click takes the reader from the count to the raw JUnit
+            // XML and per-lane JSON, where the stack traces and full
+            // messages live. Outside CI (no env) we render plain text.
+            $runUrl = $this->buildRunUrl();
             if ($totalFailures > 0) {
-                $md .= "- Failures: {$totalFailures}\n";
+                $label = $runUrl !== ''
+                    ? sprintf('[%d](%s#artifacts)', $totalFailures, $runUrl)
+                    : (string) $totalFailures;
+                $md .= "- Failures: {$label}\n";
             }
             if ($totalErrors > 0) {
-                $md .= "- Errors: {$totalErrors}\n";
+                $label = $runUrl !== ''
+                    ? sprintf('[%d](%s#artifacts)', $totalErrors, $runUrl)
+                    : (string) $totalErrors;
+                $md .= "- Errors: {$label}\n";
             }
             $md .= "\n";
+
+            // Render the deduplicated list of failed tests when the
+            // PHPUnit run actually produced some. The Step Summary
+            // shows the same dedup view the PR comment carries, so a
+            // reviewer can answer "which tests broke?" without leaving
+            // the Actions run page.
+            if ($totalFailures > 0 || $totalErrors > 0) {
+                $aggregator = new FindingsAggregator();
+                $phpunitFindings = $aggregator->aggregatePhpUnit($this->laneBuildDirs);
+                if ($phpunitFindings !== []) {
+                    $hint = 'Per-test detail in the table below. ';
+                    $hint .= ($runUrl !== '')
+                        ? sprintf('[Raw JUnit XML and JSON are uploaded as workflow artifacts](%s#artifacts).', $runUrl)
+                        : 'Raw JUnit XML and JSON are uploaded as workflow artifacts.';
+                    $md .= $hint . "\n\n";
+                    $md .= $this->renderPhpUnitFailuresTable($phpunitFindings);
+                }
+            }
         }
 
         // PHPStan section
@@ -673,6 +703,73 @@ class RunCommand
             );
         }
         return $md . "\n";
+    }
+
+    /**
+     * Render the deduplicated PHPUnit failures table for the Step Summary.
+     *
+     * Same shape the PR comment uses; "which tests failed" view, one
+     * row per unique (test, message) pair, lanes column lists where it
+     * was seen. Trace stays out of the rendered table - the JUnit XML
+     * artifact and the raw `phpunit-results-summary.json` carry it for
+     * offline triage.
+     *
+     * @param list<array{type:string,test_class:string,test_method:string,file:string,line:int,exception_class:string,message:string,trace:string,lanes:list<string>}> $findings
+     */
+    private function renderPhpUnitFailuresTable(array $findings): string
+    {
+        if ($findings === []) {
+            return '';
+        }
+        $md = "<details>\n";
+        $md .= "<summary>Which tests failed</summary>\n\n";
+        $md .= "| Type | Test | Lanes | Message |\n";
+        $md .= "|------|------|-------|---------|\n";
+        foreach ($findings as $f) {
+            $type = $f['type'] === 'failure' ? '❌ failure' : '⚠️ error';
+            $testName = $this->escapeMd($f['test_class'] . '::' . $f['test_method']);
+            $lanes = $this->escapeMd(implode(', ', $f['lanes']));
+            $exception = $f['exception_class'] !== ''
+                ? '[' . $this->escapeMd($f['exception_class']) . '] '
+                : '';
+            $message = $exception . $this->truncateForTable(
+                $this->escapeMd($f['message']),
+                300
+            );
+            $md .= "| {$type} | {$testName} | {$lanes} | {$message} |\n";
+        }
+        return $md . "</details>\n\n";
+    }
+
+    /**
+     * Truncate a string for inline table use; ellipsis suffix when shortened.
+     */
+    private function truncateForTable(string $s, int $max): string
+    {
+        if (mb_strlen($s) <= $max) {
+            return $s;
+        }
+        return mb_substr($s, 0, $max - 1) . '…';
+    }
+
+    /**
+     * Compose the workflow-run URL from the GitHub Actions env vars.
+     *
+     * Returns an empty string when called outside GitHub Actions or
+     * when the relevant env vars aren't set, so the caller can use the
+     * return value directly in a renderer without a separate guard.
+     */
+    private function buildRunUrl(): string
+    {
+        $repo = getenv('GITHUB_REPOSITORY');
+        $runId = getenv('GITHUB_RUN_ID');
+        if ($repo === false || $runId === false || $repo === '' || $runId === '') {
+            return '';
+        }
+        $serverUrl = getenv('GITHUB_SERVER_URL') ?: 'https://github.com';
+        return (new Uri($serverUrl))
+            ->withPath("/{$repo}/actions/runs/{$runId}")
+            ->__toString();
     }
 
     /**
@@ -1327,6 +1424,7 @@ class RunCommand
         $findingsByTool = [
             'phpstan' => $aggregator->aggregatePhpStan($this->laneBuildDirs),
             'phpcsfixer' => $aggregator->aggregatePhpCsFixer($this->laneBuildDirs),
+            'phpunit' => $aggregator->aggregatePhpUnit($this->laneBuildDirs),
         ];
 
         $reporter = new PrCommentReporter($this->output, $this->apiClient);
