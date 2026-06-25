@@ -1,4 +1,14 @@
 ---
+1.0.0-RC6:
+  api: 1.0.0-RC6
+  state:
+    release: RC
+    api: RC
+  date: 2026-06-25
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: 'feat(deps,ci): Improve handling of platform dependencies of dependencies and edge cases'
 1.0.0-RC5:
   api: 1.0.0-RC5
   state:
