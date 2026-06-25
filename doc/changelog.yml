@@ -1,4 +1,14 @@
 ---
+1.0.0-RC7:
+  api: 1.0.0-RC7
+  state:
+    release: RC
+    api: RC
+  date: 2026-06-25
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: "fix(version): emit stability count on non-zero so 3.0.0-RC1 round-trips (fixes #28)\nfix(ci,deps): per-tool glance cells, PHPStan per-lane-max, PHPUnit denominator, COMPOSER_ROOT_VERSION for resolver"
 1.0.0-RC6:
   api: 1.0.0-RC6
   state:
