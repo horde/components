@@ -1,4 +1,14 @@
 ---
+1.0.0-RC5:
+  api: 1.0.0-RC5
+  state:
+    release: RC
+    api: RC
+  date: 2026-06-25
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: 'ci(pr-comment): truncate composer dumps in PR TLDR comment and report empty PHPUnit runs correctly.'
 1.0.0-RC4:
   api: 1.0.0-RC4
   state:
