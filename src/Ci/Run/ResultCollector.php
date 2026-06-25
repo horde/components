@@ -89,6 +89,10 @@ class ResultCollector
             'exit_code' => $data['exit_code'] ?? 1,
             'statistics' => $data['statistics'] ?? [],
             'version' => $this->extractVersion($tool, $data),
+            // PHPStan writes `mode: 'advisory'` for
+            // legacy-only components so the PR comment can label
+            // findings as non-blocking. Other tools never set it.
+            'mode' => $data['mode'] ?? 'enforced',
         ];
     }
 
@@ -104,11 +108,11 @@ class ResultCollector
      * on the lane's PHP version) belong in {@see addSkipped()} with
      * `success: true`; they are not modeled here.
      *
-     * `$category` is the F29 classifier output for setup-failed lanes
+     * `$category` is the classifier output for setup-failed lanes
      * (`stability_gate`, `platform_missing`, `php_version`, `unknown`).
      * PrCommentReporter uses it to render `stability_gate` failures as
-     * "⚠️ Stability-gated (working as designed)" rather than the generic
-     * "❌ Setup failed".
+     * "Stability-gated (working as designed)" rather than the generic
+     * "Setup failed".
      *
      * @param string $laneName Lane name
      * @param string $tool Tool name
@@ -135,7 +139,7 @@ class ResultCollector
      *
      * Use when a tool was intentionally not run because no version of it
      * satisfies the lane's constraints (e.g. PHPUnit ^12 on PHP 8.2). The
-     * lane is NOT counted as failed — there is nothing to fail.
+     * lane is NOT counted as failed - there is nothing to fail.
      *
      * Distinct from {@see addMissing()}: that one signals an unexpected
      * absence and IS a failure.
@@ -331,7 +335,7 @@ class ResultCollector
                     $laneAllSkipped = false;
                 }
                 // success: false covers both real tool failures and missing
-                // result files (W2 — addMissing records success: false).
+                // result files (W2 - addMissing records success: false).
                 if (!$result['success']) {
                     $lanePassed = false;
                     break;

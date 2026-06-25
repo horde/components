@@ -51,7 +51,16 @@ case "$OPERATION" in
             echo "ERROR: Invalid extension name: $EXTENSION" >&2
             exit 1
         fi
-        DEBIAN_FRONTEND=noninteractive apt-get install -y "php${PHP_VERSION}-${EXTENSION}" 2>&1 | grep -v "Unable to locate package" || true
+        # The helper's exit code is the apt-get exit code.
+        # Previously this line had `2>&1 | grep -v "Unable to locate
+        # package" || true` which swallowed both the error AND the exit
+        # code: when apt couldn't find php${PHP_VERSION}-${EXTENSION},
+        # the helper still exited 0 and ExtensionInstaller thought the
+        # install had succeeded. The downstream composer install then
+        # failed cryptically. Pipe apt's output straight through; set -e
+        # (top of script) plus apt's non-zero exit takes us out of the
+        # case branch with the right status.
+        DEBIAN_FRONTEND=noninteractive apt-get install -y "php${PHP_VERSION}-${EXTENSION}"
         ;;
 
     check-php)

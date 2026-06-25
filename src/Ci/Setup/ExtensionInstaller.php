@@ -31,11 +31,11 @@ use Horde\HordeYmlFile\HordeYmlFile;
  *    Each minor entry is a list produced by
  *    `horde-components dependencies --platform`; this is the only data
  *    source that captures *transitive* extension requirements
- *    (`horde/mapi` → `ext-bcmath`, etc). When present, every lane gets
+ *    (`horde/mapi` -> `ext-bcmath`, etc). When present, every lane gets
  *    exactly the extensions resolved for its PHP minor.
  *
  * 2. **Fallback** (no ci-platform yet, or marked `not resolvable`): the
- *    legacy hybrid detection — baseline extensions + composer.json
+ *    legacy hybrid detection - baseline extensions + composer.json
  *    `require`/`require-dev` walk + static per-component map.
  *
  * @category Horde
@@ -132,7 +132,7 @@ class ExtensionInstaller
      *
      * 1. `.horde.yml`'s `ci-platform` section, written by
      *    `horde-components dependencies --platform`. This is the only
-     *    place where *transitive* requirements (e.g. `horde/mapi` →
+     *    place where *transitive* requirements (e.g. `horde/mapi` ->
      *    `ext-bcmath`) are visible without running composer.
      *    - A list under a minor key means "install exactly these".
      *    - The literal string {@see PlatformResolver::NOT_RESOLVABLE}
@@ -153,7 +153,7 @@ class ExtensionInstaller
      * @param string $componentName Component identifier (e.g. "ActiveSync")
      * @param array<string> $phpVersions PHP minors to compute sets for
      *                                   (e.g. ["8.2","8.3","8.4","8.5"])
-     * @return array<string,list<string>> Map of minor → ext names
+     * @return array<string,list<string>> Map of minor -> ext names
      */
     public function detectExtensionsPerVersion(
         string $componentPath,
@@ -192,7 +192,7 @@ class ExtensionInstaller
      *
      * Returns an empty array when the file is missing, malformed, or
      * has no ci-platform key. Callers must be prepared for any subset
-     * of PHP minors to be absent — components only ran the resolver
+     * of PHP minors to be absent - components only ran the resolver
      * for the range their constraint allowed.
      *
      * We pull from `toArray()` rather than `get('ci-platform')` because
@@ -260,7 +260,7 @@ class ExtensionInstaller
         }
         $entry = $ciPlatform[$minor];
         if (is_string($entry)) {
-            // 'not resolvable' or any other scalar — caller falls back.
+            // 'not resolvable' or any other scalar - caller falls back.
             return null;
         }
         if (!is_array($entry)) {
@@ -283,26 +283,41 @@ class ExtensionInstaller
     /**
      * Install extensions per PHP version, given a per-version map.
      *
-     * Each lane gets exactly the extension set computed by
-     * {@see detectExtensionsPerVersion()}; sibling PHP minors do not
-     * affect each other. Falls through to the existing per-extension
-     * install path, so partial failures (one extension unavailable for
-     * one minor) are still tolerated rather than aborting the run.
+     * Each lane's lane-specific extension set comes from
+     * {@see detectExtensionsPerVersion()}. We try to install every ext
+     * for every PHP version listed; we never give up on the whole run
+     * just because one PHP version failed.
+     *
+     * The return value is a *failure map* keyed by PHP minor: each
+     * entry lists the extension names (without `ext-` prefix) that
+     * `apt-get install -y php<ver>-<ext>` rejected for that minor.
+     * SetupCommand consumes this to mark the matching lanes
+     * setup-failed with category `platform_missing`, so the maintainer
+     * sees a clean per-lane signal in the PR comment instead of the
+     * cryptic composer-install failure that would follow downstream.
+     *
+     * A PHP version whose every requested extension installed cleanly
+     * (or was already loaded - `installExtension` returns null for
+     * those, never false) does not appear in the returned map. Callers
+     * should treat the absence of a key as "this version is healthy."
      *
      * @param array<string,list<string>> $extensionsPerVersion Map of
-     *        php minor → list of ext names (no `ext-` prefix).
-     * @return bool True if the loop completed (individual extension
-     *              failures are warned, not thrown).
+     *        php minor -> list of ext names (no `ext-` prefix).
+     * @return array<string,list<string>> Map of php minor -> failed ext
+     *         names. Empty when every requested install succeeded.
      */
-    public function installPerVersion(array $extensionsPerVersion): bool
+    public function installPerVersion(array $extensionsPerVersion): array
     {
         if (empty($extensionsPerVersion)) {
             $this->output->info('No extensions to install');
-            return true;
+            return [];
         }
 
-        $failed = [];
         $succeeded = [];
+        // Per-version failure list. We collect names *without* the
+        // php<ver>- prefix so SetupCommand can render a clean lane
+        // failure reason for each PHP version.
+        $failedPerVersion = [];
 
         foreach ($extensionsPerVersion as $phpVersion => $extensions) {
             if (!is_array($extensions) || $extensions === []) {
@@ -319,21 +334,30 @@ class ExtensionInstaller
                 if ($result === true) {
                     $succeeded[] = "php{$phpVersion}-{$extension}";
                 } elseif ($result === false) {
-                    $failed[] = "php{$phpVersion}-{$extension}";
+                    $failedPerVersion[$phpVersion] ??= [];
+                    $failedPerVersion[$phpVersion][] = $extension;
                 }
-                // null means skipped (already installed or not available)
+                // null means skipped (already installed); not a failure.
             }
         }
 
         if (!empty($succeeded)) {
             $this->output->ok('Installed: ' . implode(', ', $succeeded));
         }
-        if (!empty($failed)) {
-            // Per-extension failure is non-fatal; the relevant lane will
-            // surface a real error at composer install or test time.
-            $this->output->warn('Failed to install: ' . implode(', ', $failed));
+        if (!empty($failedPerVersion)) {
+            // Output the per-version breakdown too so a maintainer
+            // reading raw CI logs sees the same shape SetupCommand
+            // sees. The lane-failure marker downstream is the
+            // authoritative signal; this is the human-readable echo.
+            foreach ($failedPerVersion as $phpVersion => $exts) {
+                $this->output->warn(sprintf(
+                    'PHP %s: failed to install %s',
+                    $phpVersion,
+                    implode(', ', $exts)
+                ));
+            }
         }
-        return true;
+        return $failedPerVersion;
     }
 
     /**

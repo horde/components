@@ -20,7 +20,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Regression guard for F35: PHPUnit/PHPStan/PHP-CS-Fixer must not be
+ * Regression guard: PHPUnit/PHPStan/PHP-CS-Fixer must not be
  * bundled inside horde-components.phar.
  *
  * Background. The phar's stub registers itself with a PHAR alias that
@@ -69,7 +69,7 @@ class PharBundlingTest extends TestCase
                 sprintf(
                     "%s must not appear in composer.json (require or require-dev). "
                         . "Tool runners are downloaded to the CI tools cache and run as separate phars; "
-                        . "bundling them inside horde-components.phar reintroduces F35 "
+                        . "bundling them inside horde-components.phar reintroduces the dual-phar collision "
                         . "(\"Schema for PHPUnit X.Y is not available\").",
                     $package
                 )
@@ -94,7 +94,7 @@ class PharBundlingTest extends TestCase
                 $excluded,
                 sprintf(
                     'box.json vendor finder must exclude "%s" so the tool '
-                        . 'is not bundled into horde-components.phar (F35 regression guard).',
+                        . 'is not bundled into horde-components.phar (regression guard).',
                     $tool
                 )
             );

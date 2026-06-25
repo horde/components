@@ -57,6 +57,13 @@ class Phpstan extends Base
     private int $level = 0;
 
     /**
+     * True when the run was scheduled in advisory mode - the lane will
+     * not fail on PHPStan findings. Set by {@see resolveAnalysisPlan()}
+     * for legacy-only components (no src/, has lib/).
+     */
+    private bool $advisory = false;
+
+    /**
      * Get the name of this task.
      *
      * @return string The task name.
@@ -110,6 +117,19 @@ class Phpstan extends Base
 
             $this->getOutput()->info('Running PHPStan with watermark detection...');
             $this->detectVersion($binary);
+
+            // Stash the advisory flag from the analysis plan so the
+            // write-results path can mark this lane's findings as
+            // non-fatal. Legacy-only layouts (no src/, has lib/) get
+            // PHPStan run but their lane does not fail on findings.
+            $plan = $this->resolveAnalysisPlan($componentPath);
+            $this->advisory = $plan['advisory'];
+            if ($this->advisory) {
+                $this->getOutput()->info(
+                    'PHPStan running in advisory mode (legacy-only layout: '
+                    . 'lib/ analyzed, findings will not fail the lane).'
+                );
+            }
 
             // Get current watermark from .horde.yml (default: 1 if missing)
             $watermark = $this->getWatermarkFromHordeYml();
@@ -168,6 +188,13 @@ class Phpstan extends Base
                 $this->writeJsonResults($componentPath, $watermarkResult['exit_code'], $watermark, $options);
                 $this->outputStatistics();
 
+                // Advisory mode: lane keeps walking. Findings appear in
+                // the PR comment, but PHPStan does not vote on whether
+                // the lane passed. Modernised components stay on the
+                // watermark-MUST-pass contract.
+                if ($this->advisory) {
+                    return 0;
+                }
                 return max(1, $watermarkResult['errors']); // Non-zero = failure
             }
 
@@ -563,8 +590,8 @@ class Phpstan extends Base
 
         // `passed` reflects only that PHPStan exited cleanly. Code-regression
         // detection (errors > 0 at the watermark level) is the caller's job.
-        // Conflating the two — old contract was `passed = (exit==0 && errors==0)`
-        // — caused tooling failures (e.g. autoload-file unreachable in phar
+        // Conflating the two - old contract was `passed = (exit==0 && errors==0)`
+        // - caused tooling failures (e.g. autoload-file unreachable in phar
         // context) to be reported as code regressions with "0 errors".
         return [
             'passed' => ($exitCode === 0),
@@ -612,27 +639,78 @@ class Phpstan extends Base
     }
 
     /**
-     * Resolve which directories to analyze for a given component.
+     * Resolve which directories PHPStan should analyze, which it should
+     * load for symbols only, and whether its findings should be
+     * advisory (non-fatal) for the lane.
      *
-     * Mirrors {@see generateTempConfig()} so a separate scanned-file
-     * count can be computed without re-parsing the NEON.
+     * Decision matrix:
+     *
+     *   | has src/ | has lib/ | paths:                        | scanDirectories: | advisory |
+     *   |----------|----------|-------------------------------|------------------|----------|
+     *   | yes      | yes      | src/ (+ migration/)           | lib/             | no       |
+     *   | yes      | no       | src/ (+ migration/)           | -                | no       |
+     *   | no       | yes      | lib/ (+ migration/)           | -                | **yes**  |
+     *   | no       | no       | <componentPath> (+ migration/) | -                | no       |
+     *
+     * The legacy-only row (no src/, has lib/) runs PHPStan against
+     * `lib/` so the report still gets generated, but the resulting
+     * findings are marked `mode: advisory` in `phpstan-results.json`
+     * and `success: true` so the lane does not fail because of them.
+     * Modernised components are held to the watermark; legacy-only
+     * components advertise their state without blocking CI.
+     *
+     * `migration/` joins `paths:` independently whenever present.
      *
      * @param string $componentPath Path to component directory.
-     * @return array<string> Absolute directory paths.
+     * @return array{paths: list<string>, scanDirectories: list<string>, advisory: bool}
      */
-    private function resolveAnalysisPaths(string $componentPath): array
+    private function resolveAnalysisPlan(string $componentPath): array
     {
+        $srcDir = $componentPath . '/src';
+        $libDir = $componentPath . '/lib';
+        $migrationDir = $componentPath . '/migration';
+
+        $hasSrc = is_dir($srcDir);
+        $hasLib = is_dir($libDir);
+        $hasMigration = is_dir($migrationDir);
+
         $paths = [];
-        foreach (['src', 'migration'] as $candidate) {
-            $path = $componentPath . '/' . $candidate;
-            if (is_dir($path)) {
-                $paths[] = $path;
+        $scan = [];
+        $advisory = false;
+
+        if ($hasSrc) {
+            $paths[] = $srcDir;
+            if ($hasLib) {
+                // src/ is the analyzed surface; lib/ exists only so
+                // symbols resolve. Putting lib/ in paths: would drown
+                // the report in unfixed-legacy findings the maintainer
+                // hasn't volunteered to address yet.
+                $scan[] = $libDir;
             }
+        } elseif ($hasLib) {
+            // Legacy-only component: analyze lib/ but mark the run as
+            // advisory so the lane does not fail on findings the
+            // maintainer hasn't agreed to fix yet.
+            $paths[] = $libDir;
+            $advisory = true;
         }
-        if (empty($paths)) {
+
+        if ($hasMigration) {
+            $paths[] = $migrationDir;
+        }
+
+        if ($paths === []) {
+            // No conventional layout at all. Hand componentPath to
+            // PHPStan so it has something to analyze and the run does
+            // not silently no-op.
             $paths[] = $componentPath;
         }
-        return $paths;
+
+        return [
+            'paths' => $paths,
+            'scanDirectories' => $scan,
+            'advisory' => $advisory,
+        ];
     }
 
     /**
@@ -683,13 +761,25 @@ class Phpstan extends Base
      */
     private function generateTempConfig(string $componentPath, int $level): string
     {
-        // Auto-detect paths to analyze (use absolute paths)
+        $plan = $this->resolveAnalysisPlan($componentPath);
+
         $paths = array_map(
             static fn (string $p): string => "        - " . $p,
-            $this->resolveAnalysisPaths($componentPath)
+            $plan['paths']
         );
-
         $pathsYaml = implode("\n", $paths);
+
+        // scanDirectories: PHPStan loads symbols from these for context
+        // but never emits findings against them. Used to keep legacy
+        // lib/ classes resolvable when src/ is the analyzed surface.
+        $scanYaml = '';
+        if (!empty($plan['scanDirectories'])) {
+            $scanLines = array_map(
+                static fn (string $p): string => "        - " . $p,
+                $plan['scanDirectories']
+            );
+            $scanYaml = "    scanDirectories:\n" . implode("\n", $scanLines) . "\n";
+        }
 
         // Check for PHPUnit extension
         $includesSection = '';
@@ -704,7 +794,7 @@ class Phpstan extends Base
     level: $level
     paths:
 $pathsYaml
-    excludePaths:
+{$scanYaml}    excludePaths:
         - vendor (?)
         - build (?)
     tmpDir: build/phpstan
@@ -835,9 +925,11 @@ NEON;
 
         $componentPath = $this->getPath() ?: getcwd();
         if (is_string($componentPath) && $componentPath !== '') {
-            $this->stats['files_scanned'] = $this->countPhpFiles(
-                $this->resolveAnalysisPaths($componentPath)
-            );
+            // files_scanned reflects what PHPStan actually analyzed  - 
+            // i.e. the `paths:` set, not `scanDirectories:` (which are
+            // loaded for symbols only).
+            $plan = $this->resolveAnalysisPlan($componentPath);
+            $this->stats['files_scanned'] = $this->countPhpFiles($plan['paths']);
         }
     }
 
@@ -889,7 +981,14 @@ NEON;
             'configuration' => $this->configPath ? basename($this->configPath) : null,
             'baseline_used' => file_exists($componentPath . '/phpstan-baseline.neon'),
             'exit_code' => $exitCode,
-            'success' => ($exitCode === 0),
+            // Advisory mode: the source of truth is "PHPStan ran, here
+            // are findings, but they don't fail the lane." We mark
+            // success: true regardless of exit code so downstream
+            // accounting (ResultCollector::isLanePassed) treats the
+            // lane as green; the `mode` field signals the rendering
+            // path to label these findings as advisory.
+            'success' => $this->advisory ? true : ($exitCode === 0),
+            'mode' => $this->advisory ? 'advisory' : 'enforced',
             'statistics' => $this->stats,
         ];
 

@@ -49,7 +49,7 @@ class RunCommand
     ) {}
 
     /**
-     * Map of lane name → build directory, populated by aggregateResults.
+     * Map of lane name -> build directory, populated by aggregateResults.
      * Used downstream by generateDetailedMetrics to read per-lane native
      * tool JSON for findings deduplication.
      *
@@ -186,7 +186,7 @@ class RunCommand
         }
 
         // F30: lane with build/setup-failed.json never had a run-lane.sh
-        // generated. Stay silent here; aggregateResults emits the ❌ with
+        // generated. Stay silent here; aggregateResults emits the failure with
         // the failure reason.
         $setupFailFile = $lane['component_dir'] . '/build/setup-failed.json';
         if (file_exists($setupFailFile)) {
@@ -224,7 +224,7 @@ class RunCommand
         foreach ($output as $line) {
             // GitHub Actions workflow commands must start the line for the
             // runner to parse them. Lines like `::error file=...::msg` from
-            // a lane script have to pass through verbatim — prefixing with
+            // a lane script have to pass through verbatim - prefixing with
             // `[lane-name]` turns them into ordinary log output and breaks
             // annotation rendering.
             if (str_starts_with($line, '::')) {
@@ -269,12 +269,12 @@ class RunCommand
                 }
             }
 
-            // F30: surface setup-failed lanes as ❌ for every tool that
+            // Surface setup-failed lanes as a failure for every tool that
             // would have run. The reason from setup-failed.json lands in
             // the PR comment so the maintainer sees *why* the lane never
             // executed without having to scroll through composer logs.
             //
-            // F29: the category (stability_gate / platform_missing /
+            // The category (stability_gate / platform_missing /
             // php_version / unknown) lets PrCommentReporter render
             // "ecosystem not yet at this stability" failures distinctly
             // from real-bug failures.
@@ -401,7 +401,7 @@ class RunCommand
     {
         foreach ($tools as $result) {
             // success: false now covers both real tool failures and missing
-            // result files (W2 — addMissing records success: false).
+            // result files (W2 - addMissing records success: false).
             if (!($result['success'] ?? false)) {
                 return false;
             }

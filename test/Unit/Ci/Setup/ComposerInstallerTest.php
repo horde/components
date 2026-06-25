@@ -21,7 +21,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for the F29 composer-error classifier.
+ * Tests for the composer-error classifier.
  *
  * The install path itself shells out to composer and is not unit-tested
  * here; the classifier is the only part of ComposerInstaller that's

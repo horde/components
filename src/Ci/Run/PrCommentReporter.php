@@ -147,14 +147,14 @@ class PrCommentReporter
         $md = self::COMMENT_MARKER . "\n";
         $md .= "## 🔍 CI Results\n\n";
 
-        // Overall status — the count line.
+        // Overall status - the count line.
         if ($summary['failed'] === 0) {
             $md .= "**Overall**: ✅ All {$summary['total']} lanes passed\n\n";
         } else {
             $md .= "**Overall**: ❌ {$summary['failed']}/{$summary['total']} lanes failed\n\n";
         }
 
-        // TL;DR — the tool breakdown. Drops the lane count (already on
+        // TL;DR - the tool breakdown. Drops the lane count (already on
         // Overall) and uses deduplicated finding counts where the
         // aggregator provided them.
         $md .= $this->generateTldr($results, $summary, $findingsByTool) . "\n\n";
@@ -205,14 +205,14 @@ class PrCommentReporter
      * the per-tool breakdown.
      *
      * Green case:
-     *   `**TL;DR:** ✅ All clean: 54 tests, 15 files scanned, 19 files styled.`
+     *   `**TL;DR:** All clean: 54 tests, 15 files scanned, 19 files styled.`
      *
      * Red case (with deduped findings):
-     *   `**TL;DR:** ❌ Quality issues: PHPStan: 1 unique error in 6 lanes;
+     *   `**TL;DR:** Quality issues: PHPStan: 1 unique error in 6 lanes;
      *   PHP-CS-Fixer: 4 files.`
      *
      * Red case (no aggregator data, falls back to summed counts):
-     *   `**TL;DR:** ❌ Quality issues: PHPStan: 6 errors.`
+     *   `**TL;DR:** Quality issues: PHPStan: 6 errors.`
      *
      * @param array<string,array<string,array<string,mixed>>> $results Results by lane and tool
      * @param array{passed: int, failed: int, total: int, failed_lanes: array<string>} $summary
@@ -320,6 +320,76 @@ class PrCommentReporter
     }
 
     /**
+     * True when every lane that ran PHPStan reported `mode: advisory`.
+     *
+     * Advisory mode is set on the PHPStan task side for legacy-only
+     * layouts (no src/, has lib/) - see
+     * `Qc\Task\Phpstan::resolveAnalysisPlan()`. When all lanes carry
+     * that label, the metric line should read "(advisory)" so a
+     * reviewer doesn't read the findings as blocking. Mixed lane sets
+     * (some advisory, some enforced) are extremely unlikely - a
+     * component is either legacy-only or modernised on disk - but we
+     * keep the strict-all-advisory rule to avoid mis-labelling when
+     * one lane crashed before writing JSON and the rest were enforced.
+     *
+     * Lanes that didn't write a PHPStan result (missing/skipped/error)
+     * don't count as advisory; they simply don't vote.
+     *
+     * @param array<string,array<string,array<string,mixed>>> $results
+     */
+    private function allPhpStanLanesAdvisory(array $results): bool
+    {
+        $seen = false;
+        foreach ($results as $tools) {
+            $result = $tools['phpstan'] ?? null;
+            if (!is_array($result)) {
+                continue;
+            }
+            if (isset($result['missing']) || isset($result['error']) || isset($result['deliberate_skip'])) {
+                continue;
+            }
+            $seen = true;
+            if (($result['mode'] ?? 'enforced') !== 'advisory') {
+                return false;
+            }
+        }
+        return $seen;
+    }
+
+    /**
+     * True when every lane that produced a PHPUnit result reported
+     * `mode: no_test_suite` (no test/ directory found by Unit::run).
+     *
+     * The component has deliberately shipped without PHPUnit tests; the
+     * quality-metrics row should read "no test suite" as a skip rather than
+     * the misleading "did not run on any lane" failure the lanes_run===0
+     * branch would otherwise produce. Missing/error/skip lanes don't
+     * vote - they simply don't speak. Returns false when at least one
+     * voter ran tests normally (or crashed mid-run) and is therefore
+     * not a no-test-suite verdict.
+     *
+     * @param array<string,array<string,array<string,mixed>>> $results
+     */
+    private function allPhpUnitLanesNoTestSuite(array $results): bool
+    {
+        $seen = false;
+        foreach ($results as $tools) {
+            $result = $tools['phpunit'] ?? null;
+            if (!is_array($result)) {
+                continue;
+            }
+            if (isset($result['missing']) || isset($result['error']) || isset($result['deliberate_skip'])) {
+                continue;
+            }
+            $seen = true;
+            if (($result['mode'] ?? 'enforced') !== 'no_test_suite') {
+                return false;
+            }
+        }
+        return $seen;
+    }
+
+    /**
      * Generate version summary table.
      *
      * @param array<string,array<string,array<string,mixed>>> $results Results by lane and tool
@@ -327,8 +397,12 @@ class PrCommentReporter
      */
     private function generateVersionTable(array $results): string
     {
-        // Group by PHP version
+        // Group by PHP version. Also collect the set of stabilities the
+        // run actually exercised — the column headers below come from
+        // that set rather than a hardcoded "dev | alpha" pair, which
+        // silently dropped non-dev data for components above alpha.
         $byVersion = [];
+        $stabilitiesSeen = [];
 
         foreach ($results as $laneName => $tools) {
             // Parse lane name: "php8.4-dev" -> version="8.4", stability="dev"
@@ -341,22 +415,35 @@ class PrCommentReporter
 
             $passed = $this->isLanePassed($tools);
             $byVersion[$version][$stability] = $passed ? '✅' : '❌';
+            $stabilitiesSeen[$stability] = true;
         }
 
         // Sort versions
         uksort($byVersion, 'version_compare');
 
-        // Build table
-        $md = "| PHP | dev | alpha |\n";
-        $md .= "|-----|-----|-------|\n";
+        // Column order: `dev` first (always present in any run), then
+        // whatever other stability the component happened to be at
+        // (alpha / beta / RC / stable) in observed order. Empty runs
+        // fall back to "dev | stable" so the table still renders.
+        $columns = ['dev'];
+        unset($stabilitiesSeen['dev']);
+        foreach (array_keys($stabilitiesSeen) as $stability) {
+            $columns[] = $stability;
+        }
+        if (count($columns) === 1) {
+            $columns[] = 'stable';
+        }
+
+        // Build table header from the column list
+        $md = '| PHP | ' . implode(' | ', $columns) . " |\n";
+        $md .= '|-----|' . str_repeat('-----|', count($columns)) . "\n";
 
         foreach ($byVersion as $version => $stabilities) {
-            $md .= sprintf(
-                "| %s | %s | %s |\n",
-                $version,
-                $stabilities['dev'] ?? '-',
-                $stabilities['alpha'] ?? '-'
-            );
+            $cells = [$version];
+            foreach ($columns as $column) {
+                $cells[] = $stabilities[$column] ?? '-';
+            }
+            $md .= '| ' . implode(' | ', $cells) . " |\n";
         }
 
         return $md;
@@ -387,28 +474,44 @@ class PrCommentReporter
             $lanes = $phpunitStats['lanes_run'] ?? 0;
             $lanesPassed = $phpunitStats['lanes_passed'] ?? 0;
 
-            // F36: distinguish three states explicitly.
+            // Five distinct states.
             //
-            //   1. "PHPUnit could not run." Lanes ran, but every lane
-            //      exited non-zero with zero collected tests. Almost
-            //      always a parse error, an XML-config rejection, or a
-            //      missing extension that survived setup. Render as ❌
-            //      with a clear hint to look at the build log.
+            //   1. "Library has no PHPUnit test suite." Every lane that
+            //      attempted PHPUnit wrote `mode: no_test_suite` (the
+            //      Unit task's marker when `test/` is absent on disk).
+            //      Render as a skip - neither pass nor fail; the component
+            //      is working as designed.
             //
-            //   2. "PHPUnit ran with failures or errors." Tests were
+            //   2. "PHPUnit never produced usable output." Every lane
+            //      that tried PHPUnit had `missing: true` (setup-failed
+            //      sidecar or no result JSON), so aggregateToolStats
+            //      didn't count any usable lane. `lanes_run === 0`.
+            //      Render as a failure with "did not run on any lane".
+            //
+            //   3. "PHPUnit ran but never collected a test." Lanes were
+            //      counted, but `tests_max === 0`. Parse error during
+            //      suite load, XML-config rejection, etc. Render as a failure
+            //      with "exited non-zero with no test output".
+            //
+            //   4. "PHPUnit ran with failures or errors." Tests were
             //      collected and at least one failed/errored. Standard
             //      red render.
             //
-            //   3. "PHPUnit clean." Tests collected, zero failures,
+            //   5. "PHPUnit clean." Tests collected, zero failures,
             //      zero errors, at least one lane reported success.
             //      Standard green render.
             //
-            // The old code conflated (1) with (3): both produced
-            // `0 tests passed ✅` because the counters were all zero.
+            // States 1 and 2 both produce `lanes_run === 0` in the
+            // aggregator. The fifth-state ordering below resolves the
+            // ambiguity by checking the no-test-suite case first.
             $ran = $tests > 0;
             $clean = $failures === 0 && $errors === 0 && $lanesPassed > 0;
 
-            if (!$ran && $lanes > 0) {
+            if ($this->allPhpUnitLanesNoTestSuite($results)) {
+                $md .= "- **PHPUnit**: no test suite (`test/` directory absent) ⊘\n";
+            } elseif ($lanes === 0) {
+                $md .= "- **PHPUnit**: did not run on any lane ❌\n";
+            } elseif (!$ran) {
                 $md .= sprintf(
                     "- **PHPUnit**: did not run (%d lane%s exited non-zero with no test output) ❌\n",
                     $lanes,
@@ -430,12 +533,20 @@ class PrCommentReporter
         // provided it. "1 unique error in 6 lanes" reads more honestly
         // than "6 errors found" when the same bug repeats across the matrix.
         if (!empty($phpstanStats)) {
+            // "(advisory)" tag: every PHPStan-running lane was in
+            // advisory mode (legacy-only layout, see
+            // PHPStan::resolveAnalysisPlan). Findings still show up but
+            // they didn't fail the lane and shouldn't read as blocking.
+            $advisory = $this->allPhpStanLanesAdvisory($results);
+            $advisorySuffix = $advisory ? ' (advisory)' : '';
+
             $phpstanFindings = $findingsByTool['phpstan'] ?? null;
             if (is_array($phpstanFindings) && $phpstanFindings !== []) {
                 $unique = count($phpstanFindings);
                 $laneCount = count($this->collectLanes($phpstanFindings));
                 $md .= sprintf(
-                    "- **PHPStan**: %d unique error%s in %d lane%s ⚠️\n",
+                    "- **PHPStan**%s: %d unique error%s in %d lane%s ⚠️\n",
+                    $advisorySuffix,
                     $unique,
                     $unique === 1 ? '' : 's',
                     $laneCount,
@@ -444,10 +555,11 @@ class PrCommentReporter
             } else {
                 $errors = $phpstanStats['errors'] ?? 0;
                 if ($errors === 0) {
-                    $md .= "- **PHPStan**: No errors found ✅\n";
+                    $md .= "- **PHPStan**{$advisorySuffix}: No errors found ✅\n";
                 } else {
                     $md .= sprintf(
-                        "- **PHPStan**: %d error%s found ⚠️\n",
+                        "- **PHPStan**%s: %d error%s found ⚠️\n",
+                        $advisorySuffix,
                         $errors,
                         $errors === 1 ? '' : 's'
                     );
@@ -523,14 +635,14 @@ class PrCommentReporter
             return "{$toolDisplay}: Error - {$result['error']}";
         }
 
-        // Setup-failed lanes (F30) arrive here as `missing: true` with
+        // Setup-failed lanes arrive here as `missing: true` with
         // a reason prefixed by "Setup failed: " by RunCommand. The
         // ResultCollector::addMissing contract carries that reason in
         // the `reason` key. We classify the user-facing rendering by
         // category if available; otherwise fall back to the raw reason.
         if (!empty($result['missing'])) {
             $reason = (string) ($result['reason'] ?? 'Missing result file');
-            // F32: keep the reason short. The classifier-tagged category
+            // Keep the reason short. The classifier-tagged category
             // already names the *kind* of failure; a 2 KB composer
             // resolver paragraph adds noise, not signal. Truncate to one
             // sentence (or 200 chars max) so the PR comment stays
@@ -574,10 +686,10 @@ class PrCommentReporter
     /**
      * Compress a setup-failure reason to one short, signal-bearing line.
      *
-     * F32 guard. ComposerInstaller::extractError now strips the workflow-
+     * Defense-in-depth guard. ComposerInstaller::extractError now strips the workflow-
      * command prefix and picks one informative line, so a freshly-produced
      * reason already arrives short. But this method runs against whatever
-     * shape the pipeline hands it — including legacy markers written by
+     * shape the pipeline hands it - including legacy markers written by
      * older versions of horde-components.phar that the maintainer might
      * have cached. We belt-and-brace here:
      *
@@ -590,14 +702,14 @@ class PrCommentReporter
      *   3. Strip a leading `::error[ file=...]::` workflow-command prefix
      *      should one still be present.
      *   4. Take the first non-empty line.
-     *   5. Cap at 200 characters and append a `…` so a maintainer can
+     *   5. Cap at 200 characters and append an ellipsis so a maintainer can
      *      tell the value was trimmed.
      */
     private function summariseReason(string $reason): string
     {
         $reason = str_replace(['%0A', '%0D'], "\n", $reason);
 
-        // RunCommand always prefixes "Setup failed: " — the category
+        // RunCommand always prefixes "Setup failed: " - the category
         // tag already conveys this; redundant in the rendered cell.
         if (str_starts_with($reason, 'Setup failed: ')) {
             $reason = substr($reason, strlen('Setup failed: '));
@@ -651,13 +763,21 @@ class PrCommentReporter
 
             $result = $tools[$tool];
 
-            // Skip lanes with no usable statistics
+            // Skip lanes with no usable statistics. `no_test_suite` joins
+            // the missing/error/skip set: the lane technically wrote a
+            // results JSON (success: true) but there were no tests to
+            // run, so the lane shouldn't contribute to tests_max,
+            // assertions, failures, etc. The fifth-state renderer below
+            // recovers the no-test-suite count from a separate pass.
             if (isset($result['missing']) || isset($result['error']) || isset($result['deliberate_skip'])) {
+                continue;
+            }
+            if (($result['mode'] ?? 'enforced') === 'no_test_suite') {
                 continue;
             }
 
             $aggregated['lanes_run']++;
-            // F36: track whether the tool itself reported success on
+            // Track whether the tool itself reported success on
             // this lane. Without this, a PHPUnit that crashed at parse
             // time (exit 255, tests=0, failures=0, errors=0) was
             // indistinguishable from a clean run with no tests to count.
@@ -670,11 +790,11 @@ class PrCommentReporter
                     continue;
                 }
                 // Two views per numeric stat:
-                //   `$key`        sum across lanes — meaningful for
+                //   `$key`        sum across lanes - meaningful for
                 //                 finding counts (failures, errors)
                 //                 that legitimately stack.
                 //   `${key}_max`  highest value seen on any single
-                //                 lane — meaningful for unit-of-work
+                //                 lane - meaningful for unit-of-work
                 //                 counts (tests, assertions, files
                 //                 scanned/checked) which are constant
                 //                 per lane and would otherwise be

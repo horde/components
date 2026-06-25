@@ -56,7 +56,7 @@ class ResultCollectorTest extends TestCase
                 'exit_code' => 1,
                 'missing' => true,
                 'reason' => 'Script not found',
-                // F29: category defaults to '' when the caller doesn't
+                // Category defaults to '' when the caller doesn't
                 // supply one. PrCommentReporter falls back to the
                 // generic "Setup failed" rendering in that case.
                 'category' => '',

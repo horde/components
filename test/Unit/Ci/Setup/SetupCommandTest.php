@@ -134,7 +134,7 @@ class SetupCommandTest extends TestCase
                 return "/usr/bin/php{$version}";
             });
 
-        // Mock extension installer (F28: per-version resolution)
+        // Mock extension installer (per-version resolution)
         $this->extensionInstaller
             ->expects($this->once())
             ->method('detectExtensionsPerVersion')
@@ -399,7 +399,7 @@ class SetupCommandTest extends TestCase
 
         $this->toolCache->method('ensureAllTools');
 
-        // F30: a lane whose composer install or verification failed is
+        // A lane whose composer install or verification failed is
         // recorded as setup-failed and gets no run-lane.sh. RunCommand
         // surfaces it as ❌ via the build/setup-failed.json sidecar
         // instead of running a broken script.
@@ -416,7 +416,7 @@ class SetupCommandTest extends TestCase
     }
 
     /**
-     * F30: partial setup must not abort. Half the lanes fail composer
+     * Partial setup must not abort. Half the lanes fail composer
      * install, the other half succeed; setup returns true (some lanes
      * are still runnable) and the failing lanes carry a build/setup-failed.json
      * marker so RunCommand reports them as ❌ in the PR comment instead
@@ -506,5 +506,96 @@ class SetupCommandTest extends TestCase
         $this->assertTrue($marker['setup_failed'] ?? false);
         $this->assertSame(['phpunit', 'phpstan'], $marker['tools'] ?? null);
         $this->assertNotEmpty($marker['reason'] ?? '');
+    }
+
+    /**
+     * When ExtensionInstaller reports an apt-get install failure
+     * for a PHP minor (e.g. `php8.5-imaginary` doesn't exist), every
+     * lane on that minor must be marked setup-failed with category
+     * `platform_missing` *before* composer install runs.
+     *
+     * The composer-install attempt for such lanes is wasted work — it
+     * would fail downstream with the cryptic "ext-<x> is missing" and
+     * produce a marker the maintainer has to decode. The early-skip routing
+     * produces a clean per-lane marker naming the exact missing
+     * extension.
+     */
+    public function testExtInstallFailureMarksLaneSetupFailedBeforeComposer(): void
+    {
+        $workDir = $this->tempDir . '/work';
+        $config = new CiConfig([
+            'mode' => 'local',
+            'component_name' => 'TestComponent',
+            'component_path' => $this->testComponentPath,
+            'work_dir' => $workDir,
+            'php_versions' => ['8.4'],
+            'min_php_version' => '8.2',
+            'component_stability' => 'stable',
+            'local_components_path' => '/usr/bin/horde-components',
+            'components_path' => '/usr/bin/horde-components',
+        ]);
+
+        $this->phpInstaller->method('install');
+        $this->phpInstaller->method('getPhpBinary')->willReturnCallback(
+            static fn (string $v): string => "/usr/bin/php{$v}"
+        );
+
+        // ExtensionInstaller reports `imaginary` could not be installed
+        // for PHP 8.4. Both 8.4 lanes (dev + stable) must therefore be
+        // marked setup-failed with platform_missing.
+        $this->extensionInstaller
+            ->method('detectExtensionsPerVersion')
+            ->willReturn(['8.4' => ['imaginary']]);
+        $this->extensionInstaller
+            ->method('installPerVersion')
+            ->willReturn(['8.4' => ['imaginary']]);
+
+        // Create the lane directories on disk so writeSetupFailureMarker
+        // has somewhere to land its sidecar. We only care about the 8.4
+        // lanes; if other lanes get created we don't assert on them.
+        $this->laneCopier
+            ->method('copyToLanes')
+            ->willReturnCallback(static function () use ($workDir): bool {
+                foreach (['8.4-dev', '8.4-stable'] as $lane) {
+                    mkdir("{$workDir}/lanes/php{$lane}/TestComponent", 0o755, true);
+                }
+                return true;
+            });
+
+        // composerInstaller and laneScriptGenerator may be called for
+        // healthy lanes; stub them but don't pin call counts. The
+        // contract here is about the marker, not about who else ran.
+        $this->composerInstaller->method('install');
+        $this->composerInstaller->method('verifyInstallation')->willReturn(true);
+        $this->composerInstaller->method('getInstalledPackageCount')->willReturn(0);
+        $this->laneScriptGenerator->method('generate')->willReturn(true);
+        $this->toolCache->method('ensureAllTools');
+
+        $this->setupCommand->execute($config);
+
+        // Both 8.4 lanes carry the platform_missing marker with the
+        // exact failed ext name and the PHP version.
+        foreach (['8.4-dev', '8.4-stable'] as $lane) {
+            $markerPath = "{$workDir}/lanes/php{$lane}/TestComponent/build/setup-failed.json";
+            $this->assertFileExists($markerPath, "Marker missing for {$lane}");
+            $marker = json_decode((string) file_get_contents($markerPath), true);
+            $this->assertIsArray($marker);
+            $this->assertTrue($marker['setup_failed'] ?? false);
+            $this->assertSame(
+                'platform_missing',
+                $marker['category'] ?? null,
+                "Setup-failed marker for {$lane} must use the platform_missing category"
+            );
+            $this->assertStringContainsString(
+                'ext-imaginary',
+                (string) ($marker['reason'] ?? ''),
+                'Reason must name the failed extension verbatim'
+            );
+            $this->assertStringContainsString(
+                'PHP 8.4',
+                (string) ($marker['reason'] ?? ''),
+                'Reason must name the PHP version so the maintainer sees which lane and why'
+            );
+        }
     }
 }

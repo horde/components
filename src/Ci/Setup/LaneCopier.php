@@ -23,7 +23,7 @@ use Horde\Components\Ci\Config\CiConfig;
 /**
  * Copies component source to test lanes.
  *
- * Creates separate directory copies for each PHP version × stability combination.
+ * Creates separate directory copies for each PHP version x stability combination.
  * Each lane gets a deep copy of the source to isolate composer installations.
  *
  * @category Horde
@@ -117,6 +117,17 @@ class LaneCopier
         $vendorDir = $targetPath . '/vendor';
         if (is_dir($vendorDir)) {
             $this->removeDirectory($vendorDir);
+        }
+
+        // Remove any existing composer.lock so composer install resolves
+        // from composer.json afresh. A lock that predates the lane's
+        // stability override (each lane writes its own minimum-stability
+        // into composer.json) - or that predates a recent .horde.yml
+        // edit - would otherwise cause composer to refuse with
+        // "Required package X is not present in the lock file".
+        $lockFile = $targetPath . '/composer.lock';
+        if (is_file($lockFile)) {
+            @unlink($lockFile);
         }
 
         return true;

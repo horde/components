@@ -15,7 +15,6 @@ declare(strict_types=1);
 
 namespace Horde\Components\Helper;
 
-use Horde\Components\Component;
 use Horde\Components\Output;
 use Horde\HordeYmlFile\HordeYmlFile;
 use Horde\Version\ConstraintParser;
@@ -40,9 +39,9 @@ use JsonException;
  * `composer update --ignore-platform-reqs --no-install`. The resulting
  * `composer.lock` is walked: every `require` key matching a *platform
  * package* (php, composer-*, ext-*, lib-*) is collected, deduplicated,
- * and returned. When `composer update` exits non-zero — typically
+ * and returned. When `composer update` exits non-zero - typically
  * because a transitive dependency's latest release rules out the pinned
- * PHP version — the entry for that version is the literal string
+ * PHP version - the entry for that version is the literal string
  * `'not resolvable'`.
  *
  * Network access: this helper hits Packagist (and any extra repositories
@@ -84,130 +83,93 @@ class PlatformResolver
     ) {}
 
     /**
-     * Resolve platform requirements across a component's full
-     * supported PHP version range, reading the constraint and the
-     * package name from a parsed `.horde.yml`.
+     * Resolve platform requirements for the UUT across its supported PHP
+     * version range.
      *
-     * @return array<string, list<array{string, ?string}>|string>
-     *   Keyed by minor version (e.g. "8.2"). Each value is either a
-     *   list of [name, constraint] pairs or {@see self::NOT_RESOLVABLE}.
-     *   Constraint is null for ext-* and lib-* entries.
-     */
-    public function resolveRangeFromHordeYml(HordeYmlFile $hordeYml): array
-    {
-        $phpConstraint = $hordeYml->getRequiredPhp();
-        $packageName = $hordeYml->getComposerName();
-        $versionConstraint = $this->deriveVersionConstraint($hordeYml->getReleaseVersion());
-        $stability = $hordeYml->getReleaseState() ?: 'stable';
-
-        return $this->resolveRangeFor(
-            $phpConstraint,
-            $packageName,
-            $versionConstraint,
-            $stability,
-        );
-    }
-
-    /**
-     * Resolve platform requirements across a component's full
-     * supported PHP version range, reading data from the legacy
-     * Component interface. Prefer
-     * {@see self::resolveRangeFromHordeYml()} when a parsed
-     * .horde.yml is available; this path is for callers that only
-     * hold the Component abstraction.
+     * The UUT is the *root* of the synthesized composer project. We copy
+     * its composer.json to a throwaway directory and let composer's
+     * resolver compute the full dependency closure for each pinned PHP
+     * minor. The resulting `composer.lock` is walked for platform keys
+     * (php, php-*, composer-*, ext-*, lib-*); they get returned per minor.
      *
+     * Why copy instead of `composer require`: the UUT is typically an
+     * in-development component (Victim, ActiveSync from a feature branch,
+     * etc.) and may not be published to Packagist. The previous recipe
+     * `composer require horde/<uut>:^X.Y` in a synthesized project relied
+     * on Packagist visibility and failed for unpublished components. The
+     * UUT-as-root recipe sidesteps that entirely: composer treats the
+     * copied composer.json as the developer's own local project.
+     *
+     * The PHP minor range is derived from the UUT's
+     * `dependencies.required.php` constraint, capped at
+     * {@see self::CURRENT_MAX_PHP}.
+     *
+     * @param HordeYmlFile $hordeYml Parsed .horde.yml of the UUT.
+     * @param string $componentDir Directory containing the UUT's
+     *                              composer.json (sibling of .horde.yml).
      * @return array<string, list<array{string, ?string}>|string>
+     *   Keyed by minor version. Value is the platform list, or
+     *   {@see self::NOT_RESOLVABLE} when composer could not produce a lock
+     *   for that minor.
      */
-    public function resolveRange(Component $component): array
-    {
-        $phpConstraint = $this->getComponentPhpConstraint($component);
-        $packageName = $this->getComponentPackageName($component);
-        $versionConstraint = $this->deriveVersionConstraint($component->getVersion());
-        $stability = $component->getState('release') ?: 'stable';
-
-        return $this->resolveRangeFor(
-            $phpConstraint,
-            $packageName,
-            $versionConstraint,
-            $stability,
-        );
-    }
-
-    /**
-     * @return array<string, list<array{string, ?string}>|string>
-     */
-    private function resolveRangeFor(
-        string $phpConstraint,
-        string $packageName,
-        string $versionConstraint,
-        string $stability,
+    public function resolveRangeFromHordeYml(
+        HordeYmlFile $hordeYml,
+        string $componentDir,
     ): array {
+        $phpConstraint = $hordeYml->getRequiredPhp();
+        $composerJsonPath = $componentDir . '/composer.json';
+
         $range = $this->phpVersionRange($phpConstraint);
 
         $out = [];
         foreach ($range as $minor) {
             $this->output?->info(sprintf('Resolving platform deps for PHP %s', $minor));
-            $out[$minor] = $this->resolveSingleFor(
-                $packageName,
-                $versionConstraint,
-                $stability,
-                $minor,
-            );
+            $out[$minor] = $this->resolveSingleForRoot($composerJsonPath, $minor);
         }
 
         return $out;
     }
 
     /**
-     * Resolve platform requirements for a single pinned PHP minor
-     * version.
+     * Resolve platform requirements for a single pinned PHP minor by
+     * treating the UUT's composer.json as the root project.
      *
+     * @param string $uutComposerJsonPath Absolute path to the UUT's
+     *                                     composer.json.
+     * @param string $minorVersion PHP minor (e.g. "8.3").
      * @return list<array{string, ?string}>|string Either the parsed
      *         platform list or {@see self::NOT_RESOLVABLE}.
      */
-    public function resolveSingle(Component $component, string $minorVersion): array|string
-    {
-        return $this->resolveSingleFor(
-            $this->getComponentPackageName($component),
-            $this->deriveVersionConstraint($component->getVersion()),
-            $component->getState('release') ?: 'stable',
-            $minorVersion,
-        );
-    }
-
-    /**
-     * @return list<array{string, ?string}>|string
-     */
-    private function resolveSingleFor(
-        string $packageName,
-        string $versionConstraint,
-        string $stability,
+    private function resolveSingleForRoot(
+        string $uutComposerJsonPath,
         string $minorVersion,
     ): array|string {
-        // $stability comes from the component's own release state but
-        // is intentionally not used as the composer minimum-stability:
-        // the transitive dep graph routinely contains alpha and dev
-        // packages from sibling horde/* libraries while the component
-        // being resolved is RC or stable. We always set
-        // minimum-stability=dev + prefer-stable=true so composer picks
-        // stable when available and falls through to dev when nothing
-        // else exists. Without this, the require step fails on any
-        // ActiveSync-shaped tree where a transitive sibling has not
-        // released a stable yet.
-        unset($stability);
+        if (!is_readable($uutComposerJsonPath)) {
+            return self::NOT_RESOLVABLE;
+        }
 
         $tmpDir = $this->makeTempDir();
         try {
-            // 1. composer init -n
-            $r = $this->shell->exec(
-                sprintf('composer init -n --name=%s --no-interaction 2>&1', escapeshellarg('horde-tmp/platform-resolver')),
-                $tmpDir,
-            );
-            if ($r->getReturnValue() !== 0) {
+            // 1. Copy the UUT's composer.json into the throwaway dir.
+            //    Composer will treat this as the developer's own local
+            //    project - no `composer init` synthesis, no
+            //    `composer require <pkg>:<constraint>` against Packagist.
+            if (!@copy($uutComposerJsonPath, $tmpDir . '/composer.json')) {
                 return self::NOT_RESOLVABLE;
             }
 
-            // 2. composer config platform.php X.Y.0
+            // Defensive: makeTempDir created an empty directory and we
+            // never copy composer.lock into it, but be explicit so a
+            // future contributor adding `cp -r` here doesn't silently
+            // ship a stale lock into the resolver's `composer update`.
+            $tmpLock = $tmpDir . '/composer.lock';
+            if (is_file($tmpLock)) {
+                @unlink($tmpLock);
+            }
+
+            // 2. Pin platform.php so composer resolves what *this* minor
+            //    would see, independent of the PHP version actually
+            //    running the resolver.
             $r = $this->shell->exec(
                 sprintf('composer config platform.php %s 2>&1', escapeshellarg($minorVersion . '.0')),
                 $tmpDir,
@@ -216,26 +178,20 @@ class PlatformResolver
                 return self::NOT_RESOLVABLE;
             }
 
-            // 3. Stability: always dev + prefer-stable. See note above.
+            // 3. Stability: always dev + prefer-stable. The transitive
+            //    dep graph routinely contains alpha and dev packages from
+            //    sibling horde/* libraries while the UUT itself is RC or
+            //    stable. minimum-stability=dev + prefer-stable=true lets
+            //    composer pick stable where available and fall through to
+            //    dev where nothing else exists. Without this, resolve
+            //    fails on any tree where a transitive sibling has not
+            //    released a stable yet.
             $this->shell->exec('composer config minimum-stability dev 2>&1', $tmpDir);
             $this->shell->exec('composer config prefer-stable true 2>&1', $tmpDir);
 
-            // 4. composer require <package>:<constraint> --no-install
-            $requireSpec = $packageName . ($versionConstraint !== '' ? ':' . $versionConstraint : '');
-            $r = $this->shell->exec(
-                sprintf('composer require %s --no-install --no-interaction 2>&1', escapeshellarg($requireSpec)),
-                $tmpDir,
-            );
-            if ($r->getReturnValue() !== 0) {
-                return self::NOT_RESOLVABLE;
-            }
-
-            // 5. composer update --ignore-platform-reqs --no-install
-            //    The require step in step 4 already writes a composer.lock,
-            //    so this step is mostly redundant. We still run it so the
-            //    sequence matches the documented manual recipe and so any
-            //    plugin-level resolution post-processing happens before we
-            //    read the lock.
+            // 4. Resolve dependencies, ignoring platform requirements so
+            //    a missing ext-* on the host running the resolver does
+            //    not block the lock from being written. We never install.
             $r = $this->shell->exec(
                 'composer update --ignore-platform-reqs --no-install --no-interaction 2>&1',
                 $tmpDir,
@@ -244,7 +200,7 @@ class PlatformResolver
                 return self::NOT_RESOLVABLE;
             }
 
-            // 6. Parse composer.lock
+            // 5. Parse the lock for platform keys.
             $lockPath = $tmpDir . '/composer.lock';
             if (!is_file($lockPath)) {
                 return self::NOT_RESOLVABLE;
@@ -252,12 +208,11 @@ class PlatformResolver
 
             $extracted = $this->extractFromLock(file_get_contents($lockPath) ?: '');
             if ($extracted === []) {
-                // A successful resolve produces at least the platform
-                // requirements of the requested package itself. An empty
-                // list almost always means the require step rolled itself
-                // back without surfacing an error code we caught. Treat
-                // as not resolvable rather than emitting a misleading
-                // empty list.
+                // A UUT with no transitive platform requirements at all
+                // is possible but rare; we cannot distinguish that from
+                // "the resolve silently rolled back" with current
+                // information. Treat as not resolvable so the maintainer
+                // notices and can verify.
                 return self::NOT_RESOLVABLE;
             }
 
@@ -440,58 +395,6 @@ class PlatformResolver
         }
 
         return $out;
-    }
-
-    private function getComponentPhpConstraint(Component $component): string
-    {
-        $deps = $component->getDependencies();
-        if (!is_array($deps)) {
-            return '';
-        }
-        $required = $deps['required'] ?? null;
-        if (!is_array($required)) {
-            return '';
-        }
-        $php = $required['php'] ?? '';
-        return is_string($php) ? $php : '';
-    }
-
-    private function getComponentPackageName(Component $component): string
-    {
-        // Fall back to "horde/<name>" if the component doesn't expose
-        // a richer composer name. Every modern Horde component uses
-        // the horde/<id> shape on Packagist.
-        $name = $component->getName();
-        if ($name === '') {
-            return 'horde/unknown';
-        }
-        if (str_contains($name, '/')) {
-            return $name;
-        }
-        return 'horde/' . $name;
-    }
-
-    private function getComponentVersionConstraint(Component $component): string
-    {
-        return $this->deriveVersionConstraint($component->getVersion());
-    }
-
-    /**
-     * Build a caret-range constraint usable in `composer require` from
-     * a raw release version. `3.1.4-RC1` → `^3.1`, `3.0` → `^3.0`,
-     * empty → `*` (latest).
-     */
-    private function deriveVersionConstraint(string $version): string
-    {
-        if ($version === '') {
-            return '*';
-        }
-        $normalized = preg_replace('/[-+].*/', '', $version) ?? $version;
-        $parts = explode('.', $normalized);
-        if (count($parts) < 2) {
-            return '^' . $normalized;
-        }
-        return '^' . $parts[0] . '.' . $parts[1];
     }
 
     private function makeTempDir(): string

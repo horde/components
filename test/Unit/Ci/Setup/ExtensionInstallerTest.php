@@ -22,7 +22,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests for the F28 per-PHP-minor extension resolution path.
+ * Tests for the per-PHP-minor extension resolution path.
  *
  * Covers the read-side: how ExtensionInstaller turns a `.horde.yml`
  * ci-platform block into per-lane extension sets. The actual apt-get
@@ -191,7 +191,9 @@ class ExtensionInstallerTest extends TestCase
     public function testInstallPerVersionWithEmptyMapIsNoop(): void
     {
         // No exception, no install attempt. info() is allowed.
-        $this->assertTrue($this->installer->installPerVersion([]));
+        // installPerVersion now returns a failure map (php version
+        // -> failed ext names). Empty in -> empty out.
+        $this->assertSame([], $this->installer->installPerVersion([]));
     }
 
     private function writeHordeYml(string $contents): void

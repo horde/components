@@ -279,7 +279,15 @@ class Unit extends Base
         $testDir = realpath($componentPath . '/test');
 
         if (!$testDir || !is_dir($testDir)) {
-            return 0; // No test directory, no errors
+            // Distinguish "this library deliberately has
+            // no PHPUnit tests" from "PHPUnit crashed before producing
+            // results". The former is fine - many Horde data packages
+            // ship no tests; running the lane should not surface as a failure.
+            // Write a summary marking the run with mode: 'no_test_suite'
+            // so PrCommentReporter renders a skip indicator rather than the missing/
+            // failed shapes.
+            $this->writeNoTestSuiteResults($componentPath);
+            return 0;
         }
 
         // Reset statistics
@@ -370,6 +378,9 @@ class Unit extends Base
             'phpunit_version' => $this->getPhpUnitVersion(),
             'exit_code' => $exitCode,
             'success' => ($exitCode === 0),
+            // 'enforced' matches PHPStan's convention so downstream
+            // mode-aware rendering treats both tools the same way.
+            'mode' => 'enforced',
             'statistics' => [
                 'tests' => $this->stats['tests'],
                 'assertions' => $this->stats['assertions'],
@@ -383,6 +394,58 @@ class Unit extends Base
         file_put_contents($jsonPath, $json);
 
         $this->getOutput()->info('JSON results written to: ' . $jsonPath);
+    }
+
+    /**
+     * Write a summary marking the PHPUnit run as "no test suite present".
+     *
+     * Many Horde data packages and metapackages ship no PHPUnit tests.
+     * Without an explicit signal, RunCommand sees the absent
+     * phpunit-results-summary.json and routes the lane through
+     * `addMissing` -> failure - surfacing as a CI failure for a component
+     * that's working as designed.
+     *
+     * The marker uses `success: true` (the run completed cleanly - there
+     * was nothing to run) and `mode: 'no_test_suite'` so
+     * PrCommentReporter can render a skip indicator instead of a failure. Statistics stay at
+     * zero; downstream aggregation excludes no-test-suite lanes from
+     * lanes_run the same way it excludes missing/error/skipped lanes.
+     *
+     * @param string $componentPath Path to the component being tested.
+     */
+    private function writeNoTestSuiteResults(string $componentPath): void
+    {
+        $buildDir = $componentPath . '/build';
+        if (!is_dir($buildDir) && !mkdir($buildDir, 0o755, true) && !is_dir($buildDir)) {
+            // Should not happen in practice - LaneCopier creates the
+            // component dir long before this runs - but the failure is
+            // not fatal: callers see "no JSON written" and the lane
+            // surfaces as missing, the worst-case fallback.
+            return;
+        }
+
+        $jsonPath = $buildDir . '/phpunit-results-summary.json';
+        $results = [
+            'timestamp' => date('c'),
+            'phpunit_version' => $this->getPhpUnitVersion(),
+            'exit_code' => 0,
+            'success' => true,
+            'mode' => 'no_test_suite',
+            'statistics' => [
+                'tests' => 0,
+                'assertions' => 0,
+                'failures' => 0,
+                'errors' => 0,
+                'skipped' => 0,
+            ],
+        ];
+
+        file_put_contents(
+            $jsonPath,
+            (string) json_encode($results, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+        );
+
+        $this->getOutput()->info('No test/ directory; recorded no_test_suite at ' . $jsonPath);
     }
 
     /**

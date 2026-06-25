@@ -110,7 +110,7 @@ class Dependencies
         $hordeYml = new HordeYmlFile($hordeYmlPath);
         $resolver = new PlatformResolver(new Shell($output), $output);
 
-        $resolved = $resolver->resolveRangeFromHordeYml($hordeYml);
+        $resolved = $resolver->resolveRangeFromHordeYml($hordeYml, $componentDir);
 
         // Build the YAML-friendly representation. Per the agreed shape:
         // - ext-* / lib-* render as bare list items (string scalars).

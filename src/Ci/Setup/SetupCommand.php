@@ -153,7 +153,12 @@ class SetupCommand
             ));
         }
 
-        $this->extensionInstaller->installPerVersion($extensionsPerVersion);
+        // Capture per-version install failures so any lane whose
+        // PHP version is missing a required ext-* gets marked
+        // setup-failed *before* the composer-install loop wastes time
+        // producing a cryptic downstream error. The map is keyed by
+        // PHP minor -> list of failed extension names.
+        $extInstallFailures = $this->extensionInstaller->installPerVersion($extensionsPerVersion);
         $this->output->plain('');
 
         // Copy to lanes
@@ -179,7 +184,7 @@ class SetupCommand
         $failed = 0;
         // Indexes of lanes whose composer-install failed. RunCommand will
         // pick the build/setup-failed.json sidecar up and surface the lane
-        // as ❌ rather than aborting the whole run.
+        // as a failure rather than aborting the whole run.
         $setupFailedLanes = [];
 
         foreach ($lanes as $index => $lane) {
@@ -189,6 +194,32 @@ class SetupCommand
 
             if (in_array($index, $skippedLanes, true)) {
                 $this->output->skip('Skipped (incompatible PHPUnit constraint)');
+                $this->output->plain('');
+                continue;
+            }
+
+            // Bail early when the PHP version for this lane is
+            // missing one or more required extensions. Without this,
+            // composer install would run, fail with the cryptic
+            // "ext-<x> is missing" message, and produce a setup-failed
+            // marker the maintainer has to decode. The category-tagged
+            // marker we write here surfaces in the PR comment as
+            // "Platform requirement missing" with the exact ext name.
+            $extFailures = $extInstallFailures[$lane['php']] ?? [];
+            if (!empty($extFailures)) {
+                $reason = sprintf(
+                    'Failed to install required extension(s) for PHP %s: %s',
+                    $lane['php'],
+                    implode(', ', array_map(static fn (string $e): string => 'ext-' . $e, $extFailures))
+                );
+                $this->output->error("  ✗ {$reason}");
+                $this->writeSetupFailureMarker(
+                    $lane['dir'],
+                    $reason,
+                    'platform_missing'
+                );
+                $setupFailedLanes[] = $index;
+                $failed++;
                 $this->output->plain('');
                 continue;
             }
@@ -255,7 +286,7 @@ class SetupCommand
                 // Lane's composer install failed; no run-lane.sh is written.
                 // The sidecar setup-failed.json (from
                 // writeSetupFailureMarker above) tells RunCommand to mark
-                // the lane as ❌ in the PR summary without trying to run it.
+                // the lane as a failure in the PR summary without trying to run it.
                 $this->output->skip('Skipped (setup failed, no script generated)');
                 continue;
             }
@@ -317,14 +348,14 @@ class SetupCommand
         $this->output->info("Tools cache: {$config->workDir}/tools");
         $this->output->info("Next step: horde-components ci run --work-dir={$config->workDir}");
 
-        // F30: tolerate partial setup.
+        // Tolerate partial setup.
         //
         // The CI value of this run is the per-lane breakdown, not "did
         // every lane install cleanly". Lanes that failed composer install
         // carry a build/setup-failed.json marker; RunCommand surfaces them
-        // as ❌ in the PR comment alongside any lanes that ran. We only
+        // as a failure in the PR comment alongside any lanes that ran. We only
         // signal global setup failure (which Module\Ci translates into a
-        // throw + non-zero exit) when no non-skipped lane is usable —
+        // throw + non-zero exit) when no non-skipped lane is usable  - 
         // there is then nothing for ci run to do.
         $usableLanes = $successful;
         $totalNonSkipped = count($lanes) - count($skippedLanes);
@@ -403,7 +434,7 @@ class SetupCommand
      * Persist a setup-failure marker for a lane.
      *
      * Writes `<laneDir>/build/setup-failed.json` so RunCommand can pick
-     * the lane up, register it as ❌ for both phpunit and phpstan, and
+     * the lane up, register it as a failure for both phpunit and phpstan, and
      * surface the reason in the PR comment. Distinct from
      * `build/skip.json` which means "deliberately not run". A
      * setup-failed lane is a real failure that the maintainer needs to
@@ -411,8 +442,8 @@ class SetupCommand
      *
      * The optional `$category` is one of the strings returned by
      * {@see ComposerInstaller::classifyError()}; downstream reporting
-     * uses it to render `stability_gate` failures as ⚠️ (working as
-     * designed) rather than ❌ (real bug).
+     * uses it to render `stability_gate` failures as a warning (working as
+     * designed) rather than a hard failure (real bug).
      *
      * @param string $laneDir Lane component directory (where build/ lives)
      * @param string $reason Human-readable failure summary

@@ -31,7 +31,7 @@ use Horde\Components\Output\Presenter;
  * the resulting annotations anchor to the PR diff. Routing summary
  * decoration (ok/warn/info/error) through the workflow-command
  * channel as well floods the Annotations panel with duplicate entries
- * that have no diff anchor — see F24 in the CI strategy doc.
+ * that have no diff anchor.
  *
  * Plain CI format (GitLab, Jenkins, etc.):
  *   [OK] Success message

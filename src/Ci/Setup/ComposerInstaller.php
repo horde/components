@@ -227,7 +227,7 @@ class ComposerInstaller
      * (`::error ::Your requirements could not be resolved...%0A%0A  Problem 1...`)
      * where literal newlines are encoded as `%0A`. To `explode("\n", ...)`
      * this still looks like *one* line, so the caller would end up with
-     * the entire 2 KB wall of text. F32: normalise `%0A` to real
+     * the entire 2 KB wall of text. Normalise `%0A` to real
      * newlines first, drop the `::error ::` workflow-command prefix,
      * then return the first informative line.
      *
@@ -290,7 +290,7 @@ class ComposerInstaller
      * - `stability_gate`: a transitive dependency is only available at a
      *   stability lower than the lane's `minimum-stability`. Composer
      *   prints `does not match your minimum-stability`. Working as
-     *   designed — the ecosystem is not yet ready for that lane's
+     *   designed - the ecosystem is not yet ready for that lane's
      *   stability level. Maintainer action: wait for the upstream package
      *   to release at the required stability or accept the failure.
      *

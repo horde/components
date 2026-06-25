@@ -25,7 +25,7 @@ use ReflectionClass;
 
 /**
  * Tests for the PR-comment rendering pieces that don't need the GitHub
- * API client — F32 (composer dump truncation) and F36 (empty PHPUnit
+ * API client: composer dump truncation and empty PHPUnit
  * run reporting).
  *
  * PrCommentReporter::postComment shells out to GitHub. We test the
@@ -51,7 +51,7 @@ class PrCommentReporterTest extends TestCase
     }
 
     /**
-     * F32: summariseReason should strip the workflow-command prefix,
+     * summariseReason should strip the workflow-command prefix,
      * decode %0A newlines, drop the "Setup failed: " prefix, take
      * the first informative line, and cap at 200 chars.
      */
@@ -100,7 +100,7 @@ class PrCommentReporterTest extends TestCase
     }
 
     /**
-     * F36: when every PHPUnit lane crashed before producing test
+     * When every PHPUnit lane crashed before producing test
      * output (e.g. PHP 8.3 parse-time error on PHP-8.4-only syntax),
      * the metric line must NOT read "0 tests passed ✅". The correct
      * render is "did not run … exited non-zero with no test output ❌".
@@ -134,12 +134,12 @@ class PrCommentReporterTest extends TestCase
         $this->assertStringNotContainsString(
             '0 tests passed',
             $phpunitLine,
-            'F36 regression: empty PHPUnit run rendered as success'
+            'Regression: empty PHPUnit run rendered as success'
         );
         $this->assertStringNotContainsString(
             '✅',
             $phpunitLine,
-            'F36 regression: ✅ leaked into a failed PHPUnit row'
+            'Regression: success indicator leaked into a failed PHPUnit row'
         );
     }
 
@@ -195,14 +195,14 @@ class PrCommentReporterTest extends TestCase
     }
 
     /**
-     * F36 additional safety: a "missing" lane (RunCommand wrote nothing
+     * Additional safety: a "missing" lane (RunCommand wrote nothing
      * because the setup-failed marker fired upstream) must not slip
      * through aggregateToolStats and feed zeros into the renderer at all.
-     * This test pins the invariant: missing lanes are excluded from
-     * `lanes_run`, so an all-missing PHPUnit row produces no PHPUnit
-     * metric line.
+     * The four-state extension fixes this edge case: when every PHPUnit
+     * lane was missing (lanes_run === 0), the row reads "did not run on
+     * any lane ❌" rather than the previous misleading "0 tests passed".
      */
-    public function testQualityMetricsSkipsMissingLanes(): void
+    public function testQualityMetricsRendersAllMissingPhpUnitAsDidNotRun(): void
     {
         $results = [
             'php8.3-dev' => [
@@ -216,16 +216,62 @@ class PrCommentReporterTest extends TestCase
             ],
         ];
         $md = $this->generateQualityMetrics($results);
-        // aggregateToolStats returns ['lanes_run' => 0, 'lanes_passed' => 0]
-        // which is still "not empty" (the keys exist) — so the PHPUnit
-        // block still emits a row. With lanes_run === 0 the emptiness-of-run
-        // branch fires only when lanes > 0; we fall through to the clean
-        // render with everything zero. That's still misleading, so this
-        // test also pins what we *do* produce so a future change is
-        // intentional. Currently the renderer emits "0 tests passed ✅"
-        // for this shape; we accept that until a follow-up fixes the
-        // edge case (no lane ran phpunit at all).
-        $this->assertStringContainsString('PHPUnit', $md);
+        $phpunitLine = $this->extractPhpUnitLine($md);
+        $this->assertNotNull($phpunitLine);
+        $this->assertStringContainsString('did not run on any lane', $phpunitLine);
+        $this->assertStringContainsString('❌', $phpunitLine);
+        $this->assertStringNotContainsString('0 tests passed', $phpunitLine);
+        $this->assertStringNotContainsString('✅', $phpunitLine);
+    }
+
+    /**
+     * F33: the matrix's non-dev column comes from observed lane
+     * stabilities, not from a hardcoded "alpha" pair. For a component
+     * at RC the column reads "RC" and the data goes into it; for stable
+     * it reads "stable"; for alpha it still reads "alpha". The previous
+     * hardcoded header silently dropped non-alpha data on the floor.
+     */
+    public function testVersionTableHeaderReflectsObservedStability(): void
+    {
+        $results = [
+            'php8.3-dev' => ['phpunit' => ['success' => true, 'mode' => 'enforced', 'statistics' => []]],
+            'php8.3-RC' => ['phpunit' => ['success' => true, 'mode' => 'enforced', 'statistics' => []]],
+            'php8.4-dev' => ['phpunit' => ['success' => false, 'mode' => 'enforced', 'statistics' => []]],
+            'php8.4-RC' => ['phpunit' => ['success' => true, 'mode' => 'enforced', 'statistics' => []]],
+        ];
+        $md = $this->generateVersionTable($results);
+
+        // Header lists dev then RC, in that order.
+        $this->assertStringContainsString('| PHP | dev | RC |', $md);
+
+        // Data rows: 8.3 dev passed + RC passed; 8.4 dev failed + RC passed.
+        $this->assertStringContainsString('| 8.3 | ✅ | ✅ |', $md);
+        $this->assertStringContainsString('| 8.4 | ❌ | ✅ |', $md);
+
+        // Regression guard: no leftover "alpha" header for a non-alpha run.
+        $this->assertStringNotContainsString('alpha', $md);
+    }
+
+    public function testVersionTableAlphaStabilityStillRendersAsAlpha(): void
+    {
+        $results = [
+            'php8.4-dev' => ['phpunit' => ['success' => true, 'mode' => 'enforced', 'statistics' => []]],
+            'php8.4-alpha' => ['phpunit' => ['success' => false, 'mode' => 'enforced', 'statistics' => []]],
+        ];
+        $md = $this->generateVersionTable($results);
+
+        $this->assertStringContainsString('| PHP | dev | alpha |', $md);
+        $this->assertStringContainsString('| 8.4 | ✅ | ❌ |', $md);
+    }
+
+    public function testVersionTableEmptyResultsFallsBackToStableColumn(): void
+    {
+        // Defensive: an empty results array should still produce a
+        // valid markdown table rather than a header with a single
+        // column. The fallback is the canonical "dev | stable" pair.
+        $md = $this->generateVersionTable([]);
+
+        $this->assertStringContainsString('| PHP | dev | stable |', $md);
     }
 
     /**
@@ -248,6 +294,18 @@ class PrCommentReporterTest extends TestCase
         $method = $this->refl->getMethod('generateQualityMetrics');
         $method->setAccessible(true);
         return (string) $method->invoke($this->reporter, $results, []);
+    }
+
+    /**
+     * Helper: invoke the private generateVersionTable via reflection.
+     *
+     * @param array<string,array<string,array<string,mixed>>> $results
+     */
+    private function generateVersionTable(array $results): string
+    {
+        $method = $this->refl->getMethod('generateVersionTable');
+        $method->setAccessible(true);
+        return (string) $method->invoke($this->reporter, $results);
     }
 
     /**
