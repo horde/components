@@ -385,8 +385,36 @@ class PrCommentReporter
             $failures = $phpunitStats['failures'] ?? 0;
             $errors = $phpunitStats['errors'] ?? 0;
             $lanes = $phpunitStats['lanes_run'] ?? 0;
+            $lanesPassed = $phpunitStats['lanes_passed'] ?? 0;
 
-            if ($failures === 0 && $errors === 0) {
+            // F36: distinguish three states explicitly.
+            //
+            //   1. "PHPUnit could not run." Lanes ran, but every lane
+            //      exited non-zero with zero collected tests. Almost
+            //      always a parse error, an XML-config rejection, or a
+            //      missing extension that survived setup. Render as ❌
+            //      with a clear hint to look at the build log.
+            //
+            //   2. "PHPUnit ran with failures or errors." Tests were
+            //      collected and at least one failed/errored. Standard
+            //      red render.
+            //
+            //   3. "PHPUnit clean." Tests collected, zero failures,
+            //      zero errors, at least one lane reported success.
+            //      Standard green render.
+            //
+            // The old code conflated (1) with (3): both produced
+            // `0 tests passed ✅` because the counters were all zero.
+            $ran = $tests > 0;
+            $clean = $failures === 0 && $errors === 0 && $lanesPassed > 0;
+
+            if (!$ran && $lanes > 0) {
+                $md .= sprintf(
+                    "- **PHPUnit**: did not run (%d lane%s exited non-zero with no test output) ❌\n",
+                    $lanes,
+                    $lanes === 1 ? '' : 's'
+                );
+            } elseif ($clean) {
                 $testsFragment = $assertions > 0
                     ? "{$tests} tests ({$assertions} assertions)"
                     : "{$tests} tests";
@@ -502,6 +530,12 @@ class PrCommentReporter
         // category if available; otherwise fall back to the raw reason.
         if (!empty($result['missing'])) {
             $reason = (string) ($result['reason'] ?? 'Missing result file');
+            // F32: keep the reason short. The classifier-tagged category
+            // already names the *kind* of failure; a 2 KB composer
+            // resolver paragraph adds noise, not signal. Truncate to one
+            // sentence (or 200 chars max) so the PR comment stays
+            // readable.
+            $reason = $this->summariseReason($reason);
             $category = (string) ($result['category'] ?? '');
             $tag = match ($category) {
                 'stability_gate'   => '⚠️ Stability-gated',
@@ -538,6 +572,68 @@ class PrCommentReporter
     }
 
     /**
+     * Compress a setup-failure reason to one short, signal-bearing line.
+     *
+     * F32 guard. ComposerInstaller::extractError now strips the workflow-
+     * command prefix and picks one informative line, so a freshly-produced
+     * reason already arrives short. But this method runs against whatever
+     * shape the pipeline hands it — including legacy markers written by
+     * older versions of horde-components.phar that the maintainer might
+     * have cached. We belt-and-brace here:
+     *
+     *   1. Decode the GitHub Actions `%0A`/`%0D` newline escapes so a
+     *      single-line workflow-command payload is treated as the
+     *      multi-line text it actually is.
+     *   2. Drop the `Setup failed: ` prefix RunCommand always adds; the
+     *      classifier-tagged category in the calling row says the same
+     *      thing.
+     *   3. Strip a leading `::error[ file=...]::` workflow-command prefix
+     *      should one still be present.
+     *   4. Take the first non-empty line.
+     *   5. Cap at 200 characters and append a `…` so a maintainer can
+     *      tell the value was trimmed.
+     */
+    private function summariseReason(string $reason): string
+    {
+        $reason = str_replace(['%0A', '%0D'], "\n", $reason);
+
+        // RunCommand always prefixes "Setup failed: " — the category
+        // tag already conveys this; redundant in the rendered cell.
+        if (str_starts_with($reason, 'Setup failed: ')) {
+            $reason = substr($reason, strlen('Setup failed: '));
+        }
+
+        // Defensive strip of a workflow-command prefix.
+        $trimmed = ltrim($reason);
+        if (str_starts_with($trimmed, '::error')) {
+            $sep = strpos($trimmed, '::', 7);
+            if ($sep !== false) {
+                $reason = ltrim(substr($trimmed, $sep + 2));
+            }
+        }
+
+        // First non-empty line wins; everything past it is composer's
+        // verbose explanation, which the maintainer can read in the
+        // build log if they need it.
+        foreach (explode("\n", $reason) as $line) {
+            $line = trim($line);
+            if ($line !== '') {
+                $reason = $line;
+                break;
+            }
+        }
+
+        // Final length cap. 200 chars is enough for one composer-resolver
+        // sentence ("Root composer.json requires horde/mapi ^2 || dev-... satisfiable by ...")
+        // and short enough that the PR comment cell stays readable in a
+        // table-shaped GitHub render.
+        if (mb_strlen($reason) > 200) {
+            $reason = mb_substr($reason, 0, 199) . '…';
+        }
+        return $reason;
+    }
+
+    /**
      * Aggregate statistics for a specific tool.
      *
      * @param array<string,array<string,array<string,mixed>>> $results All results
@@ -546,7 +642,7 @@ class PrCommentReporter
      */
     private function aggregateToolStats(array $results, string $tool): array
     {
-        $aggregated = ['lanes_run' => 0];
+        $aggregated = ['lanes_run' => 0, 'lanes_passed' => 0];
 
         foreach ($results as $laneName => $tools) {
             if (!isset($tools[$tool])) {
@@ -561,6 +657,13 @@ class PrCommentReporter
             }
 
             $aggregated['lanes_run']++;
+            // F36: track whether the tool itself reported success on
+            // this lane. Without this, a PHPUnit that crashed at parse
+            // time (exit 255, tests=0, failures=0, errors=0) was
+            // indistinguishable from a clean run with no tests to count.
+            if (!empty($result['success'])) {
+                $aggregated['lanes_passed']++;
+            }
             $stats = $result['statistics'] ?? [];
             foreach ($stats as $key => $value) {
                 if (!is_numeric($value)) {

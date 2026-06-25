@@ -220,29 +220,63 @@ class ComposerInstaller
     }
 
     /**
-     * Extract error message from composer output.
+     * Extract a short, signal-bearing error line from composer output.
+     *
+     * Composer running under GitHub Actions emits its multi-line failure
+     * paragraph as a single workflow-command annotation
+     * (`::error ::Your requirements could not be resolved...%0A%0A  Problem 1...`)
+     * where literal newlines are encoded as `%0A`. To `explode("\n", ...)`
+     * this still looks like *one* line, so the caller would end up with
+     * the entire 2 KB wall of text. F32: normalise `%0A` to real
+     * newlines first, drop the `::error ::` workflow-command prefix,
+     * then return the first informative line.
      *
      * @param string $output Command output
-     * @return string Error message
+     * @return string Error message (one line, trimmed)
      */
     private function extractError(string $output): string
     {
-        // Look for common error patterns
-        $lines = explode("\n", $output);
+        // Decode GitHub Actions workflow-command escaped newlines so the
+        // per-line scan below can actually see the structure of composer's
+        // resolver paragraph.
+        $normalised = str_replace(['%0A', '%0D'], "\n", $output);
+
+        $lines = explode("\n", $normalised);
 
         foreach ($lines as $line) {
-            if (stripos($line, 'error') !== false || stripos($line, 'failed') !== false) {
-                return trim($line);
+            $trimmed = trim($line);
+            if ($trimmed === '') {
+                continue;
+            }
+            // Strip the `::error ::`/`::error::`/`::error file=...::` prefix
+            // GitHub Actions uses; the human-meaningful part is whatever
+            // follows the second `::`.
+            if (str_starts_with($trimmed, '::error')) {
+                $sepPos = strpos($trimmed, '::', 7);
+                if ($sepPos !== false) {
+                    $trimmed = ltrim(substr($trimmed, $sepPos + 2));
+                }
+            }
+            if ($trimmed === '') {
+                continue;
+            }
+            if (stripos($trimmed, 'error') !== false
+                || stripos($trimmed, 'failed') !== false
+                || stripos($trimmed, 'could not be resolved') !== false
+            ) {
+                return $trimmed;
             }
         }
 
-        // Return last non-empty line as fallback
+        // Return last non-empty line as fallback. `end()` returns false
+        // on empty arrays; we guard above, but cast to string anyway so
+        // PHPStan doesn't have to chase the false-or-string union.
         $nonEmpty = array_filter($lines, fn($l) => trim($l) !== '');
         if (empty($nonEmpty)) {
             return 'Unknown error';
         }
 
-        return trim(end($nonEmpty));
+        return trim((string) end($nonEmpty));
     }
 
     /**

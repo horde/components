@@ -18,8 +18,8 @@ namespace Horde\Components\Test\Unit\Module;
 
 use Horde\Components\Module\Ci;
 use Horde\Components\Dependencies\Injector;
-use Horde\Test\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Test the CI module.
