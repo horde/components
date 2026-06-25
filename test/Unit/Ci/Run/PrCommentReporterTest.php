@@ -190,7 +190,11 @@ class PrCommentReporterTest extends TestCase
         ];
 
         $md = $this->generateQualityMetrics($results);
-        $this->assertStringContainsString('2 failures, 1 errors', $md);
+        // The metric line carries enough context for the reader to
+        // tell "8 failures out of 8 tests" from "8 failures out of
+        // 1000 tests". Previously the line only said "2 failures,
+        // 1 errors" with no denominator at all.
+        $this->assertStringContainsString('2 failures, 1 errors out of 100 tests in 1 lane', $md);
         $this->assertStringContainsString('❌', $md);
     }
 

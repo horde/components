@@ -525,7 +525,14 @@ class PrCommentReporter
                     ? "- **PHPUnit**: {$testsFragment} passed in {$lanes} lanes ✅\n"
                     : "- **PHPUnit**: {$testsFragment} passed ✅\n";
             } else {
-                $md .= "- **PHPUnit**: {$failures} failures, {$errors} errors ❌\n";
+                $md .= sprintf(
+                    "- **PHPUnit**: %d failures, %d errors out of %d tests in %d lane%s ❌\n",
+                    $failures,
+                    $errors,
+                    $tests,
+                    $lanes,
+                    $lanes === 1 ? '' : 's'
+                );
             }
         }
 

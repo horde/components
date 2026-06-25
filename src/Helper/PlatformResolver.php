@@ -118,13 +118,21 @@ class PlatformResolver
     ): array {
         $phpConstraint = $hordeYml->getRequiredPhp();
         $composerJsonPath = $componentDir . '/composer.json';
+        // The UUT's declared release version. Composer otherwise
+        // defaults the unresolvable-root version to 1.0.0 and any
+        // require-dev that ships a circular self-reference (e.g.
+        // horde/icalendar require horde/date ^3) fails to match the
+        // synthesized root. Passing COMPOSER_ROOT_VERSION makes the
+        // root advertise its real version so transitive constraints
+        // line up.
+        $rootVersion = $hordeYml->getReleaseVersion();
 
         $range = $this->phpVersionRange($phpConstraint);
 
         $out = [];
         foreach ($range as $minor) {
             $this->output?->info(sprintf('Resolving platform deps for PHP %s', $minor));
-            $out[$minor] = $this->resolveSingleForRoot($composerJsonPath, $minor);
+            $out[$minor] = $this->resolveSingleForRoot($composerJsonPath, $minor, $rootVersion);
         }
 
         return $out;
@@ -137,12 +145,17 @@ class PlatformResolver
      * @param string $uutComposerJsonPath Absolute path to the UUT's
      *                                     composer.json.
      * @param string $minorVersion PHP minor (e.g. "8.3").
+     * @param string $rootVersion The UUT's release version. Set as
+     *                            COMPOSER_ROOT_VERSION so circular
+     *                            require-dev deps resolve. Empty
+     *                            disables the env injection.
      * @return list<array{string, ?string}>|string Either the parsed
      *         platform list or {@see self::NOT_RESOLVABLE}.
      */
     private function resolveSingleForRoot(
         string $uutComposerJsonPath,
         string $minorVersion,
+        string $rootVersion = '',
     ): array|string {
         if (!is_readable($uutComposerJsonPath)) {
             return self::NOT_RESOLVABLE;
@@ -167,11 +180,21 @@ class PlatformResolver
                 @unlink($tmpLock);
             }
 
+            // Composer env prefix: ROOT_VERSION lets the synthesized
+            // root resolve circular `require-dev` self-references
+            // (e.g. horde/icalendar in horde/date's require-dev has
+            // `require horde/date ^3`; without ROOT_VERSION composer
+            // defaults the root to 1.0.0 and the constraint fails).
+            // Empty when the UUT has no declared version.
+            $envPrefix = $rootVersion !== ''
+                ? sprintf('COMPOSER_ROOT_VERSION=%s ', escapeshellarg($rootVersion))
+                : '';
+
             // 2. Pin platform.php so composer resolves what *this* minor
             //    would see, independent of the PHP version actually
             //    running the resolver.
             $r = $this->shell->exec(
-                sprintf('composer config platform.php %s 2>&1', escapeshellarg($minorVersion . '.0')),
+                sprintf('%scomposer config platform.php %s 2>&1', $envPrefix, escapeshellarg($minorVersion . '.0')),
                 $tmpDir,
             );
             if ($r->getReturnValue() !== 0) {
@@ -186,14 +209,14 @@ class PlatformResolver
             //    dev where nothing else exists. Without this, resolve
             //    fails on any tree where a transitive sibling has not
             //    released a stable yet.
-            $this->shell->exec('composer config minimum-stability dev 2>&1', $tmpDir);
-            $this->shell->exec('composer config prefer-stable true 2>&1', $tmpDir);
+            $this->shell->exec($envPrefix . 'composer config minimum-stability dev 2>&1', $tmpDir);
+            $this->shell->exec($envPrefix . 'composer config prefer-stable true 2>&1', $tmpDir);
 
             // 4. Resolve dependencies, ignoring platform requirements so
             //    a missing ext-* on the host running the resolver does
             //    not block the lock from being written. We never install.
             $r = $this->shell->exec(
-                'composer update --ignore-platform-reqs --no-install --no-interaction 2>&1',
+                $envPrefix . 'composer update --ignore-platform-reqs --no-install --no-interaction 2>&1',
                 $tmpDir,
             );
             if ($r->getReturnValue() !== 0) {

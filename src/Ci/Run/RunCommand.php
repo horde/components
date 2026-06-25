@@ -373,9 +373,9 @@ class RunCommand
             $md .= sprintf(
                 "| %s | %s | %s | %s | %s |\n",
                 $laneName,
-                $this->formatToolForTable($tools['phpunit'] ?? null),
-                $this->formatToolForTable($tools['phpstan'] ?? null),
-                $this->formatToolForTable($tools['phpcsfixer'] ?? null),
+                $this->formatToolForTable($tools['phpunit'] ?? null, 'phpunit'),
+                $this->formatToolForTable($tools['phpstan'] ?? null, 'phpstan'),
+                $this->formatToolForTable($tools['phpcsfixer'] ?? null, 'phpcsfixer'),
                 $laneStatus
             );
         }
@@ -413,45 +413,132 @@ class RunCommand
     /**
      * Format tool result for table cell.
      *
+     * One short, glanceable label per cell. Per-tool vocabulary so a
+     * reader sees the most actionable bit of info without parsing
+     * stats. Detail (which test failed, which file has watermark
+     * errors) lives in the Quality Metrics section and the per-lane
+     * Failed Lanes detail block, not here.
+     *
      * @param array<string,mixed>|null $result Tool result
-     * @return string Formatted string
+     * @param string $toolName Tool name ("phpunit", "phpstan", "phpcsfixer")
+     * @return string Markdown cell content
      */
-    private function formatToolForTable(?array $result): string
+    private function formatToolForTable(?array $result, string $toolName): string
     {
         if ($result === null) {
             return '-';
         }
 
-        // Deliberately skipped (lane incompatible with this tool)
+        // Deliberately skipped (lane incompatible with this tool, e.g.
+        // PHPUnit 12 on PHP 8.2).
         if (isset($result['deliberate_skip']) && $result['deliberate_skip']) {
             return '⊘ Skipped';
         }
 
         // Missing result file (lane crashed before writing JSON, etc.)
+        // or surface "Could not run" for any state without usable stats.
         if (isset($result['missing']) && $result['missing']) {
-            return '❌ Missing';
+            return '❌ Could not run';
         }
 
-        // Error
         if (isset($result['error'])) {
-            return '❌ Error';
+            return '❌ Could not run';
         }
 
-        // Success/failure with stats
         $stats = $result['statistics'] ?? [];
-        $emoji = ($result['success'] ?? false) ? '✅' : '❌';
+        $success = (bool) ($result['success'] ?? false);
+        $mode = (string) ($result['mode'] ?? 'enforced');
 
-        // Extract key metric
-        $metric = '';
-        if (isset($stats['tests'])) {
-            $metric = "{$stats['tests']} tests";
-        } elseif (isset($stats['errors'])) {
-            $metric = "{$stats['errors']} errors";
-        } elseif (isset($stats['files_checked'])) {
-            $metric = "{$stats['files_checked']} files";
+        return match ($toolName) {
+            'phpunit' => $this->formatPhpUnitCell($stats, $success, $mode),
+            'phpstan' => $this->formatPhpStanCell($stats, $success, $mode),
+            'phpcsfixer' => $this->formatPhpCsFixerCell($stats, $success),
+            default => $success ? '✅' : '❌',
+        };
+    }
+
+    /**
+     * Per-tool cell for PHPUnit.
+     *
+     * @param array<string,mixed> $stats
+     */
+    private function formatPhpUnitCell(array $stats, bool $success, string $mode): string
+    {
+        // Library declared no test suite: not a failure, not a pass -
+        // there was nothing to run. The Unit task writes this mode when
+        // `test/` is absent on disk.
+        if ($mode === 'no_test_suite') {
+            return '✅ no tests available';
         }
 
-        return $metric ? "{$emoji} {$metric}" : $emoji;
+        $tests = (int) ($stats['tests'] ?? 0);
+        $failures = (int) ($stats['failures'] ?? 0);
+        $errors = (int) ($stats['errors'] ?? 0);
+
+        if ($tests === 0) {
+            // PHPUnit emitted no test events. Either the suite-load
+            // crashed (parse error in a test file, config rejection)
+            // or no tests matched the suite. Either way, no signal to
+            // report.
+            return '❌ Could not run';
+        }
+
+        $bad = $failures + $errors;
+        if ($success && $bad === 0) {
+            return sprintf('✅ all %d passed', $tests);
+        }
+        return sprintf('❌ %d fail or error', $bad);
+    }
+
+    /**
+     * Per-tool cell for PHPStan.
+     *
+     * @param array<string,mixed> $stats
+     */
+    private function formatPhpStanCell(array $stats, bool $success, string $mode): string
+    {
+        $errors = (int) ($stats['errors'] ?? 0);
+        $advisory = ($mode === 'advisory');
+
+        if ($success && $errors === 0) {
+            return '✅ no errors';
+        }
+        if ($advisory) {
+            // Advisory mode (legacy-only lib/ layout): findings are
+            // informational. `success: true` is forced by the Unit task,
+            // so we render them as advisories regardless of count.
+            return sprintf('✅ %d advisories', $errors);
+        }
+        if ($success === false && $errors === 0) {
+            // PHPStan exited non-zero before producing findings -
+            // tooling failure (autoload-file unreachable, bad NEON,
+            // unloadable rule, etc.). Surface as "Could not run" so the
+            // reader doesn't go looking for a watermark error that
+            // isn't there.
+            return '❌ Could not run';
+        }
+        return sprintf('❌ %d watermark errors', $errors);
+    }
+
+    /**
+     * Per-tool cell for PHP-CS-Fixer.
+     *
+     * @param array<string,mixed> $stats
+     */
+    private function formatPhpCsFixerCell(array $stats, bool $success): string
+    {
+        $checked = (int) ($stats['files_checked'] ?? 0);
+        $withIssues = (int) ($stats['files_with_issues'] ?? 0);
+
+        if ($checked === 0) {
+            // PHP-CS-Fixer runs on one lane only (php8.4-dev). For all
+            // other lanes the result is either missing or has no stats.
+            return '-';
+        }
+        if ($success && $withIssues === 0) {
+            return sprintf('✅ %d files styled', $checked);
+        }
+        return sprintf('❌ %d files need formatting', $withIssues);
     }
 
     /**
@@ -498,15 +585,21 @@ class RunCommand
         // PHPStan section
         if (!empty($phpstanStats)) {
             $md .= "#### PHPStan\n\n";
-            $totalErrors = $phpstanStats['errors'] ?? 0;
+            // Per-lane max instead of cross-lane sum: 4 lanes seeing
+            // the same 352 errors should report 352, not 1408.
+            $errorsPerLane = $phpstanStats['errors_max'] ?? 0;
             // files_scanned is per-lane; max == the actual codebase size.
             $filesScanned = $phpstanStats['files_scanned_max'] ?? 0;
             $lanesRun = $phpstanStats['lanes_run'] ?? 0;
+            $advisory = $this->allPhpStanLanesAdvisory($results);
 
-            if ($totalErrors === 0) {
+            if ($errorsPerLane === 0) {
                 $md .= "✅ **No errors found** in {$filesScanned} files ({$lanesRun} lanes)\n\n";
+            } elseif ($advisory) {
+                $md .= "ℹ️ **{$errorsPerLane} advisories** ({$filesScanned} files scanned, {$lanesRun} lanes)\n\n";
+                $md .= $this->renderPhpStanFindingsTable();
             } else {
-                $md .= "⚠️ **{$totalErrors} errors found** ({$filesScanned} files scanned, {$lanesRun} lanes)\n\n";
+                $md .= "⚠️ **{$errorsPerLane} watermark errors** ({$filesScanned} files scanned, {$lanesRun} lanes)\n\n";
                 $md .= $this->renderPhpStanFindingsTable();
             }
         }
@@ -589,6 +682,39 @@ class RunCommand
     {
         // Pipes and newlines would break the table layout.
         return strtr($value, ['|' => '\\|', "\n" => ' ', "\r" => '']);
+    }
+
+    /**
+     * True when every lane that produced a PHPStan result reported
+     * `mode: advisory` (legacy-only lib/ layout, see
+     * `Qc\Task\Phpstan::resolveAnalysisPlan()`). When all PHPStan
+     * voters are advisory, the Detailed Metrics PHPStan section labels
+     * findings as advisories rather than watermark errors. Missing,
+     * error, and deliberately-skipped lanes do not vote.
+     *
+     * Mirrors the helper of the same name in PrCommentReporter; kept
+     * private to RunCommand to avoid a cross-file shared helper for
+     * one method.
+     *
+     * @param array<string,array<string,array<string,mixed>>> $results
+     */
+    private function allPhpStanLanesAdvisory(array $results): bool
+    {
+        $seen = false;
+        foreach ($results as $tools) {
+            $result = $tools['phpstan'] ?? null;
+            if (!is_array($result)) {
+                continue;
+            }
+            if (isset($result['missing']) || isset($result['error']) || isset($result['deliberate_skip'])) {
+                continue;
+            }
+            $seen = true;
+            if (($result['mode'] ?? 'enforced') !== 'advisory') {
+                return false;
+            }
+        }
+        return $seen;
     }
 
     /**
@@ -906,9 +1032,9 @@ class RunCommand
 
             $html .= "                <tr>\n";
             $html .= "                    <td class=\"lane-name\">{$laneName}</td>\n";
-            $html .= "                    <td>" . $this->formatToolForHtml($tools['phpunit'] ?? null) . "</td>\n";
-            $html .= "                    <td>" . $this->formatToolForHtml($tools['phpstan'] ?? null) . "</td>\n";
-            $html .= "                    <td>" . $this->formatToolForHtml($tools['phpcsfixer'] ?? null) . "</td>\n";
+            $html .= "                    <td>" . $this->formatToolForHtml($tools['phpunit'] ?? null, 'phpunit') . "</td>\n";
+            $html .= "                    <td>" . $this->formatToolForHtml($tools['phpstan'] ?? null, 'phpstan') . "</td>\n";
+            $html .= "                    <td>" . $this->formatToolForHtml($tools['phpcsfixer'] ?? null, 'phpcsfixer') . "</td>\n";
             $html .= "                    <td class=\"{$statusClass}\">{$statusIcon}</td>\n";
             $html .= "                </tr>\n";
         }
@@ -940,48 +1066,30 @@ class RunCommand
     /**
      * Format tool result for HTML table cell.
      *
+     * Delegates to {@see formatToolForTable()} for the actual label
+     * (so HTML and Markdown stay in sync) and wraps the result in a
+     * status-coloured span so the local HTML report keeps its red /
+     * green / grey coding.
+     *
      * @param array<string,mixed>|null $result Tool result
+     * @param string $toolName Tool name ("phpunit", "phpstan", "phpcsfixer")
      * @return string HTML string
      */
-    private function formatToolForHtml(?array $result): string
+    private function formatToolForHtml(?array $result, string $toolName): string
     {
-        if ($result === null) {
-            return '<span class="status-skip">-</span>';
+        $label = $this->formatToolForTable($result, $toolName);
+
+        // Class from the leading glyph; cheap and avoids restating the
+        // state machine here.
+        if (str_starts_with($label, '✅')) {
+            $class = 'status-pass';
+        } elseif (str_starts_with($label, '❌')) {
+            $class = 'status-fail';
+        } else {
+            $class = 'status-skip';
         }
 
-        // Deliberately skipped (lane incompatible with this tool)
-        if (isset($result['deliberate_skip']) && $result['deliberate_skip']) {
-            return '<span class="status-skip">⊘ Skipped</span>';
-        }
-
-        // Missing result file (lane crashed before writing JSON, etc.)
-        if (isset($result['missing']) && $result['missing']) {
-            return '<span class="status-fail">❌ Missing</span>';
-        }
-
-        // Error
-        if (isset($result['error'])) {
-            return '<span class="status-fail">❌ Error</span>';
-        }
-
-        // Success/failure with stats
-        $stats = $result['statistics'] ?? [];
-        $success = $result['success'] ?? false;
-        $emoji = $success ? '✅' : '❌';
-        $class = $success ? 'status-pass' : 'status-fail';
-
-        // Extract key metric
-        $metric = '';
-        if (isset($stats['tests'])) {
-            $metric = "{$stats['tests']} tests";
-        } elseif (isset($stats['errors'])) {
-            $metric = "{$stats['errors']} errors";
-        } elseif (isset($stats['files_checked'])) {
-            $metric = "{$stats['files_checked']} files";
-        }
-
-        $display = $metric ? "{$emoji} {$metric}" : $emoji;
-        return "<span class=\"{$class}\">{$display}</span>";
+        return "<span class=\"{$class}\">{$label}</span>";
     }
 
     /**
@@ -1057,16 +1165,25 @@ class RunCommand
 
         // PHPStan section
         if (!empty($phpstanStats)) {
-            $totalErrors = $phpstanStats['errors'] ?? 0;
+            // Per-lane max instead of cross-lane sum (avoid reporting
+            // 4 * 352 = 1408 when each lane sees the same 352 errors).
+            $errorsPerLane = $phpstanStats['errors_max'] ?? 0;
             // Files scanned/with errors are per-lane; max == codebase.
             $filesScanned = $phpstanStats['files_scanned_max'] ?? 0;
             $filesWithErrors = $phpstanStats['files_with_errors_max'] ?? 0;
             $lanesRun = $phpstanStats['lanes_run'] ?? 0;
+            $advisory = $this->allPhpStanLanesAdvisory($results);
 
-            $statusIcon = $totalErrors === 0 ? '✅' : '⚠️';
-            $statusText = $totalErrors === 0
-                ? 'No errors found'
-                : "{$totalErrors} errors found";
+            if ($errorsPerLane === 0) {
+                $statusIcon = '✅';
+                $statusText = 'No errors found';
+            } elseif ($advisory) {
+                $statusIcon = 'ℹ️';
+                $statusText = "{$errorsPerLane} advisories";
+            } else {
+                $statusIcon = '⚠️';
+                $statusText = "{$errorsPerLane} watermark errors";
+            }
 
             $html .= <<<HTML
                         <div class="metric-card">
@@ -1085,7 +1202,7 @@ class RunCommand
                             </div>
                             <div class="metric-row">
                                 <span class="metric-label">Errors:</span>
-                                <span class="metric-value">{$totalErrors}</span>
+                                <span class="metric-value">{$errorsPerLane}</span>
                             </div>
                         </div>
 
