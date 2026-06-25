@@ -310,6 +310,80 @@ class PrCommentReporterTest extends TestCase
         $this->assertStringContainsString('| PHP | dev | stable |', $md);
     }
 
+    public function testPhpCsFixerDidNotRunOnAnyLaneRendersAsFailure(): void
+    {
+        // PHP-CS-Fixer runs on one designated lane. When that lane
+        // setup-failed before reaching PHP-CS-Fixer there's no result
+        // file on any lane; aggregateToolStats reports lanes_run = 0.
+        // Previously this fell through to the green "0 files checked,
+        // no issues" branch, masking the real outcome.
+        $results = [
+            'php8.4-dev' => [
+                'phpcsfixer' => [
+                    'success' => false,
+                    'exit_code' => 1,
+                    'missing' => true,
+                    'reason' => 'Setup failed: bcmath missing',
+                    'category' => 'platform_missing',
+                ],
+            ],
+        ];
+        $md = $this->generateQualityMetrics($results);
+        $line = $this->extractPhpCsFixerLine($md);
+        $this->assertNotNull($line);
+        $this->assertStringContainsString('did not run on any lane', $line);
+        $this->assertStringContainsString('❌', $line);
+        $this->assertStringNotContainsString('no issues', $line);
+        $this->assertStringNotContainsString('✅', $line);
+    }
+
+    public function testPhpCsFixerCleanRunStillRendersAsSuccess(): void
+    {
+        // The happy path must not regress when the designated lane
+        // actually ran and reported no issues.
+        $results = [
+            'php8.4-dev' => [
+                'phpcsfixer' => [
+                    'success' => true,
+                    'exit_code' => 0,
+                    'mode' => 'enforced',
+                    'statistics' => [
+                        'files_checked' => 19,
+                        'files_with_issues' => 0,
+                    ],
+                ],
+            ],
+        ];
+        $md = $this->generateQualityMetrics($results);
+        $line = $this->extractPhpCsFixerLine($md);
+        $this->assertNotNull($line);
+        $this->assertStringContainsString('19 files checked, no issues', $line);
+        $this->assertStringContainsString('✅', $line);
+    }
+
+    public function testPhpCsFixerWithIssuesRendersAsWarning(): void
+    {
+        // Non-zero issue count: the existing yellow path stays.
+        $results = [
+            'php8.4-dev' => [
+                'phpcsfixer' => [
+                    'success' => false,
+                    'exit_code' => 8,
+                    'mode' => 'enforced',
+                    'statistics' => [
+                        'files_checked' => 19,
+                        'files_with_issues' => 3,
+                    ],
+                ],
+            ],
+        ];
+        $md = $this->generateQualityMetrics($results);
+        $line = $this->extractPhpCsFixerLine($md);
+        $this->assertNotNull($line);
+        $this->assertStringContainsString('3 files with issues', $line);
+        $this->assertStringContainsString('⚠️', $line);
+    }
+
     /**
      * Helper: invoke the private summariseReason via reflection.
      */
@@ -354,6 +428,21 @@ class PrCommentReporterTest extends TestCase
     {
         foreach (explode("\n", $md) as $line) {
             if (str_starts_with($line, '- **PHPUnit**:')) {
+                return $line;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Helper: pull just the PHP-CS-Fixer metric line out of a
+     * quality-metrics block so assertions don't pick up the PHPUnit or
+     * PHPStan rows by accident.
+     */
+    private function extractPhpCsFixerLine(string $md): ?string
+    {
+        foreach (explode("\n", $md) as $line) {
+            if (str_starts_with($line, '- **PHP-CS-Fixer**:')) {
                 return $line;
             }
         }

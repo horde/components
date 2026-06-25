@@ -593,26 +593,53 @@ class PrCommentReporter
 
         // PHP-CS-Fixer
         if (!empty($csFixerStats)) {
-            $filesChecked = $csFixerStats['files_checked_max'] ?? 0;
-            $pcfFindings = $findingsByTool['phpcsfixer'] ?? null;
-            if (is_array($pcfFindings) && $pcfFindings !== []) {
-                $uniqueFiles = count($pcfFindings);
-                $md .= sprintf(
-                    "- **PHP-CS-Fixer**: %d unique file%s with issues (of %d checked) ⚠️\n",
-                    $uniqueFiles,
-                    $uniqueFiles === 1 ? '' : 's',
-                    $filesChecked
-                );
+            // The tool runs on one designated lane (php8.4-dev by
+            // convention). If no result for any lane was recorded -
+            // because the test config didn't include a designated
+            // lane in this scope - skip the row entirely. The
+            // `lanes_run === 0` "did not run" branch below is reserved
+            // for the case where a lane DID try to produce a result
+            // and didn't (setup-failed, tool crashed, etc.).
+            $lanesWithPhpCsFixer = 0;
+            foreach ($results as $tools) {
+                if (isset($tools['phpcsfixer'])) {
+                    $lanesWithPhpCsFixer++;
+                }
+            }
+            if ($lanesWithPhpCsFixer === 0) {
+                // No row for PHP-CS-Fixer at all.
             } else {
-                $filesWithIssues = $csFixerStats['files_with_issues_max'] ?? 0;
-                if ($filesWithIssues === 0) {
-                    $md .= "- **PHP-CS-Fixer**: {$filesChecked} files checked, no issues ✅\n";
+                $lanesRun = $csFixerStats['lanes_run'] ?? 0;
+                if ($lanesRun === 0) {
+                    // A lane had a phpcsfixer entry but the aggregator
+                    // counted no usable stats: setup-failed, missing
+                    // result file, error. Previously this fell through
+                    // to the green "0 files checked, no issues" branch,
+                    // masking the real outcome.
+                    $md .= "- **PHP-CS-Fixer**: did not run on any lane ❌\n";
                 } else {
-                    $md .= sprintf(
-                        "- **PHP-CS-Fixer**: %d file%s with issues ⚠️\n",
-                        $filesWithIssues,
-                        $filesWithIssues === 1 ? '' : 's'
-                    );
+                    $filesChecked = $csFixerStats['files_checked_max'] ?? 0;
+                    $pcfFindings = $findingsByTool['phpcsfixer'] ?? null;
+                    if (is_array($pcfFindings) && $pcfFindings !== []) {
+                        $uniqueFiles = count($pcfFindings);
+                        $md .= sprintf(
+                            "- **PHP-CS-Fixer**: %d unique file%s with issues (of %d checked) ⚠️\n",
+                            $uniqueFiles,
+                            $uniqueFiles === 1 ? '' : 's',
+                            $filesChecked
+                        );
+                    } else {
+                        $filesWithIssues = $csFixerStats['files_with_issues_max'] ?? 0;
+                        if ($filesWithIssues === 0) {
+                            $md .= "- **PHP-CS-Fixer**: {$filesChecked} files checked, no issues ✅\n";
+                        } else {
+                            $md .= sprintf(
+                                "- **PHP-CS-Fixer**: %d file%s with issues ⚠️\n",
+                                $filesWithIssues,
+                                $filesWithIssues === 1 ? '' : 's'
+                            );
+                        }
+                    }
                 }
             }
         }

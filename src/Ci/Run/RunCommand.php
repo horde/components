@@ -636,16 +636,36 @@ class RunCommand
 
         // PHP-CS-Fixer section
         if (!empty($csFixerStats)) {
-            $md .= "#### PHP-CS-Fixer\n\n";
-            // files_checked/files_with_issues are per-lane; max == unique.
-            $filesChecked = $csFixerStats['files_checked_max'] ?? 0;
-            $filesWithIssues = $csFixerStats['files_with_issues_max'] ?? 0;
-
-            if ($filesWithIssues === 0) {
-                $md .= "✅ **No style issues** in {$filesChecked} files\n\n";
+            // The tool runs on one designated lane (php8.4-dev by
+            // convention). Suppress the row entirely when no lane in
+            // the result set had a phpcsfixer entry at all - that's
+            // not a failure, it just means the result scope didn't
+            // include the designated lane.
+            $lanesWithPhpCsFixer = 0;
+            foreach ($results as $tools) {
+                if (isset($tools['phpcsfixer'])) {
+                    $lanesWithPhpCsFixer++;
+                }
+            }
+            if ($lanesWithPhpCsFixer === 0) {
+                // Skip the section.
             } else {
-                $md .= "⚠️ **{$filesWithIssues} files** with style issues (of {$filesChecked} checked)\n\n";
-                $md .= $this->renderPhpCsFixerFindingsTable();
+                $md .= "#### PHP-CS-Fixer\n\n";
+                $lanesRun = $csFixerStats['lanes_run'] ?? 0;
+                if ($lanesRun === 0) {
+                    $md .= "❌ **Did not run on any lane**\n\n";
+                } else {
+                    // files_checked/files_with_issues are per-lane; max == unique.
+                    $filesChecked = $csFixerStats['files_checked_max'] ?? 0;
+                    $filesWithIssues = $csFixerStats['files_with_issues_max'] ?? 0;
+
+                    if ($filesWithIssues === 0) {
+                        $md .= "✅ **No style issues** in {$filesChecked} files\n\n";
+                    } else {
+                        $md .= "⚠️ **{$filesWithIssues} files** with style issues (of {$filesChecked} checked)\n\n";
+                        $md .= $this->renderPhpCsFixerFindingsTable();
+                    }
+                }
             }
         }
 
