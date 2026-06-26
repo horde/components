@@ -118,6 +118,12 @@ class CiConfig
         $this->componentType = $config['component_type'] ?? 'library';
         $this->workDir = $config['work_dir'] ?? '/tmp/horde-ci';
         $this->componentPath = $config['component_path'] ?? getcwd();
+        // Lane set is normally computed by SetupCommand::readComponentInfo()
+        // (which calls PlatformResolver::phpVersionLaneSet() against the
+        // component's `dependencies.required.php` constraint) and merged
+        // into this config on the second pass. The static slice below is
+        // a defensive last-resort for callers that skip the readComponentInfo
+        // step entirely; it should not be the normal path in production.
         $this->phpVersions = $config['php_versions'] ?? ['8.2', '8.3', '8.4', '8.5'];
         $this->minPhpVersion = $config['min_php_version'] ?? '8.2';
         $this->componentStability = $config['component_stability'] ?? 'alpha';

@@ -24,9 +24,11 @@ use Horde\Components\Ci\Setup\ComposerInstaller;
 use Horde\Components\Ci\Setup\ToolCache;
 use Horde\Components\Ci\Setup\LaneScriptGenerator;
 use Horde\Components\Ci\Config\CiConfig;
+use Horde\Components\Helper\PlatformResolver;
 use Horde\Components\Output;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use ReflectionMethod;
 
 /**
  * Tests for SetupCommand - specifically lane script generation.
@@ -597,5 +599,111 @@ class SetupCommandTest extends TestCase
                 'Reason must name the PHP version so the maintainer sees which lane and why'
             );
         }
+    }
+
+    /**
+     * readComponentInfo() must derive `php_versions` from the
+     * component's declared `dependencies.required.php` constraint via
+     * PlatformResolver::phpVersionLaneSet(). The previous regex-based
+     * extraction only computed `min_php_version` and lost the upper
+     * bound entirely - a component with `^8.1` would silently lose its
+     * 8.1 lane and a hypothetical `^8.3` component would keep a stale
+     * 8.2 lane.
+     */
+    public function testReadComponentInfoComputesPhpVersionsFromCaret81(): void
+    {
+        // Date-style: php: ^8.1 should produce lanes for every PHP
+        // minor we know that satisfies the constraint (8.1 through
+        // CANDIDATE_PHP_MINORS' tail).
+        $info = $this->callReadComponentInfo('^8.1');
+        $this->assertSame(
+            ['8.1', '8.2', '8.3', '8.4', '8.5', '8.6'],
+            $info['php_versions'],
+            'php: ^8.1 should expand to the full 8.1..8.6 lane set'
+        );
+        $this->assertSame(
+            '8.1',
+            $info['min_php_version'],
+            'min_php_version is the first lane, no separate regex needed'
+        );
+    }
+
+    public function testReadComponentInfoComputesPhpVersionsFromCaret82(): void
+    {
+        // Most Horde libraries: php: ^8.2 drops 8.0 and 8.1 from the
+        // matrix entirely. The previous static fallback included
+        // neither, so this is identical to the old behaviour for the
+        // common case.
+        $info = $this->callReadComponentInfo('^8.2');
+        $this->assertSame(
+            ['8.2', '8.3', '8.4', '8.5', '8.6'],
+            $info['php_versions']
+        );
+        $this->assertSame('8.2', $info['min_php_version']);
+    }
+
+    public function testReadComponentInfoFallsBackToFullCandidatesWithoutConstraint(): void
+    {
+        // .horde.yml lacks dependencies.required.php entirely. Lane
+        // selection casts a wide net rather than silently picking one
+        // version.
+        $info = $this->callReadComponentInfoFromYaml(
+            <<<YAML
+                id: NoPhpConstraint
+                name: NoPhpConstraint
+                type: library
+                version:
+                  release: 1.0.0
+                state:
+                  release: stable
+                YAML
+        );
+        $this->assertSame(
+            PlatformResolver::CANDIDATE_PHP_MINORS,
+            $info['php_versions'],
+            'A component without a php constraint should run on the full candidate list'
+        );
+        // min_php_version comes from the first candidate; today 8.0.
+        $this->assertSame(PlatformResolver::CANDIDATE_PHP_MINORS[0], $info['min_php_version']);
+    }
+
+    /**
+     * Helper: invoke private readComponentInfo() with a synthetic
+     * .horde.yml whose `dependencies.required.php` is the given
+     * constraint string.
+     */
+    private function callReadComponentInfo(string $phpConstraint): array
+    {
+        return $this->callReadComponentInfoFromYaml(
+            <<<YAML
+                id: TestComponent
+                name: TestComponent
+                type: library
+                version:
+                  release: 1.0.0
+                state:
+                  release: stable
+                dependencies:
+                  required:
+                    php: {$phpConstraint}
+                YAML
+        );
+    }
+
+    /**
+     * Helper: invoke private readComponentInfo() with the given raw
+     * .horde.yml content.
+     */
+    private function callReadComponentInfoFromYaml(string $yaml): array
+    {
+        // Use a dedicated component path so the YAML written here
+        // doesn't collide with the setUp() fixture (which is ^8.2).
+        $path = $this->tempDir . '/info-fixture-' . uniqid();
+        mkdir($path, 0o755, true);
+        file_put_contents($path . '/.horde.yml', $yaml);
+
+        $method = new ReflectionMethod(SetupCommand::class, 'readComponentInfo');
+        $method->setAccessible(true);
+        return (array) $method->invoke($this->setupCommand, $path);
     }
 }

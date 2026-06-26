@@ -65,8 +65,12 @@ class PlatformResolver
      * with `isSatisfiedBy(new RelaxedSemanticVersion("X.Y.0"))` and the
      * matching minors are returned in order. Bumping this list is the
      * only change required when a new PHP minor ships.
+     *
+     * Public so the CI matrix builder ({@see self::phpVersionLaneSet()}
+     * and its callers) can share one source of truth for "what PHP
+     * minors does CI know how to install."
      */
-    private const array CANDIDATE_PHP_MINORS = [
+    public const array CANDIDATE_PHP_MINORS = [
         '8.0', '8.1', '8.2', '8.3', '8.4', '8.5', '8.6',
     ];
 
@@ -388,6 +392,79 @@ class PlatformResolver
             return [self::CURRENT_MAX_PHP];
         }
 
+        $matched = self::intersectConstraintWithCandidates($constraint);
+        if ($matched === null) {
+            // Unparseable constraint.
+            return [self::CURRENT_MAX_PHP];
+        }
+
+        // Defensive fallback: if no candidate satisfies the constraint
+        // (e.g. constraint is for an unsupported PHP major), return
+        // CURRENT_MAX_PHP rather than an empty range. Callers iterate
+        // over the result and an empty list would skip the component
+        // entirely.
+        if ($matched === []) {
+            return [self::CURRENT_MAX_PHP];
+        }
+
+        return $matched;
+    }
+
+    /**
+     * Compute the list of PHP minor versions to use as CI lanes for the
+     * component, given its `dependencies.required.php` constraint from
+     * `.horde.yml`.
+     *
+     * Like {@see self::phpVersionRange()} this intersects the constraint
+     * against {@see self::CANDIDATE_PHP_MINORS}. The fallback semantics
+     * differ: lane selection treats an empty or unparseable constraint
+     * as "test on every PHP minor we know" (the full candidate list)
+     * rather than "narrow to the latest." That matches what a maintainer
+     * expects when they forget to declare a PHP constraint: CI should
+     * cast a wide net, not silently pick one version.
+     *
+     * Unsupported-major constraints (e.g. `^7.4` when we no longer list
+     * 7.x candidates) also fall back to the full list rather than
+     * collapsing to CURRENT_MAX_PHP, for the same reason.
+     *
+     * Static because the answer depends only on the constraint string
+     * and the canonical candidate list; there is no resolver state to
+     * consult. Callers can use this without constructing the heavier
+     * PlatformResolver (which carries a shell and an output handle for
+     * its composer subprocess work).
+     *
+     * @return list<string> Ordered list of PHP minors, e.g.
+     *                     `['8.2', '8.3', '8.4', '8.5', '8.6']`.
+     */
+    public static function phpVersionLaneSet(string $constraint): array
+    {
+        $constraint = trim($constraint);
+        if ($constraint === '') {
+            return self::CANDIDATE_PHP_MINORS;
+        }
+
+        $matched = self::intersectConstraintWithCandidates($constraint);
+        if ($matched === null || $matched === []) {
+            // Parse failure or no candidate satisfies the constraint.
+            // Fall back to the full candidate list rather than narrowing
+            // to CURRENT_MAX_PHP; lane selection should default to broad
+            // coverage when input is ambiguous.
+            return self::CANDIDATE_PHP_MINORS;
+        }
+
+        return $matched;
+    }
+
+    /**
+     * Shared helper: parse the constraint and return every candidate
+     * minor that satisfies it, preserving candidate order.
+     *
+     * @return list<string>|null List of matching minors (possibly
+     *                           empty), or null if the constraint
+     *                           failed to parse.
+     */
+    private static function intersectConstraintWithCandidates(string $constraint): ?array
+    {
         // Composer accepts both `,` and ` ` as AND separators (per the
         // package versions documentation); Horde\Version\ConstraintParser
         // only recognises space-separated AND, so normalise commas to
@@ -397,7 +474,7 @@ class PlatformResolver
         try {
             $parsed = (new ConstraintParser())->parse($normalised);
         } catch (InvalidVersionException) {
-            return [self::CURRENT_MAX_PHP];
+            return null;
         }
 
         $out = [];
@@ -406,15 +483,6 @@ class PlatformResolver
             if ($parsed->isSatisfiedBy($probe)) {
                 $out[] = $minor;
             }
-        }
-
-        // Defensive fallback: if no candidate satisfies the constraint
-        // (e.g. constraint is for an unsupported PHP major), return
-        // CURRENT_MAX_PHP rather than an empty range. Callers iterate
-        // over the result and an empty list would skip the component
-        // entirely.
-        if ($out === []) {
-            return [self::CURRENT_MAX_PHP];
         }
 
         return $out;

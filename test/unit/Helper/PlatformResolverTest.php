@@ -98,6 +98,56 @@ class PlatformResolverTest extends TestCase
         );
     }
 
+    public static function laneSetProvider(): array
+    {
+        $full = PlatformResolver::CANDIDATE_PHP_MINORS;
+        return [
+            // Real-world Horde constraints. ^8.1 (Date) widens to include 8.1
+            // and 8.6; ^8.2 (most libraries) drops 8.0 and 8.1.
+            'caret 8.1'           => ['^8.1', ['8.1', '8.2', '8.3', '8.4', '8.5', '8.6']],
+            'caret 8.2'           => ['^8.2', ['8.2', '8.3', '8.4', '8.5', '8.6']],
+            'caret 8.3'           => ['^8.3', ['8.3', '8.4', '8.5', '8.6']],
+            'gte 8.5'             => ['>=8.5', ['8.5', '8.6']],
+            'compound range'      => ['>=8.2,<8.5', ['8.2', '8.3', '8.4']],
+            'or with future'      => ['^8.2 || ^9.0', ['8.2', '8.3', '8.4', '8.5', '8.6']],
+            // Fallback semantics differ from phpVersionRange: lane selection
+            // defaults to the FULL candidate list, not just CURRENT_MAX_PHP.
+            'empty fallback'      => ['', $full],
+            'garbage fallback'    => ['nonsense', $full],
+            'unsupported major'   => ['^7.4', $full],
+        ];
+    }
+
+    #[DataProvider('laneSetProvider')]
+    public function testPhpVersionLaneSet(string $constraint, array $expected): void
+    {
+        $this->assertSame($expected, PlatformResolver::phpVersionLaneSet($constraint));
+    }
+
+    public function testPhpVersionLaneSetIsStatic(): void
+    {
+        // Lane selection is static because the answer only depends on
+        // the constraint string and the candidate constant. Callers
+        // outside this class (notably SetupCommand) need to call this
+        // without constructing the heavier PlatformResolver instance.
+        $reflection = new \ReflectionMethod(PlatformResolver::class, 'phpVersionLaneSet');
+        $this->assertTrue($reflection->isStatic());
+        $this->assertTrue($reflection->isPublic());
+    }
+
+    public function testCandidatePhpMinorsIsPublic(): void
+    {
+        // The candidate constant doubles as the lane-selection fallback
+        // and must be reachable from outside this class. A regression
+        // to private would silently break the fallback that
+        // SetupCommand depends on.
+        $reflection = new \ReflectionClassConstant(
+            PlatformResolver::class,
+            'CANDIDATE_PHP_MINORS',
+        );
+        $this->assertTrue($reflection->isPublic());
+    }
+
     public static function platformKeyProvider(): array
     {
         return [

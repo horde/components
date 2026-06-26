@@ -20,6 +20,7 @@ use Horde\Components\Exception;
 use Horde\Components\Output;
 use Horde\Components\Ci\Config\CiConfig;
 use Horde\Components\Component;
+use Horde\Components\Helper\PlatformResolver;
 use Horde\HordeYmlFile\HordeYmlFile;
 
 /**
@@ -394,18 +395,18 @@ class SetupCommand
             throw new Exception('Failed to read .horde.yml: ' . $e->getMessage(), 0, $e);
         }
 
-        // Extract minimum PHP version using typed Dependencies API
-        $minPhp = '8.2'; // Default
+        // Compute the PHP-minor lane set from the component's declared
+        // PHP constraint. PlatformResolver::phpVersionLaneSet() intersects
+        // the constraint against CANDIDATE_PHP_MINORS, the canonical list
+        // of PHP minors CI knows how to install. An empty or unparseable
+        // constraint falls back to the full candidate set (broad-coverage
+        // default), not to one version. The minimum PHP version is then
+        // simply the first entry of the resulting list, no separate regex
+        // needed.
         $deps = $hordeYml->getDependencies();
-        if ($deps !== null) {
-            $phpReq = $deps->getRequiredPhp();
-            if ($phpReq !== null) {
-                // Parse requirements like "^8.2", ">=8.3", "^8.2 || ^8.3"
-                if (preg_match('/[>^~]?\s*(\d+\.\d+)/', $phpReq, $matches)) {
-                    $minPhp = $matches[1];
-                }
-            }
-        }
+        $phpReq = $deps?->getRequiredPhp() ?? '';
+        $phpVersions = PlatformResolver::phpVersionLaneSet($phpReq);
+        $minPhp = $phpVersions[0];
 
         // Extract component stability
         $stability = $hordeYml->getReleaseState() ?: 'alpha';
@@ -425,6 +426,7 @@ class SetupCommand
         return [
             'component_type' => $type,
             'min_php_version' => $minPhp,
+            'php_versions' => $phpVersions,
             'component_stability' => $stability,
             'required_extensions' => $extensions,
         ];
