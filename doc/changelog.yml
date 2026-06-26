@@ -1,4 +1,14 @@
 ---
+1.0.0-RC8:
+  api: 1.0.0-RC8
+  state:
+    release: RC
+    api: RC
+  date: 2026-06-26
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: "fix(ci): drop PHP minors apt cannot install before PhpInstaller runs\nfeat(ci): derive PHP lane set from .horde.yml constraint\nfix(ci): PHP-CS-Fixer \"did not run\" rendering; suppress empty section when no lane attempted it\nfeat(ci): capture per-test PHPUnit failures, dedup across lanes, link counts to artifacts, upload JUnit XML"
 1.0.0-RC7:
   api: 1.0.0-RC7
   state:
