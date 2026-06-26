@@ -181,6 +181,91 @@ class PhpInstaller
     }
 
     /**
+     * Filter a list of PHP minors down to those that have a `phpX.Y`
+     * package in apt's current view of the world.
+     *
+     * The matrix builder ({@see PlatformResolver::phpVersionLaneSet})
+     * intersects the component's PHP constraint against every minor
+     * we know about, but the ondrej/php PPA does not always carry the
+     * very latest minor on day-zero of its release. A component that
+     * legitimately allows PHP 8.6 must not cause a fatal CI abort just
+     * because apt doesn't have 8.6 yet; the lane is silently dropped
+     * from the matrix instead.
+     *
+     * Idempotent: calling this when the PPA is already added and
+     * `apt-get update` already ran is a fast no-op that just runs
+     * `apt-cache show` per version.
+     *
+     * Already-installed versions are always reported as available; the
+     * apt-cache check is skipped for them so a fresh-from-cache build
+     * doesn't need network access to confirm what's on disk.
+     *
+     * @param array<string> $versions PHP minors to probe, e.g.
+     *                                ['8.2', '8.3', '8.4', '8.5', '8.6'].
+     * @return list<string> The subset whose `phpX.Y` package exists.
+     *                      Order matches the input order.
+     */
+    public function filterAvailable(array $versions): array
+    {
+        if (empty($versions)) {
+            return [];
+        }
+
+        if (!$this->isDebianBased()) {
+            // Non-Debian systems can't be probed via apt; trust the
+            // caller's list and let install() fail later with a clearer
+            // diagnostic if needed.
+            return array_values($versions);
+        }
+
+        // The ondrej PPA must be visible to apt before `apt-cache show`
+        // can find phpX.Y packages from it. Skip the add when sources
+        // already mention ondrej; this keeps repeated CI calls cheap.
+        if (!$this->isPpaAdded()) {
+            $this->output->info('Adding ondrej/php PPA (probe phase)...');
+            if (!$this->addPpa()) {
+                // PPA add failed; don't drop everything. Fall back to
+                // letting install() try and produce its own error.
+                return array_values($versions);
+            }
+        }
+
+        $available = [];
+        foreach ($versions as $version) {
+            if ($this->isPhpVersionInstalled($version)) {
+                $available[] = $version;
+                continue;
+            }
+            if ($this->aptHasPackage("php{$version}")) {
+                $available[] = $version;
+                continue;
+            }
+            $this->output->info(sprintf(
+                'PHP %s not available in apt (ondrej/php has not shipped it yet); lane dropped',
+                $version
+            ));
+        }
+
+        return $available;
+    }
+
+    /**
+     * Probe `apt-cache show <package>` and return true when the
+     * package is known to apt. Used by {@see self::filterAvailable()}.
+     */
+    private function aptHasPackage(string $package): bool
+    {
+        // `apt-cache show` exits 100 when the package is unknown,
+        // 0 when at least one version exists. We don't need the
+        // payload; just the exit code. Stderr is muted because
+        // unknown packages print "N: Unable to locate package …"
+        // which is noise in the CI log.
+        $escaped = escapeshellarg($package);
+        exec("apt-cache show {$escaped} > /dev/null 2>&1", $_unused, $exitCode);
+        return $exitCode === 0;
+    }
+
+    /**
      * Install a specific PHP version.
      *
      * @param string $version PHP version (e.g., '8.4')

@@ -126,6 +126,42 @@ class SetupCommand
         $testableVersions = $config->getTestablePhpVersions();
         $this->output->info('Testable versions: ' . implode(', ', $testableVersions));
 
+        // Drop PHP minors that apt/ondrej does not actually ship yet. A
+        // component declaring `^8.2` legitimately includes 8.6 in its
+        // testable set the moment PHP 8.6 enters CANDIDATE_PHP_MINORS,
+        // but ondrej/php may not have shipped a phpX.Y package for that
+        // minor yet. Without this filter PhpInstaller would throw a Fatal
+        // and abort the whole run; with it the lane simply isn't in the
+        // matrix for this build.
+        $availableVersions = $this->phpInstaller->filterAvailable($testableVersions);
+        if ($availableVersions !== $testableVersions) {
+            $dropped = array_values(array_diff($testableVersions, $availableVersions));
+            $this->output->info(sprintf(
+                'Lanes dropped (not available in apt): %s',
+                implode(', ', $dropped)
+            ));
+            // Rebuild CiConfig with the filtered list so every later
+            // step (extension install, lane copier, lane matrix, run
+            // command) sees the same set.
+            $config = new CiConfig(array_merge([
+                'mode' => $config->mode,
+                'component_name' => $config->componentName,
+                'component_branch' => $config->componentBranch,
+                'component_type' => $config->componentType,
+                'component_path' => $config->componentPath,
+                'work_dir' => $config->workDir,
+                'github_token' => $config->githubToken,
+                'components_phar_url' => $config->componentsPharUrl,
+                'local_components_path' => $config->localComponentsPath,
+                'components_path' => $config->componentsPath,
+                'php_versions' => $availableVersions,
+                'min_php_version' => $availableVersions[0] ?? $config->minPhpVersion,
+                'component_stability' => $config->componentStability,
+                'required_extensions' => $config->requiredExtensions,
+            ]));
+            $testableVersions = $config->getTestablePhpVersions();
+        }
+
         $this->phpInstaller->install($testableVersions);
         $this->output->plain('');
 

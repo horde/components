@@ -63,6 +63,14 @@ class SetupCommandTest extends TestCase
         $this->toolCache = $this->createMock(ToolCache::class);
         $this->laneScriptGenerator = $this->createMock(LaneScriptGenerator::class);
 
+        // Default filterAvailable to a passthrough: tests that don't
+        // specifically care about lane filtering get the happy path
+        // (every requested PHP version is installable). Tests that
+        // exercise the filter override this with their own expectation.
+        $this->phpInstaller
+            ->method('filterAvailable')
+            ->willReturnCallback(static fn (array $versions): array => array_values($versions));
+
         // Create temp directory for test component
         $this->tempDir = sys_get_temp_dir() . '/horde-ci-setup-test-' . uniqid();
         mkdir($this->tempDir, 0o755, true);
@@ -705,5 +713,119 @@ class SetupCommandTest extends TestCase
         $method = new ReflectionMethod(SetupCommand::class, 'readComponentInfo');
         $method->setAccessible(true);
         return (array) $method->invoke($this->setupCommand, $path);
+    }
+
+    /**
+     * When PhpInstaller::filterAvailable() drops a PHP minor (ondrej/php
+     * has not shipped phpX.Y yet), SetupCommand must drop that minor
+     * from every downstream step (extension install, lane copy, lane
+     * scripts) - not just from PhpInstaller::install(). Otherwise the
+     * extension installer reaches for a php binary that does not exist
+     * and the lane goes setup-failed for the wrong reason.
+     */
+    public function testFilterAvailableDropsUnavailableMinorsFromEntireFlow(): void
+    {
+        // Override the setUp() fixture so readComponentInfo() resolves
+        // a constraint matching the lane list under test. `^8.3` expands
+        // (via PlatformResolver::phpVersionLaneSet) to [8.3, 8.4, 8.5, 8.6];
+        // the filter drops 8.6 to simulate the real-world case where
+        // ondrej/php has not shipped that minor's apt package yet.
+        file_put_contents(
+            $this->testComponentPath . '/.horde.yml',
+            <<<YAML
+                id: TestComponent
+                name: TestComponent
+                type: library
+                version:
+                  release: 1.0.0
+                state:
+                  release: stable
+                dependencies:
+                  required:
+                    php: ^8.3
+                YAML
+        );
+
+        $workDir = $this->tempDir . '/work';
+        $config = new CiConfig([
+            'mode' => 'local',
+            'component_name' => 'TestComponent',
+            'component_path' => $this->testComponentPath,
+            'work_dir' => $workDir,
+            // The php_versions key here is overridden by
+            // readComponentInfo() during setupCommand->execute(); the
+            // .horde.yml constraint above is the real driver.
+            'min_php_version' => '8.3',
+            'component_stability' => 'stable',
+            'local_components_path' => '/usr/bin/horde-components',
+            'components_path' => '/usr/bin/horde-components',
+        ]);
+
+        // Override the setUp() passthrough: drop 8.6 (apt has no
+        // php8.6 package yet) and keep 8.3, 8.4, 8.5.
+        $this->phpInstaller = $this->createMock(PhpInstaller::class);
+        $this->phpInstaller
+            ->method('filterAvailable')
+            ->with(['8.3', '8.4', '8.5', '8.6'])
+            ->willReturn(['8.3', '8.4', '8.5']);
+
+        // install() must only receive the filtered set; if it received
+        // the original list it would throw on 8.6 in production.
+        $this->phpInstaller
+            ->expects($this->once())
+            ->method('install')
+            ->with(['8.3', '8.4', '8.5']);
+
+        $this->phpInstaller
+            ->method('getPhpBinary')
+            ->willReturnCallback(static fn (string $v): string => "/usr/bin/php{$v}");
+
+        // detectExtensionsPerVersion must receive the filtered set
+        // too. Asking for extensions for a PHP we cannot install would
+        // attempt apt-get install php8.6-X and fail downstream with the
+        // same diagnostic the filter was designed to prevent.
+        $this->extensionInstaller
+            ->expects($this->once())
+            ->method('detectExtensionsPerVersion')
+            ->with($this->testComponentPath, 'TestComponent', ['8.3', '8.4', '8.5'])
+            ->willReturn(['8.3' => [], '8.4' => [], '8.5' => []]);
+
+        $this->extensionInstaller->method('installPerVersion')->willReturn([]);
+        $this->laneCopier->method('copyToLanes');
+        $this->composerInstaller->method('install');
+        $this->composerInstaller->method('verifyInstallation')->willReturn(true);
+        $this->composerInstaller->method('getInstalledPackageCount')->willReturn(10);
+        $this->toolCache->method('ensureAllTools');
+
+        // Capture which lanes get a run-lane.sh; 8.6 must not appear.
+        $generatedLanes = [];
+        $this->laneScriptGenerator
+            ->method('generate')
+            ->willReturnCallback(function (string $_path, array $cfg) use (&$generatedLanes): bool {
+                $generatedLanes[] = $cfg['php_version'];
+                return true;
+            });
+
+        // Rebuild the command with the per-test phpInstaller mock.
+        $this->setupCommand = new SetupCommand(
+            $this->output,
+            $this->phpInstaller,
+            $this->extensionInstaller,
+            $this->laneCopier,
+            $this->composerInstaller,
+            $this->toolCache,
+            $this->laneScriptGenerator
+        );
+
+        $this->setupCommand->execute($config);
+
+        $this->assertNotContains(
+            '8.6',
+            $generatedLanes,
+            'Dropped PHP minor must not get a run-lane.sh'
+        );
+        $this->assertContains('8.3', $generatedLanes);
+        $this->assertContains('8.4', $generatedLanes);
+        $this->assertContains('8.5', $generatedLanes);
     }
 }
