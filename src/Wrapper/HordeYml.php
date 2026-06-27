@@ -216,6 +216,13 @@ class HordeYml extends ArrayObject implements Wrapper, Stringable
      * Get allowed Composer plugins
      *
      * Components-specific logic: auto-adds horde-installer-plugin for components/applications
+     * AND for any package whose `.horde.yml` carries a
+     * `ci-platform-flags.needs_installer_plugin: true` marker. The
+     * marker is written by `horde-components deps --platform` when the
+     * resolved transitive dep tree contains a horde-library, a
+     * horde-application, or any direct require on
+     * horde/horde-installer-plugin. Without the auto-add, composer 2.2+
+     * silently disables the plugin and the install ends up wired wrong.
      *
      * @return array|object Allowed plugins
      */
@@ -229,6 +236,23 @@ class HordeYml extends ArrayObject implements Wrapper, Stringable
             if (!array_key_exists('horde/horde-installer-plugin', $allowedPlugins)) {
                 $allowedPlugins['horde/horde-installer-plugin'] = true;
             }
+        }
+
+        // ci-platform-flags marker: any library that transitively pulls
+        // horde/horde-installer-plugin (via a horde-library or
+        // horde-application dep) needs to opt the plugin in explicitly
+        // for composer 2.2+. The deps --platform pipeline computes the
+        // marker; we honour it here regardless of the component's own
+        // type.
+        $flags = $this->hordeYmlFile->get('ci-platform-flags');
+        $needsPlugin = false;
+        if (is_object($flags)) {
+            $needsPlugin = !empty($flags->needs_installer_plugin);
+        } elseif (is_array($flags)) {
+            $needsPlugin = !empty($flags['needs_installer_plugin']);
+        }
+        if ($needsPlugin && !array_key_exists('horde/horde-installer-plugin', $allowedPlugins)) {
+            $allowedPlugins['horde/horde-installer-plugin'] = true;
         }
 
         return (object) $allowedPlugins;

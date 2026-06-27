@@ -299,4 +299,128 @@ class PlatformResolverTest extends TestCase
             $this->resolver->extractFromLock($lock),
         );
     }
+
+    /**
+     * The installer-plugin flag fires for packages declared with
+     * type horde-library. Any one such package in the resolved tree
+     * is enough; the maintainer's component needs the plugin opted
+     * in via config.allow-plugins or composer 2.2+ silently disables
+     * it.
+     */
+    public function testExtractFlagsFromLockTrueForHordeLibraryType(): void
+    {
+        $lock = json_encode([
+            'packages' => [
+                [
+                    'name' => 'horde/exception',
+                    'type' => 'horde-library',
+                    'require' => ['php' => '^8.2'],
+                ],
+            ],
+        ]);
+
+        $this->assertSame(
+            ['needs_installer_plugin' => true],
+            $this->resolver->extractFlagsFromLock((string) $lock),
+        );
+    }
+
+    public function testExtractFlagsFromLockTrueForHordeApplicationType(): void
+    {
+        $lock = json_encode([
+            'packages' => [
+                [
+                    'name' => 'horde/mnemo',
+                    'type' => 'horde-application',
+                    'require' => ['php' => '^8.2'],
+                ],
+            ],
+        ]);
+
+        $this->assertTrue(
+            $this->resolver->extractFlagsFromLock((string) $lock)['needs_installer_plugin']
+        );
+    }
+
+    public function testExtractFlagsFromLockTrueForDirectInstallerPluginRequire(): void
+    {
+        // A package that requires horde/horde-installer-plugin directly
+        // (even with a non-horde type) still triggers the flag - the
+        // plugin needs to run for that package to be installed
+        // correctly.
+        $lock = json_encode([
+            'packages' => [
+                [
+                    'name' => 'someone/who-uses-it',
+                    'type' => 'library',
+                    'require' => [
+                        'php' => '^8.2',
+                        'horde/horde-installer-plugin' => '^2.0',
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertTrue(
+            $this->resolver->extractFlagsFromLock((string) $lock)['needs_installer_plugin']
+        );
+    }
+
+    public function testExtractFlagsFromLockFalseForPlainLibraryTree(): void
+    {
+        // No horde-library, no horde-application, no plugin require:
+        // the flag stays false. Components that happen to be standalone
+        // PHP libraries should not have the plugin opted in
+        // unnecessarily.
+        $lock = json_encode([
+            'packages' => [
+                [
+                    'name' => 'psr/log',
+                    'type' => 'library',
+                    'require' => ['php' => '^8.0'],
+                ],
+            ],
+        ]);
+
+        $this->assertSame(
+            ['needs_installer_plugin' => false],
+            $this->resolver->extractFlagsFromLock((string) $lock),
+        );
+    }
+
+    public function testExtractFlagsFromLockWalksPackagesDev(): void
+    {
+        // A horde-library in packages-dev (rare but possible if a
+        // transitive plugin pulls dev things in) still triggers the
+        // flag - the resolver's defensive walk over packages-dev is
+        // exercised here.
+        $lock = json_encode([
+            'packages' => [
+                ['name' => 'psr/log', 'type' => 'library', 'require' => []],
+            ],
+            'packages-dev' => [
+                [
+                    'name' => 'horde/test',
+                    'type' => 'horde-library',
+                    'require' => [],
+                ],
+            ],
+        ]);
+
+        $this->assertTrue(
+            $this->resolver->extractFlagsFromLock((string) $lock)['needs_installer_plugin']
+        );
+    }
+
+    public function testExtractFlagsFromLockHandlesMalformedJson(): void
+    {
+        $this->assertSame(
+            ['needs_installer_plugin' => false],
+            $this->resolver->extractFlagsFromLock('not even close to JSON'),
+        );
+        $this->assertSame(
+            ['needs_installer_plugin' => false],
+            $this->resolver->extractFlagsFromLock(''),
+        );
+    }
 }
