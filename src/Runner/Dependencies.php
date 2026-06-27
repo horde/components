@@ -110,29 +110,7 @@ class Dependencies
         $hordeYml = new HordeYmlFile($hordeYmlPath);
         $resolver = new PlatformResolver(new Shell($output), $output);
 
-        $resolved = $resolver->resolveRangeFromHordeYml($hordeYml, $componentDir);
-
-        // Build the YAML-friendly representation. Per the agreed shape:
-        // - ext-* / lib-* render as bare list items (string scalars).
-        // - php / composer-* render as single-key maps so the version
-        //   constraint is preserved alongside the name.
-        // - 'not resolvable' renders as a scalar string under the key.
-        $ciPlatform = [];
-        foreach ($resolved as $minor => $entries) {
-            if (is_string($entries)) {
-                $ciPlatform[$minor] = $entries;
-                continue;
-            }
-            $list = [];
-            foreach ($entries as [$name, $constraint]) {
-                if (str_starts_with($name, 'ext-') || str_starts_with($name, 'lib-')) {
-                    $list[] = $name;
-                } else {
-                    $list[] = [$name => $constraint ?? '*'];
-                }
-            }
-            $ciPlatform[$minor] = $list;
-        }
+        $ciPlatform = $resolver->resolveAndShapeForCiPlatform($hordeYml, $componentDir);
 
         if (!empty($this->options['pretend'])) {
             // Preview mode: surface the fragment that would be written.

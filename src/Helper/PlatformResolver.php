@@ -143,6 +143,53 @@ class PlatformResolver
     }
 
     /**
+     * Resolve platform requirements for the UUT and shape the result
+     * into the structure stored under the `ci-platform:` key in
+     * `.horde.yml`. The shape mirrors what `Runner/Dependencies::runPlatformResolve()`
+     * persists when the maintainer runs `horde-components deps --platform`,
+     * so the release pipeline can refresh the same block by calling this
+     * helper and the `deps --platform` runner can stay as a thin entry
+     * point.
+     *
+     * Shape per minor:
+     * - ext-* / lib-* render as bare list items (string scalars).
+     * - php / composer-* render as single-key maps so the version
+     *   constraint travels with the name.
+     * - 'not resolvable' renders as a scalar string under the minor
+     *   key when composer could not produce a lock for that PHP version.
+     *
+     * Network access: see {@see self::resolveRangeFromHordeYml()}. This
+     * helper inherits the same Packagist round-trips.
+     *
+     * @return array<string, list<string|array<string, string>>|string>
+     */
+    public function resolveAndShapeForCiPlatform(
+        HordeYmlFile $hordeYml,
+        string $componentDir,
+    ): array {
+        $resolved = $this->resolveRangeFromHordeYml($hordeYml, $componentDir);
+
+        $ciPlatform = [];
+        foreach ($resolved as $minor => $entries) {
+            if (is_string($entries)) {
+                $ciPlatform[$minor] = $entries;
+                continue;
+            }
+            $list = [];
+            foreach ($entries as [$name, $constraint]) {
+                if (str_starts_with($name, 'ext-') || str_starts_with($name, 'lib-')) {
+                    $list[] = $name;
+                } else {
+                    $list[] = [$name => $constraint ?? '*'];
+                }
+            }
+            $ciPlatform[$minor] = $list;
+        }
+
+        return $ciPlatform;
+    }
+
+    /**
      * Resolve platform requirements for a single pinned PHP minor by
      * treating the UUT's composer.json as the root project.
      *

@@ -94,6 +94,15 @@ class Release extends Base
         ), new Option(
             '--dump',
             ['action' => 'store_true', 'help'   => 'Prints the release notes only.']
+        ), new Option(
+            '--skip-ci-refresh',
+            [
+                'action' => 'store_true',
+                'help'   => 'Skip the release-time CI refresh (ci-platform resolve, '
+                    . 'bootstrap/workflow regeneration, obsolete sibling deletion). Use '
+                    . 'for offline hotfix releases where the Packagist round-trips for '
+                    . 'the platform resolver are unwelcome.',
+            ]
         )];
     }
 
@@ -185,7 +194,7 @@ The following example would generate the package and add the release tag to git 
      */
     public function getContextOptionHelp(): array
     {
-        return ['--pretend' => '', '--config' => '', '--releaseserver' => '', '--releasedir' => '', '--next-note' => '', '--next-version' => '', '--version-part' => '', '--next-relstate' => '', '--next-apistate' => '', '--from' => '', '--horde-user' => '', '--horde-pass' => '', '--web-dir' => '', '--dump' => ''];
+        return ['--pretend' => '', '--config' => '', '--releaseserver' => '', '--releasedir' => '', '--next-note' => '', '--next-version' => '', '--version-part' => '', '--next-relstate' => '', '--next-apistate' => '', '--from' => '', '--horde-user' => '', '--horde-pass' => '', '--web-dir' => '', '--dump' => '', '--skip-ci-refresh' => ''];
     }
 
     /**
