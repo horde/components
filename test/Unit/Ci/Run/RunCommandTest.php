@@ -384,4 +384,96 @@ class RunCommandTest extends TestCase
         // Execute
         $this->runCommand->execute($this->tempDir);
     }
+
+    /**
+     * PHPStan watermark+1 advisory: the lane table renders a separate
+     * `PHPStan Advisory` column with `+N @ L` cells when any lane
+     * captured advisory data. anyLaneHasPhpStanAdvisory gates the
+     * column on at least one lane having errors > 0.
+     */
+    public function testAnyLaneHasPhpStanAdvisoryDetectsCapturedAdvisory(): void
+    {
+        $method = new \ReflectionMethod(RunCommand::class, 'anyLaneHasPhpStanAdvisory');
+        $method->setAccessible(true);
+
+        // Lane with positive advisory count → true.
+        $results = [
+            'php8.3-dev' => [
+                'phpstan' => [
+                    'success' => true,
+                    'advisory_next_level' => [
+                        'level' => 4,
+                        'errors' => 12,
+                        'passing' => false,
+                    ],
+                ],
+            ],
+        ];
+        $this->assertTrue($method->invoke($this->runCommand, $results));
+
+        // Lane with advisory block but zero errors (would-be impossible
+        // in practice but guard against it) → false.
+        $resultsZero = [
+            'php8.3-dev' => [
+                'phpstan' => [
+                    'success' => true,
+                    'advisory_next_level' => [
+                        'level' => 4,
+                        'errors' => 0,
+                        'passing' => true,
+                    ],
+                ],
+            ],
+        ];
+        $this->assertFalse($method->invoke($this->runCommand, $resultsZero));
+
+        // No advisory block at all → false (column suppressed).
+        $resultsNone = [
+            'php8.3-dev' => [
+                'phpstan' => [
+                    'success' => true,
+                ],
+            ],
+        ];
+        $this->assertFalse($method->invoke($this->runCommand, $resultsNone));
+    }
+
+    public function testFormatPhpStanAdvisoryForTableProducesCompactCell(): void
+    {
+        $method = new \ReflectionMethod(RunCommand::class, 'formatPhpStanAdvisoryForTable');
+        $method->setAccessible(true);
+
+        // Positive advisory: "+N @ L"
+        $this->assertSame(
+            '+12 @ 4',
+            $method->invoke($this->runCommand, [
+                'advisory_next_level' => [
+                    'level' => 4,
+                    'errors' => 12,
+                    'passing' => false,
+                ],
+            ]),
+        );
+
+        // No advisory block: dash.
+        $this->assertSame(
+            '-',
+            $method->invoke($this->runCommand, ['success' => true]),
+        );
+
+        // Null lane result: dash.
+        $this->assertSame('-', $method->invoke($this->runCommand, null));
+
+        // Zero errors (defensive case): dash, not "+0 @ N".
+        $this->assertSame(
+            '-',
+            $method->invoke($this->runCommand, [
+                'advisory_next_level' => [
+                    'level' => 9,
+                    'errors' => 0,
+                    'passing' => true,
+                ],
+            ]),
+        );
+    }
 }

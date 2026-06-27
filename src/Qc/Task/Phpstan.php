@@ -64,6 +64,31 @@ class Phpstan extends Base
     private bool $advisory = false;
 
     /**
+     * Findings at watermark+1 (or the lowest failing level above the
+     * post-raise watermark) when watermark itself passes. Surfaced in
+     * the PR comment as a "budget" for the next promotion. Null when
+     *
+     * - watermark fails (no peek attempted),
+     * - watermark is already at the maximum supported PHPStan level so
+     *   no level+1 exists,
+     * - or the discovery loop reaches the maximum level without any
+     *   failure (perfect run).
+     *
+     * Shape mirrors the testLevel() return value: ['level', 'errors',
+     * 'files_with_errors', 'passing'].
+     *
+     * @var array{level: int, errors: int, files_with_errors: int, passing: bool}|null
+     */
+    private ?array $advisoryNextLevel = null;
+
+    /**
+     * Maximum PHPStan level the discovery loop will probe. PHPStan
+     * itself caps at 9; level 10 does not exist. Exposed as a constant
+     * so the watermark+1 advisory step can avoid out-of-range probes.
+     */
+    private const MAX_PHPSTAN_LEVEL = 9;
+
+    /**
      * Get the name of this task.
      *
      * @return string The task name.
@@ -143,6 +168,11 @@ class Phpstan extends Base
                 'errors' => 0,
                 'file_errors' => 0,
             ];
+            // Reset advisory state: it's only populated when watermark
+            // passes AND a higher level still has findings. The two
+            // null-leaving cases (watermark fails, watermark already at
+            // max) just leave this null.
+            $this->advisoryNextLevel = null;
 
             // Run at watermark level (MUST PASS)
             $this->getOutput()->running('Testing watermark level ' . $watermark . '...');
@@ -204,7 +234,7 @@ class Phpstan extends Base
             $highestPassing = $watermark;
             $testLevel = $watermark + 1;
 
-            while ($testLevel <= 9) {
+            while ($testLevel <= self::MAX_PHPSTAN_LEVEL) {
                 $this->getOutput()->info('Testing level ' . $testLevel . '...');
                 $result = $this->testLevel($binary, $componentPath, $testLevel, $options);
 
@@ -217,6 +247,20 @@ class Phpstan extends Base
                         '✗ Level ' . $testLevel . ' fails with ' . $result['errors']
                         . ' error' . ($result['errors'] !== 1 ? 's' : '')
                     );
+                    // Watermark+1 advisory: capture the first failing
+                    // level above watermark. The maintainer sees this
+                    // as "you'd pass level N if you fixed M things" in
+                    // the PR comment, without it failing the lane.
+                    // Whether `testLevel` ends up being watermark+1 or
+                    // (post-raise) highestPassing+1 depends on how far
+                    // the loop walked before failing; either way it's
+                    // the right "next budget" for promotion.
+                    $this->advisoryNextLevel = [
+                        'level' => $testLevel,
+                        'errors' => $result['errors'],
+                        'files_with_errors' => $result['files_with_errors'] ?? 0,
+                        'passing' => false,
+                    ];
                     break; // Stop at first failure
                 }
             }
@@ -240,23 +284,32 @@ class Phpstan extends Base
                 $finalResult = $this->testLevel($binary, $componentPath, $highestPassing, $options);
                 $this->nativeResults = $finalResult['results'];
                 $this->level = $highestPassing;
-            } elseif ($highestPassing === 9) {
-                // Already at maximum level
+            } elseif ($highestPassing === self::MAX_PHPSTAN_LEVEL) {
+                // Already at maximum level - no advisory possible since
+                // PHPStan tops out here. The discovery loop may have
+                // walked up to here without ever failing, in which case
+                // $this->advisoryNextLevel is null (no level+1 to peek
+                // at). If the loop never ran (watermark started at
+                // MAX), same outcome.
                 $this->getOutput()->ok('✓ Code passes watermark level ' . $watermark . ' (maximum)');
                 $this->nativeResults = $watermarkResult['results'];
                 $this->level = $watermark;
             } else {
-                // At watermark, cannot raise yet
-                $nextLevel = $watermark + 1;
-                $nextResult = $this->testLevel($binary, $componentPath, $nextLevel, $options);
-
+                // At watermark, cannot raise yet. The discovery loop's
+                // first iteration was watermark+1 and it failed, so
+                // $this->advisoryNextLevel already holds the right
+                // failing-level data - no need to re-run testLevel.
                 $this->getOutput()->ok(
                     '✓ Code passes watermark level ' . $watermark
                 );
-                $this->getOutput()->info(
-                    'Next level (' . $nextLevel . ') has ' . $nextResult['errors']
-                    . ' error' . ($nextResult['errors'] !== 1 ? 's' : '') . ' remaining'
-                );
+                if ($this->advisoryNextLevel !== null) {
+                    $this->getOutput()->info(sprintf(
+                        'Next level (%d) has %d error%s remaining',
+                        $this->advisoryNextLevel['level'],
+                        $this->advisoryNextLevel['errors'],
+                        $this->advisoryNextLevel['errors'] !== 1 ? 's' : '',
+                    ));
+                }
 
                 // Use watermark results for output
                 $this->nativeResults = $watermarkResult['results'];
@@ -990,6 +1043,14 @@ NEON;
             'success' => $this->advisory ? true : ($exitCode === 0),
             'mode' => $this->advisory ? 'advisory' : 'enforced',
             'statistics' => $this->stats,
+            // Watermark+1 advisory: surfaces the smallest failing level
+            // above the post-discovery watermark, so the PR comment can
+            // show "you'd pass level N if you fixed M things." Null
+            // when watermark fails (no peek attempted), when the
+            // discovery loop walks to MAX without a failure, or when
+            // the maintainer is already at MAX. The PR comment renderer
+            // skips the suffix entirely when this is null.
+            'advisory_next_level' => $this->advisoryNextLevel,
         ];
 
         $json = json_encode($summary, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
