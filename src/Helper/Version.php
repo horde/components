@@ -204,10 +204,19 @@ class Version
             }
             return $nextVersion;
         } else {
+            // Target is stable. Always normalize the stability literal
+            // so the .horde.yml writer ends up with the canonical
+            // `state.release: stable` regardless of whether the source
+            // Version carried 'stable' or '' (both forms exist; see
+            // self::isStable()). The version-string emitters
+            // ({@see self::toFullSemVerV2()}, {@see self::toHordeTag()},
+            // {@see self::normalizeComposerVersion()}) all guard against
+            // emitting "-stable" so the on-wire form stays SemVer-clean
+            // (no suffix = stable).
+            $nextVersion->stability = 'stable';
+            $nextVersion->stabilityVersion = 0;
             // previous version was unstable, just make stable
             if (self::isUnstable($this->stability)) {
-                $nextVersion->stability = '';
-                $nextVersion->stabilityVersion = 0;
                 return $nextVersion;
             }
             switch ($severity) {
@@ -262,7 +271,11 @@ class Version
             $version .= '.' . $subpatch;
         }
         $stability = $this->getStability();
-        if ($stability) {
+        // SemVer convention: no suffix means stable. The internal
+        // representation may carry either '' or 'stable' (see
+        // self::isStable()); both produce a stable tag like `v1.0.0`,
+        // never `v1.0.0stable`.
+        if ($stability && $stability !== 'stable') {
             $version .= $stability . $this->getStabilityVersion();
         }
         if ($this->getBuildInfo()) {
@@ -301,7 +314,10 @@ class Version
     public function toFullSemVerV2(): string
     {
         $base = $this->toSemVerV2VersionCore();
-        if ($this->stability) {
+        // SemVer convention: no suffix means stable. The internal
+        // representation may carry either '' or 'stable' (see
+        // self::isStable()); both must produce a suffix-less string.
+        if ($this->stability && $this->stability !== 'stable') {
             $base .= '-' . $this->stability;
             if ((int) $this->stabilityVersion) {
                 $base .= (string) $this->stabilityVersion;

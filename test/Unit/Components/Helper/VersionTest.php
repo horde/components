@@ -201,4 +201,52 @@ class VersionTest extends TestCase
         $this->expectExceptionObject(new Exception('invalid version part. Only "patch" and "minor" are supported for now.'));
         HelperVersion::nextVersionByPart('3.0.1', 'invalid');
     }
+
+    /**
+     * Transitioning RC -> stable previously set Version::$stability to
+     * an empty string. The .horde.yml writer then persisted
+     * `state.release: ''` rather than the canonical `state.release: stable`
+     * that the existing 6 stable libs (Scribe et al) carry. The fix is
+     * to store the literal `'stable'` while keeping the version-string
+     * emitters suffix-less per SemVer convention.
+     */
+    public function testRcToStableTransitionStoresStableLiteral(): void
+    {
+        $rc1 = HelperVersion::fromComposerString('1.0.0-RC1');
+        $stable = $rc1->nextVersionObject('patch', 'stable');
+
+        $this->assertSame(
+            'stable',
+            $stable->getStability(),
+            'getStability() must return "stable" so the YAML writer persists the canonical literal'
+        );
+
+        // SemVer convention: no suffix means stable. The version-string
+        // emitters must NOT append "-stable" to the produced string.
+        $this->assertSame('1.0.0', $stable->toFullSemVerV2());
+        $this->assertSame('v1.0.0', $stable->toHordeTag());
+        $this->assertSame('1.0.0', $stable->normalizeComposerVersion());
+    }
+
+    /**
+     * Defence-in-depth: a Version that already carries the 'stable'
+     * literal (e.g. round-tripped through a .horde.yml that holds
+     * `state.release: stable`) must produce the same suffix-less
+     * strings as one with an empty stability string. Without the
+     * "!== 'stable'" guard added to the emitters, reading a stable lib
+     * would round-trip its tag as "v1.0.0stable" or its SemVer as
+     * "1.0.0-stable".
+     */
+    public function testStableLiteralProducesSuffixlessStrings(): void
+    {
+        $stable = HelperVersion::fromComposerString('1.0.0');
+        // Simulate a Version that has the literal already populated
+        // from disk; fromComposerString defaults stability to ''.
+        $next = $stable->nextVersionObject('patch', 'stable');
+
+        $this->assertSame('stable', $next->getStability());
+        $this->assertStringNotContainsString('-stable', $next->toFullSemVerV2());
+        $this->assertStringNotContainsString('stable', $next->toHordeTag());
+        $this->assertStringNotContainsString('-stable', $next->normalizeComposerVersion());
+    }
 }
