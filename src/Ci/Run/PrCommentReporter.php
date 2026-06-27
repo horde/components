@@ -357,6 +357,39 @@ class PrCommentReporter
     }
 
     /**
+     * Render the watermark+1 advisory suffix for the PHPStan PR-comment
+     * line. The maintainer sees "— N advisor{y,ies} at level X" appended
+     * to the success line when the PHPStan task captured advisory data
+     * for the first failing level above the post-discovery watermark.
+     *
+     * Returns an empty string when:
+     * - No lane reported advisory data (the field is absent or null
+     *   across the board).
+     * - The advisory error count is zero (would be misleading - if
+     *   level+1 had zero errors, the discovery loop would have raised
+     *   the watermark to that level and there would be no advisory).
+     *
+     * @param array<string, mixed> $phpstanStats Aggregated stats from
+     *                                            {@see self::aggregateToolStats()}.
+     */
+    private function formatAdvisoryNextLevelSuffix(array $phpstanStats): string
+    {
+        $level = $phpstanStats['advisory_level'] ?? null;
+        $errors = $phpstanStats['advisory_errors_max'] ?? 0;
+
+        if ($level === null || $errors <= 0) {
+            return '';
+        }
+
+        return sprintf(
+            ' — %d %s at level %d',
+            $errors,
+            $errors === 1 ? 'advisory' : 'advisories',
+            $level,
+        );
+    }
+
+    /**
      * True when every lane that produced a PHPUnit result reported
      * `mode: no_test_suite` (no test/ directory found by Unit::run).
      *
@@ -578,8 +611,15 @@ class PrCommentReporter
                 );
             } else {
                 $errors = $phpstanStats['errors'] ?? 0;
+                // Watermark+1 advisory: the maintainer's "promotion
+                // budget." Shown only when the lane is passing (no
+                // hard errors) and the PHPStan task captured advisory
+                // data for the next level above watermark. When the
+                // watermark fails, advisory data is meaningless because
+                // there's no level+1 peek.
+                $advisorySuffix2 = $this->formatAdvisoryNextLevelSuffix($phpstanStats);
                 if ($errors === 0) {
-                    $md .= "- **PHPStan**{$advisorySuffix}: No errors found ✅\n";
+                    $md .= "- **PHPStan**{$advisorySuffix}: No errors found ✅{$advisorySuffix2}\n";
                 } else {
                     $md .= sprintf(
                         "- **PHPStan**%s: %d error%s found ⚠️\n",
@@ -906,6 +946,39 @@ class PrCommentReporter
                     $aggregated[$maxKey] ?? 0,
                     $value
                 );
+            }
+
+            // PHPStan watermark+1 advisory: capture per-lane level and
+            // error count, then surface the max-across-lanes counts so
+            // the PR comment can show a single "N advisories at level
+            // M" suffix. Different lanes might end up with slightly
+            // different post-discovery watermarks (a fix that's
+            // version-gated could pass level X on PHP 8.3 but not 8.2),
+            // so taking the max errors at the highest advisory level
+            // is the safe upper bound for the maintainer's promotion
+            // budget.
+            $advisory = $result['advisory_next_level'] ?? null;
+            if (is_array($advisory)
+                && isset($advisory['level'], $advisory['errors'])
+                && is_int($advisory['level'])
+                && is_int($advisory['errors'])
+            ) {
+                // Track the highest advisory level seen and its
+                // associated error count. If multiple lanes report
+                // different levels (e.g. lane A says level 4, lane B
+                // says level 5 because B's actual watermark is higher),
+                // pick the level seen and report its max-across-lanes
+                // error count.
+                $currentLevel = $aggregated['advisory_level'] ?? null;
+                if ($currentLevel === null || $advisory['level'] > $currentLevel) {
+                    $aggregated['advisory_level'] = $advisory['level'];
+                    $aggregated['advisory_errors_max'] = $advisory['errors'];
+                } elseif ($advisory['level'] === $currentLevel) {
+                    $aggregated['advisory_errors_max'] = max(
+                        $aggregated['advisory_errors_max'] ?? 0,
+                        $advisory['errors'],
+                    );
+                }
             }
         }
 

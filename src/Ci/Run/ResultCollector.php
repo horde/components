@@ -99,6 +99,15 @@ class ResultCollector
             // "which tests failed" view across lanes.
             'failures' => $data['failures'] ?? [],
             'errors_detail' => $data['errors'] ?? [],
+            // PHPStan watermark+1 advisory: the smallest failing level
+            // above watermark, captured by the PHPStan task during its
+            // auto-raise discovery loop. The PR-comment renderer reads
+            // this through aggregateToolStats() and appends a "N
+            // advisories at level X" suffix to the PHPStan success
+            // line. Null when watermark fails, watermark is already
+            // at the maximum, or the maintainer reaches the maximum
+            // via auto-raise (no further level to peek at).
+            'advisory_next_level' => $data['advisory_next_level'] ?? null,
         ];
     }
 

@@ -364,20 +364,46 @@ class RunCommand
 
         // Lane results table
         $md .= "### Lane Results\n\n";
-        $md .= "| Lane | PHPUnit | PHPStan | PHP-CS-Fixer | Status |\n";
-        $md .= "|------|---------|---------|--------------|--------|\n";
+
+        // Watermark+1 advisory: add an optional `PHPStan Advisory`
+        // column when at least one lane has captured advisory data.
+        // The column is suppressed entirely when every lane is silent
+        // (watermark already at max, or watermark failing across the
+        // board) so non-modernised components don't get a useless
+        // empty column.
+        $showAdvisoryColumn = $this->anyLaneHasPhpStanAdvisory($results);
+
+        if ($showAdvisoryColumn) {
+            $md .= "| Lane | PHPUnit | PHPStan | PHPStan Advisory | PHP-CS-Fixer | Status |\n";
+            $md .= "|------|---------|---------|------------------|--------------|--------|\n";
+        } else {
+            $md .= "| Lane | PHPUnit | PHPStan | PHP-CS-Fixer | Status |\n";
+            $md .= "|------|---------|---------|--------------|--------|\n";
+        }
 
         foreach ($results as $laneName => $tools) {
             $laneStatus = $this->isLanePassed($tools) ? '✅' : '❌';
 
-            $md .= sprintf(
-                "| %s | %s | %s | %s | %s |\n",
-                $laneName,
-                $this->formatToolForTable($tools['phpunit'] ?? null, 'phpunit'),
-                $this->formatToolForTable($tools['phpstan'] ?? null, 'phpstan'),
-                $this->formatToolForTable($tools['phpcsfixer'] ?? null, 'phpcsfixer'),
-                $laneStatus
-            );
+            if ($showAdvisoryColumn) {
+                $md .= sprintf(
+                    "| %s | %s | %s | %s | %s | %s |\n",
+                    $laneName,
+                    $this->formatToolForTable($tools['phpunit'] ?? null, 'phpunit'),
+                    $this->formatToolForTable($tools['phpstan'] ?? null, 'phpstan'),
+                    $this->formatPhpStanAdvisoryForTable($tools['phpstan'] ?? null),
+                    $this->formatToolForTable($tools['phpcsfixer'] ?? null, 'phpcsfixer'),
+                    $laneStatus
+                );
+            } else {
+                $md .= sprintf(
+                    "| %s | %s | %s | %s | %s |\n",
+                    $laneName,
+                    $this->formatToolForTable($tools['phpunit'] ?? null, 'phpunit'),
+                    $this->formatToolForTable($tools['phpstan'] ?? null, 'phpstan'),
+                    $this->formatToolForTable($tools['phpcsfixer'] ?? null, 'phpcsfixer'),
+                    $laneStatus
+                );
+            }
         }
 
         // Detailed metrics
@@ -539,6 +565,67 @@ class RunCommand
             return sprintf('✅ %d files styled', $checked);
         }
         return sprintf('❌ %d files need formatting', $withIssues);
+    }
+
+    /**
+     * True when at least one lane's PHPStan result carries an
+     * `advisory_next_level` block with a positive error count. Drives
+     * whether the lane table renders the `PHPStan Advisory` column. A
+     * lane reporting `passing: true` at the next level should never
+     * happen (the discovery loop would have auto-raised the watermark
+     * instead) but guard against it anyway so we don't emit a useless
+     * empty column.
+     *
+     * @param array<string,array<string,array<string,mixed>>> $results
+     */
+    private function anyLaneHasPhpStanAdvisory(array $results): bool
+    {
+        foreach ($results as $tools) {
+            $phpstan = $tools['phpstan'] ?? null;
+            if (!is_array($phpstan)) {
+                continue;
+            }
+            $advisory = $phpstan['advisory_next_level'] ?? null;
+            if (!is_array($advisory)) {
+                continue;
+            }
+            $errors = (int) ($advisory['errors'] ?? 0);
+            if ($errors > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Render the `PHPStan Advisory` table cell for a single lane.
+     *
+     * Returns `+N @ L` when the PHPStan task captured `N` advisory
+     * findings at level `L` above this lane's post-discovery watermark,
+     * or `-` when the lane has no advisory data (watermark failed,
+     * watermark is already at the maximum, or auto-raise reached the
+     * maximum). The cell deliberately omits a ✅ icon: the maintainer
+     * already sees the green status in the adjacent `PHPStan` cell;
+     * this column is the climbing budget, not a verdict.
+     *
+     * @param array<string,mixed>|null $phpstanResult The lane's
+     *                                                  PHPStan tool block.
+     */
+    private function formatPhpStanAdvisoryForTable(?array $phpstanResult): string
+    {
+        if (!is_array($phpstanResult)) {
+            return '-';
+        }
+        $advisory = $phpstanResult['advisory_next_level'] ?? null;
+        if (!is_array($advisory)) {
+            return '-';
+        }
+        $level = $advisory['level'] ?? null;
+        $errors = (int) ($advisory['errors'] ?? 0);
+        if (!is_int($level) || $errors <= 0) {
+            return '-';
+        }
+        return sprintf('+%d @ %d', $errors, $level);
     }
 
     /**

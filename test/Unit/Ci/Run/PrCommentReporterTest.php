@@ -385,6 +385,178 @@ class PrCommentReporterTest extends TestCase
     }
 
     /**
+     * Watermark+1 advisory: the maintainer's promotion budget. When the
+     * PHPStan task captures an `advisory_next_level` block, the PR
+     * comment's success line appends "— N advisories at level X" so the
+     * maintainer sees how close they are to the next promotion.
+     */
+    public function testPhpStanWatermarkAdvisorySuffixAppendedToSuccessLine(): void
+    {
+        $results = [
+            'php8.3-dev' => [
+                'phpstan' => [
+                    'success' => true,
+                    'exit_code' => 0,
+                    'mode' => 'enforced',
+                    'statistics' => [
+                        'files_scanned' => 12,
+                        'errors' => 0,
+                    ],
+                    'advisory_next_level' => [
+                        'level' => 4,
+                        'errors' => 12,
+                        'files_with_errors' => 5,
+                        'passing' => false,
+                    ],
+                ],
+            ],
+        ];
+        $md = $this->generateQualityMetrics($results);
+        $line = $this->extractPhpStanLine($md);
+        $this->assertNotNull($line);
+        $this->assertStringContainsString('No errors found ✅', $line);
+        $this->assertStringContainsString('12 advisories at level 4', $line);
+    }
+
+    public function testPhpStanWatermarkAdvisorySingularGrammar(): void
+    {
+        // Single-error advisory should read "1 advisory" not "1 advisories".
+        $results = [
+            'php8.3-dev' => [
+                'phpstan' => [
+                    'success' => true,
+                    'exit_code' => 0,
+                    'mode' => 'enforced',
+                    'statistics' => ['files_scanned' => 12, 'errors' => 0],
+                    'advisory_next_level' => [
+                        'level' => 5,
+                        'errors' => 1,
+                        'files_with_errors' => 1,
+                        'passing' => false,
+                    ],
+                ],
+            ],
+        ];
+        $md = $this->generateQualityMetrics($results);
+        $line = $this->extractPhpStanLine($md);
+        $this->assertNotNull($line);
+        $this->assertStringContainsString('1 advisory at level 5', $line);
+        $this->assertStringNotContainsString('1 advisories', $line);
+    }
+
+    public function testPhpStanWatermarkAdvisoryAbsentWhenNotCaptured(): void
+    {
+        // No `advisory_next_level` field at all - typical of a lane
+        // already at max level or one where watermark failed. The
+        // success line stays unchanged ("No errors found ✅").
+        $results = [
+            'php8.3-dev' => [
+                'phpstan' => [
+                    'success' => true,
+                    'exit_code' => 0,
+                    'mode' => 'enforced',
+                    'statistics' => ['files_scanned' => 12, 'errors' => 0],
+                    // no advisory_next_level
+                ],
+            ],
+        ];
+        $md = $this->generateQualityMetrics($results);
+        $line = $this->extractPhpStanLine($md);
+        $this->assertNotNull($line);
+        $this->assertStringContainsString('No errors found ✅', $line);
+        $this->assertStringNotContainsString('advisor', $line);
+        $this->assertStringNotContainsString('at level', $line);
+    }
+
+    public function testPhpStanWatermarkAdvisoryNotShownOnHardFailure(): void
+    {
+        // Watermark failed AND a lane reported advisory data (defense
+        // in depth - shouldn't happen in practice). The hard-error
+        // line wins; we don't render the advisory suffix on a failing
+        // line because the maintainer needs to fix the watermark
+        // first.
+        $results = [
+            'php8.3-dev' => [
+                'phpstan' => [
+                    'success' => false,
+                    'exit_code' => 1,
+                    'mode' => 'enforced',
+                    'statistics' => [
+                        'files_scanned' => 12,
+                        'errors' => 4,
+                    ],
+                    'advisory_next_level' => [
+                        'level' => 4,
+                        'errors' => 12,
+                        'passing' => false,
+                    ],
+                ],
+            ],
+        ];
+        $md = $this->generateQualityMetrics($results);
+        $line = $this->extractPhpStanLine($md);
+        $this->assertNotNull($line);
+        $this->assertStringContainsString('4 errors found', $line);
+        $this->assertStringContainsString('⚠️', $line);
+        $this->assertStringNotContainsString('advisor', $line);
+    }
+
+    public function testPhpStanWatermarkAdvisoryUsesMaxAcrossLanes(): void
+    {
+        // Two lanes report advisory data with different counts at the
+        // same level; PR comment takes the max as the upper-bound
+        // promotion budget.
+        $results = [
+            'php8.3-dev' => [
+                'phpstan' => [
+                    'success' => true,
+                    'exit_code' => 0,
+                    'mode' => 'enforced',
+                    'statistics' => ['files_scanned' => 12, 'errors' => 0],
+                    'advisory_next_level' => [
+                        'level' => 4,
+                        'errors' => 8,
+                        'passing' => false,
+                    ],
+                ],
+            ],
+            'php8.4-dev' => [
+                'phpstan' => [
+                    'success' => true,
+                    'exit_code' => 0,
+                    'mode' => 'enforced',
+                    'statistics' => ['files_scanned' => 12, 'errors' => 0],
+                    'advisory_next_level' => [
+                        'level' => 4,
+                        'errors' => 12,
+                        'passing' => false,
+                    ],
+                ],
+            ],
+        ];
+        $md = $this->generateQualityMetrics($results);
+        $line = $this->extractPhpStanLine($md);
+        $this->assertNotNull($line);
+        $this->assertStringContainsString('12 advisories at level 4', $line);
+        $this->assertStringNotContainsString('8 advisories', $line);
+    }
+
+    /**
+     * Helper: pull just the PHPStan metric line out of a quality-metrics
+     * block so assertions don't get false positives from the PHPUnit or
+     * PHP-CS-Fixer rows.
+     */
+    private function extractPhpStanLine(string $md): ?string
+    {
+        foreach (explode("\n", $md) as $line) {
+            if (str_starts_with($line, '- **PHPStan**')) {
+                return $line;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Helper: invoke the private summariseReason via reflection.
      */
     private function summariseReason(string $input): string
