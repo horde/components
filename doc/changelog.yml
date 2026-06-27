@@ -1,4 +1,14 @@
 ---
+1.0.0-RC9:
+  api: 1.0.0-RC9
+  state:
+    release: RC
+    api: RC
+  date: 2026-06-27
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: "ci(release): auto-refresh CI infra on release with substance-diff and cohort gate\nci(bootstrap): move to .github/bin/, bump template to 1.5.1\nfix(version): write canonical 'stable' literal to .horde.yml state.release"
 1.0.0-RC8:
   api: 1.0.0-RC8
   state:
