@@ -44,7 +44,7 @@ horde-components ci init
 ```
 
 This creates:
-- `bin/ci-bootstrap.sh` - Bootstrap script
+- `.github/bin/ci-bootstrap.sh` - Bootstrap script
 - `.github/workflows/ci.yml` - GitHub Actions workflow
 
 ### Generate for local mode

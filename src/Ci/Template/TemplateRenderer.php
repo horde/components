@@ -37,8 +37,14 @@ class TemplateRenderer
      *
      * This version is embedded in generated files and used to detect
      * when components are using outdated templates.
+     *
+     * 1.5.1: bootstrap script moved from bin/ci-bootstrap.sh to
+     *        .github/bin/ci-bootstrap.sh so /bin/ at component root stays
+     *        reserved for component-shipped executables. After upgrading
+     *        the phar, rerun `horde-components ci init --force` and
+     *        delete the stale bin/ci-bootstrap.sh by hand.
      */
-    private const TEMPLATE_VERSION = '1.5.0';
+    private const TEMPLATE_VERSION = '1.5.1';
 
     /**
      * Constructor.

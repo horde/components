@@ -33,7 +33,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: {{WORK_DIR}}/bin
-          key: components-phar-${{ hashFiles('bin/ci-bootstrap.sh') }}
+          key: components-phar-${{ hashFiles('.github/bin/ci-bootstrap.sh') }}
 
       - name: Cache QC tools (PHPUnit, PHPStan, PHP-CS-Fixer)
         uses: actions/cache@v5
@@ -42,7 +42,7 @@ jobs:
           key: ci-tools-${{ hashFiles('.horde.yml') }}
 
       - name: Run CI
-        run: bash bin/ci-bootstrap.sh
+        run: bash .github/bin/ci-bootstrap.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMPONENTS_PHAR_URL: ${{ vars.COMPONENTS_PHAR_URL || '{{COMPONENTS_PHAR_URL}}' }}

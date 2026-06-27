@@ -187,7 +187,7 @@ CI INIT - Generate Configuration Files:
     horde-components ci init --dry-run
 
     Generated files:
-    - bin/ci-bootstrap.sh           Bootstrap script
+    - .github/bin/ci-bootstrap.sh   Bootstrap script
     - .github/workflows/ci.yml      GitHub Actions workflow (github mode only)
 
 CI CHECK - Validate Existing Files:
@@ -245,13 +245,13 @@ TYPICAL WORKFLOW:
     horde-components ci init
 
     # 2. Commit the generated files
-    git add bin/ci-bootstrap.sh .github/workflows/ci.yml
+    git add .github/bin/ci-bootstrap.sh .github/workflows/ci.yml
     git commit -m "feat(ci): add CI configuration"
 
     # 3. Test locally (requires Ubuntu 24.04)
     export LOCAL_COMPONENTS_PATH=~/components
     export LOCAL_COMPONENT_PATH=$(pwd)
-    ./bin/ci-bootstrap.sh
+    ./.github/bin/ci-bootstrap.sh
 
     # 4. Push to GitHub - CI runs automatically on push/PR
 

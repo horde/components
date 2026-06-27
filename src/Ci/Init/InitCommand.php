@@ -26,8 +26,13 @@ use Horde\Components\Ci\Template\TemplateVersion;
  * Initialize CI for a component.
  *
  * Generates CI configuration files from templates:
- * - bin/ci-bootstrap.sh - Bootstrap script
+ * - .github/bin/ci-bootstrap.sh - Bootstrap script
  * - .github/workflows/ci.yml - GitHub Actions workflow (github mode only)
+ *
+ * The bootstrap script lives under .github/ alongside the workflow that
+ * invokes it. The component-root /bin/ directory is reserved for
+ * component-shipped executables (e.g. horde-components' own bin/horde-components);
+ * dropping CI infrastructure there pollutes that namespace.
  *
  * @category Horde
  * @package  Components
@@ -103,8 +108,9 @@ class InitCommand
         // Generate files
         $renderer = new TemplateRenderer(TemplateLocator::getTemplateDir());
 
-        // Generate bootstrap script
-        $bootstrapFile = $componentPath . '/bin/ci-bootstrap.sh';
+        // Generate bootstrap script under .github/bin/ (CI infrastructure
+        // belongs alongside the workflow, not in the component's bin/).
+        $bootstrapFile = $componentPath . '/.github/bin/ci-bootstrap.sh';
         $this->generateBootstrapScript(
             $renderer,
             $mode,
@@ -147,9 +153,9 @@ class InitCommand
     {
         $existing = [];
 
-        $bootstrapFile = $componentPath . '/bin/ci-bootstrap.sh';
+        $bootstrapFile = $componentPath . '/.github/bin/ci-bootstrap.sh';
         if (file_exists($bootstrapFile)) {
-            $existing[] = 'bin/ci-bootstrap.sh';
+            $existing[] = '.github/bin/ci-bootstrap.sh';
 
             // Check if outdated
             if (TemplateVersion::isOutdated($bootstrapFile)) {
@@ -356,14 +362,14 @@ class InitCommand
         $this->output->info("Component: {$componentPath}");
         $this->output->plain('');
 
-        $bootstrapFile = $componentPath . '/bin/ci-bootstrap.sh';
+        $bootstrapFile = $componentPath . '/.github/bin/ci-bootstrap.sh';
         $workflowFile = $componentPath . '/.github/workflows/ci.yml';
 
         $allCurrent = true;
 
         // Check bootstrap
         if (!file_exists($bootstrapFile)) {
-            $this->output->warn('bin/ci-bootstrap.sh not found');
+            $this->output->warn('.github/bin/ci-bootstrap.sh not found');
             $this->output->info('  Run: horde-components ci init');
             $allCurrent = false;
         } else {
@@ -372,13 +378,13 @@ class InitCommand
             if ($comparison['outdated']) {
                 $fileVer = $comparison['file'] ?? 'unknown';
                 $currentVer = $comparison['current'];
-                $this->output->warn("bin/ci-bootstrap.sh is outdated");
+                $this->output->warn(".github/bin/ci-bootstrap.sh is outdated");
                 $this->output->info("  File version: {$fileVer}");
                 $this->output->info("  Current version: {$currentVer}");
                 $this->output->info("  Run: horde-components ci init --force");
                 $allCurrent = false;
             } else {
-                $this->output->ok("bin/ci-bootstrap.sh is up to date (v{$comparison['file']})");
+                $this->output->ok(".github/bin/ci-bootstrap.sh is up to date (v{$comparison['file']})");
             }
         }
 
