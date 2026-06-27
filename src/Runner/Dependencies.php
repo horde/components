@@ -110,16 +110,23 @@ class Dependencies
         $hordeYml = new HordeYmlFile($hordeYmlPath);
         $resolver = new PlatformResolver(new Shell($output), $output);
 
-        $ciPlatform = $resolver->resolveAndShapeForCiPlatform($hordeYml, $componentDir);
+        $shaped = $resolver->resolveAndShapeForCiPlatform($hordeYml, $componentDir);
+        $ciPlatform = $shaped['ci-platform'];
+        $ciPlatformFlags = $shaped['ci-platform-flags'];
 
         if (!empty($this->options['pretend'])) {
             // Preview mode: surface the fragment that would be written.
+            // Both keys are shown so the maintainer sees what `--platform`
+            // would persist.
             $output->plain('--- ci-platform (preview, not written) ---');
             $output->plain(YamlLoader::dump(['ci-platform' => $ciPlatform]));
+            $output->plain('--- ci-platform-flags (preview, not written) ---');
+            $output->plain(YamlLoader::dump(['ci-platform-flags' => $ciPlatformFlags]));
             return;
         }
 
         $hordeYml->set('ci-platform', $ciPlatform);
+        $hordeYml->set('ci-platform-flags', $ciPlatformFlags);
         $hordeYml->save();
 
         $output->ok(sprintf(
@@ -127,6 +134,17 @@ class Dependencies
             count($ciPlatform),
             $hordeYmlPath,
         ));
+        if ($ciPlatformFlags['needs_installer_plugin']) {
+            // Surface the marker so the maintainer notices it landed.
+            // The composer.json writer reads this on the next regen and
+            // emits the matching allow-plugins entry; without it,
+            // composer 2.2+ silently disables horde/horde-installer-plugin.
+            $output->info(
+                'ci-platform-flags.needs_installer_plugin = true '
+                . '(transitive horde-library/horde-application or direct '
+                . 'horde/horde-installer-plugin require detected)',
+            );
+        }
     }
 
     /**

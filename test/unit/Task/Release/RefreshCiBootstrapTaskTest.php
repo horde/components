@@ -470,15 +470,27 @@ class RefreshCiBootstrapTaskTest extends TestCase
      * the baseline ci-platform block (default) or the override. The
      * stub never touches the network.
      *
-     * @param array<string, mixed>|null $platformOverride
+     * @param array<string, mixed>|null $platformOverride The ci-platform
+     *                                                     block to return.
+     *                                                     Defaults to the
+     *                                                     test's baseline.
+     * @param array<string, bool>|null $flagsOverride The ci-platform-flags
+     *                                                  block to return.
+     *                                                  Defaults to all
+     *                                                  flags false.
      */
     private function makeTask(
         bool $pretend = false,
         ?array $platformOverride = null,
+        ?array $flagsOverride = null,
     ): RefreshCiBootstrapTask {
         $platform = $platformOverride ?? $this->baselineCiPlatform;
+        $flags = $flagsOverride ?? ['needs_installer_plugin' => false];
         $resolver = $this->createStub(PlatformResolver::class);
-        $resolver->method('resolveAndShapeForCiPlatform')->willReturn($platform);
+        $resolver->method('resolveAndShapeForCiPlatform')->willReturn([
+            'ci-platform' => $platform,
+            'ci-platform-flags' => $flags,
+        ]);
 
         return new RefreshCiBootstrapTask(
             $this->makeOutput(),
@@ -505,9 +517,10 @@ class RefreshCiBootstrapTaskTest extends TestCase
     }
 
     /**
-     * Seed `.horde.yml` carrying the baseline ci-platform block plus
-     * the minimal set of fields the release pipeline reads (id, name,
-     * type, version.release, state.release, dependencies.required.php).
+     * Seed `.horde.yml` carrying the baseline ci-platform and
+     * ci-platform-flags blocks plus the minimal set of fields the
+     * release pipeline reads (id, name, type, version.release,
+     * state.release, dependencies.required.php).
      */
     private function seedHordeYmlWithBaselineCiPlatform(): void
     {
@@ -532,6 +545,8 @@ class RefreshCiBootstrapTaskTest extends TestCase
               '8.3':
                 - php: ^8.2
                 - ext-mbstring
+            ci-platform-flags:
+              needs_installer_plugin: false
             YAML;
         $this->writeFile('.horde.yml', $yaml);
     }

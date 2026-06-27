@@ -350,7 +350,7 @@ class RefreshCiBootstrapTask extends AbstractTask
         $resolver = $this->resolver ?? new PlatformResolver(new Shell($this->output), $this->output);
 
         try {
-            $newPlatform = $resolver->resolveAndShapeForCiPlatform($hordeYml, $componentPath);
+            $shaped = $resolver->resolveAndShapeForCiPlatform($hordeYml, $componentPath);
         } catch (\Throwable $e) {
             // Network failures or composer-resolver bugs must not
             // abort an entire release. A stale ci-platform block is
@@ -361,24 +361,50 @@ class RefreshCiBootstrapTask extends AbstractTask
             return false;
         }
 
+        $newPlatform = $shaped['ci-platform'];
+        $newFlags = $shaped['ci-platform-flags'];
+
+        // Compare both halves separately. Either changing counts as a
+        // substantive update; both unchanged is the no-op case.
         $existingPlatform = $hordeYml->get('ci-platform');
-        $existingNormalised = $this->normaliseForComparison($existingPlatform);
-        $newNormalised = $this->normaliseForComparison($newPlatform);
-        if ($existingNormalised !== null && $this->ciPlatformEquivalent($existingNormalised, $newNormalised)) {
+        $existingPlatformNorm = $this->normaliseForComparison($existingPlatform);
+        $newPlatformNorm = $this->normaliseForComparison($newPlatform);
+        $platformChanged = $existingPlatformNorm === null
+            || !$this->ciPlatformEquivalent($existingPlatformNorm, $newPlatformNorm);
+
+        $existingFlags = $hordeYml->get('ci-platform-flags');
+        $existingFlagsNorm = $this->normaliseForComparison($existingFlags);
+        $newFlagsNorm = $this->normaliseForComparison($newFlags);
+        $flagsChanged = $existingFlagsNorm === null
+            || !$this->ciPlatformEquivalent($existingFlagsNorm, $newFlagsNorm);
+
+        if (!$platformChanged && !$flagsChanged) {
             // Nothing meaningful changed; do not touch the file.
             return false;
         }
 
         if ($this->pretend) {
             $this->output->info(
-                '[PRETEND] Would update ci-platform block in .horde.yml',
+                '[PRETEND] Would update ci-platform '
+                . ($flagsChanged ? 'and ci-platform-flags ' : '')
+                . 'block in .horde.yml',
             );
             return true;
         }
 
-        $hordeYml->set('ci-platform', $newPlatform);
+        if ($platformChanged) {
+            $hordeYml->set('ci-platform', $newPlatform);
+        }
+        if ($flagsChanged) {
+            $hordeYml->set('ci-platform-flags', $newFlags);
+        }
         $hordeYml->save();
-        $this->output->info('Updated ci-platform block in .horde.yml');
+        $this->output->info(sprintf(
+            'Updated %s in .horde.yml',
+            $platformChanged && $flagsChanged
+                ? 'ci-platform and ci-platform-flags blocks'
+                : ($platformChanged ? 'ci-platform block' : 'ci-platform-flags block'),
+        ));
         return true;
     }
 

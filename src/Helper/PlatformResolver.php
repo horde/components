@@ -111,10 +111,14 @@ class PlatformResolver
      * @param HordeYmlFile $hordeYml Parsed .horde.yml of the UUT.
      * @param string $componentDir Directory containing the UUT's
      *                              composer.json (sibling of .horde.yml).
-     * @return array<string, list<array{string, ?string}>|string>
-     *   Keyed by minor version. Value is the platform list, or
-     *   {@see self::NOT_RESOLVABLE} when composer could not produce a lock
-     *   for that minor.
+     * @return array<string, array{platform: list<array{string, ?string}>, lock: string}|string>
+     *   Keyed by minor version. Value is either a record carrying the
+     *   parsed platform list and the raw lock JSON (success), or
+     *   {@see self::NOT_RESOLVABLE} when composer could not produce a
+     *   lock for that minor. The lock JSON is preserved so callers
+     *   downstream of {@see self::resolveAndShapeForCiPlatform()} can
+     *   run additional extractors against the same resolution without
+     *   a second composer round-trip.
      */
     public function resolveRangeFromHordeYml(
         HordeYmlFile $hordeYml,
@@ -158,10 +162,22 @@ class PlatformResolver
      * - 'not resolvable' renders as a scalar string under the minor
      *   key when composer could not produce a lock for that PHP version.
      *
+     * Alongside the platform structure this method also produces the
+     * `ci-platform-flags` block: a small map of booleans flagging
+     * properties of the transitive dep tree that downstream writers
+     * need to know about. Currently the only flag is
+     * `needs_installer_plugin` (true when any package in any resolved
+     * minor is type horde-library, horde-application, or requires
+     * horde/horde-installer-plugin); the composer.json writer reads
+     * this to emit the matching `config.allow-plugins` entry.
+     *
      * Network access: see {@see self::resolveRangeFromHordeYml()}. This
      * helper inherits the same Packagist round-trips.
      *
-     * @return array<string, list<string|array<string, string>>|string>
+     * @return array{
+     *     'ci-platform': array<string, list<string|array<string, string>>|string>,
+     *     'ci-platform-flags': array<string, bool>
+     * }
      */
     public function resolveAndShapeForCiPlatform(
         HordeYmlFile $hordeYml,
@@ -170,13 +186,21 @@ class PlatformResolver
         $resolved = $this->resolveRangeFromHordeYml($hordeYml, $componentDir);
 
         $ciPlatform = [];
-        foreach ($resolved as $minor => $entries) {
-            if (is_string($entries)) {
-                $ciPlatform[$minor] = $entries;
+        $needsInstallerPlugin = false;
+
+        foreach ($resolved as $minor => $record) {
+            if (is_string($record)) {
+                // NOT_RESOLVABLE sentinel; pass through under the minor
+                // key as a string scalar.
+                $ciPlatform[$minor] = $record;
                 continue;
             }
+
+            // The new richer record carries both the platform list and
+            // the raw lock JSON. Shape platform-list for the ci-platform
+            // block, then walk the same lock for the flags.
             $list = [];
-            foreach ($entries as [$name, $constraint]) {
+            foreach ($record['platform'] as [$name, $constraint]) {
                 if (str_starts_with($name, 'ext-') || str_starts_with($name, 'lib-')) {
                     $list[] = $name;
                 } else {
@@ -184,9 +208,21 @@ class PlatformResolver
                 }
             }
             $ciPlatform[$minor] = $list;
+
+            // Union across minors: any single minor's resolution
+            // surfacing the trigger sets the flag for the component.
+            $flags = $this->extractFlagsFromLock($record['lock']);
+            if (!empty($flags['needs_installer_plugin'])) {
+                $needsInstallerPlugin = true;
+            }
         }
 
-        return $ciPlatform;
+        return [
+            'ci-platform' => $ciPlatform,
+            'ci-platform-flags' => [
+                'needs_installer_plugin' => $needsInstallerPlugin,
+            ],
+        ];
     }
 
     /**
@@ -200,8 +236,13 @@ class PlatformResolver
      *                            COMPOSER_ROOT_VERSION so circular
      *                            require-dev deps resolve. Empty
      *                            disables the env injection.
-     * @return list<array{string, ?string}>|string Either the parsed
-     *         platform list or {@see self::NOT_RESOLVABLE}.
+     * @return array{platform: list<array{string, ?string}>, lock: string}|string
+     *         Either a record carrying the parsed platform list and
+     *         the raw lock JSON, or {@see self::NOT_RESOLVABLE}. The
+     *         lock JSON is returned so additional extractors (flags,
+     *         per-package metadata) can be run against the same
+     *         resolution without paying for a second composer
+     *         round-trip.
      */
     private function resolveSingleForRoot(
         string $uutComposerJsonPath,
@@ -280,7 +321,12 @@ class PlatformResolver
                 return self::NOT_RESOLVABLE;
             }
 
-            $extracted = $this->extractFromLock(file_get_contents($lockPath) ?: '');
+            $lockJson = file_get_contents($lockPath);
+            if ($lockJson === false) {
+                return self::NOT_RESOLVABLE;
+            }
+
+            $extracted = $this->extractFromLock($lockJson);
             if ($extracted === []) {
                 // A UUT with no transitive platform requirements at all
                 // is possible but rare; we cannot distinguish that from
@@ -290,7 +336,10 @@ class PlatformResolver
                 return self::NOT_RESOLVABLE;
             }
 
-            return $extracted;
+            return [
+                'platform' => $extracted,
+                'lock' => $lockJson,
+            ];
         } finally {
             $this->rmrf($tmpDir);
         }
@@ -354,6 +403,73 @@ class PlatformResolver
 
         // Stable, opinionated ordering.
         return self::sortPlatformEntries($found);
+    }
+
+    /**
+     * Walk a composer.lock document and surface boolean facts about the
+     * transitive dep tree that downstream writers care about.
+     *
+     * Currently produces a single key, `needs_installer_plugin`, which
+     * is true when ANY package in the lock satisfies any of:
+     *
+     * - `type` is `horde-library`
+     * - `type` is `horde-application`
+     * - `require` contains `horde/horde-installer-plugin`
+     *
+     * Composer 2.2+ refuses to run a plugin unless the consuming project
+     * lists it under `config.allow-plugins`. A component that pulls
+     * `horde/horde-installer-plugin` in transitively (via any
+     * horde-library dependency) still needs the plugin active at install
+     * time, even when the component's own composer.json does not require
+     * it directly. The composer.json writer reads this flag and emits
+     * the allow-plugins entry so the install does not silently skip the
+     * plugin.
+     *
+     * Walks both `packages` and `packages-dev`. The dev section is
+     * normally empty for synthesized resolver projects but is walked
+     * defensively so a transitive plugin in require-dev is still picked
+     * up.
+     *
+     * @return array{needs_installer_plugin: bool}
+     */
+    public function extractFlagsFromLock(string $lockJson): array
+    {
+        $flags = ['needs_installer_plugin' => false];
+
+        try {
+            $lock = json_decode($lockJson, true, flags: JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return $flags;
+        }
+
+        if (!is_array($lock)) {
+            return $flags;
+        }
+
+        $packages = array_merge(
+            is_array($lock['packages'] ?? null) ? $lock['packages'] : [],
+            is_array($lock['packages-dev'] ?? null) ? $lock['packages-dev'] : [],
+        );
+
+        foreach ($packages as $package) {
+            if (!is_array($package)) {
+                continue;
+            }
+            $type = $package['type'] ?? null;
+            if ($type === 'horde-library' || $type === 'horde-application') {
+                $flags['needs_installer_plugin'] = true;
+                // Early exit: one positive is enough to set the flag.
+                // Continue walking would not change the outcome.
+                return $flags;
+            }
+            $require = $package['require'] ?? null;
+            if (is_array($require) && array_key_exists('horde/horde-installer-plugin', $require)) {
+                $flags['needs_installer_plugin'] = true;
+                return $flags;
+            }
+        }
+
+        return $flags;
     }
 
     /**
