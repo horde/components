@@ -235,17 +235,33 @@ class HordeRelease
             $releaseNotes
         );
 
-        // Files modified by release tasks
-        $filesToCommit = [
+        // Baseline files always touched by the release tasks above. Earlier
+        // tasks (RefreshCiBootstrapTask, future contributors) may have
+        // already appended their own paths to `files` via Context — we MUST
+        // preserve those entries, otherwise the bootstrap refresh, deleted
+        // sibling workflows, and platform-block updates land on disk but
+        // never make it into the release commit. The leftover working tree
+        // after a release run is the symptom of clobbering this list.
+        $existingFiles = $context->getOption('files');
+        $filesToCommit = is_array($existingFiles) ? $existingFiles : [];
+
+        foreach ([
             '.gitignore',
             '.horde.yml',
             'doc/changelog.yml',
             'composer.json',
-        ];
+        ] as $baseline) {
+            if (!in_array($baseline, $filesToCommit, true)) {
+                $filesToCommit[] = $baseline;
+            }
+        }
 
         // Add application sentinel files if they exist
         $componentPath = $context->getComponentPath();
-        if (file_exists($componentPath . '/lib/Application.php')) {
+        if (
+            file_exists($componentPath . '/lib/Application.php')
+            && !in_array('lib/Application.php', $filesToCommit, true)
+        ) {
             $filesToCommit[] = 'lib/Application.php';
         }
 
