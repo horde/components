@@ -482,9 +482,24 @@ class ExtensionInstaller
             return null; // Skip
         }
 
-        // Try to install using sudo helper
-        if (!SudoHelper::installExtension($phpVersion, $extension)) {
-            $this->output->warn("Failed to install {$package}");
+        // Try to install using sudo helper.
+        //
+        // Surface apt's captured output on failure — this is the layer
+        // where "Unable to locate package php8.4-imagick" turns into a
+        // useful clue for the reader of the CI log. A bare warn() with
+        // just the package name used to leave people guessing whether
+        // the package name was wrong, the PPA was missing, or apt was
+        // in some transient bad state.
+        $result = SudoHelper::installExtension($phpVersion, $extension);
+        if (!$result['success']) {
+            if ($result['output'] !== '') {
+                $this->output->plain($result['output']);
+            }
+            $this->output->warn(sprintf(
+                'Failed to install %s (sudo helper exited %d)',
+                $package,
+                $result['exitCode']
+            ));
             return false;
         }
 
