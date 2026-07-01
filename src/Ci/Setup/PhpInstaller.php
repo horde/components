@@ -150,11 +150,26 @@ class PhpInstaller
     /**
      * Add ondrej PPA.
      *
+     * On failure, prints whatever the sudo helper (and any apt commands
+     * it invoked) wrote to stdout/stderr before returning false, so
+     * callers don't have to guess whether add-apt-repository, apt-get
+     * update, or PPA GPG import was the thing that broke.
+     *
      * @return bool
      */
     private function addPpa(): bool
     {
-        return SudoHelper::addPpa();
+        $result = SudoHelper::addPpa();
+        if (!$result['success']) {
+            if ($result['output'] !== '') {
+                $this->output->plain($result['output']);
+            }
+            $this->output->error(sprintf(
+                'sudo helper exited %d while adding ondrej/php PPA',
+                $result['exitCode']
+            ));
+        }
+        return $result['success'];
     }
 
     /**
@@ -273,9 +288,23 @@ class PhpInstaller
      */
     private function installPhpVersion(string $version): bool
     {
-        // Use sudo helper to install PHP
-        if (!SudoHelper::installPhp($version)) {
-            $this->output->error("Failed to install PHP {$version}");
+        // Use sudo helper to install PHP.
+        //
+        // On failure, print the helper's captured output (which is
+        // apt-get's own message plus, if the version was rejected by
+        // the shape guard in sudo-helper.sh, that rejection line) so
+        // the CI log shows the real reason — e.g. "E: Unable to locate
+        // package php9.0-cli" — instead of a bare "Failed to install
+        // PHP 9.0".
+        $result = SudoHelper::installPhp($version);
+        if (!$result['success']) {
+            if ($result['output'] !== '') {
+                $this->output->plain($result['output']);
+            }
+            $this->output->error(sprintf(
+                "Failed to install PHP {$version} (sudo helper exited %d)",
+                $result['exitCode']
+            ));
             return false;
         }
 

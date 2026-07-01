@@ -4,7 +4,7 @@
 # This script performs all operations that require root privileges:
 # - Adding ondrej PPA
 # - Running apt-get update
-# - Installing PHP versions (8.2, 8.3, 8.4, 8.5)
+# - Installing PHP versions (whichever versions ondrej/php currently ships)
 # - Installing PHP extensions
 #
 # This script is designed to be called by horde-components CI setup
@@ -30,8 +30,17 @@ case "$OPERATION" in
     install-php)
         # Install PHP version
         # Usage: install-php 8.4
+        #
+        # The regex only enforces the shape MAJOR.MINOR so command
+        # injection via shell metacharacters is impossible. Deciding
+        # which versions are actually installable is not this script's
+        # job: PhpInstaller picks the matrix, ondrej/php decides what
+        # apt can resolve, and apt's own "Unable to locate package ..."
+        # is the authoritative signal. Hard-coding a version range here
+        # (previously ^8\.[2-5]$) silently breaks the day PHP 8.6 or 9.0
+        # ships.
         PHP_VERSION="$1"
-        if [[ ! "$PHP_VERSION" =~ ^8\.[2-5]$ ]]; then
+        if [[ ! "$PHP_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
             echo "ERROR: Invalid PHP version: $PHP_VERSION" >&2
             exit 1
         fi
@@ -43,7 +52,7 @@ case "$OPERATION" in
         # Usage: install-extension 8.4 curl
         PHP_VERSION="$1"
         EXTENSION="$2"
-        if [[ ! "$PHP_VERSION" =~ ^8\.[2-5]$ ]]; then
+        if [[ ! "$PHP_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
             echo "ERROR: Invalid PHP version: $PHP_VERSION" >&2
             exit 1
         fi

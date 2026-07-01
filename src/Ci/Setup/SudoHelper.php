@@ -86,10 +86,13 @@ class SudoHelper
     /**
      * Add ondrej PPA.
      *
-     * @return bool True if successful
+     * @return array{success: bool, output: string, exitCode: int}
+     *         Combined stdout/stderr captured from the helper is in
+     *         `output` so callers can surface apt's real complaint
+     *         when the helper exits non-zero.
      * @throws Exception If helper not available
      */
-    public static function addPpa(): bool
+    public static function addPpa(): array
     {
         if (!self::isAvailable()) {
             throw new Exception('Sudo helper not found: ' . self::HELPER_SCRIPT);
@@ -97,21 +100,21 @@ class SudoHelper
 
         $sudo = self::isRoot() ? '' : 'sudo ';
         $command = $sudo . escapeshellarg(self::HELPER_SCRIPT) . ' add-ppa 2>&1';
-        $output = [];
-        $exitCode = 0;
-        exec($command, $output, $exitCode);
-
-        return $exitCode === 0;
+        return self::runCommand($command);
     }
 
     /**
      * Install PHP version.
      *
      * @param string $version PHP version (e.g., '8.4')
-     * @return bool True if successful
+     * @return array{success: bool, output: string, exitCode: int}
+     *         Combined stdout/stderr from apt is in `output` so
+     *         callers can print the real "Unable to locate package"
+     *         (or similar) message on failure instead of a bare
+     *         "Failed to install PHP X".
      * @throws Exception If helper not available
      */
-    public static function installPhp(string $version): bool
+    public static function installPhp(string $version): array
     {
         if (!self::isAvailable()) {
             throw new Exception('Sudo helper not found: ' . self::HELPER_SCRIPT);
@@ -125,11 +128,7 @@ class SudoHelper
             escapeshellarg($version)
         );
 
-        $output = [];
-        $exitCode = 0;
-        exec($command, $output, $exitCode);
-
-        return $exitCode === 0;
+        return self::runCommand($command);
     }
 
     /**
@@ -137,10 +136,11 @@ class SudoHelper
      *
      * @param string $phpVersion PHP version (e.g., '8.4')
      * @param string $extension Extension name (e.g., 'curl')
-     * @return bool True if successful
+     * @return array{success: bool, output: string, exitCode: int}
+     *         Combined stdout/stderr from apt is in `output`.
      * @throws Exception If helper not available
      */
-    public static function installExtension(string $phpVersion, string $extension): bool
+    public static function installExtension(string $phpVersion, string $extension): array
     {
         if (!self::isAvailable()) {
             throw new Exception('Sudo helper not found: ' . self::HELPER_SCRIPT);
@@ -155,11 +155,30 @@ class SudoHelper
             escapeshellarg($extension)
         );
 
+        return self::runCommand($command);
+    }
+
+    /**
+     * Run a helper command and capture stdout/stderr plus exit code.
+     *
+     * Centralised so all privileged wrappers surface diagnostics the
+     * same way. Callers get the exact bytes apt (or the helper's own
+     * validation) printed; a bare boolean would strand them.
+     *
+     * @param string $command Shell command already redirecting 2>&1
+     * @return array{success: bool, output: string, exitCode: int}
+     */
+    private static function runCommand(string $command): array
+    {
         $output = [];
         $exitCode = 0;
         exec($command, $output, $exitCode);
 
-        return $exitCode === 0;
+        return [
+            'success' => $exitCode === 0,
+            'output' => implode("\n", $output),
+            'exitCode' => $exitCode,
+        ];
     }
 
     /**
