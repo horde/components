@@ -24,7 +24,7 @@ authors:
     active: true
     role: contributor
 version:
-  release: 1.0.0-RC9
+  release: 1.0.0-RC10
   api: 1.0.0alpha1
 state:
   release: RC

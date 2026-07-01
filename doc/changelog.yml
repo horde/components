@@ -1,4 +1,14 @@
 ---
+1.0.0-RC10:
+  api: 1.0.0-RC10
+  state:
+    release: RC
+    api: RC
+  date: 2026-07-01
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: "fix: Relax version guard regex to accept all valid versions rather than a select subset\nfix(release): preserve files staged by earlier tasks in release commit\nfeat(deps): detect installer-plugin need via lock walk, drive composer config.allow-plugins\nfeat(ci): surface PHPStan watermark+1 advisory in PR comment and lane table"
 1.0.0-RC9:
   api: 1.0.0-RC9
   state:
