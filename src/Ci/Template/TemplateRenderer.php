@@ -38,13 +38,17 @@ class TemplateRenderer
      * This version is embedded in generated files and used to detect
      * when components are using outdated templates.
      *
+     * 1.5.2: checkout step now sets submodules: recursive. 
+     *
      * 1.5.1: bootstrap script moved from bin/ci-bootstrap.sh to
      *        .github/bin/ci-bootstrap.sh so /bin/ at component root stays
      *        reserved for component-shipped executables. After upgrading
      *        the phar, rerun `horde-components ci init --force` and
      *        delete the stale bin/ci-bootstrap.sh by hand.
+     *
+     * Don't keep an internal changelog, only document the most recent significant changes!
      */
-    private const TEMPLATE_VERSION = '1.5.1';
+    private const TEMPLATE_VERSION = '1.5.2';
 
     /**
      * Constructor.

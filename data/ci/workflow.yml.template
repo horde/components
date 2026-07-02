@@ -28,6 +28,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
+        with:
+          # Fetch git submodules alongside the working tree. 
+          # A no-op for components without a .gitmodules
+          # Required for pulling in externally maintained test suites
+          # i.e. horde/Yaml pulls yaml-test-suite as a submodule because it's large and not ours.
+          submodules: recursive
 
       - name: Cache horde-components.phar
         uses: actions/cache@v5
