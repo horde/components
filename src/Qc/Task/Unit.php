@@ -602,11 +602,57 @@ class Unit extends Base
             if ($hasIssues) {
                 $message = 'There were issues. Test results: ' . implode(', ', $parts);
                 $this->getOutput()->warn($message);
+                $this->outputFailureDetails();
             } else {
                 $message = 'Test results: ' . implode(', ', $parts) . ' ran OK';
                 $this->getOutput()->ok($message);
             }
         }
+    }
+
+    /**
+     * Print one line per failed / errored test so CI logs name the offenders
+     * instead of just an aggregate count. Called from outputStatistics()
+     * whenever at least one test failed or errored.
+     */
+    private function outputFailureDetails(): void
+    {
+        $output = $this->getOutput();
+
+        foreach ($this->failureRecords as $record) {
+            $output->warn($this->formatRecord($record));
+        }
+        foreach ($this->errorRecords as $record) {
+            $output->warn($this->formatRecord($record));
+        }
+    }
+
+    /**
+     * Format one failure/error record into a single-line summary followed by
+     * the exception message. Skips absent fields (data-provider tests can
+     * emit records with no file/line).
+     *
+     * @param array{type:string,test_class:string,test_method:string,file:string,line:int,exception_class:string,message:string,trace:string} $record
+     */
+    private function formatRecord(array $record): string
+    {
+        $label = strtoupper($record['type']);
+        $target = $record['test_class'];
+        if ($record['test_method'] !== '') {
+            $target .= '::' . $record['test_method'];
+        }
+
+        $location = '';
+        if ($record['file'] !== '' && $record['line'] > 0) {
+            $location = ' (' . $record['file'] . ':' . $record['line'] . ')';
+        }
+
+        // Keep message on the same visual block but on its own line so long
+        // messages don't wrap the summary line. Trim aggressive whitespace.
+        $message = trim($record['message']);
+        $suffix = $message !== '' ? "\n    " . str_replace("\n", "\n    ", $message) : '';
+
+        return sprintf('  [%s] %s%s%s', $label, $target, $location, $suffix);
     }
 
     /**
