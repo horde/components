@@ -840,6 +840,57 @@ class Phpstan extends Base
             $includesSection = "includes:\n    - {$componentPath}/vendor/phpstan/phpstan-phpunit/extension.neon\n\n";
         }
 
+        // Custom Horde rules. Most rules apply at every level; a few
+        // architectural rules only fire once a project reaches a given
+        // level of PHPStan hygiene, so that legacy libraries can pass
+        // low-level scans while still tightening as their watermark climbs.
+        //
+        // Level thresholds:
+        //   - NoDirectGlobalAccessRule (registry/injector/conf/notification/
+        //     session): level 3+. These globals are ubiquitous in legacy
+        //     Horde code and eliminating them is a real refactor. Enforce
+        //     them once a package is otherwise clean at level 2.
+        //   - RequireImmutableUriUsageRule, NoDeprecatedHordeUtilRule:
+        //     every level.
+        $customRules = [
+            [
+                'class' => 'Horde\\Components\\PhpStan\\Rules\\NoDeprecatedHordeUtilRule',
+                'minLevel' => 0,
+            ],
+            [
+                'class' => 'Horde\\Components\\PhpStan\\Rules\\RequireImmutableUriUsageRule',
+                'minLevel' => 0,
+            ],
+            [
+                'class' => 'Horde\\Components\\PhpStan\\Rules\\NoDirectGlobalAccessRule',
+                'minLevel' => 3,
+            ],
+        ];
+
+        $activeRules = array_filter(
+            $customRules,
+            static fn (array $rule): bool => $level >= $rule['minLevel']
+        );
+
+        $rulesYaml = '';
+        $servicesYaml = '';
+        if (!empty($activeRules)) {
+            $ruleLines = array_map(
+                static fn (array $rule): string => '    - ' . $rule['class'],
+                $activeRules
+            );
+            $rulesYaml = "\nrules:\n" . implode("\n", $ruleLines) . "\n";
+
+            $serviceLines = array_map(
+                static fn (array $rule): string => "    -\n"
+                    . "        class: " . $rule['class'] . "\n"
+                    . "        tags:\n"
+                    . "            - phpstan.rules.rule",
+                $activeRules
+            );
+            $servicesYaml = "\nservices:\n" . implode("\n", $serviceLines) . "\n";
+        }
+
         // Note: Custom Horde rules are loaded via --autoload-file CLI parameter
         // See testLevel() method where phpstan-bootstrap.php is passed
         $config = <<<NEON
@@ -853,25 +904,7 @@ $pathsYaml
     tmpDir: build/phpstan
     bootstrapFiles:
         - {$componentPath}/vendor/autoload.php
-
-rules:
-    - Horde\\Components\\PhpStan\\Rules\\NoDirectGlobalAccessRule
-    - Horde\\Components\\PhpStan\\Rules\\RequireImmutableUriUsageRule
-    - Horde\\Components\\PhpStan\\Rules\\NoDeprecatedHordeUtilRule
-
-services:
-    -
-        class: Horde\\Components\\PhpStan\\Rules\\NoDirectGlobalAccessRule
-        tags:
-            - phpstan.rules.rule
-    -
-        class: Horde\\Components\\PhpStan\\Rules\\RequireImmutableUriUsageRule
-        tags:
-            - phpstan.rules.rule
-    -
-        class: Horde\\Components\\PhpStan\\Rules\\NoDeprecatedHordeUtilRule
-        tags:
-            - phpstan.rules.rule
+{$rulesYaml}{$servicesYaml}
 NEON;
 
         // Write to temporary file
