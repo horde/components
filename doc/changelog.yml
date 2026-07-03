@@ -1,4 +1,14 @@
 ---
+1.0.0-RC11:
+  api: 1.0.0-RC11
+  state:
+    release: RC
+    api: RC
+  date: 2026-07-03
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: "fix(qc): pass tools_dir to Phpcsfixer::validate() so CI phar is found\nfeat(components): print failing test names in Unit task output\nfeat(components): gate NoDirectGlobalAccessRule to PHPStan level 3+\nfeat: Support submodules in CI checkout"
 1.0.0-RC10:
   api: 1.0.0-RC10
   state:
