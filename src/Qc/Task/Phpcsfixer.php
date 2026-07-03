@@ -71,7 +71,12 @@ class Phpcsfixer extends Base
      */
     public function validate(array $options = []): array
     {
-        $binary = $this->findPhpCsFixerBinary();
+        // Pass tools_dir through the same way Phpstan and Unit tasks do.
+        // Without it, ToolFinder cannot see the phar the CI setup phase
+        // downloads to /tmp/horde-ci/tools/, and validate() returns
+        // "not installed" on lanes where the component itself does not
+        // vendor php-cs-fixer.
+        $binary = $this->findPhpCsFixerBinary($options['tools_dir'] ?? null);
 
         if ($binary === null) {
             return ['PHP CS Fixer is not installed!'];
