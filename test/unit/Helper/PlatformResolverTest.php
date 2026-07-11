@@ -423,4 +423,208 @@ class PlatformResolverTest extends TestCase
             $this->resolver->extractFlagsFromLock(''),
         );
     }
+
+    // -----------------------------------------------------------------
+    // rewritePhpEntryForLane
+    //
+    // The `php` entry in a ci-platform lane comes verbatim from a
+    // transitive `require` in composer.lock and is typically broader
+    // than the lane it lands under (a legacy dep declaring
+    // `^7.4 || ^8` is the common case). The rewriter narrows the
+    // entry to `^<lane>` when the lane sits inside the allowed range;
+    // it leaves the entry alone when the lane is unreachable (a
+    // transitive floor sits above the lane) or when the constraint
+    // cannot be parsed.
+    // -----------------------------------------------------------------
+
+    public function testRewritePhpEntryForLaneNarrowsBroadOrConstraint(): void
+    {
+        // Classic case: a legacy horde/* dep contributes `^7.4 || ^8`.
+        // Every lane satisfies the constraint, so every lane should
+        // narrow to `^<lane>`.
+        $list = [
+            ['php' => '^7.4 || ^8'],
+            'ext-dom',
+        ];
+
+        $this->assertSame(
+            [['php' => '^8.3'], 'ext-dom'],
+            PlatformResolver::rewritePhpEntryForLane($list, '8.3'),
+        );
+    }
+
+    public function testRewritePhpEntryForLaneNarrowsCaretConstraint(): void
+    {
+        // Lane above the constraint's floor: narrow to `^<lane>`.
+        $list = [['php' => '^8.1'], 'ext-mbstring'];
+
+        $this->assertSame(
+            [['php' => '^8.5'], 'ext-mbstring'],
+            PlatformResolver::rewritePhpEntryForLane($list, '8.5'),
+        );
+    }
+
+    public function testRewritePhpEntryForLaneLeavesUnreachableLaneAlone(): void
+    {
+        // Constraint floor `8.5` above lane `8.3`. The lane cannot
+        // install the component; leaving the anomaly in the block
+        // surfaces the mismatch to the maintainer.
+        $list = [['php' => '^8.5'], 'ext-json'];
+
+        $this->assertSame(
+            [['php' => '^8.5'], 'ext-json'],
+            PlatformResolver::rewritePhpEntryForLane($list, '8.3'),
+        );
+    }
+
+    public function testRewritePhpEntryForLaneIsIdempotentOnExactLaneFloor(): void
+    {
+        // `^8.3` on lane `8.3` still satisfies the constraint. The
+        // rewrite is idempotent - the output matches the input.
+        $list = [['php' => '^8.3'], 'ext-curl'];
+
+        $this->assertSame(
+            [['php' => '^8.3'], 'ext-curl'],
+            PlatformResolver::rewritePhpEntryForLane($list, '8.3'),
+        );
+    }
+
+    public function testRewritePhpEntryForLaneWithoutPhpEntryIsANoop(): void
+    {
+        // A lane with only ext-* entries (no php require made it
+        // through the lock walk). Nothing to rewrite.
+        $list = ['ext-mbstring', 'ext-json'];
+
+        $this->assertSame(
+            ['ext-mbstring', 'ext-json'],
+            PlatformResolver::rewritePhpEntryForLane($list, '8.3'),
+        );
+    }
+
+    public function testRewritePhpEntryForLaneLeavesEmptyConstraintAlone(): void
+    {
+        // Defensive: a php entry with an empty string constraint (the
+        // `*` fallback path in the shaping loop uses `*`, not empty;
+        // this guards against future writers that might produce '').
+        $list = [['php' => '']];
+
+        $this->assertSame(
+            [['php' => '']],
+            PlatformResolver::rewritePhpEntryForLane($list, '8.3'),
+        );
+    }
+
+    public function testRewritePhpEntryForLaneLeavesUnparseableConstraintAlone(): void
+    {
+        // Defensive: composer.lock should never carry an unparseable
+        // constraint, but if it did, keep the raw value rather than
+        // silently swap in `^<lane>`.
+        $list = [['php' => 'this is not a constraint']];
+
+        $this->assertSame(
+            [['php' => 'this is not a constraint']],
+            PlatformResolver::rewritePhpEntryForLane($list, '8.3'),
+        );
+    }
+
+    // -----------------------------------------------------------------
+    // shapeFromResolvedRange
+    //
+    // Extracted from resolveAndShapeForCiPlatform so the shaping loop
+    // is testable without spawning composer. Exercises the interaction
+    // between the platform-list writer, the flags writer, and the
+    // per-lane php rewrite.
+    // -----------------------------------------------------------------
+
+    public function testShapeFromResolvedRangeRewritesPhpPerLane(): void
+    {
+        // Same lock string reused across lanes; the shaper narrows
+        // the php entry per lane while ext-* / lib-* pass through
+        // unchanged.
+        $lock = (string) json_encode([
+            'packages' => [
+                ['name' => 'horde/test', 'type' => 'library', 'require' => []],
+            ],
+        ]);
+        $resolved = [
+            '8.2' => [
+                'platform' => [
+                    ['php', '^7.4 || ^8'],
+                    ['ext-dom', '*'],
+                ],
+                'lock' => $lock,
+            ],
+            '8.3' => [
+                'platform' => [
+                    ['php', '^7.4 || ^8'],
+                    ['ext-dom', '*'],
+                ],
+                'lock' => $lock,
+            ],
+        ];
+
+        $shaped = $this->resolver->shapeFromResolvedRange($resolved);
+
+        $this->assertSame(
+            [
+                '8.2' => [['php' => '^8.2'], 'ext-dom'],
+                '8.3' => [['php' => '^8.3'], 'ext-dom'],
+            ],
+            $shaped['ci-platform'],
+        );
+        $this->assertSame(
+            ['needs_installer_plugin' => false],
+            $shaped['ci-platform-flags'],
+        );
+    }
+
+    public function testShapeFromResolvedRangePassesThroughNotResolvable(): void
+    {
+        // A minor that composer could not resolve is preserved as the
+        // sentinel string under its lane key. No rewrite applies.
+        $resolved = [
+            '8.2' => PlatformResolver::NOT_RESOLVABLE,
+        ];
+
+        $shaped = $this->resolver->shapeFromResolvedRange($resolved);
+
+        $this->assertSame(
+            ['8.2' => PlatformResolver::NOT_RESOLVABLE],
+            $shaped['ci-platform'],
+        );
+        $this->assertSame(
+            ['needs_installer_plugin' => false],
+            $shaped['ci-platform-flags'],
+        );
+    }
+
+    public function testShapeFromResolvedRangeSurfacesInstallerPluginFlag(): void
+    {
+        // A lane whose lock contains a horde-library type triggers the
+        // needs_installer_plugin flag. The flag is a union across all
+        // minors; a single positive lane is enough.
+        $lockWithHordeLibrary = (string) json_encode([
+            'packages' => [
+                [
+                    'name' => 'horde/util',
+                    'type' => 'horde-library',
+                    'require' => [],
+                ],
+            ],
+        ]);
+        $resolved = [
+            '8.3' => [
+                'platform' => [['php', '^8.1']],
+                'lock' => $lockWithHordeLibrary,
+            ],
+        ];
+
+        $shaped = $this->resolver->shapeFromResolvedRange($resolved);
+
+        $this->assertTrue($shaped['ci-platform-flags']['needs_installer_plugin']);
+        $this->assertSame(
+            ['8.3' => [['php' => '^8.3']]],
+            $shaped['ci-platform'],
+        );
+    }
 }

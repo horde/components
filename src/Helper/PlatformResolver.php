@@ -159,6 +159,11 @@ class PlatformResolver
      * - ext-* / lib-* render as bare list items (string scalars).
      * - php / composer-* render as single-key maps so the version
      *   constraint travels with the name.
+     * - the `php` entry's constraint is narrowed to `^<lane>` per lane
+     *   via {@see self::rewritePhpEntryForLane()}; the raw constraint
+     *   pulled from `composer.lock` is typically much broader than the
+     *   lane it lands under (a legacy transitive dep with `^7.4 || ^8`
+     *   is the common source).
      * - 'not resolvable' renders as a scalar string under the minor
      *   key when composer could not produce a lock for that PHP version.
      *
@@ -185,6 +190,35 @@ class PlatformResolver
     ): array {
         $resolved = $this->resolveRangeFromHordeYml($hordeYml, $componentDir);
 
+        return $this->shapeFromResolvedRange($resolved);
+    }
+
+    /**
+     * Convert a resolved-range record (as returned by
+     * {@see self::resolveRangeFromHordeYml()}) into the `ci-platform`
+     * plus `ci-platform-flags` shape that gets written into `.horde.yml`.
+     *
+     * Broken out from {@see self::resolveAndShapeForCiPlatform()} so the
+     * shaping logic is unit-testable without spawning composer
+     * subprocesses. Callers with a live `.horde.yml` and component
+     * directory should stay on `resolveAndShapeForCiPlatform`.
+     *
+     * Per-lane rewrites:
+     * - The `php` entry's constraint is narrowed to `^<lane>` when the
+     *   lane version satisfies the extracted constraint. See
+     *   {@see self::rewritePhpEntryForLane()} for details.
+     *
+     * @param array<string, array{platform: list<array{string, ?string}>, lock: string}|string> $resolved
+     *        Resolved per-minor records. String values are the
+     *        {@see self::NOT_RESOLVABLE} sentinel; array values carry
+     *        the parsed platform list and the raw lock JSON.
+     * @return array{
+     *     'ci-platform': array<string, list<string|array<string, string>>|string>,
+     *     'ci-platform-flags': array<string, bool>
+     * }
+     */
+    public function shapeFromResolvedRange(array $resolved): array
+    {
         $ciPlatform = [];
         $needsInstallerPlugin = false;
 
@@ -207,7 +241,7 @@ class PlatformResolver
                     $list[] = [$name => $constraint ?? '*'];
                 }
             }
-            $ciPlatform[$minor] = $list;
+            $ciPlatform[$minor] = self::rewritePhpEntryForLane($list, (string) $minor);
 
             // Union across minors: any single minor's resolution
             // surfacing the trigger sets the flag for the component.
@@ -223,6 +257,74 @@ class PlatformResolver
                 'needs_installer_plugin' => $needsInstallerPlugin,
             ],
         ];
+    }
+
+    /**
+     * Narrow the `php` entry of a ci-platform lane list to `^<lane>`
+     * when the lane version satisfies the extracted constraint.
+     *
+     * The php constraint in the ci-platform block is sourced from a
+     * transitive `require` in the resolved composer.lock, which is
+     * typically the broadest constraint declared anywhere in the tree
+     * (e.g. `^7.4 || ^8` inherited from a legacy Horde library). That
+     * is misleading in a per-lane block: the `'8.3'` lane advertises
+     * `php: ^7.4 || ^8` even though the lane by definition runs on
+     * PHP 8.3. Downstream consumers of the block (bootstrap generation,
+     * matrix builders) want each lane's php entry to state the actual
+     * minimum PHP that lane exercises.
+     *
+     * Rule: if `<minor>.0` satisfies the extracted constraint, replace
+     * the constraint with `^<minor>`. Otherwise leave the entry alone —
+     * the lane is unreachable (a transitive floor sits above it) and
+     * the anomalous entry is a useful signal to the maintainer rather
+     * than something to paper over. In practice
+     * {@see self::phpVersionRange()} already filters lanes to those
+     * satisfying the UUT's own PHP constraint, so the unreachable
+     * branch fires only for the transitive-floor edge case.
+     *
+     * An unparseable constraint or non-string constraint is defensively
+     * left unchanged. Only the bare `php` key is rewritten; the
+     * `php-64bit` / `php-ipv6` / `php-zts` / `php-debug` variants carry
+     * different semantics and are out of scope.
+     *
+     * @param list<string|array<string, string>> $list ci-platform lane
+     *        entries as produced by the shaping loop.
+     * @param string $minor Lane PHP minor, e.g. `8.3`.
+     * @return list<string|array<string, string>> Same list with the
+     *         `php` entry rewritten (or unchanged when not applicable).
+     */
+    public static function rewritePhpEntryForLane(array $list, string $minor): array
+    {
+        try {
+            $laneVersion = new RelaxedSemanticVersion($minor . '.0');
+        } catch (InvalidVersionException) {
+            return $list;
+        }
+
+        foreach ($list as $index => $entry) {
+            if (!is_array($entry) || !array_key_exists('php', $entry)) {
+                continue;
+            }
+            $constraint = $entry['php'];
+            if (!is_string($constraint) || $constraint === '') {
+                return $list;
+            }
+
+            try {
+                $parsed = (new ConstraintParser())->parse($constraint);
+            } catch (InvalidVersionException) {
+                return $list;
+            }
+
+            if ($parsed->isSatisfiedBy($laneVersion)) {
+                $list[$index] = ['php' => '^' . $minor];
+            }
+
+            // At most one php entry thanks to dedup + sort upstream.
+            return $list;
+        }
+
+        return $list;
     }
 
     /**
