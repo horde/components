@@ -161,7 +161,8 @@ class Components
             new Option(
                 '-P',
                 '--pretend',
-                ['action' => 'store_true', 'help' => 'Just pretend and indicate what would be done rather than performing the action.']
+                '--dry-run',
+                ['action' => 'store_true', 'help' => 'Just pretend and indicate what would be done rather than performing the action. `--dry-run` is accepted as an alias.']
             )
         );
         $parser->addOption(

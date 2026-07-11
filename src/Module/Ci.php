@@ -90,13 +90,8 @@ class Ci extends Base
                     'help' => 'Force overwrite existing files (ci init)',
                 ]
             ),
-            new Option(
-                '--dry-run',
-                [
-                    'action' => 'store_true',
-                    'help' => 'Show what would be generated without writing (ci init)',
-                ]
-            ),
+            // Preview mode is provided globally via -P / --pretend / --dry-run
+            // (see Components::__construct). ci init reads options['pretend'].
         ];
     }
 
@@ -415,7 +410,7 @@ MORE INFO:
         $componentPath = $options['local-path'] ?? getcwd();
         $mode = $options['ci-mode'] ?? 'github';
         $force = isset($options['force']) && $options['force'];
-        $dryRun = isset($options['dry-run']) && $options['dry-run'];
+        $dryRun = isset($options['pretend']) && $options['pretend'];
 
         $initCommand = new InitCommand($output);
         if (!$initCommand->execute($componentPath, $mode, $force, $dryRun)) {
