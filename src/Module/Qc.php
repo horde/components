@@ -82,6 +82,13 @@ class Qc extends Base
                     'help' => 'Persist the underlying tool\'s native JSON next to the summary (e.g. phpstan-native.json). Used by the CI lane runner so per-finding aggregation can read findings from disk; off by default for local invocations.',
                 ]
             ),
+            new Option(
+                '--php',
+                [
+                    'action' => 'store',
+                    'help' => 'PHP binary to run tool phars under. When set, qc unit executes PHPUnit as a subprocess instead of loading the phar in-process; qc phpstan and qc phpcsfixer prefix their tool invocations with this binary. Omitted by default (in-process for phpunit; phar shebang for phpstan/phpcsfixer). CI lane scripts pass this so each lane\'s target PHP runs the tools while horde-components itself runs under a tool-compatible PHP.',
+                ]
+            ),
         ];
     }
 

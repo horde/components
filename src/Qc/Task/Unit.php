@@ -116,23 +116,18 @@ class Unit extends Base
             return;
         }
 
-        $componentPath = $this->getPath();
-
-        // Get the actual component path (handles null/empty)
-        if (empty($componentPath)) {
-            $componentPath = getcwd() ?: '.';
-        }
-
-        // Use ToolFinder to locate PHPUnit
-        $toolFinder = new ToolFinder($componentPath, $toolsDir);
-        $phpunitPath = $toolFinder->findBinary('phpunit');
-
+        $phpunitPath = $this->resolvePhpUnitPath($toolsDir);
         if ($phpunitPath === null) {
             // PHPUnit not found - will fail later during run()
             return;
         }
 
-        // Try to load PHPUnit
+        // Rebuild ToolFinder to reuse its loader; resolvePhpUnitPath
+        // already located the same phar via the same finder, so the
+        // second instantiation is cheap and keeps the discovery and
+        // loading code paths symmetric.
+        $componentPath = $this->getPath() ?: (getcwd() ?: '.');
+        $toolFinder = new ToolFinder($componentPath, $toolsDir);
         if ($toolFinder->loadTool($phpunitPath)) {
             // Check if PHPUnit classes are now available
             if (class_exists('PHPUnit\TextUI\Application')) {
@@ -148,6 +143,94 @@ class Unit extends Base
         }
 
         // If we get here, loading failed - will error during run()
+    }
+
+    /**
+     * Locate the PHPUnit phar (or Composer-installed binary) without
+     * loading it. Shared by the in-process loadPhpUnit() and the
+     * subprocess runPhpUnitSubprocess() paths so both agree on which
+     * phar is authoritative.
+     *
+     * @param string|null $toolsDir Optional tools directory to check first
+     * @return string|null Absolute path to the PHPUnit binary, or null
+     *                    if none was found.
+     */
+    private function resolvePhpUnitPath(?string $toolsDir): ?string
+    {
+        $componentPath = $this->getPath() ?: (getcwd() ?: '.');
+        $toolFinder = new ToolFinder($componentPath, $toolsDir);
+        return $toolFinder->findBinary('phpunit');
+    }
+
+    /**
+     * Run PHPUnit as a subprocess under an explicit PHP binary.
+     *
+     * The subprocess path is engaged when the caller passes `--php`
+     * (typically the CI lane script). Its purpose is to decouple the
+     * PHP running horde-components itself from the PHP under which the
+     * component's tests must be exercised — the lane PHP may be older
+     * than horde-components' own composer platform requirement.
+     *
+     * Contract with the in-process path:
+     *  - Junit XML written to the same $componentPath/build/phpunit-results.xml
+     *    via the `--log-junit` flag already present in $argv, so the
+     *    downstream {@see self::parseAssertionsFromJunit()} continues
+     *    to work unchanged.
+     *  - Exit code is PHPUnit's own (0 success / 1 test failures /
+     *    2 errors), returned by-reference from exec().
+     *  - Output is captured and discarded so callers see the same
+     *    "no chatter" behavior as the in-process ob_start/ob_end_clean.
+     *
+     * @param string      $php           Absolute path to a PHP binary.
+     * @param array       $argv          Fully-assembled PHPUnit argv,
+     *                                   with 'phpunit' as element 0
+     *                                   (dropped before exec — the phar
+     *                                   path becomes argv[0] instead).
+     * @param string      $componentPath Component directory; the
+     *                                   subprocess `cd`s here so
+     *                                   config file lookups resolve.
+     * @param string|null $toolsDir      Optional --tools-dir; forwarded
+     *                                   to {@see self::resolvePhpUnitPath()}
+     *                                   so we locate the same phar the
+     *                                   in-process path would have.
+     *
+     * @return int PHPUnit-style exit code, or 2 on setup failure.
+     */
+    private function runPhpUnitSubprocess(
+        string $php,
+        array $argv,
+        string $componentPath,
+        ?string $toolsDir,
+    ): int {
+        $phpunitPath = $this->resolvePhpUnitPath($toolsDir);
+        if ($phpunitPath === null) {
+            $this->getOutput()->error(
+                'PHPUnit binary not found for subprocess execution'
+            );
+            return 2;
+        }
+        if (!is_file($php) || !is_executable($php)) {
+            $this->getOutput()->error("PHP binary not executable: {$php}");
+            return 2;
+        }
+
+        // argv[0] is the phpunit command name in the in-process world;
+        // drop it — the real argv[0] is the phar path itself.
+        $args = array_slice($argv, 1);
+        $parts = [escapeshellarg($php), escapeshellarg($phpunitPath)];
+        foreach ($args as $arg) {
+            $parts[] = escapeshellarg((string) $arg);
+        }
+        $command = 'cd ' . escapeshellarg($componentPath) . ' && '
+                 . implode(' ', $parts);
+
+        $out = [];
+        $exitCode = 0;
+        ob_start();
+        exec($command . ' 2>&1', $out, $exitCode);
+        ob_end_clean();
+
+        return $exitCode;
     }
 
     /**
@@ -378,8 +461,15 @@ class Unit extends Base
      */
     public function run(array &$options = []): int
     {
-        // Ensure PHPUnit is loaded (handles PHAR installations)
-        $this->loadPhpUnit($options['tools_dir'] ?? null);
+        // Ensure PHPUnit is loaded (handles PHAR installations). Skip
+        // the in-process load when --php was set: the subprocess path
+        // below invokes the phar directly, so we do not need PHPUnit
+        // classes in this process.
+        $php = $options['php'] ?? null;
+        $useSubprocess = ($php !== null && $php !== '');
+        if (!$useSubprocess) {
+            $this->loadPhpUnit($options['tools_dir'] ?? null);
+        }
 
         $componentPath = $this->getPath();
         if (empty($componentPath)) {
@@ -449,13 +539,22 @@ class Unit extends Base
         $argv[] = '--log-junit';
         $argv[] = $junitXmlPath;
 
-        // Use PHPUnit's Application class for modern in-process execution
-        $app = new \PHPUnit\TextUI\Application();
+        if ($useSubprocess) {
+            $exitCode = $this->runPhpUnitSubprocess(
+                (string) $php,
+                $argv,
+                $componentPath,
+                $options['tools_dir'] ?? null,
+            );
+        } else {
+            // Use PHPUnit's Application class for modern in-process execution
+            $app = new \PHPUnit\TextUI\Application();
 
-        // Capture output to prevent PHPUnit from writing directly
-        ob_start();
-        $exitCode = $app->run($argv);
-        ob_end_clean();
+            // Capture output to prevent PHPUnit from writing directly
+            ob_start();
+            $exitCode = $app->run($argv);
+            ob_end_clean();
+        }
 
         // Recover assertions from the JUnit XML log (the event subscriber
         // API does not emit per-assertion events; the count lives in the

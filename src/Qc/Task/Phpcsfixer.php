@@ -105,7 +105,7 @@ class Phpcsfixer extends Base
         $mode = $isDryRun ? 'CHECK' : 'FIX';
 
         $this->getOutput()->info("Running PHP CS Fixer in $mode mode...");
-        $this->detectVersion($binary);
+        $this->detectVersion($binary, $options);
 
         $componentPath = $this->getPath();
 
@@ -132,12 +132,12 @@ class Phpcsfixer extends Base
         $configPath = $this->setupConfigForPhar($componentPath, $options, $isDryRun);
 
         // Execute PHP CS Fixer
-        $exitCode = $this->executePhpCsFixer($binary, $componentPath, $isDryRun, $configPath);
+        $exitCode = $this->executePhpCsFixer($binary, $componentPath, $isDryRun, $configPath, $options);
 
         // Parse and output results
         if ($this->nativeResults !== null) {
             $this->parseResults();
-            $this->writeJsonResults($componentPath, $exitCode, $isDryRun);
+            $this->writeJsonResults($componentPath, $exitCode, $isDryRun, $options);
             // Annotate dry-run hits on the PR diff. In fix mode the issues
             // were just fixed, so annotating them as findings would be wrong.
             if ($isDryRun) {
@@ -164,6 +164,24 @@ class Phpcsfixer extends Base
     }
 
     /**
+     * Build a shell-escaped PHP-binary prefix to inject before a phar
+     * invocation when the caller passed --php. Returns the empty
+     * string when --php is absent, preserving today's phar-shebang
+     * behavior.
+     *
+     * @param array $options CLI options as forwarded from run().
+     * @return string Shell fragment ending in a space, or empty string.
+     */
+    private function phpPrefix(array $options): string
+    {
+        $php = $options['php'] ?? null;
+        if ($php === null || $php === '') {
+            return '';
+        }
+        return escapeshellarg((string) $php) . ' ';
+    }
+
+    /**
      * Find PHP CS Fixer binary in standard locations.
      *
      * @return string|null Path to binary or null if not found.
@@ -185,12 +203,13 @@ class Phpcsfixer extends Base
      * Detect and output PHP CS Fixer version and source.
      *
      * @param string $binary Path to PHP CS Fixer binary.
+     * @param array $options CLI options; used to resolve --php prefix.
      *
      * @return void
      */
-    private function detectVersion(string $binary): void
+    private function detectVersion(string $binary, array $options = []): void
     {
-        $versionOutput = shell_exec(escapeshellarg($binary) . ' --version 2>&1');
+        $versionOutput = shell_exec($this->phpPrefix($options) . escapeshellarg($binary) . ' --version 2>&1');
 
         if ($versionOutput === null) {
             $this->getOutput()->info('Using PHP CS Fixer from: ' . $binary);
@@ -216,10 +235,10 @@ class Phpcsfixer extends Base
      *
      * @return int Exit code.
      */
-    private function executePhpCsFixer(string $binary, string $componentPath, bool $isDryRun, ?string $configPath = null): int
+    private function executePhpCsFixer(string $binary, string $componentPath, bool $isDryRun, ?string $configPath = null, array $options = []): int
     {
         // First, get total file count using list-files
-        $this->stats['files_checked'] = $this->getTotalFileCount($binary, $componentPath, $configPath);
+        $this->stats['files_checked'] = $this->getTotalFileCount($binary, $componentPath, $configPath, $options);
 
         // Build command — invoke from inside the component dir so relative
         // config paths resolve correctly. We deliberately do NOT pass a
@@ -228,10 +247,15 @@ class Phpcsfixer extends Base
         // an alternative to the Finder, not an intersection by default), and
         // would pull in transient directories such as build/ that the config
         // explicitly excludes.
+        //
+        // The --php prefix (if any) is placed AFTER `cd && ` — `cd` is
+        // a bash builtin, not an executable, so `<php> cd …` would try
+        // to run cd as a script and fatal.
         $cmd = [
             'cd',
             escapeshellarg($componentPath),
             '&&',
+            rtrim($this->phpPrefix($options)),
             escapeshellarg($binary),
             'fix',
         ];
@@ -300,12 +324,13 @@ class Phpcsfixer extends Base
      *
      * @return int Total number of files to be checked.
      */
-    private function getTotalFileCount(string $binary, string $componentPath, ?string $configPath = null): int
+    private function getTotalFileCount(string $binary, string $componentPath, ?string $configPath = null, array $options = []): int
     {
         $cmd = [
             'cd',
             escapeshellarg($componentPath),
             '&&',
+            rtrim($this->phpPrefix($options)),
             escapeshellarg($binary),
             'list-files',
         ];
@@ -426,7 +451,7 @@ class Phpcsfixer extends Base
      *
      * @return void
      */
-    private function writeJsonResults(string $componentPath, int $exitCode, bool $isDryRun): void
+    private function writeJsonResults(string $componentPath, int $exitCode, bool $isDryRun, array $options = []): void
     {
         $buildDir = $componentPath . '/build';
 
@@ -445,11 +470,11 @@ class Phpcsfixer extends Base
         // Write custom summary JSON
         $summaryJsonPath = $buildDir . '/php-cs-fixer-results.json';
 
-        $binary = $this->findPhpCsFixerBinary();
+        $binary = $this->findPhpCsFixerBinary($options['tools_dir'] ?? null);
         $version = 'unknown';
 
         if ($binary) {
-            $versionOutput = shell_exec(escapeshellarg($binary) . ' --version 2>&1');
+            $versionOutput = shell_exec($this->phpPrefix($options) . escapeshellarg($binary) . ' --version 2>&1');
             if ($versionOutput && preg_match('/PHP CS Fixer ([0-9.]+)/', $versionOutput, $matches)) {
                 $version = $matches[1];
             }

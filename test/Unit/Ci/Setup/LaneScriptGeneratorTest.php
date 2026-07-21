@@ -62,6 +62,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.4-dev',
             'php_version' => '8.4',
             'php_binary' => '/usr/bin/php8.4',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'dev',
             'component_dir' => '/tmp/horde-ci/lanes/php8.4-dev/Http',
             'tools_dir' => '/tmp/horde-ci/tools',
@@ -89,6 +90,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.2-stable',
             'php_version' => '8.2',
             'php_binary' => '/usr/bin/php8.2',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'stable',
             'component_dir' => '/tmp/horde-ci/lanes/php8.2-stable/Http',
             'tools_dir' => '/tmp/horde-ci/tools',
@@ -117,6 +119,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.4-dev',
             'php_version' => '8.4',
             'php_binary' => '/usr/bin/php8.4',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'dev',
             'component_dir' => '/tmp/horde-ci/lanes/php8.4-dev/Http',
             'tools_dir' => '/tmp/horde-ci/tools',
@@ -140,6 +143,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.4-dev',
             'php_version' => '8.4',
             'php_binary' => '/usr/bin/php8.4',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'dev',
             'component_dir' => '/tmp/horde-ci/lanes/php8.4-dev/Http',
             'tools_dir' => '/tmp/horde-ci/tools',
@@ -162,6 +166,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.3-dev',
             'php_version' => '8.3',
             'php_binary' => '/usr/bin/php8.3',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'dev',
             'component_dir' => '/tmp/horde-ci/lanes/php8.3-dev/Http',
             'tools_dir' => '/tmp/horde-ci/tools',
@@ -172,8 +177,15 @@ class LaneScriptGeneratorTest extends TestCase
 
         $content = file_get_contents($scriptPath);
 
-        $this->assertStringContainsString('PHP_BINARY="/usr/bin/php8.3"', $content, 'Should set correct PHP binary variable');
-        $this->assertStringContainsString('"$PHP_BINARY"', $content, 'Should use PHP_BINARY variable');
+        // Lane PHP - what PHPUnit/PHPStan/PHP-CS-Fixer run under.
+        $this->assertStringContainsString('LANE_PHP="/usr/bin/php8.3"', $content, 'Should set correct LANE_PHP variable');
+        // Tool PHP - what horde-components.phar itself runs under.
+        $this->assertStringContainsString('TOOL_PHP="/usr/bin/php8.4"', $content, 'Should set correct TOOL_PHP variable');
+        // Compat alias (one release cycle).
+        $this->assertStringContainsString('PHP_BINARY="$LANE_PHP"', $content, 'Should keep PHP_BINARY alias for back-compat');
+        // Task lines invoke horde-components via TOOL_PHP and pass --php=LANE_PHP.
+        $this->assertStringContainsString('"$TOOL_PHP" "$COMPONENTS_PATH"', $content, 'Should invoke horde-components via TOOL_PHP');
+        $this->assertStringContainsString('--php="$LANE_PHP"', $content, 'Should pass --php=LANE_PHP to qc invocations');
     }
 
     public function testScriptUsesCorrectToolPaths(): void
@@ -184,6 +196,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.4-dev',
             'php_version' => '8.4',
             'php_binary' => '/usr/bin/php8.4',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'dev',
             'component_dir' => '/tmp/horde-ci/lanes/php8.4-dev/Http',
             'tools_dir' => '/custom/tools/path',
@@ -207,6 +220,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.4-dev',
             'php_version' => '8.4',
             'php_binary' => '/usr/bin/php8.4',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'dev',
             'component_dir' => '/tmp/horde-ci/lanes/php8.4-dev/Http',
             'tools_dir' => '/tmp/horde-ci/tools',
@@ -228,6 +242,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.4-dev',
             'php_version' => '8.4',
             'php_binary' => '/usr/bin/php8.4',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'dev',
             'component_dir' => '/tmp/horde-ci/lanes/php8.4-dev/Http',
             'tools_dir' => '/tmp/horde-ci/tools',
@@ -255,6 +270,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.4-dev',
             'php_version' => '8.4',
             'php_binary' => '/usr/bin/php8.4',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'dev',
             'component_dir' => '/tmp/horde-ci/lanes/php8.4-dev/Http',
             'tools_dir' => '/tmp/horde-ci/tools',
@@ -271,6 +287,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.4-stable',
             'php_version' => '8.4',
             'php_binary' => '/usr/bin/php8.4',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'stable',
             'component_dir' => '/tmp/horde-ci/lanes/php8.4-stable/Http',
             'tools_dir' => '/tmp/horde-ci/tools',
@@ -287,6 +304,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.3-dev',
             'php_version' => '8.3',
             'php_binary' => '/usr/bin/php8.3',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'dev',
             'component_dir' => '/tmp/horde-ci/lanes/php8.3-dev/Http',
             'tools_dir' => '/tmp/horde-ci/tools',
@@ -306,6 +324,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.4-dev',
             'php_version' => '8.4',
             'php_binary' => '/usr/bin/php8.4',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'dev',
             'component_dir' => '/tmp/horde-ci/lanes/php8.4-dev/Http',
             'tools_dir' => '/tmp/horde-ci/tools',
@@ -329,6 +348,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.4-dev',
             'php_version' => '8.4',
             'php_binary' => '/usr/bin/php8.4',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'dev',
             'component_dir' => '/tmp/horde-ci/lanes/php8.4-dev/Http',
             'tools_dir' => '/tmp/horde-ci/tools',
@@ -354,6 +374,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.4-dev',
             'php_version' => '8.4',
             'php_binary' => '/usr/bin/php8.4',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'dev',
             'component_dir' => '/tmp/horde-ci/lanes/php8.4-dev/Http',
             'tools_dir' => '/tmp/horde-ci/tools',
@@ -376,6 +397,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.4-dev',
             'php_version' => '8.4',
             'php_binary' => '/usr/bin/php8.4',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'dev',
             'component_dir' => '/tmp/horde-ci/lanes/php8.4-dev/Http',
             'tools_dir' => '/tmp/horde-ci/tools',
@@ -396,6 +418,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.4-dev',
             'php_version' => '8.4',
             'php_binary' => '/usr/bin/php8.4',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'dev',
             'component_dir' => '/tmp/horde-ci/lanes/php8.4-dev/Http',
             'tools_dir' => '/tmp/horde-ci/tools',
@@ -420,7 +443,7 @@ class LaneScriptGeneratorTest extends TestCase
         $config = [
             'lane_name' => 'php8.4-dev',
             'php_version' => '8.4',
-            // Missing: php_binary, stability, component_dir, tools_dir, build_dir
+            // Missing: php_binary, tool_php_binary, stability, component_dir, tools_dir, build_dir
         ];
 
         $result = $this->generator->generate($scriptPath, $config);
@@ -437,6 +460,7 @@ class LaneScriptGeneratorTest extends TestCase
             'lane_name' => 'php8.4-dev',
             'php_version' => '8.4',
             'php_binary' => '/usr/bin/php8.4',
+            'tool_php_binary' => '/usr/bin/php8.4',
             'stability' => 'dev',
             'component_dir' => '/tmp/horde-ci/lanes/php8.4-dev/Http',
             'tools_dir' => '/tmp/horde-ci/tools',

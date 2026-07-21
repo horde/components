@@ -141,7 +141,7 @@ class Phpstan extends Base
             }
 
             $this->getOutput()->info('Running PHPStan with watermark detection...');
-            $this->detectVersion($binary);
+            $this->detectVersion($binary, $options);
 
             // Stash the advisory flag from the analysis plan so the
             // write-results path can mark this lane's findings as
@@ -334,6 +334,24 @@ class Phpstan extends Base
     }
 
     /**
+     * Build a shell-escaped PHP-binary prefix to inject before a phar
+     * invocation when the caller passed --php. Returns the empty
+     * string when --php is absent, preserving today's phar-shebang
+     * behavior.
+     *
+     * @param array $options CLI options as forwarded from run().
+     * @return string Shell fragment ending in a space, or empty string.
+     */
+    private function phpPrefix(array $options): string
+    {
+        $php = $options['php'] ?? null;
+        if ($php === null || $php === '') {
+            return '';
+        }
+        return escapeshellarg((string) $php) . ' ';
+    }
+
+    /**
      * Find PHPStan binary in standard locations.
      *
      * @param string|null $toolsDir Optional tools directory to check first
@@ -359,9 +377,9 @@ class Phpstan extends Base
      *
      * @return void
      */
-    private function detectVersion(string $binary): void
+    private function detectVersion(string $binary, array $options = []): void
     {
-        $versionOutput = shell_exec(escapeshellarg($binary) . ' --version 2>&1');
+        $versionOutput = shell_exec($this->phpPrefix($options) . escapeshellarg($binary) . ' --version 2>&1');
 
         if ($versionOutput === null) {
             $this->getOutput()->info('Using PHPStan from: ' . $binary);
@@ -616,7 +634,7 @@ class Phpstan extends Base
         $command = implode(' ', $cmd);
 
         // Execute and capture output
-        exec($command . ' 2>&1', $output, $exitCode);
+        exec($this->phpPrefix($options) . $command . ' 2>&1', $output, $exitCode);
 
         // Clean up temp config
         @unlink($tempConfig);
@@ -1049,11 +1067,11 @@ NEON;
         // Write custom summary JSON
         $summaryJsonPath = $buildDir . '/phpstan-results.json';
 
-        $binary = $this->findPhpStanBinary();
+        $binary = $this->findPhpStanBinary($options['tools_dir'] ?? null);
         $version = 'unknown';
 
         if ($binary) {
-            $versionOutput = shell_exec(escapeshellarg($binary) . ' --version 2>&1');
+            $versionOutput = shell_exec($this->phpPrefix($options) . escapeshellarg($binary) . ' --version 2>&1');
             if ($versionOutput && preg_match('/PHPStan.*?([0-9]+\.[0-9]+\.[0-9]+)/', $versionOutput, $matches)) {
                 $version = $matches[1];
             }

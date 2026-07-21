@@ -165,6 +165,18 @@ class SetupCommand
         $this->phpInstaller->install($testableVersions);
         $this->output->plain('');
 
+        // Resolve the "tool PHP" — the interpreter under which
+        // horde-components itself is invoked from each generated lane
+        // script. Distinct from the lane PHP (which the tool then
+        // hands to PHPUnit/PHPStan/PHP-CS-Fixer via --php). The tool
+        // PHP must satisfy horde-components' own composer platform
+        // requirement (currently >=8.2); lane PHPs may be older.
+        // Without this split, an 8.1 lane would try to boot the phar
+        // under 8.1 and die at Composer's platform_check.
+        $toolPhpBinary = $this->phpInstaller->findToolPhpBinary('8.2');
+        $this->output->ok("Tool PHP: {$toolPhpBinary}");
+        $this->output->plain('');
+
         // Install extensions
         $this->output->info('[4/5] Installing PHP extensions...');
         // Per-PHP-minor resolution: when the component has a resolved
@@ -332,6 +344,7 @@ class SetupCommand
                 'lane_name' => $laneName,
                 'php_version' => $lane['php'],
                 'php_binary' => $this->phpInstaller->getPhpBinary($lane['php']),
+                'tool_php_binary' => $toolPhpBinary,
                 'stability' => $lane['stability'],
                 'component_dir' => $lane['dir'], // dir IS the component dir
                 'tools_dir' => $config->workDir . '/tools',

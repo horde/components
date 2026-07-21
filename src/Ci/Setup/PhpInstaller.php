@@ -364,4 +364,80 @@ class PhpInstaller
 
         return $binary;
     }
+
+    /**
+     * Pick a PHP binary suitable for running horde-components' own tool
+     * phars (PHPUnit, PHPStan, PHP-CS-Fixer). Prefers the runner's
+     * default `php` when it is at or above $minVersion; otherwise scans
+     * installed phpX.Y binaries and returns the lowest matching one.
+     *
+     * Lowest-matching is deliberate: horde-components' own tool phars
+     * only need $minVersion. Preferring the lowest keeps subprocesses
+     * from picking up newer language features than the tools themselves
+     * require, and reduces surprises when the runner ships a very new
+     * PHP alongside older ones.
+     *
+     * @param string $minVersion Minimum acceptable PHP version, e.g. '8.2'.
+     *
+     * @return string Absolute path to a suitable PHP binary.
+     * @throws Exception When no PHP >= $minVersion is available; lanes
+     *                   cannot run without one.
+     */
+    public function findToolPhpBinary(string $minVersion): string
+    {
+        // 1. Runner's default `php` if it is >= $minVersion.
+        $defaultPhp = $this->getDefaultPhpPath();
+        if ($defaultPhp !== '' && is_executable($defaultPhp)) {
+            $version = $this->probeVersion($defaultPhp);
+            if ($version !== null && version_compare($version, $minVersion, '>=')) {
+                return $defaultPhp;
+            }
+        }
+
+        // 2. Lowest installed phpX.Y >= $minVersion.
+        foreach ($this->getInstalledVersions() as $version) {
+            if (version_compare($version, $minVersion, '>=')) {
+                return $this->getPhpBinary($version);
+            }
+        }
+
+        // 3. Fatal - lanes cannot invoke horde-components without a
+        //    compatible PHP.
+        throw new Exception(
+            "No PHP >= {$minVersion} installed. horde-components' tool "
+            . 'phars require PHP ' . $minVersion . '+. Install one of the '
+            . 'ondrej/php packages, e.g. `sudo apt install php8.2-cli`.'
+        );
+    }
+
+    /**
+     * Return the absolute path to the runner's default `php` on
+     * PATH, or an empty string when none is found. Split out as a
+     * protected method so tests can inject a canned value without
+     * relying on the host environment.
+     *
+     * @return string Absolute path to `php`, or '' when not on PATH.
+     */
+    protected function getDefaultPhpPath(): string
+    {
+        return trim((string) shell_exec('command -v php 2>/dev/null'));
+    }
+
+    /**
+     * Probe a PHP binary for its major.minor version by parsing the
+     * first line of `php -v`. Returns null when the probe fails, so
+     * findToolPhpBinary() treats the binary as unusable and falls
+     * through to the next resolution step.
+     *
+     * @param string $php Absolute path to a PHP binary.
+     * @return string|null "<major>.<minor>" (e.g. "8.3"), or null.
+     */
+    protected function probeVersion(string $php): ?string
+    {
+        $out = @shell_exec(escapeshellarg($php) . ' -v 2>/dev/null');
+        if (!is_string($out) || !preg_match('/^PHP\s+(\d+\.\d+)/', $out, $m)) {
+            return null;
+        }
+        return $m[1];
+    }
 }

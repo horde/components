@@ -50,7 +50,7 @@ class LaneScriptGenerator
     public function generate(string $scriptPath, array $config): bool
     {
         // Validate required configuration keys
-        $requiredKeys = ['lane_name', 'php_version', 'php_binary', 'stability', 'component_dir', 'tools_dir', 'build_dir'];
+        $requiredKeys = ['lane_name', 'php_version', 'php_binary', 'tool_php_binary', 'stability', 'component_dir', 'tools_dir', 'build_dir'];
         foreach ($requiredKeys as $key) {
             if (!isset($config[$key])) {
                 $this->output->error("Missing required config key: {$key}");
@@ -115,6 +115,7 @@ class LaneScriptGenerator
         $laneName = $config['lane_name'];
         $phpVersion = $config['php_version'];
         $phpBinary = $config['php_binary'];
+        $toolPhpBinary = $config['tool_php_binary'];
         $stability = $config['stability'];
         $componentDir = $config['component_dir'];
         $toolsDir = $config['tools_dir'];
@@ -135,7 +136,14 @@ class LaneScriptGenerator
             set -o pipefail
 
             LANE_NAME="{$laneName}"
-            PHP_BINARY="{$phpBinary}"
+            # TOOL_PHP runs horde-components.phar; must satisfy its own
+            # composer platform (>=8.2). LANE_PHP is what the tool
+            # subprocess-invokes for PHPUnit/PHPStan/PHP-CS-Fixer under
+            # this lane's target PHP.
+            TOOL_PHP="{$toolPhpBinary}"
+            LANE_PHP="{$phpBinary}"
+            # Back-compat alias; remove after one release cycle.
+            PHP_BINARY="\$LANE_PHP"
             COMPONENT_DIR="{$componentDir}"
             TOOLS_DIR="{$toolsDir}"
             BUILD_DIR="{$buildDir}"
@@ -193,8 +201,9 @@ class LaneScriptGenerator
             # Task: PHPUnit
             echo "=== Running PHPUnit ==="
             cd "$COMPONENT_DIR"
-            "$PHP_BINARY" "$COMPONENTS_PATH" qc unit \
+            "$TOOL_PHP" "$COMPONENTS_PATH" qc unit \
                 --tools-dir="$TOOLS_DIR" \
+                --php="$LANE_PHP" \
                 2>&1 || PHPUNIT_EXIT=$?
             # JSON written to: $BUILD_DIR/phpunit-results-summary.json
 
@@ -213,8 +222,9 @@ class LaneScriptGenerator
             # Task: PHPStan
             echo "=== Running PHPStan ==="
             cd "$COMPONENT_DIR"
-            "$PHP_BINARY" "$COMPONENTS_PATH" qc phpstan \
+            "$TOOL_PHP" "$COMPONENTS_PATH" qc phpstan \
                 --tools-dir="$TOOLS_DIR" \
+                --php="$LANE_PHP" \
                 --dump-native \
                 2>&1 || PHPSTAN_EXIT=$?
             # JSON written to: $BUILD_DIR/phpstan-results.json
@@ -235,8 +245,9 @@ class LaneScriptGenerator
             # Task: PHP-CS-Fixer
             echo "=== Running PHP-CS-Fixer ==="
             cd "$COMPONENT_DIR"
-            "$PHP_BINARY" "$COMPONENTS_PATH" qc phpcsfixer \
+            "$TOOL_PHP" "$COMPONENTS_PATH" qc phpcsfixer \
                 --tools-dir="$TOOLS_DIR" \
+                --php="$LANE_PHP" \
                 2>&1 || PHPCS_EXIT=$?
             # JSON written to: $BUILD_DIR/php-cs-fixer-results.json
 
