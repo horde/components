@@ -40,10 +40,20 @@ class ToolFinder
      * @param string|null $componentPath Path to the component directory.
      *                                   If null or empty, uses current working directory.
      * @param string|null $toolsDir Optional directory containing tool binaries (highest priority).
+     * @param string|null $lanePhpVersion Optional lane PHP version (e.g. "8.2")
+     *                                    used by {@see resolvePhpUnitTag()} to pick a
+     *                                    PHPUnit tag compatible with the target lane
+     *                                    rather than the interpreter currently running
+     *                                    horde-components. Null falls back to
+     *                                    `PHP_MAJOR_VERSION.PHP_MINOR_VERSION` — the
+     *                                    tool interpreter — preserving prior behavior
+     *                                    for callers that predate the lane/tool PHP
+     *                                    split.
      */
     public function __construct(
         private readonly ?string $componentPath,
-        private readonly ?string $toolsDir = null
+        private readonly ?string $toolsDir = null,
+        private readonly ?string $lanePhpVersion = null,
     ) {}
 
     /**
@@ -359,7 +369,14 @@ class ToolFinder
     private function resolvePhpUnitTag(): ?string
     {
         $matrix = new PhpUnitMatrix();
-        $phpVersion = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
+        // Prefer the lane's PHP when provided. Otherwise fall back to
+        // the current interpreter — same behavior as before this class
+        // learned about lane/tool PHP separation. Callers under the CI
+        // harness (Task\Unit via --php) always pass a lane version;
+        // ad-hoc callers (local `qc unit` without --php) get the tool
+        // PHP which equals the runtime PHP.
+        $phpVersion = $this->lanePhpVersion
+            ?? PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
 
         $composerJson = $this->getComponentPath() . '/composer.json';
         if (is_file($composerJson)) {

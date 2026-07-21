@@ -152,13 +152,22 @@ class Unit extends Base
      * phar is authoritative.
      *
      * @param string|null $toolsDir Optional tools directory to check first
+     * @param string|null $lanePhpVersion Optional PHP version (e.g. "8.2")
+     *                    of the interpreter that will actually execute the
+     *                    phar. When set, {@see ToolFinder::resolvePhpUnitTag()}
+     *                    picks the highest PHPUnit tag compatible with that
+     *                    lane rather than the interpreter running horde-
+     *                    components itself. Callers on the subprocess path
+     *                    should pass this; in-process callers can omit it.
      * @return string|null Absolute path to the PHPUnit binary, or null
      *                    if none was found.
      */
-    private function resolvePhpUnitPath(?string $toolsDir): ?string
-    {
+    private function resolvePhpUnitPath(
+        ?string $toolsDir,
+        ?string $lanePhpVersion = null,
+    ): ?string {
         $componentPath = $this->getPath() ?: (getcwd() ?: '.');
-        $toolFinder = new ToolFinder($componentPath, $toolsDir);
+        $toolFinder = new ToolFinder($componentPath, $toolsDir, $lanePhpVersion);
         return $toolFinder->findBinary('phpunit');
     }
 
@@ -202,7 +211,13 @@ class Unit extends Base
         string $componentPath,
         ?string $toolsDir,
     ): int {
-        $phpunitPath = $this->resolvePhpUnitPath($toolsDir);
+        // Probe the lane PHP's version so ToolFinder can pick a PHPUnit
+        // tag that actually runs under it. Without this, resolvePhpUnitTag
+        // would fall back to PHP_MAJOR_VERSION.PHP_MINOR_VERSION — the
+        // tool PHP — and select a PHPUnit newer than the lane PHP can
+        // execute (e.g. PHPUnit 12.5 chosen for a PHP 8.1 lane).
+        $lanePhpVersion = $this->probePhpVersion($php);
+        $phpunitPath = $this->resolvePhpUnitPath($toolsDir, $lanePhpVersion);
         if ($phpunitPath === null) {
             $this->getOutput()->error(
                 'PHPUnit binary not found for subprocess execution'
@@ -231,6 +246,34 @@ class Unit extends Base
         ob_end_clean();
 
         return $exitCode;
+    }
+
+    /**
+     * Probe a PHP binary for its major.minor version.
+     *
+     * Parses the first line of `php -v` output, which begins with
+     * "PHP X.Y..." on every mainstream build. Returns null when the
+     * probe fails so callers can fall back cleanly rather than pinning
+     * on a wrong version.
+     *
+     * Local copy of the same regex used by {@see \Horde\Components\Ci\Setup\PhpInstaller::probeVersion()};
+     * that helper is protected and not reachable without inheritance,
+     * and Task\Unit has no injected PhpInstaller. A shared utility
+     * belongs in a later refactor once more sites need it.
+     *
+     * @param string $php Absolute path to a PHP binary.
+     * @return string|null "<major>.<minor>" (e.g. "8.1"), or null.
+     */
+    private function probePhpVersion(string $php): ?string
+    {
+        if (!is_file($php) || !is_executable($php)) {
+            return null;
+        }
+        $out = @shell_exec(escapeshellarg($php) . ' -v 2>/dev/null');
+        if (!is_string($out) || !preg_match('/^PHP\s+(\d+\.\d+)/', $out, $m)) {
+            return null;
+        }
+        return $m[1];
     }
 
     /**
