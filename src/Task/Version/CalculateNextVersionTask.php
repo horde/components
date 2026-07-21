@@ -86,12 +86,19 @@ class CalculateNextVersionTask extends AbstractTask
             // Path A: Manual version - use exactly as provided
             $version = Version::fromComposerString($manualVersion);
 
-            // Validate consistency if both next_version and next_relstate provided
+            // Validate consistency if both next_version and next_relstate provided.
+            // A SemVer without a pre-release suffix (e.g. "4.0.0") is stable, so
+            // Version::getStability() returns '' for it. Treat '' and 'stable' as
+            // equivalent when comparing against --next-relstate.
             if ($nextRelstate !== 'unchanged') {
                 $versionStability = $version->getStability();
-                if ($versionStability !== $nextRelstate) {
+                $stabilitiesMatch = $versionStability === $nextRelstate
+                    || ($nextRelstate === 'stable' && Version::isStable($versionStability))
+                    || ($versionStability === 'stable' && Version::isStable($nextRelstate));
+                if (!$stabilitiesMatch) {
+                    $reportedStability = $versionStability === '' ? 'stable' : $versionStability;
                     throw new Exception(
-                        "Conflicting options: --next-version={$manualVersion} has stability '{$versionStability}' "
+                        "Conflicting options: --next-version={$manualVersion} has stability '{$reportedStability}' "
                         . "but --next-relstate={$nextRelstate} requests '{$nextRelstate}'. "
                         . "When providing --next-version, either omit --next-relstate or ensure they match."
                     );
