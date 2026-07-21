@@ -21,7 +21,7 @@
             "role": "contributor"
         }
     ],
-    "time": "2026-07-03",
+    "time": "2026-07-21",
     "repositories": [],
     "require": {
         "horde/horde-installer-plugin": "^2.6 || dev-FRAMEWORK_6_0",

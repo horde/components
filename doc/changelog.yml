@@ -1,4 +1,14 @@
 ---
+1.0.0-RC12:
+  api: 1.0.0-RC12
+  state:
+    release: RC
+    api: RC
+  date: 2026-07-21
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: "feat: Support running phpunit on a different php version than components tool\nfix: Validate consistency if both next_version and next_relstate are provided\nfeat(components): alias --dry-run to global --pretend flag\nfeat(components): narrow ci-platform php entry to ^<lane> per lane"
 1.0.0-RC11:
   api: 1.0.0-RC11
   state:
