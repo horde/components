@@ -50,13 +50,18 @@ class ApplicationPhp implements Wrapper, Stringable
     /**
      * Constructor.
      *
-     * @param string $baseDir  Directory with lib/(Application|Bundle).php.
+     * @param string $baseDir   The component's base directory.
+     * @param string $location  Which subdirectory to look in for the
+     *                          Bundle.php / Application.php file. Accepts
+     *                          `'lib'` (PSR-0 / legacy) or `'src'` (PSR-4 /
+     *                          modern). Defaults to `'lib'` for backward
+     *                          compatibility.
      */
-    public function __construct($baseDir)
+    public function __construct($baseDir, string $location = 'lib')
     {
-        $this->_file = $baseDir . '/lib/Bundle.php';
+        $this->_file = $baseDir . '/' . $location . '/Bundle.php';
         if (!$this->exists()) {
-            $this->_file = $baseDir . '/lib/Application.php';
+            $this->_file = $baseDir . '/' . $location . '/Application.php';
         }
         if ($this->exists()) {
             $this->_contents = file_get_contents($this->getFullPath());

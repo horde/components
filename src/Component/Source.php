@@ -817,10 +817,18 @@ class Source extends Base
             $updated[] = $changes;
         }
 
-        // Update Application.php/Bundle.php.
-        /** @var WrapperApplicationPhp $application */
-        $application = $this->getWrapper('ApplicationPhp');
-        if ($application->exists()) {
+        // Update Application.php/Bundle.php. Applications that carry
+        // both lib/ (PSR-0 bootstrap) and src/ (PSR-4 class) files each
+        // need the version updated; the sole caller of getWrapper() for
+        // this file type still defaults to 'lib', which used to be the
+        // only location. Handle both directly here so a mid-migration
+        // component like horde/timeobjects keeps its src/Application.php
+        // in sync at release time.
+        foreach (['lib', 'src'] as $location) {
+            $application = new WrapperApplicationPhp($this->directory, $location);
+            if (!$application->exists()) {
+                continue;
+            }
             $application->setVersion(
                 HelperVersion::pearToHordeWithBranch(
                     $rel_version,
