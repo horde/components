@@ -44,8 +44,6 @@ class PageGenerator
     ): void {
         // Load templates
         $topbar = $this->loadTemplate('topbar.html');
-        $staticSections = $this->loadTemplate('static-sections.html');
-        $archiveSection = $this->loadTemplate('archive-section.html');
         $searchScript = $this->loadTemplate('search-script.html');
 
         // Load component metadata
@@ -63,7 +61,11 @@ class PageGenerator
         $prsHtml = $this->renderEventSection($byType['pull_request'] ?? [], $maxEvents);
         $componentDirectory = $this->renderComponentDirectory($components, $byComponent, $maxComponentEvents);
 
-        // Build complete page
+        // Build complete page. The dashboard itself only holds the
+        // activity feed and component directory (per the target IA); the
+        // "Source Code / Mailing Lists / Other stuff" and "API References
+        // archive" content that used to be inlined here now lives on the
+        // dedicated /resources page (see generateResourcesPage()).
         $html = $this->buildFullPage(
             $topbar,
             $timestamp,
@@ -71,8 +73,6 @@ class PageGenerator
             $releasesHtml,
             $pushesHtml,
             $prsHtml,
-            $staticSections,
-            $archiveSection,
             $componentDirectory,
             $searchScript
         );
@@ -82,6 +82,66 @@ class PageGenerator
         // Generate component-specific pages for ALL components in catalog
         $outputDir = dirname($outputFile);
         $this->generateComponentPages($outputDir, $components, $byComponent);
+    }
+
+    /**
+     * Generate the /contribute page from contribute.html content.
+     */
+    public function generateContributePage(string $outputFile): void
+    {
+        $topbar = $this->loadTemplate('topbar.html');
+        $body = $this->loadTemplate('contribute.html');
+        $html = $this->wrapSimplePage('Contribute - Horde Development', $topbar, $body);
+        file_put_contents($outputFile, $html);
+    }
+
+    /**
+     * Generate the /resources page from static-sections.html,
+     * archive-section.html and resources-extra.html content.
+     */
+    public function generateResourcesPage(string $outputFile): void
+    {
+        $topbar = $this->loadTemplate('topbar.html');
+        $staticSections = $this->loadTemplate('static-sections.html');
+        $archiveSection = $this->loadTemplate('archive-section.html');
+        $resourcesExtra = $this->loadTemplate('resources-extra.html');
+
+        $body = "<h1>Resources</h1>\n\n"
+            . $staticSections . "\n\n"
+            . $resourcesExtra . "\n\n"
+            . $archiveSection;
+
+        $html = $this->wrapSimplePage('Resources - Horde Development', $topbar, $body);
+        file_put_contents($outputFile, $html);
+    }
+
+    /**
+     * Wrap arbitrary page-body HTML in the shared site chrome (topbar +
+     * stylesheet), for simple static content pages that don't need the
+     * dashboard's activity-grid/component-directory machinery.
+     */
+    private function wrapSimplePage(string $title, string $topbar, string $body): string
+    {
+        $titleEsc = $this->esc($title);
+        $cssEsc = $this->esc($this->cssFilename);
+
+        return <<<HTML
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>{$titleEsc}</title>
+                <link rel="stylesheet" type="text/css" href="{$cssEsc}">
+            </head>
+            <body>
+            {$topbar}
+                <div class="container">
+            {$body}
+                </div>
+            </body>
+            </html>
+            HTML;
     }
 
     private function loadTemplate(string $filename): string
@@ -318,8 +378,6 @@ class PageGenerator
         string $releasesHtml,
         string $pushesHtml,
         string $prsHtml,
-        string $staticSections,
-        string $archiveSection,
         string $componentDirectory,
         string $searchScript
     ): string {
@@ -370,9 +428,13 @@ class PageGenerator
                         </div>
                     </div>
 
-            {$staticSections}
-
-            {$archiveSection}
+                    <div class="content-section">
+                        <h2>Looking for source code, mailing lists, API references, or how to contribute?</h2>
+                        <p>
+                            <a href="/contribute.html">Contribute →</a> &nbsp;|&nbsp;
+                            <a href="/resources.html">Resources →</a>
+                        </p>
+                    </div>
 
             {$componentDirectory}    </div>
 
@@ -550,6 +612,96 @@ class PageGenerator
         $html .= '</div>' . "\n\n";
 
         return $html;
+    }
+
+    /**
+     * Generate static stub pages for retired/moved URLs, per the Legacy
+     * URL Policy (IA §6.5): every removed or relocated page gets a
+     * human-readable stub at its old location that explains the move and
+     * links to the new one - never a silent 404.
+     *
+     * Reads a JSON array of {"from": "<old-path-relative-to-site-root>",
+     * "to": "<new-url-or-path>", "reason": "<optional explanation>"}
+     * objects. Returns the number of stub pages written. Missing file or
+     * an empty array is a no-op (not an error) - most repos will have no
+     * retired URLs of their own.
+     */
+    public function generateRedirectStubs(string $redirectsFile, string $outputDir): int
+    {
+        if (!file_exists($redirectsFile)) {
+            return 0;
+        }
+
+        $decoded = json_decode((string) file_get_contents($redirectsFile), true);
+        if (!is_array($decoded)) {
+            throw new RuntimeException("Invalid redirects file (expected a JSON array): {$redirectsFile}");
+        }
+        if ($decoded === []) {
+            return 0;
+        }
+
+        $topbar = $this->loadTemplate('topbar.html');
+        $count = 0;
+
+        foreach ($decoded as $redirect) {
+            if (!isset($redirect['from'], $redirect['to'])) {
+                throw new RuntimeException(
+                    "Redirect entry missing required 'from'/'to' keys: " . json_encode($redirect)
+                );
+            }
+
+            $from = ltrim((string) $redirect['from'], '/');
+            $to = (string) $redirect['to'];
+            $reason = (string) ($redirect['reason'] ?? 'This content has moved.');
+
+            $targetPath = $outputDir . '/' . $from;
+            $targetDir = dirname($targetPath);
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0o755, true);
+            }
+
+            // CSS is always written at the output root; nested stub pages
+            // need a relative "../" prefix matching their depth.
+            $depth = substr_count($from, '/');
+            $cssPrefix = str_repeat('../', $depth);
+
+            file_put_contents($targetPath, $this->buildRedirectStub($topbar, $to, $reason, $cssPrefix));
+            $count++;
+        }
+
+        return $count;
+    }
+
+    private function buildRedirectStub(string $topbar, string $to, string $reason, string $cssPrefix): string
+    {
+        $toEsc = $this->esc($to);
+        $reasonEsc = $this->esc($reason);
+        $cssEsc = $this->esc($cssPrefix . $this->cssFilename);
+
+        return <<<HTML
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta http-equiv="refresh" content="5; url={$toEsc}">
+                <title>Page Moved - Horde Development</title>
+                <link rel="stylesheet" type="text/css" href="{$cssEsc}">
+            </head>
+            <body>
+            {$topbar}
+                <div class="container">
+                    <h1>This page has moved</h1>
+                    <p>{$reasonEsc}</p>
+                    <p>
+                        You will be redirected automatically in a few seconds.
+                        If not, please go to
+                        <a href="{$toEsc}">{$toEsc}</a> directly.
+                    </p>
+                </div>
+            </body>
+            </html>
+            HTML;
     }
 
     private function truncate(string $text, int $length): string

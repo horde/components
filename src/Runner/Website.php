@@ -55,6 +55,7 @@ class Website
         $this->output->info("  Templates:  {$this->config->templatesDir}");
         $this->output->info("  Assets:     {$this->config->assetsDir}");
         $this->output->info("  Components: {$this->config->componentsFile}");
+        $this->output->info("  Redirects:  {$this->config->redirectsFile}");
 
         // Validate paths
         if (!is_dir($this->config->inputDir)) {
@@ -104,6 +105,24 @@ class Website
             2    // max events per component card
         );
 
+        // Generate the /contribute and /resources pages
+        $generator->generateContributePage($this->config->outputDir . '/contribute.html');
+        $this->output->ok("Generated contribute.html");
+        $generator->generateResourcesPage($this->config->outputDir . '/resources.html');
+        $this->output->ok("Generated resources.html");
+
+        // Generate legacy URL stub pages - a no-op when
+        // this repo has no redirects.json or an empty redirect list.
+        $stubCount = $generator->generateRedirectStubs(
+            $this->config->redirectsFile,
+            $this->config->outputDir
+        );
+        if ($stubCount > 0) {
+            $this->output->ok("Generated {$stubCount} legacy URL redirect stub(s)");
+        } else {
+            $this->output->plain("No legacy URL redirects to generate ({$this->config->redirectsFile})");
+        }
+
         // Copy CSS to output
         $cssSource = $this->config->assetsDir . '/' . $cssFilename;
         $cssDest = $this->config->outputDir . '/' . $cssFilename;
@@ -117,6 +136,8 @@ class Website
 
         $this->output->ok("Website generated successfully!");
         $this->output->info("  Main page: {$this->config->outputDir}/index.html");
+        $this->output->info("  Contribute: {$this->config->outputDir}/contribute.html");
+        $this->output->info("  Resources: {$this->config->outputDir}/resources.html");
         $this->output->info("  Components: {$this->config->outputDir}/components/");
     }
 

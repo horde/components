@@ -43,6 +43,7 @@ readonly class WebsiteConfig
      * @param string $templatesDir Directory containing templates
      * @param string $componentsFile Path to components.json catalog file
      * @param string $assetsDir Directory containing static assets (CSS etc.)
+     * @param string $redirectsFile Path to content/redirects.json (legacy URL stubs)
      * @param string $organization GitHub organization name
      * @param string|null $gitDir Optional local git repository directory
      * @param string|null $token Optional GitHub API token
@@ -53,6 +54,7 @@ readonly class WebsiteConfig
         public string $templatesDir,
         public string $componentsFile,
         public string $assetsDir,
+        public string $redirectsFile,
         public string $organization = 'horde',
         public ?string $gitDir = null,
         public ?string $token = null
@@ -146,12 +148,26 @@ readonly class WebsiteConfig
                     ? $config->getSetting('web_token')
                     : $fallbackToken));
 
+        // Legacy URL Policy (IA §6.5): retired/moved pages get a static
+        // stub at their old path. The redirect map is authored content,
+        // living as a sibling to content/pages/ (not inside it, since it
+        // describes paths outside that tree too). Falls back to
+        // templatesDir itself under the old bundled data/website layout.
+        $redirectsFile = $config->hasSetting('devsite.redirects_file')
+            ? $config->getSetting('devsite.redirects_file')
+            : ($config->hasSetting('web_redirects')
+                ? $config->getSetting('web_redirects')
+                : (str_ends_with(rtrim($templatesDir, '/'), '/content/pages')
+                    ? dirname(rtrim($templatesDir, '/')) . '/redirects.json'
+                    : $templatesDir . '/redirects.json'));
+
         return new self(
             $inputDir,
             $outputDir,
             $templatesDir,
             $componentsFile,
             $assetsDir,
+            $redirectsFile,
             $organization,
             $gitDir,
             $token

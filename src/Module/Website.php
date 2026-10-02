@@ -87,6 +87,13 @@ class Website extends Base
                 ]
             ),
             new Option(
+                '--web-redirects',
+                [
+                    'action' => 'store',
+                    'help'   => 'Legacy URL redirects JSON (default: <checkout.dir>/<org>/dev.horde.org/content/redirects.json)',
+                ]
+            ),
+            new Option(
                 '--web-org',
                 [
                     'action' => 'store',
@@ -156,6 +163,8 @@ WEBSITE GENERATION:
                              Config: devsite.assets_dir
     --web-components <file>  Component catalog JSON (default: <templates dir>/components.json)
                              Config: devsite.components
+    --web-redirects <file>   Legacy URL redirects JSON (default: <checkout.dir>/<org>/dev.horde.org/content/redirects.json)
+                             Config: devsite.redirects_file
 
   Examples:
     horde-components web
