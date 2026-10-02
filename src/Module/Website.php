@@ -69,14 +69,14 @@ class Website extends Base
                 '--web-templates',
                 [
                     'action' => 'store',
-                    'help'   => 'Templates directory (default: data/website)',
+                    'help'   => 'Templates directory (default: <checkout.dir>/<org>/dev.horde.org/content/pages)',
                 ]
             ),
             new Option(
                 '--web-components',
                 [
                     'action' => 'store',
-                    'help'   => 'Component catalog JSON (default: data/website/components.json)',
+                    'help'   => 'Component catalog JSON (default: <templates dir>/components.json)',
                 ]
             ),
             new Option(
@@ -143,9 +143,9 @@ WEBSITE GENERATION:
                              Config: devsite.input_dir
     --web-output <dir>       Output directory (default: build/dev.horde.org)
                              Config: devsite.output_dir
-    --web-templates <dir>    Templates directory (default: data/website)
+    --web-templates <dir>    Templates directory (default: <checkout.dir>/<org>/dev.horde.org/content/pages)
                              Config: devsite.template_dir
-    --web-components <file>  Component catalog JSON (default: data/website/components.json)
+    --web-components <file>  Component catalog JSON (default: <templates dir>/components.json)
                              Config: devsite.components
 
   Examples:
@@ -159,7 +159,7 @@ COMPONENT CATALOG:
   Update the component catalog from GitHub API.
 
   Options:
-    --web-components <file>  Catalog output file (default: data/website/components.json)
+    --web-components <file>  Catalog output file (default: <templates dir>/components.json)
                              Config: devsite.components
     --web-org <name>         GitHub organization (default: horde)
                              Config: repo.org (shared) or devsite.org

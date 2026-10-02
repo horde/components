@@ -83,18 +83,6 @@ readonly class WebsiteConfig
                 ? $config->getSetting('web_output')
                 : $componentsRoot . '/build/dev.horde.org');
 
-        $templatesDir = $config->hasSetting('devsite.template_dir')
-            ? $config->getSetting('devsite.template_dir')
-            : ($config->hasSetting('web_templates')
-                ? $config->getSetting('web_templates')
-                : $componentsRoot . '/data/website');
-
-        $componentsFile = $config->hasSetting('devsite.components')
-            ? $config->getSetting('devsite.components')
-            : ($config->hasSetting('web_components')
-                ? $config->getSetting('web_components')
-                : $templatesDir . '/components.json');
-
         // For organization, prefer repo.org over devsite.org over legacy web_org
         $organization = $config->hasSetting('repo.org')
             ? $config->getSetting('repo.org')
@@ -112,6 +100,26 @@ readonly class WebsiteConfig
                 : ($config->hasSetting('web_git_dir')
                     ? $config->getSetting('web_git_dir')
                     : null));
+
+        // Templates/content now live in the dev.horde.org content repo
+        // itself (content/pages), not bundled inside this tool repo. Default
+        // to the checked-out dev.horde.org repo when a git checkout
+        // directory is known; otherwise fall back to the (no longer
+        // populated) bundled data/website directory for backwards
+        // compatibility.
+        $templatesDir = $config->hasSetting('devsite.template_dir')
+            ? $config->getSetting('devsite.template_dir')
+            : ($config->hasSetting('web_templates')
+                ? $config->getSetting('web_templates')
+                : ($gitDir !== null
+                    ? rtrim($gitDir, '/') . '/' . $organization . '/dev.horde.org/content/pages'
+                    : $componentsRoot . '/data/website'));
+
+        $componentsFile = $config->hasSetting('devsite.components')
+            ? $config->getSetting('devsite.components')
+            : ($config->hasSetting('web_components')
+                ? $config->getSetting('web_components')
+                : $templatesDir . '/components.json');
 
         // For token, prefer github.token over devsite.token over legacy web_token
         $token = $config->hasSetting('github.token')
