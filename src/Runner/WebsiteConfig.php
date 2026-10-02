@@ -42,6 +42,7 @@ readonly class WebsiteConfig
      * @param string $outputDir Directory for generated website
      * @param string $templatesDir Directory containing templates
      * @param string $componentsFile Path to components.json catalog file
+     * @param string $assetsDir Directory containing static assets (CSS etc.)
      * @param string $organization GitHub organization name
      * @param string|null $gitDir Optional local git repository directory
      * @param string|null $token Optional GitHub API token
@@ -51,6 +52,7 @@ readonly class WebsiteConfig
         public string $outputDir,
         public string $templatesDir,
         public string $componentsFile,
+        public string $assetsDir,
         public string $organization = 'horde',
         public ?string $gitDir = null,
         public ?string $token = null
@@ -121,6 +123,20 @@ readonly class WebsiteConfig
                 ? $config->getSetting('web_components')
                 : $templatesDir . '/components.json');
 
+        // Static assets (CSS, etc.) live in the content repo's sibling
+        // content/assets/ directory, not content/pages/ alongside the page
+        // templates. Default to that sibling when templatesDir follows the
+        // .../content/pages convention; otherwise fall back to templatesDir
+        // itself (old bundled data/website layout, where CSS and templates
+        // shared one directory).
+        $assetsDir = $config->hasSetting('devsite.assets_dir')
+            ? $config->getSetting('devsite.assets_dir')
+            : ($config->hasSetting('web_assets')
+                ? $config->getSetting('web_assets')
+                : (str_ends_with(rtrim($templatesDir, '/'), '/content/pages')
+                    ? dirname(rtrim($templatesDir, '/')) . '/assets'
+                    : $templatesDir));
+
         // For token, prefer github.token over devsite.token over legacy web_token
         $token = $config->hasSetting('github.token')
             ? $config->getSetting('github.token')
@@ -135,6 +151,7 @@ readonly class WebsiteConfig
             $outputDir,
             $templatesDir,
             $componentsFile,
+            $assetsDir,
             $organization,
             $gitDir,
             $token

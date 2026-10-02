@@ -73,6 +73,13 @@ class Website extends Base
                 ]
             ),
             new Option(
+                '--web-assets',
+                [
+                    'action' => 'store',
+                    'help'   => 'Static assets directory (default: <checkout.dir>/<org>/dev.horde.org/content/assets)',
+                ]
+            ),
+            new Option(
                 '--web-components',
                 [
                     'action' => 'store',
@@ -145,6 +152,8 @@ WEBSITE GENERATION:
                              Config: devsite.output_dir
     --web-templates <dir>    Templates directory (default: <checkout.dir>/<org>/dev.horde.org/content/pages)
                              Config: devsite.template_dir
+    --web-assets <dir>       Static assets directory (default: <checkout.dir>/<org>/dev.horde.org/content/assets)
+                             Config: devsite.assets_dir
     --web-components <file>  Component catalog JSON (default: <templates dir>/components.json)
                              Config: devsite.components
 

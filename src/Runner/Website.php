@@ -53,6 +53,7 @@ class Website
         $this->output->info("  Input:      {$this->config->inputDir}");
         $this->output->info("  Output:     {$this->config->outputDir}");
         $this->output->info("  Templates:  {$this->config->templatesDir}");
+        $this->output->info("  Assets:     {$this->config->assetsDir}");
         $this->output->info("  Components: {$this->config->componentsFile}");
 
         // Validate paths
@@ -104,12 +105,14 @@ class Website
         );
 
         // Copy CSS to output
-        $cssSource = $this->config->templatesDir . '/' . $cssFilename;
+        $cssSource = $this->config->assetsDir . '/' . $cssFilename;
         $cssDest = $this->config->outputDir . '/' . $cssFilename;
 
         if (file_exists($cssSource)) {
             copy($cssSource, $cssDest);
             $this->output->ok("Copied CSS stylesheet");
+        } else {
+            $this->output->warn("CSS stylesheet not found, not copied: {$cssSource}");
         }
 
         $this->output->ok("Website generated successfully!");
