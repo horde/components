@@ -50,6 +50,9 @@ readonly class WwwSiteConfig
      * @param string $legacyLicensesDir Directory containing the verbatim legacy license text
      *   files (COPYING, LGPL, LGPL-2.1, LICENSE, COPYRIGHT), read at build time by the
      *   `<!-- WIDGET: license-text source=... -->` placeholder
+     * @param string $papersDir Directory containing the legacy conference-papers archive
+     *   (PDFs, per-talk static HTML/S5 slideshow subdirectories, images), copied verbatim
+     *   into the build output's /papers/ - see WwwWebsite::copyPapersArchive()
      */
     public function __construct(
         public string $templatesDir,
@@ -63,6 +66,7 @@ readonly class WwwSiteConfig
         public ?string $gitDir = null,
         public string $organization = 'horde',
         public string $legacyLicensesDir = '',
+        public string $papersDir = '',
     ) {
     }
 
@@ -144,6 +148,17 @@ readonly class WwwSiteConfig
                 ? dirname(dirname(rtrim($templatesDir, '/'))) . '/app/views/Licenses'
                 : $templatesDir . '/../app/views/Licenses');
 
+        // The conference-papers archive (PDFs, per-talk static HTML/S5
+        // slideshow subdirectories, images) is likewise a self-contained
+        // legacy static asset tree, not editorial content to re-author -
+        // it is copied verbatim into the build output. See
+        // WwwWebsite::copyPapersArchive().
+        $papersDir = $config->hasSetting('wwwsite.papers_dir')
+            ? $config->getSetting('wwwsite.papers_dir')
+            : (str_ends_with(rtrim($templatesDir, '/'), '/content/pages')
+                ? dirname(dirname(rtrim($templatesDir, '/'))) . '/papers'
+                : $templatesDir . '/../papers');
+
         // The component facts catalog is dev.horde.org's own Phase 2
         // unified facts file (components.json), not a separate copy -
         // www.horde.org's /apps pages read from the same source of truth,
@@ -177,7 +192,8 @@ readonly class WwwSiteConfig
             $blogFeeds,
             $gitDir,
             $organization,
-            $legacyLicensesDir
+            $legacyLicensesDir,
+            $papersDir
         );
     }
 }

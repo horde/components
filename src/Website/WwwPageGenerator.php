@@ -172,7 +172,7 @@ class WwwPageGenerator
         $factsHtml = $this->renderAppFacts($componentMeta, $hordeYml);
 
         $title = ucfirst($slug) . ' - Horde Applications';
-        $html = $this->wrapPage($title, $factsHtml . $body, '../');
+        $html = $this->wrapPage($title, $factsHtml . $body, '../../');
         file_put_contents($outputFile, $html);
     }
 

@@ -23,6 +23,7 @@ use Horde\Components\Website\PulseStatsCalculator;
 use Horde\Components\Website\SponsorCardRenderer;
 use Horde\Components\Website\SponsorRoster;
 use Horde\Components\Website\WwwPageGenerator;
+use DirectoryIterator;
 use RuntimeException;
 
 /**
@@ -185,6 +186,9 @@ class WwwWebsite
             $this->output->warn("status-widget.js not found, not copied: {$statusJsSource}");
         }
 
+        // --- Conference papers archive (verbatim static asset tree) ---
+        $this->copyPapersArchive();
+
         $this->output->ok("Website generated successfully!");
         $this->output->info("  Main page: {$this->config->outputDir}/index.html");
         $this->output->info("  Apps: {$this->config->outputDir}/apps/");
@@ -230,5 +234,56 @@ class WwwWebsite
         }
 
         return $posts;
+    }
+
+    /**
+     * Copy the legacy conference-papers archive (PDFs, per-talk static
+     * HTML/S5 slideshow subdirectories, screenshots) verbatim into
+     * `$outputDir/papers/`. This is legacy static content, not editorial
+     * prose - `community/papers/index.html` already links to it with
+     * plain root-relative `/papers/...` hrefs, so a straight recursive
+     * copy is all that's needed (no templating/generation).
+     */
+    private function copyPapersArchive(): void
+    {
+        $source = $this->config->papersDir;
+        if ($source === '' || !is_dir($source)) {
+            $this->output->warn("Papers archive not found, not copied: {$source}");
+            return;
+        }
+
+        $dest = $this->config->outputDir . '/papers';
+        if (!is_dir($dest)) {
+            mkdir($dest, 0o755, true);
+        }
+        $fileCount = $this->copyDirectoryRecursive($source, $dest);
+        $this->output->ok("Copied papers archive ({$fileCount} file(s))");
+    }
+
+    /**
+     * Recursively copy a directory tree, returning the number of files
+     * copied. Mirrors BuildPharTask::copyDirectory()'s approach.
+     */
+    private function copyDirectoryRecursive(string $source, string $dest): int
+    {
+        if (!is_dir($dest)) {
+            mkdir($dest, 0o755, true);
+        }
+
+        $count = 0;
+        foreach (new DirectoryIterator($source) as $item) {
+            if ($item->isDot()) {
+                continue;
+            }
+            $targetPath = $dest . '/' . $item->getFilename();
+            if ($item->isDir()) {
+                $count += $this->copyDirectoryRecursive($item->getPathname(), $targetPath);
+            } else {
+                copy($item->getPathname(), $targetPath);
+                $count++;
+            }
+        }
+
+        return $count;
     }
 }
