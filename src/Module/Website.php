@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Website module - Generate dev.horde.org from webhook events
+ * Website module - Generate dev.horde.org and www.horde.org
  *
  * PHP Version 8.2+
  *
@@ -20,11 +20,13 @@ use Horde\Components\Component;
 use Horde\Components\ConfigProvider\ConfigProviderFactory;
 use Horde\Components\Runner\Website as WebsiteRunner;
 use Horde\Components\Runner\WebsiteConfig;
+use Horde\Components\Runner\WwwWebsite as WwwWebsiteRunner;
+use Horde\Components\Runner\WwwSiteConfig;
 use Horde\Components\Output;
 use Horde\GithubApiClient\GithubApiConfig;
 
 /**
- * Website module - Generate dev.horde.org from webhook events
+ * Website module - Generate dev.horde.org and www.horde.org
  *
  * Copyright 2026 Horde LLC (http://www.horde.org/)
  *
@@ -45,7 +47,7 @@ class Website extends Base
 
     public function getOptionGroupDescription(): string
     {
-        return 'Generate dev.horde.org website from webhook events';
+        return 'Generate dev.horde.org and/or www.horde.org websites';
     }
 
     public function getOptionGroupOptions(): array
@@ -62,21 +64,21 @@ class Website extends Base
                 '--web-output',
                 [
                     'action' => 'store',
-                    'help'   => 'Output directory (default: build/dev.horde.org)',
+                    'help'   => 'dev.horde.org output directory (default: build/dev.horde.org)',
                 ]
             ),
             new Option(
                 '--web-templates',
                 [
                     'action' => 'store',
-                    'help'   => 'Templates directory (default: <checkout.dir>/<org>/dev.horde.org/content/pages)',
+                    'help'   => 'dev.horde.org templates directory (default: <checkout.dir>/<org>/dev.horde.org/content/pages)',
                 ]
             ),
             new Option(
                 '--web-assets',
                 [
                     'action' => 'store',
-                    'help'   => 'Static assets directory (default: <checkout.dir>/<org>/dev.horde.org/content/assets)',
+                    'help'   => 'dev.horde.org static assets directory (default: <checkout.dir>/<org>/dev.horde.org/content/assets)',
                 ]
             ),
             new Option(
@@ -90,7 +92,7 @@ class Website extends Base
                 '--web-redirects',
                 [
                     'action' => 'store',
-                    'help'   => 'Legacy URL redirects JSON (default: <checkout.dir>/<org>/dev.horde.org/content/redirects.json)',
+                    'help'   => 'dev.horde.org legacy URL redirects JSON (default: <checkout.dir>/<org>/dev.horde.org/content/redirects.json)',
                 ]
             ),
             new Option(
@@ -114,6 +116,41 @@ class Website extends Base
                     'help'   => 'GitHub API token (or use GITHUB_TOKEN env var)',
                 ]
             ),
+            new Option(
+                '--www-templates',
+                [
+                    'action' => 'store',
+                    'help'   => 'www.horde.org content pages directory (default: <checkout.dir>/<org>/horde-web/content/pages)',
+                ]
+            ),
+            new Option(
+                '--www-assets',
+                [
+                    'action' => 'store',
+                    'help'   => 'www.horde.org static assets directory (default: <checkout.dir>/<org>/horde-web/content/assets)',
+                ]
+            ),
+            new Option(
+                '--www-output',
+                [
+                    'action' => 'store',
+                    'help'   => 'www.horde.org output directory (default: build/www.horde.org)',
+                ]
+            ),
+            new Option(
+                '--www-redirects',
+                [
+                    'action' => 'store',
+                    'help'   => 'www.horde.org legacy URL redirects JSON (default: <checkout.dir>/<org>/horde-web/content/redirects.json)',
+                ]
+            ),
+            new Option(
+                '--www-components',
+                [
+                    'action' => 'store',
+                    'help'   => 'www.horde.org component catalog JSON (default: dev.horde.org\'s components.json)',
+                ]
+            ),
         ];
     }
 
@@ -124,7 +161,7 @@ class Website extends Base
 
     public function getUsage(): string
     {
-        return 'web - Generate dev.horde.org website';
+        return 'web [dev|www|all|catalog] - Generate dev.horde.org and/or www.horde.org websites';
     }
 
     /**
@@ -134,25 +171,26 @@ class Website extends Base
      */
     public function getShortDescription(): string
     {
-        return 'Generate dev.horde.org website';
+        return 'Generate dev.horde.org and/or www.horde.org websites';
     }
 
     public function getActions(): array
     {
-        return ['web', 'web catalog'];
+        return ['web', 'web dev', 'web www', 'web all', 'web catalog'];
     }
 
     public function getHelp($action): string
     {
-        return 'Generate dev.horde.org website and manage component catalog
+        return 'Generate dev.horde.org and/or www.horde.org websites, and manage the component catalog
 
 WEBSITE GENERATION:
 
-  horde-components web [--web-input <dir>] [--web-output <dir>]
+  horde-components web [dev|www|all]
 
-  Generate the dev.horde.org website from webhook events.
+  With no sub-action (or "all"), generates BOTH dev.horde.org and
+  www.horde.org. Use "dev" or "www" to generate just one site.
 
-  Options:
+  dev.horde.org options:
     --web-input <dir>        Webhook JSON directory (default: data/webhooks)
                              Config: devsite.input_dir
     --web-output <dir>       Output directory (default: build/dev.horde.org)
@@ -166,15 +204,30 @@ WEBSITE GENERATION:
     --web-redirects <file>   Legacy URL redirects JSON (default: <checkout.dir>/<org>/dev.horde.org/content/redirects.json)
                              Config: devsite.redirects_file
 
+  www.horde.org options:
+    --www-templates <dir>   Content pages directory (default: <checkout.dir>/<org>/horde-web/content/pages)
+                             Config: wwwsite.template_dir
+    --www-assets <dir>      Static assets directory (default: <checkout.dir>/<org>/horde-web/content/assets)
+                             Config: wwwsite.assets_dir
+    --www-output <dir>      Output directory (default: build/www.horde.org)
+                             Config: wwwsite.output_dir
+    --www-redirects <file>  Legacy URL redirects JSON (default: <checkout.dir>/<org>/horde-web/content/redirects.json)
+                             Config: wwwsite.redirects_file
+    --www-components <file> Component catalog JSON (default: dev.horde.org\'s components.json)
+                             Config: wwwsite.components_file
+
   Examples:
-    horde-components web
-    horde-components web --web-input ~/hook --web-output ~/www/dev
+    horde-components web              # generates both sites
+    horde-components web dev          # dev.horde.org only
+    horde-components web www          # www.horde.org only
+    horde-components web all --web-output ~/www/dev --www-output ~/www/main
 
 COMPONENT CATALOG:
 
   horde-components web catalog [--web-org <org>] [--web-git-dir <dir>]
 
-  Update the component catalog from GitHub API.
+  Update the component catalog from GitHub API. Both sites read from
+  this same catalog file.
 
   Options:
     --web-components <file>  Catalog output file (default: <templates dir>/components.json)
@@ -191,7 +244,7 @@ COMPONENT CATALOG:
     horde-components web catalog --web-org horde --web-git-dir ~/git
     GITHUB_TOKEN=ghp_xxx horde-components web catalog
 
-  Note: CLI options --web-* map to devsite.* config keys for consistency.
+  Note: CLI options --web-*/--www-* map to devsite.*/wwwsite.* config keys.
 ';
     }
 
@@ -211,43 +264,46 @@ COMPONENT CATALOG:
      */
     public function handle(array $options, array $arguments, ?Component $component = null): bool
     {
-        // Detect components root for default paths
-        $componentsRoot = dirname(__DIR__, 2);
-
         // Get ConfigProvider
         $effectiveConfig = $this->dependencies->get(ConfigProviderFactory::class)->createDefault();
+
+        $invokedAsWeb = (isset($arguments[0]) && $arguments[0] == 'web') || $effectiveConfig->hasSetting('web');
+        if (!$invokedAsWeb) {
+            return false;
+        }
+
+        // Detect components root for default paths
+        $componentsRoot = dirname(__DIR__, 2);
 
         // Get fallback token from GithubApiConfig (set from GITHUB_TOKEN env)
         $githubApiConfig = $this->dependencies->get(GithubApiConfig::class);
         $fallbackToken = !empty($githubApiConfig->accessToken) ? $githubApiConfig->accessToken : null;
 
-        // Create website configuration from ConfigProvider
-        $websiteConfig = WebsiteConfig::fromConfigProvider(
-            $effectiveConfig,
-            $componentsRoot,
-            $fallbackToken
-        );
-
-        // Get output for runner
         $output = $this->dependencies->get(Output::class);
+        $subAction = $arguments[1] ?? 'all';
 
-        // Check for "web catalog" subcommand
-        if ((isset($arguments[0]) && $arguments[0] == 'web' && isset($arguments[1]) && $arguments[1] == 'catalog')) {
+        if ($subAction === 'catalog') {
+            $websiteConfig = WebsiteConfig::fromConfigProvider($effectiveConfig, $componentsRoot, $fallbackToken);
             $runner = new WebsiteRunner($websiteConfig, $output);
             $runner->runCatalog();
             return true;
         }
 
-        // Check for "web" command
-        if ($effectiveConfig->hasSetting('web')
-            || (isset($arguments[0]) && $arguments[0] == 'web')) {
-
-            $runner = new WebsiteRunner($websiteConfig, $output);
-            $runner->run();
-
-            return true;
+        if (!in_array($subAction, ['dev', 'www', 'all'], true)) {
+            // Unrecognized sub-action - let other modules/help handle it.
+            return false;
         }
 
-        return false;
+        if ($subAction === 'dev' || $subAction === 'all') {
+            $websiteConfig = WebsiteConfig::fromConfigProvider($effectiveConfig, $componentsRoot, $fallbackToken);
+            (new WebsiteRunner($websiteConfig, $output))->run();
+        }
+
+        if ($subAction === 'www' || $subAction === 'all') {
+            $wwwConfig = WwwSiteConfig::fromConfigProvider($effectiveConfig, $componentsRoot);
+            (new WwwWebsiteRunner($wwwConfig, $output))->run();
+        }
+
+        return true;
     }
 }
