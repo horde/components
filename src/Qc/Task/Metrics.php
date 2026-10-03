@@ -112,15 +112,10 @@ class Metrics extends Base
 
         $this->getOutput()->detected("Found PHPMetrics at: {$phpmetrics}");
 
-        // For now, analyze only the first (primary) source directory
-        // PHPMetrics v2.x doesn't handle multiple directories well
-        $primarySrcDir = $srcDirs[0];
-        $this->getOutput()->running("Analyzing code metrics in: " . basename($primarySrcDir) . '/');
-        $this->runPhpMetricsAnalysis($phpmetrics, $primarySrcDir, $buildDir);
+        $srcDirNames = implode(', ', array_map(fn(string $d): string => basename($d) . '/', $srcDirs));
+        $this->getOutput()->running("Analyzing code metrics in: " . $srcDirNames);
+        $this->runPhpMetricsAnalysis($phpmetrics, $srcDirs, $buildDir);
 
-        // Display summary
-        $jsonOutput = $buildDir . '/metrics.json';
-        // Display summary
         $jsonOutput = $buildDir . '/metrics.json';
         $htmlOutput = $buildDir . '/metrics';
 
@@ -135,26 +130,38 @@ class Metrics extends Base
     }
 
     /**
-     * Run PHPMetrics analysis on a directory.
+     * Run PHPMetrics analysis on one or more source directories.
      *
-     * @param string $phpmetrics Path to phpmetrics binary.
-     * @param string $targetDir Directory to analyze.
-     * @param string $buildDir Build directory for output.
+     * PHPMetrics CLI only accepts a single positional path argument, so when
+     * multiple source directories are present we write a temporary config file
+     * to $buildDir that lists all of them under "includes".  The file is kept
+     * alongside the other build artefacts for reference.
+     *
+     * @param string   $phpmetrics Path to phpmetrics binary.
+     * @param string[] $srcDirs    Absolute paths of source directories to analyse.
+     * @param string   $buildDir   Build directory for output and the config file.
      */
     private function runPhpMetricsAnalysis(
         string $phpmetrics,
-        string $targetDir,
+        array $srcDirs,
         string $buildDir
     ): void {
         $jsonOutput = $buildDir . '/metrics.json';
         $htmlOutput = $buildDir . '/metrics';
+        $configFile = $buildDir . '/phpmetrics-config.json';
+
+        // Write a config file so PHPMetrics accepts multiple source directories.
+        // Paths in "includes" may be absolute; relative paths would be resolved
+        // relative to the config file's own directory.
+        $config = ['includes' => array_values($srcDirs)];
+        file_put_contents($configFile, json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
         $command = sprintf(
-            '%s --report-json=%s --report-html=%s %s',
+            '%s --config=%s --report-json=%s --report-html=%s',
             escapeshellarg($phpmetrics),
+            escapeshellarg($configFile),
             escapeshellarg($jsonOutput),
-            escapeshellarg($htmlOutput),
-            escapeshellarg($targetDir)
+            escapeshellarg($htmlOutput)
         );
 
         $this->getShell()->system($command);
