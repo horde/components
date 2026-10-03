@@ -137,22 +137,22 @@ Violations
 
 ## Migration Strategy
 
-1. **Phase 1**: Make LOC task opt-in (not in default pipeline)
+1. Make LOC task opt-in (not in default pipeline)
    - Move `loc` to explicit-only like `md` and `cs`
    - Update documentation
 
-2. **Phase 2**: Add PHPMetrics task
+2. Add PHPMetrics task
    - New `Qc\Task\Metrics.php`
    - Support both CLI and HTML report modes
    - JSON output for CI
    - Make opt-in initially
 
-3. **Phase 3**: Test and validate
+3. Test and validate
    - Run on components codebase
    - Verify reports
    - Document differences
 
-4. **Phase 4**: Promote PHPMetrics to default
+4. Promote PHPMetrics to default
    - Add `metrics` to default QC pipeline
    - Deprecate `loc` task
    - Update docs

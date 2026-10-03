@@ -117,7 +117,7 @@ class SetupCommand
         if ($config->componentType !== 'library') {
             throw new Exception(
                 "Component type '{$config->componentType}' not yet implemented. "
-                . "Only 'library' is supported in Phase 1."
+                . "Only 'library' is currently supported."
             );
         }
 

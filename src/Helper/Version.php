@@ -98,7 +98,6 @@ class Version
      * output). The two callers in horde-components (InstallRunner for
      * path-repo identity, Transpile for platform-tag builder) should
      * be migrated to the library; this method then disappears.
-     * Tracked in `~/php/horde-development/libraries/version/helper-version-consolidation-2026-06-25.md`.
      *
      * @return string
      */

@@ -371,11 +371,6 @@ Total size: ~800 MB - 1 GB (8 lanes × ~100 MB each)
 - **0** - All tests passed
 - **1** - Setup failed, tests failed, or results invalid
 
-## See Also
-
-- **Manual Testing Guide:** `~/horde-development/components-ci-manual-testing-guide.md`
-- **CI As-Is Analysis:** `~/horde-development/ci-as-is-analysis.md`
-- **Smoke Test Specification:** `~/horde-development/ci-smoke-test-specification.md`
 
 ## Support
 

@@ -153,7 +153,7 @@ SUBCOMMANDS:
     init       Generate CI configuration files for a component
     check      Check if CI files are up to date
     setup      Setup CI environment (install PHP, extensions, prepare lanes)
-    run        Run CI tests across all lanes (Phase 2 - not yet implemented)
+    run        Run CI tests across all lanes (not yet implemented)
 
 DESCRIPTION:
     The ci command helps set up and run automated testing for Horde components
@@ -227,7 +227,7 @@ CI SETUP - Prepare Environment:
     Note: Only PHP versions >= component\'s minimum are tested.
 
 CI RUN - Execute Tests:
-    (Phase 2 - not yet implemented)
+    (not yet implemented)
     Will execute tests across all prepared lanes:
     - horde-components qc linter
     - PHPUnit (version depends on PHP version)
@@ -275,13 +275,13 @@ REQUIREMENTS:
     - PHP 8.4 for bootstrap (via shivammathur/setup-php)
 
 COMPONENT TYPES:
-    Phase 1 supports:
+    Currently supports:
     - library      Standard PHP library (fully supported)
 
     Not yet implemented:
-    - horde-library    (Phase 6)
-    - application      (Phase 6)
-    - bundle           (Phase 6)
+    - horde-library    (not yet implemented)
+    - application      (not yet implemented)
+    - bundle           (not yet implemented)
 
 TEMPLATE VERSIONING:
     Generated files include version metadata:
@@ -301,7 +301,7 @@ TROUBLESHOOTING:
     Solution: Ensure you\'re using horde-components from the correct path
 
     Problem: "Component type \'X\' not yet implemented"
-    Solution: Only \'library\' type is supported in Phase 1
+    Solution: Only \'library\' type is supported currently
 
     Problem: Generated files outdated
     Solution: Run "horde-components ci check" then "ci init --force"
@@ -321,13 +321,7 @@ EXAMPLES:
 
     # See what would be generated
     horde-components ci init --dry-run
-
-MORE INFO:
-    See ~/horde-development/components-ci-*.md for:
-    - Implementation plan
-    - Architecture decisions
-    - Phase completion status
-    - Troubleshooting guides';
+';
     }
 
     /**
@@ -393,7 +387,7 @@ MORE INFO:
         $output->plain('  init       Generate CI configuration files');
         $output->plain('  check      Check if CI files are up to date');
         $output->plain('  setup      Setup CI environment');
-        $output->plain('  run        Run CI tests (Phase 2 - not yet implemented)');
+        $output->plain('  run        Run CI tests (not yet implemented)');
         $output->plain('');
         $output->plain('For detailed help: horde-components help ci');
     }
