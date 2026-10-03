@@ -72,3 +72,8 @@ quality:
   phpstan:
     level: 9
 vendor: horde
+keywords:
+  - developer
+  - ci
+  - release
+  - static site generator
