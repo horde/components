@@ -11,8 +11,10 @@
 
 namespace Horde\Components\Qc\Task;
 
+use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use SplFileInfo;
 
 /**
  * Components_Qc_Task_Lint:: runs a syntax check on the component.
@@ -40,6 +42,11 @@ class Lint extends Base
     }
 
     /**
+     * Top-level subdirectories of the component root that are excluded from linting.
+     */
+    private const EXCLUDED_DIRS = ['vendor', 'var'];
+
+    /**
      * Run the task.
      *
      * @param array &$options Additional options.
@@ -49,14 +56,20 @@ class Lint extends Base
     public function run(array &$options = []): int
     {
         $lib = realpath($this->getPath());
-        $recursion = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($lib)
+
+        // Prune excluded top-level directories before recursing into them.
+        $filter = new RecursiveCallbackFilterIterator(
+            new RecursiveDirectoryIterator($lib, RecursiveDirectoryIterator::SKIP_DOTS),
+            function (SplFileInfo $current) use ($lib): bool {
+                $relative = substr($current->getPathname(), strlen($lib) + 1);
+                $topDir   = explode(DIRECTORY_SEPARATOR, $relative)[0];
+                return !in_array($topDir, self::EXCLUDED_DIRS, true);
+            }
         );
+
         $errors = 0;
-        foreach ($recursion as $file) {
-            if ($file->isFile() && preg_match('/.php$/', (string) $file->getFilename())
-            && !str_starts_with((string) $file->getPathname(), $lib . DIRECTORY_SEPARATOR . 'vendor')
-            ) {
+        foreach (new RecursiveIteratorIterator($filter) as $file) {
+            if ($file->isFile() && str_ends_with($file->getFilename(), '.php')) {
                 $errors += $this->_lint($file->getPathname());
             }
         }
