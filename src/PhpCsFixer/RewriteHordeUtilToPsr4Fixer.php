@@ -237,9 +237,9 @@ $data = Horde_Util::getFormData("key");
 
         // Build warning comment
         $comment = sprintf(
-            "/**\n%s * WARNING: Horde_Util::%s() removed in PSR-4 version\n" .
-            "%s * %s\n" .
-            "%s */\n%s",
+            "/**\n%s * WARNING: Horde_Util::%s() removed in PSR-4 version\n"
+            . "%s * %s\n"
+            . "%s */\n%s",
             $indent,
             $method,
             $indent,

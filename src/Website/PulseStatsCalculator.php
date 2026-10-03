@@ -34,7 +34,7 @@ class PulseStatsCalculator
      */
     public function calculate(array $events, int $componentsTracked, ?DateTimeImmutable $now = null): array
     {
-        $now = $now ?? new DateTimeImmutable();
+        $now ??= new DateTimeImmutable();
         $cutoff90 = $now->modify('-90 days');
         $cutoff30 = $now->modify('-30 days');
 

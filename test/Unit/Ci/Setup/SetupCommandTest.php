@@ -69,7 +69,7 @@ class SetupCommandTest extends TestCase
         // exercise the filter override this with their own expectation.
         $this->phpInstaller
             ->method('filterAvailable')
-            ->willReturnCallback(static fn (array $versions): array => array_values($versions));
+            ->willReturnCallback(static fn(array $versions): array => array_values($versions));
 
         // Create temp directory for test component
         $this->tempDir = sys_get_temp_dir() . '/horde-ci-setup-test-' . uniqid();
@@ -547,7 +547,7 @@ class SetupCommandTest extends TestCase
 
         $this->phpInstaller->method('install');
         $this->phpInstaller->method('getPhpBinary')->willReturnCallback(
-            static fn (string $v): string => "/usr/bin/php{$v}"
+            static fn(string $v): string => "/usr/bin/php{$v}"
         );
 
         // ExtensionInstaller reports `imaginary` could not be installed
@@ -778,7 +778,7 @@ class SetupCommandTest extends TestCase
 
         $this->phpInstaller
             ->method('getPhpBinary')
-            ->willReturnCallback(static fn (string $v): string => "/usr/bin/php{$v}");
+            ->willReturnCallback(static fn(string $v): string => "/usr/bin/php{$v}");
 
         // detectExtensionsPerVersion must receive the filtered set
         // too. Asking for extensions for a PHP we cannot install would

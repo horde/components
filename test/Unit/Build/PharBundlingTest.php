@@ -46,6 +46,7 @@ use PHPUnit\Framework\TestCase;
  *
  * This test pins both invariants. It only inspects on-disk config files,
  * so it can run without a built phar.
+ * @coversNothing
  */
 #[Group('build')]
 class PharBundlingTest extends TestCase

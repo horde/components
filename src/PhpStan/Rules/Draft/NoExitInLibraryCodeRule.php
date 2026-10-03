@@ -56,7 +56,7 @@ class NoExitInLibraryCodeRule implements Rule
                 RuleErrorBuilder::message(
                     'exit() and die() are forbidden in library code. Throw an exception instead.'
                 )->tip('Library code should not terminate execution')
-                ->build()
+                ->build(),
             ];
         }
 

@@ -26,6 +26,8 @@ use Horde\Components\Helper\Shell;
 use Horde\Components\Output;
 use Horde\Components\Util\YamlLoader;
 use Horde\HordeYmlFile\HordeYmlFile;
+use ReflectionClass;
+use Throwable;
 
 /**
  * Horde\Components\Runner\Dependencies:: lists a tree of dependencies.
@@ -156,7 +158,7 @@ class Dependencies
      */
     private function getOutput(): Output
     {
-        $reflection = new \ReflectionClass($this->dependenciesHelper);
+        $reflection = new ReflectionClass($this->dependenciesHelper);
         $outputProperty = $reflection->getProperty('_output');
         $outputProperty->setAccessible(true);
         return $outputProperty->getValue($this->dependenciesHelper);
@@ -175,7 +177,7 @@ class Dependencies
         $pluginDetector = new PluginDetector($allowNetworkRequests);
 
         // Get output
-        $reflection = new \ReflectionClass($this->dependenciesHelper);
+        $reflection = new ReflectionClass($this->dependenciesHelper);
         $outputProperty = $reflection->getProperty('_output');
         $outputProperty->setAccessible(true);
         $output = $outputProperty->getValue($this->dependenciesHelper);
@@ -271,7 +273,7 @@ class Dependencies
     /**
      * Format a dependency label for display.
      *
-     * @param \Horde\Components\Component\DependencyNode $node The dependency node
+     * @param Component\DependencyNode $node The dependency node
      * @return string Formatted label
      */
     private function formatDependencyLabel($node): string
@@ -356,7 +358,7 @@ class Dependencies
             } else {
                 echo "---\n";
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             echo "---\n";
         }
     }
@@ -375,7 +377,7 @@ class Dependencies
 
         // Get output - use a reflection hack to access private property
         // In production, this would be refactored to use proper DI
-        $reflection = new \ReflectionClass($this->dependenciesHelper);
+        $reflection = new ReflectionClass($this->dependenciesHelper);
         $outputProperty = $reflection->getProperty('_output');
         $outputProperty->setAccessible(true);
         $output = $outputProperty->getValue($this->dependenciesHelper);

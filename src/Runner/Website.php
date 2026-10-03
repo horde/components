@@ -68,6 +68,24 @@ class Website
             throw new RuntimeException("Component catalog not found: {$this->config->componentsFile}");
         }
 
+        // Guard the output location. There is no derived default: the user
+        // must pass --web-output or set devsite.output_dir. Refuse to invent a
+        // path (which under a phar would be a read-only phar:// location) and
+        // refuse to create a directory whose parent does not exist, so a typo
+        // fails loudly instead of scattering a site into an unexpected tree.
+        if ($this->config->outputDir === null) {
+            throw new RuntimeException(
+                'No output directory configured. Pass --web-output <dir> or set devsite.output_dir.'
+            );
+        }
+        $outputParent = dirname($this->config->outputDir);
+        if (!is_dir($outputParent)) {
+            throw new RuntimeException(
+                "Output parent directory does not exist: {$outputParent}; "
+                . "refusing to create {$this->config->outputDir}."
+            );
+        }
+
         // Create output directory
         if (!is_dir($this->config->outputDir)) {
             mkdir($this->config->outputDir, 0o755, true);
@@ -96,7 +114,9 @@ class Website
         $generator = new PageGenerator(
             $this->config->templatesDir,
             $cssFilename,
-            $this->config->componentsFile
+            $this->config->componentsFile,
+            $this->config->gitDir,
+            $this->config->organization
         );
         $generator->generatePage(
             $events,
@@ -134,6 +154,18 @@ class Website
             $this->output->warn("CSS stylesheet not found, not copied: {$cssSource}");
         }
 
+        // Copy the shared status-widget script (see footer.html's
+        // #horde-status-widget anchor; same asset used by www.horde.org).
+        $statusJsSource = $this->config->assetsDir . '/' . PageGenerator::STATUS_WIDGET_JS_FILENAME;
+        $statusJsDest = $this->config->outputDir . '/' . PageGenerator::STATUS_WIDGET_JS_FILENAME;
+
+        if (file_exists($statusJsSource)) {
+            copy($statusJsSource, $statusJsDest);
+            $this->output->ok("Copied status-widget.js");
+        } else {
+            $this->output->warn("status-widget.js not found, not copied: {$statusJsSource}");
+        }
+
         $this->output->ok("Website generated successfully!");
         $this->output->info("  Main page: {$this->config->outputDir}/index.html");
         $this->output->info("  Contribute: {$this->config->outputDir}/contribute.html");
@@ -160,12 +192,18 @@ class Website
             $this->output->ok("Created output directory");
         }
 
-        // Generate catalog
+        // Generate catalog. getVersionFromGit() resolves each repo as
+        // <dir>/<repo>, so it needs the org directory (<git-dir>/<org>), not
+        // the checkout root. gitDir is the checkout root per the shared
+        // <git-dir>/<org>/<repo> convention.
         $generator = new CatalogGenerator($this->output, $this->config->token);
+        $componentCheckoutDir = $this->config->gitDir !== null
+            ? rtrim($this->config->gitDir, '/') . '/' . $this->config->organization
+            : null;
         $exitCode = $generator->generate(
             $this->config->organization,
             $this->config->componentsFile,
-            $this->config->gitDir
+            $componentCheckoutDir
         );
 
         if ($exitCode !== 0) {

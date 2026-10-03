@@ -27,7 +27,7 @@ use Horde\Components\Helper\Shell;
 use Horde\Components\Helper\GitHubChecker;
 use Horde\Components\Helper\GitHubReleaseCreator;
 use Horde\Components\Release\HordeRelease;
-use Horde\GithubApiClient\GithubApiConfig;
+use Horde\Components\Auth\AuthenticationFactory;
 
 /**
  * Components_Runner_Release:: releases a new version for a package.
@@ -53,6 +53,9 @@ class Release
      * @param Output $output The output handler
      * @param ReleaseTasks $releaseTasks The tasks handler
      * @param QcTasks $qcTasks QC tasks handler
+     * @param AuthenticationFactory $authFactory Resolves GitHub auth (GitHub
+     *   App > GITHUB_TOKEN env > github.token config) for the "release h6"
+     *   GitHub release-creation path
      */
     public function __construct(
         private readonly Component $component,
@@ -60,7 +63,8 @@ class Release
         private readonly array $options,
         private readonly Output $output,
         private readonly ReleaseTasks $releaseTasks,
-        private readonly QcTasks $qcTasks
+        private readonly QcTasks $qcTasks,
+        private readonly AuthenticationFactory $authFactory
     ) {}
 
     /**
@@ -96,9 +100,10 @@ class Release
             // Get GitHubChecker and GitHubReleaseCreator from dependencies
             $githubChecker = new GitHubChecker($gitHelper);
 
-            // Get GitHub token from environment
-            $githubToken = getenv('GITHUB_TOKEN') ?: '';
-            $githubApiConfig = new GithubApiConfig(accessToken: $githubToken);
+            // Resolve GitHub auth via the same precedence used everywhere
+            // else (GitHub App > GITHUB_TOKEN env > github.token config)
+            // instead of only ever considering GITHUB_TOKEN.
+            $githubApiConfig = $this->authFactory->createConfig();
 
             $githubReleaseCreator = new GitHubReleaseCreator(
                 $githubChecker,

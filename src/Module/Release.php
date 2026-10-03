@@ -24,6 +24,7 @@ use Horde\Components\Runner\Release as RunnerRelease;
 use Horde\Components\Output;
 use Horde\Components\Release\Tasks as ReleaseTasks;
 use Horde\Components\Qc\Tasks as QcTasks;
+use Horde\Components\Auth\AuthenticationFactory;
 
 /**
  * Components_Module_Release:: generates a release.
@@ -221,6 +222,7 @@ The following example would generate the package and add the release tag to git 
             $output = $this->dependencies->get(Output::class);
             $releaseTasks = $this->dependencies->get(ReleaseTasks::class);
             $qcTasks = $this->dependencies->get(QcTasks::class);
+            $authFactory = $this->dependencies->get(AuthenticationFactory::class);
 
             // Handle --dump option (sets pretend mode)
             if (!empty($options['dump'])) {
@@ -234,7 +236,8 @@ The following example would generate the package and add the release tag to git 
                 $options,
                 $output,
                 $releaseTasks,
-                $qcTasks
+                $qcTasks,
+                $authFactory
             );
             $runner->run();
             return true;

@@ -117,7 +117,7 @@ class RequireImmutableUriUsageRule implements Rule
                     $methodName
                 )
             )->tip('Immutable objects must have their return values used')
-            ->build()
+            ->build(),
         ];
     }
 }

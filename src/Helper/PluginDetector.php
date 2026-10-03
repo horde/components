@@ -19,6 +19,7 @@ namespace Horde\Components\Helper;
 use Horde\Components\Wrapper\HordeYml as WrapperHordeYml;
 use Horde\Components\Wrapper\ComposerJson as WrapperComposerJson;
 use Horde\Components\Component\DependencyNode;
+use Exception;
 
 /**
  * Detects Composer plugins from various sources.
@@ -142,7 +143,7 @@ class PluginDetector
             }
 
             return $this->detectFromComposerData($composerData, $node);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }

@@ -35,8 +35,7 @@ class BlogFeedFetcher
 {
     public function __construct(
         private readonly int $timeoutSeconds = 60
-    ) {
-    }
+    ) {}
 
     /**
      * Fetch and parse one RSS feed into an array of BlogPost objects.

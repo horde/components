@@ -102,8 +102,10 @@ class FindingsAggregator
         }
 
         $findings = array_values($byKey);
-        usort($findings, fn (array $a, array $b): int =>
-            ($a['file'] <=> $b['file'])
+        usort(
+            $findings,
+            fn(array $a, array $b): int
+            => ($a['file'] <=> $b['file'])
             ?: (($a['line'] ?? 0) <=> ($b['line'] ?? 0))
             ?: (($a['identifier'] ?? '') <=> ($b['identifier'] ?? ''))
         );
@@ -148,7 +150,7 @@ class FindingsAggregator
         }
 
         $findings = array_values($byKey);
-        usort($findings, fn (array $a, array $b): int => $a['file'] <=> $b['file']);
+        usort($findings, fn(array $a, array $b): int => $a['file'] <=> $b['file']);
         return $findings;
     }
 
@@ -224,8 +226,8 @@ class FindingsAggregator
         $findings = array_values($byKey);
         usort(
             $findings,
-            fn (array $a, array $b): int =>
-                ($a['test_class'] . '::' . $a['test_method'])
+            fn(array $a, array $b): int
+                => ($a['test_class'] . '::' . $a['test_method'])
                     <=> ($b['test_class'] . '::' . $b['test_method'])
         );
         return $findings;

@@ -23,6 +23,7 @@ use Horde\Components\Component\DependencyNode;
 use Horde\Components\Component\Factory as ComponentFactory;
 use Horde\Components\Output;
 use Horde\HordeYmlFile\HordeYmlFile;
+use Throwable;
 
 /**
  * Builds a dependency tree/graph from a root component.
@@ -114,7 +115,7 @@ class DependencyTreeBuilder
         // Get dependencies from .horde.yml directly
         try {
             $dependencies = $this->getDependenciesFromHordeYml($component);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->output->warn("Could not read dependencies from {$componentKey}: " . $e->getMessage());
             return;
         }
@@ -155,7 +156,7 @@ class DependencyTreeBuilder
                     if ($depComponent !== false) {
                         $this->buildRecursive($depComponent, $graph, $options, $visited, $depth + 1);
                     }
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     // Component couldn't be resolved or has errors, skip recursion
                     $this->output->warn("Could not recurse into {$depInfo['name']}: " . $e->getMessage());
                 }
@@ -196,7 +197,7 @@ class DependencyTreeBuilder
                     }
                     // Store path for plugin detection
                     $node->metadata['composer_json_path'] = $composerJsonPath;
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     // Could not read composer.json
                 }
             }
@@ -212,7 +213,7 @@ class DependencyTreeBuilder
                         $node->type = $hordeYml['type'];
                     }
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Type not available, leave empty
             }
         }
@@ -283,7 +284,7 @@ class DependencyTreeBuilder
 
             $deps = $hordeYml['dependencies'];
             return $this->parseDependenciesArray($deps);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // If we can't read dependencies, return empty array
             $this->output->warn("Could not read dependencies from {$component->getName()}: " . $e->getMessage());
         }
@@ -301,114 +302,114 @@ class DependencyTreeBuilder
     {
         $dependencies = [];
 
-            // Process required dependencies
-            if (isset($deps['required'])) {
-                foreach ($deps['required'] as $type => $items) {
-                    if ($type === 'php') {
-                        // Skip PHP version requirement
-                        continue;
+        // Process required dependencies
+        if (isset($deps['required'])) {
+            foreach ($deps['required'] as $type => $items) {
+                if ($type === 'php') {
+                    // Skip PHP version requirement
+                    continue;
+                }
+
+                if (!is_array($items)) {
+                    // Skip if items is not an array
+                    continue;
+                }
+
+                if ($type === 'ext') {
+                    // Extensions
+                    foreach ($items as $name => $version) {
+                        $dependencies[] = [
+                            'name' => $name,
+                            'channel' => 'ext',
+                            'version' => is_array($version) ? ($version['version'] ?? '*') : $version,
+                            'type' => 'ext',
+                            'optional' => false,
+                        ];
                     }
+                } elseif ($type === 'composer') {
+                    // Composer dependencies
+                    foreach ($items as $name => $version) {
+                        // Determine channel from package name
+                        $channel = 'packagist.org';
+                        if (str_starts_with($name, 'horde/')) {
+                            $channel = 'pear.horde.org';
+                        }
 
-                    if (!is_array($items)) {
-                        // Skip if items is not an array
-                        continue;
+                        $dependencies[] = [
+                            'name' => $name,
+                            'channel' => $channel,
+                            'version' => $version,
+                            'type' => 'pkg',
+                            'optional' => false,
+                        ];
                     }
-
-                    if ($type === 'ext') {
-                        // Extensions
-                        foreach ($items as $name => $version) {
-                            $dependencies[] = [
-                                'name' => $name,
-                                'channel' => 'ext',
-                                'version' => is_array($version) ? ($version['version'] ?? '*') : $version,
-                                'type' => 'ext',
-                                'optional' => false,
-                            ];
-                        }
-                    } elseif ($type === 'composer') {
-                        // Composer dependencies
-                        foreach ($items as $name => $version) {
-                            // Determine channel from package name
-                            $channel = 'packagist.org';
-                            if (str_starts_with($name, 'horde/')) {
-                                $channel = 'pear.horde.org';
-                            }
-
-                            $dependencies[] = [
-                                'name' => $name,
-                                'channel' => $channel,
-                                'version' => $version,
-                                'type' => 'pkg',
-                                'optional' => false,
-                            ];
-                        }
-                    } elseif ($type === 'pear') {
-                        // PEAR dependencies
-                        foreach ($items as $pearPkg => $version) {
-                            [$channel, $name] = explode('/', $pearPkg, 2);
-                            $dependencies[] = [
-                                'name' => $name,
-                                'channel' => $channel,
-                                'version' => is_array($version) ? ($version['version'] ?? '*') : $version,
-                                'type' => 'pkg',
-                                'optional' => false,
-                            ];
-                        }
+                } elseif ($type === 'pear') {
+                    // PEAR dependencies
+                    foreach ($items as $pearPkg => $version) {
+                        [$channel, $name] = explode('/', $pearPkg, 2);
+                        $dependencies[] = [
+                            'name' => $name,
+                            'channel' => $channel,
+                            'version' => is_array($version) ? ($version['version'] ?? '*') : $version,
+                            'type' => 'pkg',
+                            'optional' => false,
+                        ];
                     }
                 }
             }
+        }
 
-            // Process optional dependencies
-            if (isset($deps['optional'])) {
-                foreach ($deps['optional'] as $type => $items) {
-                    if ($type === 'php') {
-                        continue;
+        // Process optional dependencies
+        if (isset($deps['optional'])) {
+            foreach ($deps['optional'] as $type => $items) {
+                if ($type === 'php') {
+                    continue;
+                }
+
+                if (!is_array($items)) {
+                    // Skip if items is not an array
+                    continue;
+                }
+
+                if ($type === 'ext') {
+                    foreach ($items as $name => $version) {
+                        $dependencies[] = [
+                            'name' => $name,
+                            'channel' => 'ext',
+                            'version' => is_array($version) ? ($version['version'] ?? '*') : $version,
+                            'type' => 'ext',
+                            'optional' => true,
+                        ];
                     }
+                } elseif ($type === 'composer') {
+                    foreach ($items as $name => $version) {
+                        $channel = 'packagist.org';
+                        if (str_starts_with($name, 'horde/')) {
+                            $channel = 'pear.horde.org';
+                        }
 
-                    if (!is_array($items)) {
-                        // Skip if items is not an array
-                        continue;
+                        $dependencies[] = [
+                            'name' => $name,
+                            'channel' => $channel,
+                            'version' => $version,
+                            'type' => 'pkg',
+                            'optional' => true,
+                        ];
                     }
-
-                    if ($type === 'ext') {
-                        foreach ($items as $name => $version) {
-                            $dependencies[] = [
-                                'name' => $name,
-                                'channel' => 'ext',
-                                'version' => is_array($version) ? ($version['version'] ?? '*') : $version,
-                                'type' => 'ext',
-                                'optional' => true,
-                            ];
-                        }
-                    } elseif ($type === 'composer') {
-                        foreach ($items as $name => $version) {
-                            $channel = 'packagist.org';
-                            if (str_starts_with($name, 'horde/')) {
-                                $channel = 'pear.horde.org';
-                            }
-
-                            $dependencies[] = [
-                                'name' => $name,
-                                'channel' => $channel,
-                                'version' => $version,
-                                'type' => 'pkg',
-                                'optional' => true,
-                            ];
-                        }
-                    } elseif ($type === 'pear') {
-                        foreach ($items as $pearPkg => $version) {
-                            [$channel, $name] = explode('/', $pearPkg, 2);
-                            $dependencies[] = [
-                                'name' => $name,
-                                'channel' => $channel,
-                                'version' => is_array($version) ? ($version['version'] ?? '*') : $version,
-                                'type' => 'pkg',
-                                'optional' => true,
-                            ];
-                        }
+                } elseif ($type === 'pear') {
+                    foreach ($items as $pearPkg => $version) {
+                        [$channel, $name] = explode('/', $pearPkg, 2);
+                        $dependencies[] = [
+                            'name' => $name,
+                            'channel' => $channel,
+                            'version' => is_array($version) ? ($version['version'] ?? '*') : $version,
+                            'type' => 'pkg',
+                            'optional' => true,
+                        ];
                     }
                 }
             }
+        }
 
         return $dependencies;
     }
@@ -496,7 +497,7 @@ class DependencyTreeBuilder
                 if (isset($composerJson['type'])) {
                     return $composerJson['type'];
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Could not read composer.json
             }
         }
@@ -520,7 +521,7 @@ class DependencyTreeBuilder
         try {
             // Use factory to create component from git directory
             return $this->componentFactory->createSource($gitDir);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Component has errors (bad composer.json, etc), skip it
             return false;
         }

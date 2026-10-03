@@ -18,6 +18,9 @@ declare(strict_types=1);
 
 namespace Horde\Components\Test;
 
+use Phar;
+use Throwable;
+
 /**
  * PHP-CS-Fixer loader for tests.
  *
@@ -83,7 +86,7 @@ class PhpCsFixerLoader
         try {
             require_once 'phar://' . self::$pharPath . '/vendor/autoload.php';
             return class_exists('PhpCsFixer\AbstractFixer', false);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             self::$pharPath = null;
             return false;
         }
@@ -140,9 +143,9 @@ class PhpCsFixerLoader
 
         // Check if it's a PHAR
         try {
-            $phar = new \Phar($path);
+            $phar = new Phar($path);
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return false;
         }
     }

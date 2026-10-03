@@ -37,7 +37,8 @@ readonly class WwwSiteConfig
 {
     /**
      * @param string $templatesDir Directory containing horde-web/content/pages
-     * @param string $outputDir Directory for generated website
+     * @param string|null $outputDir Directory for generated website, or null
+     *   when no output location was configured (the runner then aborts).
      * @param string $assetsDir Directory containing static assets (CSS etc.)
      * @param string $redirectsFile Path to content/redirects.json (legacy URL stubs)
      * @param string $sponsorsFile Path to content/sponsors.json (rotating sponsor slot)
@@ -56,7 +57,7 @@ readonly class WwwSiteConfig
      */
     public function __construct(
         public string $templatesDir,
-        public string $outputDir,
+        public ?string $outputDir,
         public string $assetsDir,
         public string $redirectsFile,
         public string $sponsorsFile,
@@ -67,8 +68,7 @@ readonly class WwwSiteConfig
         public string $organization = 'horde',
         public string $legacyLicensesDir = '',
         public string $papersDir = '',
-    ) {
-    }
+    ) {}
 
     /**
      * Default blog-roll RSS sources, per project decision: merge the
@@ -101,35 +101,55 @@ readonly class WwwSiteConfig
                 ? $config->getSetting('wwwsite.org')
                 : 'horde');
 
-        $gitDir = $config->hasSetting('checkout.dir')
-            ? $config->getSetting('checkout.dir')
+        // Git directory precedence mirrors WebsiteConfig: an explicit shared
+        // --web-git-dir (web_git_dir) or wwwsite.git_dir must win over
+        // checkout.dir, which always carries a builtin default. A single
+        // `web all` invocation passes one --web-git-dir as the checkout root
+        // for both sites, so www honors it too. The org and then the repos
+        // (here horde-web) live below the root: <git-dir>/<org>/<repo>.
+        $gitDir = $config->hasSetting('web_git_dir')
+            ? $config->getSetting('web_git_dir')
             : ($config->hasSetting('wwwsite.git_dir')
                 ? $config->getSetting('wwwsite.git_dir')
-                : null);
+                : ($config->hasSetting('checkout.dir')
+                    ? $config->getSetting('checkout.dir')
+                    : null));
 
         // Content lives in the horde-web repo's content/pages directory,
         // mirroring dev.horde.org's own content/pages convention.
         $templatesDir = $config->hasSetting('wwwsite.template_dir')
             ? $config->getSetting('wwwsite.template_dir')
-            : ($gitDir !== null
-                ? rtrim($gitDir, '/') . '/' . $organization . '/horde-web/content/pages'
-                : $componentsRoot . '/data/www');
+            : ($config->hasSetting('www_templates')
+                ? $config->getSetting('www_templates')
+                : ($gitDir !== null
+                    ? rtrim($gitDir, '/') . '/' . $organization . '/horde-web/content/pages'
+                    : $componentsRoot . '/data/www'));
 
+        // No derived default for output: must be an explicit --www-output
+        // (www_output) or its config equivalent wwwsite.output_dir. Left null
+        // when unset so WwwWebsite::run() can abort with a clear message
+        // instead of writing to a bogus location.
         $outputDir = $config->hasSetting('wwwsite.output_dir')
             ? $config->getSetting('wwwsite.output_dir')
-            : $componentsRoot . '/build/www.horde.org';
+            : ($config->hasSetting('www_output')
+                ? $config->getSetting('www_output')
+                : null);
 
         $assetsDir = $config->hasSetting('wwwsite.assets_dir')
             ? $config->getSetting('wwwsite.assets_dir')
-            : (str_ends_with(rtrim($templatesDir, '/'), '/content/pages')
-                ? dirname(rtrim($templatesDir, '/')) . '/assets'
-                : $templatesDir);
+            : ($config->hasSetting('www_assets')
+                ? $config->getSetting('www_assets')
+                : (str_ends_with(rtrim($templatesDir, '/'), '/content/pages')
+                    ? dirname(rtrim($templatesDir, '/')) . '/assets'
+                    : $templatesDir));
 
         $redirectsFile = $config->hasSetting('wwwsite.redirects_file')
             ? $config->getSetting('wwwsite.redirects_file')
-            : (str_ends_with(rtrim($templatesDir, '/'), '/content/pages')
-                ? dirname(rtrim($templatesDir, '/')) . '/redirects.json'
-                : $templatesDir . '/redirects.json');
+            : ($config->hasSetting('www_redirects')
+                ? $config->getSetting('www_redirects')
+                : (str_ends_with(rtrim($templatesDir, '/'), '/content/pages')
+                    ? dirname(rtrim($templatesDir, '/')) . '/redirects.json'
+                    : $templatesDir . '/redirects.json'));
 
         $sponsorsFile = $config->hasSetting('wwwsite.sponsors_file')
             ? $config->getSetting('wwwsite.sponsors_file')
@@ -165,17 +185,23 @@ readonly class WwwSiteConfig
         // filtered down to the apps that actually have www content.
         $componentsFile = $config->hasSetting('wwwsite.components_file')
             ? $config->getSetting('wwwsite.components_file')
-            : ($config->hasSetting('devsite.components')
-                ? $config->getSetting('devsite.components')
-                : ($gitDir !== null
-                    ? rtrim($gitDir, '/') . '/' . $organization . '/dev.horde.org/content/pages/components.json'
-                    : $componentsRoot . '/data/website/components.json'));
+            : ($config->hasSetting('www_components')
+                ? $config->getSetting('www_components')
+                : ($config->hasSetting('devsite.components')
+                    ? $config->getSetting('devsite.components')
+                    : ($config->hasSetting('web_components')
+                        ? $config->getSetting('web_components')
+                        : ($gitDir !== null
+                            ? rtrim($gitDir, '/') . '/' . $organization . '/dev.horde.org/content/pages/components.json'
+                            : $componentsRoot . '/data/website/components.json'))));
 
         $webhooksDir = $config->hasSetting('wwwsite.webhooks_dir')
             ? $config->getSetting('wwwsite.webhooks_dir')
             : ($config->hasSetting('devsite.input_dir')
                 ? $config->getSetting('devsite.input_dir')
-                : $componentsRoot . '/data/webhooks');
+                : ($config->hasSetting('web_input')
+                    ? $config->getSetting('web_input')
+                    : $componentsRoot . '/data/webhooks'));
 
         $blogFeeds = $config->hasSetting('wwwsite.blog_feeds')
             ? json_decode($config->getSetting('wwwsite.blog_feeds'), true)

@@ -20,6 +20,8 @@ use Horde\Components\Helper\Shell;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use ReflectionClassConstant;
+use ReflectionMethod;
 
 /**
  * Unit tests for PlatformResolver.
@@ -130,7 +132,7 @@ class PlatformResolverTest extends TestCase
         // the constraint string and the candidate constant. Callers
         // outside this class (notably SetupCommand) need to call this
         // without constructing the heavier PlatformResolver instance.
-        $reflection = new \ReflectionMethod(PlatformResolver::class, 'phpVersionLaneSet');
+        $reflection = new ReflectionMethod(PlatformResolver::class, 'phpVersionLaneSet');
         $this->assertTrue($reflection->isStatic());
         $this->assertTrue($reflection->isPublic());
     }
@@ -141,7 +143,7 @@ class PlatformResolverTest extends TestCase
         // and must be reachable from outside this class. A regression
         // to private would silently break the fallback that
         // SetupCommand depends on.
-        $reflection = new \ReflectionClassConstant(
+        $reflection = new ReflectionClassConstant(
             PlatformResolver::class,
             'CANDIDATE_PHP_MINORS',
         );

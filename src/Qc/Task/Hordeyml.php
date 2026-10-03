@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Horde\Components\Qc\Task;
 
 use Horde\HordeYmlFile\HordeYmlFile;
+use Exception;
 
 /**
  * Components_Qc_Task_Hordeyml:: checks .horde.yml for quality issues.
@@ -69,7 +70,7 @@ class Hordeyml extends Base
         // Load .horde.yml
         try {
             $yml = new HordeYmlFile($hordeYmlPath);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->getOutput()->error('Failed to load .horde.yml: ' . $e->getMessage());
             return 1;
         }
@@ -107,7 +108,7 @@ class Hordeyml extends Base
             $this->getOutput()->ok('Added empty keywords field to .horde.yml');
             $this->getOutput()->info('  Please add relevant keywords for better Packagist discoverability');
             return 0;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->getOutput()->error('Failed to update .horde.yml: ' . $e->getMessage());
             return 1;
         }

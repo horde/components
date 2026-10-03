@@ -117,6 +117,7 @@ class WwwPageGenerator
     ): void {
         $body = $this->loadTemplate($contentRelPath);
         $body = $this->resolveLicenseTextWidgets($body);
+        $body = $this->resolveGravatarWidgets($body);
         $html = $this->wrapPage($title, $body, $cssPrefix);
         file_put_contents($outputFile, $html);
     }
@@ -394,6 +395,34 @@ class WwwPageGenerator
                     return '[license text unavailable: ' . $this->esc($filename) . ']';
                 }
                 return $this->esc((string) file_get_contents($path));
+            },
+            $html
+        ) ?? $html;
+    }
+
+    /**
+     * Replace a `<!-- WIDGET: gravatar email=ADDRESS --> ` comment with a
+     * static Gravatar avatar `<img>`. The URL is fully deterministic - the
+     * legacy Horde_Service_Gravatar just builds
+     * `https://www.gravatar.com/avatar/<md5(trimmed lowercase email)>` - so
+     * no live lookup or runtime dependency is needed here; the generator
+     * computes the same hash itself.
+     *
+     * `?s=160` requests a 160px image (2x the 80px display size for crisp
+     * rendering on HiDPI displays) and `d=mp` falls back to a neutral
+     * "mystery person" silhouette for addresses without a Gravatar, so a
+     * team member who never registered one still gets a sensible avatar.
+     */
+    private function resolveGravatarWidgets(string $html): string
+    {
+        return preg_replace_callback(
+            '/<!--\s*WIDGET:\s*gravatar\s+email=(\S+?)\s*-->/',
+            function (array $matches): string {
+                $email = strtolower(trim($matches[1]));
+                $hash = md5($email);
+                $url = $this->esc("https://www.gravatar.com/avatar/{$hash}?s=160&d=mp");
+                return "<img class=\"team-avatar\" src=\"{$url}\" alt=\"\" "
+                    . "width=\"80\" height=\"80\" loading=\"lazy\">";
             },
             $html
         ) ?? $html;

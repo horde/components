@@ -25,6 +25,7 @@ use Horde\Components\Task\AbstractTask;
 use Horde\Components\Task\Context;
 use Horde\Components\Task\Result;
 use Horde\HordeYmlFile\HordeYmlFile;
+use Throwable;
 
 /**
  * Refresh CI infrastructure on release if a component carries CI.
@@ -340,7 +341,7 @@ class RefreshCiBootstrapTask extends AbstractTask
 
         try {
             $hordeYml = new HordeYmlFile($hordeYmlPath);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->output->warn(
                 'Failed to read .horde.yml; skipping ci-platform refresh: ' . $e->getMessage(),
             );
@@ -351,7 +352,7 @@ class RefreshCiBootstrapTask extends AbstractTask
 
         try {
             $shaped = $resolver->resolveAndShapeForCiPlatform($hordeYml, $componentPath);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Network failures or composer-resolver bugs must not
             // abort an entire release. A stale ci-platform block is
             // still preferable to a failed tag.

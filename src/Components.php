@@ -294,22 +294,18 @@ This is a list of available actions (use "help ACTION" to get additional informa
         $injector->setInstance(Options::class, $httpOptions);
         $injector->setInstance(ClientInterface::class, new CurlClient($responseFactory, $streamFactory, $httpOptions));
 
-        // Get GitHub token from ConfigProvider hierarchy
-        // Precedence: CLI args > GITHUB_TOKEN env var > github.token config key
-        $configFactory = $injector->getInstance(ConfigProviderFactory::class);
-        $config = $configFactory->createDefault();
-
-        $githubToken = '';
-        // First check GITHUB_TOKEN environment variable (backward compatibility)
-        if ($config->hasSetting('GITHUB_TOKEN')) {
-            $githubToken = $config->getSetting('GITHUB_TOKEN');
-        }
-        // Then check github.token config key (new way)
-        elseif ($config->hasSetting('github.token')) {
-            $githubToken = $config->getSetting('github.token');
-        }
-
-        $injector->setInstance(GithubApiConfig::class, new GithubApiConfig(accessToken: $githubToken));
+        // GithubApiConfig (endpoint/accessToken) is resolved lazily via
+        // AuthenticationFactory::createConfig(), which honors the
+        // documented GitHub App > GITHUB_TOKEN env var > github.token
+        // config precedence - the same precedence already used by the
+        // `status` command - instead of only ever considering
+        // GITHUB_TOKEN/github.token as before. Bound with bindFactory
+        // (not setInstance) so the possible GitHub App JWT/installation
+        // token exchange only happens once something actually needs
+        // GitHub auth (e.g. github-clone-org, PR/release creation), not
+        // on every CLI invocation; the injector caches the resolved
+        // instance for the rest of the process either way.
+        $injector->bindFactory(GithubApiConfig::class, Dependencies\GithubApiConfigFactory::class, '__invoke');
         return $modularCli;
     }
 

@@ -8,6 +8,7 @@ use Horde\Components\ConfigProvider\ConfigProvider;
 use Horde\GithubApiClient\Auth\GitHubAppAuthenticationService;
 use Horde\GithubApiClient\Auth\GitHubAppConfig;
 use Horde\GithubApiClient\Auth\GitHubJwtGenerator;
+use Horde\GithubApiClient\GithubApiConfig;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -98,21 +99,77 @@ class AuthenticationFactory
      */
     private function createGitHubAppStrategy(): ?AuthenticationStrategyInterface
     {
+        $authService = $this->loadGitHubAppAuthenticationService();
+        if ($authService === null) {
+            return null;
+        }
+
+        return new GitHubAppAuthenticationStrategy($authService);
+    }
+
+    /**
+     * Build a GitHubAppAuthenticationService from config/environment, if
+     * GitHub App credentials are available. Shared by createGitHubAppStrategy()
+     * (full-client path) and createConfig() (raw-token path) so both go
+     * through the exact same precedence/credential-loading logic.
+     *
+     * @return GitHubAppAuthenticationService|null
+     */
+    private function loadGitHubAppAuthenticationService(): ?GitHubAppAuthenticationService
+    {
         $appConfig = $this->loadGitHubAppConfig();
         if ($appConfig === null) {
             return null;
         }
 
-        $jwtGenerator = new GitHubJwtGenerator();
-        $authService = new GitHubAppAuthenticationService(
+        return new GitHubAppAuthenticationService(
             $appConfig,
-            $jwtGenerator,
+            new GitHubJwtGenerator(),
             $this->httpClient,
             $this->requestFactory,
             $this->streamFactory
         );
+    }
 
-        return new GitHubAppAuthenticationStrategy($authService);
+    /**
+     * Create a raw GithubApiConfig (endpoint/accessToken) following the
+     * same precedence as create() (GitHub App > GITHUB_TOKEN env > github.token
+     * config), for consumers that build their own GithubApiClient instances
+     * from a shared config rather than taking a ready-made client (e.g.
+     * GitHubReleaseCreator, PullRequestManager, the bootstrap-time
+     * GithubApiConfig singleton used for auto-wired GithubApiClient
+     * instances).
+     *
+     * Unlike create(), this does NOT throw when nothing is configured -
+     * it falls back to an anonymous (unauthenticated) config, since
+     * several read-only GitHub API operations work fine unauthenticated
+     * (at a lower rate limit) and many CLI commands never touch GitHub
+     * at all, so failing hard here would break unrelated commands.
+     *
+     * @return GithubApiConfig
+     */
+    public function createConfig(): GithubApiConfig
+    {
+        $appAuthService = $this->loadGitHubAppAuthenticationService();
+        if ($appAuthService !== null) {
+            return new GithubApiConfig(accessToken: $appAuthService->getInstallationToken());
+        }
+
+        $patFromEnv = getenv('GITHUB_TOKEN');
+        if ($patFromEnv !== false && trim($patFromEnv) !== '') {
+            return new GithubApiConfig(accessToken: $patFromEnv);
+        }
+
+        if ($this->config->hasSetting('github.token')) {
+            $patFromConfig = $this->config->getSetting('github.token');
+            if (trim($patFromConfig) !== '') {
+                return new GithubApiConfig(accessToken: $patFromConfig);
+            }
+        }
+
+        // No auth configured anywhere - anonymous/unauthenticated config,
+        // matching the previous bootstrap default.
+        return new GithubApiConfig();
     }
 
     /**

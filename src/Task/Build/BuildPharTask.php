@@ -237,7 +237,7 @@ class BuildPharTask extends AbstractTask
     private function copyDirectory(string $source, string $dest): void
     {
         $skip = ['.git', 'vendor', 'test', 'tests', 'build'];
-        mkdir($dest, 0755);
+        mkdir($dest, 0o755);
 
         foreach (new DirectoryIterator($source) as $item) {
             if ($item->isDot()) {

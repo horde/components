@@ -22,6 +22,7 @@ use Horde\Components\Ci\Config\CiConfig;
 use Horde\Components\Component;
 use Horde\Components\Helper\PlatformResolver;
 use Horde\HordeYmlFile\HordeYmlFile;
+use JsonException;
 
 /**
  * Main orchestrator for CI setup.
@@ -259,7 +260,7 @@ class SetupCommand
                 $reason = sprintf(
                     'Failed to install required extension(s) for PHP %s: %s',
                     $lane['php'],
-                    implode(', ', array_map(static fn (string $e): string => 'ext-' . $e, $extFailures))
+                    implode(', ', array_map(static fn(string $e): string => 'ext-' . $e, $extFailures))
                 );
                 $this->output->error("  ✗ {$reason}");
                 $this->writeSetupFailureMarker(
@@ -405,7 +406,7 @@ class SetupCommand
         // carry a build/setup-failed.json marker; RunCommand surfaces them
         // as a failure in the PR comment alongside any lanes that ran. We only
         // signal global setup failure (which Module\Ci translates into a
-        // throw + non-zero exit) when no non-skipped lane is usable  - 
+        // throw + non-zero exit) when no non-skipped lane is usable  -
         // there is then nothing for ci run to do.
         $usableLanes = $successful;
         $totalNonSkipped = count($lanes) - count($skippedLanes);
@@ -528,7 +529,7 @@ class SetupCommand
                 ],
                 JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR
             );
-        } catch (\JsonException) {
+        } catch (JsonException) {
             return;
         }
         @file_put_contents($buildDir . '/setup-failed.json', $payload);

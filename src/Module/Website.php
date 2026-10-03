@@ -64,7 +64,7 @@ class Website extends Base
                 '--web-output',
                 [
                     'action' => 'store',
-                    'help'   => 'dev.horde.org output directory (default: build/dev.horde.org)',
+                    'help'   => 'dev.horde.org output directory (required: no default; pass this or set devsite.output_dir)',
                 ]
             ),
             new Option(
@@ -106,7 +106,7 @@ class Website extends Base
                 '--web-git-dir',
                 [
                     'action' => 'store',
-                    'help'   => 'Local git repo directory for version info',
+                    'help'   => 'Local checkout root (parent of <org>/); repos resolve as <git-dir>/<org>/<repo>',
                 ]
             ),
             new Option(
@@ -134,7 +134,7 @@ class Website extends Base
                 '--www-output',
                 [
                     'action' => 'store',
-                    'help'   => 'www.horde.org output directory (default: build/www.horde.org)',
+                    'help'   => 'www.horde.org output directory (required: no default; pass this or set wwwsite.output_dir)',
                 ]
             ),
             new Option(
@@ -193,7 +193,7 @@ WEBSITE GENERATION:
   dev.horde.org options:
     --web-input <dir>        Webhook JSON directory (default: data/webhooks)
                              Config: devsite.input_dir
-    --web-output <dir>       Output directory (default: build/dev.horde.org)
+    --web-output <dir>       Output directory (REQUIRED: no default)
                              Config: devsite.output_dir
     --web-templates <dir>    Templates directory (default: <checkout.dir>/<org>/dev.horde.org/content/pages)
                              Config: devsite.template_dir
@@ -209,7 +209,7 @@ WEBSITE GENERATION:
                              Config: wwwsite.template_dir
     --www-assets <dir>      Static assets directory (default: <checkout.dir>/<org>/horde-web/content/assets)
                              Config: wwwsite.assets_dir
-    --www-output <dir>      Output directory (default: build/www.horde.org)
+    --www-output <dir>      Output directory (REQUIRED: no default)
                              Config: wwwsite.output_dir
     --www-redirects <file>  Legacy URL redirects JSON (default: <checkout.dir>/<org>/horde-web/content/redirects.json)
                              Config: wwwsite.redirects_file
@@ -234,7 +234,7 @@ COMPONENT CATALOG:
                              Config: devsite.components
     --web-org <name>         GitHub organization (default: horde)
                              Config: repo.org (shared) or devsite.org
-    --web-git-dir <path>     Local git repos for version info
+    --web-git-dir <path>     Local checkout root (parent of <org>/); repos as <git-dir>/<org>/<repo>
                              Config: checkout.dir (shared) or devsite.git_dir
     --web-token <token>      GitHub API token (or set GITHUB_TOKEN env var)
                              Config: github.token (shared) or devsite.token

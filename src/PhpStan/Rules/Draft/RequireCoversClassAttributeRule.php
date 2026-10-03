@@ -88,7 +88,7 @@ class RequireCoversClassAttributeRule implements Rule
                         $className
                     )
                 )->tip('PHPUnit test classes should explicitly declare coverage')
-                ->build()
+                ->build(),
             ];
         }
 

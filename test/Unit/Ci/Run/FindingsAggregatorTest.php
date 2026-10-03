@@ -269,7 +269,7 @@ class FindingsAggregatorTest extends TestCase
         $this->assertCount(2, $findings);
         // Findings are sorted by (class, method); both have the same
         // pair here, so order is whatever PHP's stable sort produced.
-        $messages = array_map(static fn (array $f): string => $f['message'], $findings);
+        $messages = array_map(static fn(array $f): string => $f['message'], $findings);
         sort($messages);
         $this->assertSame(['Expected array', 'Expected null'], $messages);
     }
@@ -305,7 +305,7 @@ class FindingsAggregatorTest extends TestCase
         $findings = (new FindingsAggregator())->aggregatePhpUnit(['php8.3-dev' => $laneA]);
 
         $this->assertCount(2, $findings);
-        $types = array_map(static fn (array $f): string => $f['type'], $findings);
+        $types = array_map(static fn(array $f): string => $f['type'], $findings);
         sort($types);
         $this->assertSame(['error', 'failure'], $types);
     }

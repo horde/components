@@ -46,8 +46,7 @@ class WwwWebsite
     public function __construct(
         private readonly WwwSiteConfig $config,
         private readonly Output $output
-    ) {
-    }
+    ) {}
 
     /**
      * Static pages that get a straight content-fragment-to-chrome
@@ -87,6 +86,23 @@ class WwwWebsite
 
         if (!is_dir($this->config->templatesDir)) {
             throw new RuntimeException("Templates directory not found: {$this->config->templatesDir}");
+        }
+
+        // Guard the output location: no derived default, so require an
+        // explicit --www-output (wwwsite.output_dir) and refuse to create a
+        // directory whose parent is missing. See WebsiteConfig for rationale
+        // (avoids writing to a read-only phar:// path under a phar build).
+        if ($this->config->outputDir === null) {
+            throw new RuntimeException(
+                'No output directory configured. Pass --www-output <dir> or set wwwsite.output_dir.'
+            );
+        }
+        $outputParent = dirname($this->config->outputDir);
+        if (!is_dir($outputParent)) {
+            throw new RuntimeException(
+                "Output parent directory does not exist: {$outputParent}; "
+                . "refusing to create {$this->config->outputDir}."
+            );
         }
 
         if (!is_dir($this->config->outputDir)) {

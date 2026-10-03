@@ -21,6 +21,7 @@ use Horde\Version\ConstraintParser;
 use Horde\Version\InvalidVersionException;
 use Horde\Version\RelaxedSemanticVersion;
 use JsonException;
+use RuntimeException;
 
 /**
  * Resolve transitive platform requirements (PHP version, extensions,
@@ -757,7 +758,7 @@ class PlatformResolver
     {
         $base = sys_get_temp_dir() . '/horde-platform-resolver-' . uniqid('', true);
         if (!mkdir($base, 0o755, true) && !is_dir($base)) {
-            throw new \RuntimeException('Failed to create temp dir: ' . $base);
+            throw new RuntimeException('Failed to create temp dir: ' . $base);
         }
         return $base;
     }

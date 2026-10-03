@@ -39,7 +39,10 @@ readonly class WebsiteConfig
      * Create website configuration from individual values
      *
      * @param string $inputDir Directory containing webhook JSON files
-     * @param string $outputDir Directory for generated website
+     * @param string|null $outputDir Directory for generated website, or null
+     *   when no output location was configured (the runner then aborts with a
+     *   clear message rather than writing to a bogus default). Not required by
+     *   the catalog sub-action, which does not emit a site.
      * @param string $templatesDir Directory containing templates
      * @param string $componentsFile Path to components.json catalog file
      * @param string $assetsDir Directory containing static assets (CSS etc.)
@@ -50,7 +53,7 @@ readonly class WebsiteConfig
      */
     public function __construct(
         public string $inputDir,
-        public string $outputDir,
+        public ?string $outputDir,
         public string $templatesDir,
         public string $componentsFile,
         public string $assetsDir,
@@ -81,11 +84,16 @@ readonly class WebsiteConfig
                 ? $config->getSetting('web_input')
                 : $componentsRoot . '/data/webhooks');
 
+        // Output directory has no derived default: it must come from an
+        // explicit --web-output (devsite.output_dir) or the legacy web_output
+        // key. When neither is set we leave it null so the runner can abort
+        // with a clear message instead of writing to a bogus location (e.g. a
+        // read-only path inside the phar).
         $outputDir = $config->hasSetting('devsite.output_dir')
             ? $config->getSetting('devsite.output_dir')
             : ($config->hasSetting('web_output')
                 ? $config->getSetting('web_output')
-                : $componentsRoot . '/build/dev.horde.org');
+                : null);
 
         // For organization, prefer repo.org over devsite.org over legacy web_org
         $organization = $config->hasSetting('repo.org')
@@ -96,13 +104,18 @@ readonly class WebsiteConfig
                     ? $config->getSetting('web_org')
                     : 'horde'));
 
-        // For git directory, prefer checkout.dir over devsite.git_dir over legacy web_git_dir
-        $gitDir = $config->hasSetting('checkout.dir')
-            ? $config->getSetting('checkout.dir')
+        // For git directory, an explicit CLI --web-git-dir (web_git_dir) or
+        // devsite.git_dir must win over checkout.dir: checkout.dir always
+        // carries a builtin default ($HOME/git or /srv/git), so checking it
+        // first would mask the flag the user actually passed. checkout.dir is
+        // the checkout root; the org (default 'horde') and then the repos live
+        // below it, so repos resolve as <git-dir>/<org>/<repo>.
+        $gitDir = $config->hasSetting('web_git_dir')
+            ? $config->getSetting('web_git_dir')
             : ($config->hasSetting('devsite.git_dir')
                 ? $config->getSetting('devsite.git_dir')
-                : ($config->hasSetting('web_git_dir')
-                    ? $config->getSetting('web_git_dir')
+                : ($config->hasSetting('checkout.dir')
+                    ? $config->getSetting('checkout.dir')
                     : null));
 
         // Templates/content now live in the dev.horde.org content repo

@@ -20,6 +20,7 @@ use Horde\Components\Exception;
 use Horde\Version\ConstraintParser;
 use Horde\Version\InvalidVersionException;
 use Horde\Version\RelaxedSemanticVersion;
+use JsonException;
 
 /**
  * Pick a PHPUnit version that satisfies both a component's constraint and a
@@ -162,7 +163,7 @@ class PhpUnitMatrix
         try {
             /** @var array<string,mixed> $data */
             $data = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
+        } catch (JsonException $e) {
             throw new Exception("Invalid JSON in {$path}: " . $e->getMessage(), 0, $e);
         }
 

@@ -24,6 +24,7 @@ use Horde_Util;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
+use Horde\Util\Util;
 
 /**
  * Test base.
@@ -107,7 +108,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
     protected function getTemporaryDirectory()
     {
-        return Horde_Util::createTempDir();
+        return Util::createTempDir();
     }
 
     /**

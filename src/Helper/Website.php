@@ -20,6 +20,7 @@ use Horde\Components\Output;
 use Horde_Util;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Horde\Util\Util;
 
 /**
  * This class is a helper for a horde-web git repository checkout.
@@ -64,7 +65,7 @@ class Website
             throw new Exception('"--html-generator" MUST be set for this action!');
         }
 
-        $tmp_dir = Horde_Util::createTempDir();
+        $tmp_dir = Util::createTempDir();
         $archive = $component->placeArchive(
             $tmp_dir,
             ['logger' => $this->_output]

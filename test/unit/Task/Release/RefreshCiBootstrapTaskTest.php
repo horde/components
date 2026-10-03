@@ -24,6 +24,7 @@ use Horde\Components\Task\Context;
 use Horde\Components\Task\Release\RefreshCiBootstrapTask;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 /**
  * Unit tests for RefreshCiBootstrapTask.
@@ -609,33 +610,111 @@ class RefreshCiBootstrapTaskTest extends TestCase
         $tmpDir = $this->tmpDir;
         $component = new class ($tmpDir) implements Component {
             public function __construct(private readonly string $dir) {}
-            public function getComponentDirectory(): string { return $this->dir; }
-            public function getName(): string { return 'test'; }
-            public function getSummary(): string { return ''; }
-            public function getDescription(): string { return ''; }
-            public function getVersion(): string { return '0.0.0'; }
-            public function getPreviousVersion(): string { return '0.0.0'; }
-            public function getDate(): string { return ''; }
-            public function getChannel(): string { return ''; }
-            public function getDependencies(): array { return []; }
-            public function getState($key = 'release'): string { return 'stable'; }
-            public function getLeads() { return []; }
-            public function getLicense() { return 'LGPL'; }
-            public function getLicenseLocation(): string { return ''; }
-            public function hasLocalPackageXml(): bool { return false; }
-            public function getChangelogLink(): string { return ''; }
-            public function getReleaseNotesPath(): string|bool { return false; }
-            public function getDependencyList() { return null; }
-            public function getData(): \stdClass { return new \stdClass(); }
-            public function getDocumentOrigin(): ?string { return null; }
-            public function updatePackage($action, $options): string { return ''; }
-            public function changed($log, $options): array { return []; }
-            public function timestamp($options): string { return ''; }
+            public function getComponentDirectory(): string
+            {
+                return $this->dir;
+            }
+            public function getName(): string
+            {
+                return 'test';
+            }
+            public function getSummary(): string
+            {
+                return '';
+            }
+            public function getDescription(): string
+            {
+                return '';
+            }
+            public function getVersion(): string
+            {
+                return '0.0.0';
+            }
+            public function getPreviousVersion(): string
+            {
+                return '0.0.0';
+            }
+            public function getDate(): string
+            {
+                return '';
+            }
+            public function getChannel(): string
+            {
+                return '';
+            }
+            public function getDependencies(): array
+            {
+                return [];
+            }
+            public function getState($key = 'release'): string
+            {
+                return 'stable';
+            }
+            public function getLeads()
+            {
+                return [];
+            }
+            public function getLicense()
+            {
+                return 'LGPL';
+            }
+            public function getLicenseLocation(): string
+            {
+                return '';
+            }
+            public function hasLocalPackageXml(): bool
+            {
+                return false;
+            }
+            public function getChangelogLink(): string
+            {
+                return '';
+            }
+            public function getReleaseNotesPath(): string|bool
+            {
+                return false;
+            }
+            public function getDependencyList()
+            {
+                return null;
+            }
+            public function getData(): stdClass
+            {
+                return new stdClass();
+            }
+            public function getDocumentOrigin(): ?string
+            {
+                return null;
+            }
+            public function updatePackage($action, $options): string
+            {
+                return '';
+            }
+            public function changed($log, $options): array
+            {
+                return [];
+            }
+            public function timestamp($options): string
+            {
+                return '';
+            }
             public function nextVersion($version, $initial_note, $stability_api = null, $stability_release = null, $options = []) {}
-            public function currentSentinel($changes, $app, $options): array { return []; }
-            public function tag(string $tag, string $message, \Horde\Components\Helper\Commit $commit): string { return ''; }
-            public function placeArchive(string $destination, $options = []): array { return ['']; }
-            public function repositoryRoot(\Horde\Components\Helper\Root $helper): string { return ''; }
+            public function currentSentinel($changes, $app, $options): array
+            {
+                return [];
+            }
+            public function tag(string $tag, string $message, \Horde\Components\Helper\Commit $commit): string
+            {
+                return '';
+            }
+            public function placeArchive(string $destination, $options = []): array
+            {
+                return [''];
+            }
+            public function repositoryRoot(\Horde\Components\Helper\Root $helper): string
+            {
+                return '';
+            }
             public function installChannel(\Horde\Components\Pear\Environment $env, $options = []): void {}
             public function install(\Horde\Components\Pear\Environment $env, $options = [], $reason = ''): void {}
         };

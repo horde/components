@@ -22,15 +22,32 @@ use Exception;
  */
 class PageGenerator
 {
+    /**
+     * Filename of the shared status-widget script (see
+     * content/assets/status-widget.js and footer.html's
+     * #horde-status-widget anchor), copied verbatim from
+     * www.horde.org's asset of the same name.
+     */
+    public const STATUS_WIDGET_JS_FILENAME = 'status-widget.js';
+
     private string $templatesDir;
     private string $cssFilename;
     private string $componentsFile;
+    private ?string $gitDir;
+    private string $organization;
 
-    public function __construct(string $templatesDir, string $cssFilename, ?string $componentsFile = null)
-    {
+    public function __construct(
+        string $templatesDir,
+        string $cssFilename,
+        ?string $componentsFile = null,
+        ?string $gitDir = null,
+        string $organization = 'horde'
+    ) {
         $this->templatesDir = rtrim($templatesDir, '/');
         $this->cssFilename = $cssFilename;
         $this->componentsFile = $componentsFile ?? $this->templatesDir . '/components.json';
+        $this->gitDir = $gitDir !== null ? rtrim($gitDir, '/') : null;
+        $this->organization = $organization;
     }
 
     /**
@@ -44,6 +61,7 @@ class PageGenerator
     ): void {
         // Load templates
         $topbar = $this->loadTemplate('topbar.html');
+        $footer = $this->loadTemplate('footer.html');
         $searchScript = $this->loadTemplate('search-script.html');
 
         // Load component metadata
@@ -68,6 +86,7 @@ class PageGenerator
         // dedicated /resources page (see generateResourcesPage()).
         $html = $this->buildFullPage(
             $topbar,
+            $footer,
             $timestamp,
             $issuesHtml,
             $releasesHtml,
@@ -90,8 +109,9 @@ class PageGenerator
     public function generateContributePage(string $outputFile): void
     {
         $topbar = $this->loadTemplate('topbar.html');
+        $footer = $this->loadTemplate('footer.html');
         $body = $this->loadTemplate('contribute.html');
-        $html = $this->wrapSimplePage('Contribute - Horde Development', $topbar, $body);
+        $html = $this->wrapSimplePage('Contribute - Horde Development', $topbar, $footer, $body);
         file_put_contents($outputFile, $html);
     }
 
@@ -102,6 +122,7 @@ class PageGenerator
     public function generateResourcesPage(string $outputFile): void
     {
         $topbar = $this->loadTemplate('topbar.html');
+        $footer = $this->loadTemplate('footer.html');
         $staticSections = $this->loadTemplate('static-sections.html');
         $archiveSection = $this->loadTemplate('archive-section.html');
         $resourcesExtra = $this->loadTemplate('resources-extra.html');
@@ -111,19 +132,20 @@ class PageGenerator
             . $resourcesExtra . "\n\n"
             . $archiveSection;
 
-        $html = $this->wrapSimplePage('Resources - Horde Development', $topbar, $body);
+        $html = $this->wrapSimplePage('Resources - Horde Development', $topbar, $footer, $body);
         file_put_contents($outputFile, $html);
     }
 
     /**
      * Wrap arbitrary page-body HTML in the shared site chrome (topbar +
-     * stylesheet), for simple static content pages that don't need the
-     * dashboard's activity-grid/component-directory machinery.
+     * footer + stylesheet), for simple static content pages that don't
+     * need the dashboard's activity-grid/component-directory machinery.
      */
-    private function wrapSimplePage(string $title, string $topbar, string $body): string
+    private function wrapSimplePage(string $title, string $topbar, string $footer, string $body): string
     {
         $titleEsc = $this->esc($title);
         $cssEsc = $this->esc($this->cssFilename);
+        $statusJsEsc = $this->esc(self::STATUS_WIDGET_JS_FILENAME);
 
         return <<<HTML
             <!DOCTYPE html>
@@ -139,6 +161,8 @@ class PageGenerator
                 <div class="container">
             {$body}
                 </div>
+            {$footer}
+            <script src="{$statusJsEsc}" defer></script>
             </body>
             </html>
             HTML;
@@ -168,21 +192,21 @@ class PageGenerator
 
     private function loadHordeYml(string $componentName): ?HordeYmlFile
     {
-        // Try to find .horde.yml in git checkout
+        // Locate the component's .horde.yml in the configured checkout,
+        // resolving repos as <git-dir>/<org>/<repo> (the same convention the
+        // catalog and www generators use). Requires a known git checkout.
         // Component name format: "horde/ComponentName"
+        if ($this->gitDir === null) {
+            return null;
+        }
+
         $parts = explode('/', $componentName);
         if (count($parts) !== 2) {
             return null;
         }
 
         $repoName = $parts[1];
-
-        // Try common locations
-        $homeDir = getenv('HOME') ?: ($_SERVER['HOME'] ?? null);
-        if (!$homeDir) {
-            return null; // Can't find home directory
-        }
-        $path = "{$homeDir}/git/horde/{$repoName}/.horde.yml";
+        $path = "{$this->gitDir}/{$this->organization}/{$repoName}/.horde.yml";
 
         if (file_exists($path)) {
             try {
@@ -307,7 +331,21 @@ class PageGenerator
     private function renderComponentCard(array $component, array $recentEvents, int $maxEvents): string
     {
         $nameEsc = $this->esc($component['name']);
-        $versionEsc = $this->esc($component['version']);
+        // The catalog (components.json) may carry a stale/"unknown" version
+        // when it was generated without a git checkout. Fall back to the
+        // component's .horde.yml release version so cards stay consistent with
+        // the details page, which does the same override.
+        $version = $component['version'] ?? 'unknown';
+        if ($version === 'unknown' || $version === '') {
+            $hordeYml = $this->loadHordeYml($component['name']);
+            if ($hordeYml !== null) {
+                $releaseVersion = $hordeYml->getReleaseVersion();
+                if ($releaseVersion !== '') {
+                    $version = $releaseVersion;
+                }
+            }
+        }
+        $versionEsc = $this->esc($version);
         $descEsc = $this->esc($component['description']);
         $githubUrl = $this->esc($component['github_url']);
         $dataComponent = strtolower($nameEsc);
@@ -376,6 +414,7 @@ class PageGenerator
 
     private function buildFullPage(
         string $topbar,
+        string $footer,
         string $timestamp,
         string $issuesHtml,
         string $releasesHtml,
@@ -385,6 +424,7 @@ class PageGenerator
         string $searchScript
     ): string {
         $cssEsc = $this->esc($this->cssFilename);
+        $statusJsEsc = $this->esc(self::STATUS_WIDGET_JS_FILENAME);
 
         return <<<HTML
             <!DOCTYPE html>
@@ -441,6 +481,8 @@ class PageGenerator
 
             {$componentDirectory}    </div>
 
+            {$footer}
+            <script src="{$statusJsEsc}" defer></script>
             {$searchScript}
             </body>
             </html>
@@ -493,6 +535,10 @@ class PageGenerator
             $eventsHtml = "<div class=\"event-item empty\">No recent activity found.</div>\n";
         }
 
+        $topbar = $this->loadTemplate('topbar.html');
+        $footer = $this->loadTemplate('footer.html');
+        $statusJsEsc = $this->esc('../' . self::STATUS_WIDGET_JS_FILENAME);
+
         return <<<HTML
             <!DOCTYPE html>
             <html lang="en">
@@ -503,6 +549,7 @@ class PageGenerator
                 <link rel="stylesheet" type="text/css" href="../{$this->cssFilename}">
             </head>
             <body>
+            {$topbar}
                 <div class="container">
                     <div class="back-link"><a href="../index.html">← Back to dev.horde.org</a></div>
                     <h1>{$componentEsc}</h1>
@@ -515,6 +562,8 @@ class PageGenerator
             {$eventsHtml}            </div>
                     </div>
                 </div>
+            {$footer}
+            <script src="{$statusJsEsc}" defer></script>
             </body>
             </html>
             HTML;
@@ -540,10 +589,15 @@ class PageGenerator
                 $version = $this->esc($releaseVersion);
             }
 
-            // Full description
-            $fullDesc = $hordeYml->getFullDescription();
-            if ($fullDesc) {
-                $fullDesc = $this->esc($fullDesc);
+            // Full description. Read the raw `description` field rather than
+            // HordeYmlFile::getDescription(), whose `: string` return type
+            // throws when a .horde.yml carries a structured (mapping/folded)
+            // description that the YAML parser produced as an object. Only use
+            // it when it is a non-empty string; otherwise leave the catalog
+            // description in place.
+            $rawDesc = $hordeYml->get('description');
+            if (is_string($rawDesc) && $rawDesc !== '') {
+                $fullDesc = $this->esc($rawDesc);
             }
 
             // License (returns stdClass with identifier and uri)
@@ -567,7 +621,7 @@ class PageGenerator
             if ($deps !== null) {
                 $requiredSet = $deps->getRequired();
                 if ($requiredSet !== null) {
-                    foreach ($requiredSet->getComposer() as $pkg => $ver) {
+                    foreach ($requiredSet->getComposerPackages() as $pkg => $ver) {
                         $dependencies[] = $this->esc($pkg) . ': ' . $this->esc($ver);
                     }
                 }
@@ -646,6 +700,7 @@ class PageGenerator
         }
 
         $topbar = $this->loadTemplate('topbar.html');
+        $footer = $this->loadTemplate('footer.html');
         $count = 0;
 
         foreach ($decoded as $redirect) {
@@ -670,18 +725,19 @@ class PageGenerator
             $depth = substr_count($from, '/');
             $cssPrefix = str_repeat('../', $depth);
 
-            file_put_contents($targetPath, $this->buildRedirectStub($topbar, $to, $reason, $cssPrefix));
+            file_put_contents($targetPath, $this->buildRedirectStub($topbar, $footer, $to, $reason, $cssPrefix));
             $count++;
         }
 
         return $count;
     }
 
-    private function buildRedirectStub(string $topbar, string $to, string $reason, string $cssPrefix): string
+    private function buildRedirectStub(string $topbar, string $footer, string $to, string $reason, string $cssPrefix): string
     {
         $toEsc = $this->esc($to);
         $reasonEsc = $this->esc($reason);
         $cssEsc = $this->esc($cssPrefix . $this->cssFilename);
+        $statusJsEsc = $this->esc($cssPrefix . self::STATUS_WIDGET_JS_FILENAME);
 
         return <<<HTML
             <!DOCTYPE html>
@@ -704,6 +760,8 @@ class PageGenerator
                         <a href="{$toEsc}">{$toEsc}</a> directly.
                     </p>
                 </div>
+            {$footer}
+            <script src="{$statusJsEsc}" defer></script>
             </body>
             </html>
             HTML;

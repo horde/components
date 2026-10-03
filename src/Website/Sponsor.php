@@ -22,6 +22,5 @@ final class Sponsor
         public readonly string $url,
         public readonly ?string $logo,
         public readonly string $note,
-    ) {
-    }
+    ) {}
 }

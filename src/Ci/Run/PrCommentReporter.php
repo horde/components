@@ -61,7 +61,7 @@ class PrCommentReporter
      * @param string $runUrl URL to the GitHub Actions run
      * @param array<string,array<int,array<string,mixed>>> $findingsByTool
      *        Per-tool deduplicated findings list produced by
-     *        {@see \Horde\Components\Ci\Run\FindingsAggregator}. Keys are
+     *        {@see FindingsAggregator}. Keys are
      *        tool names ("phpstan", "phpcsfixer"). When empty (e.g.
      *        because the aggregator wasn't run), the comment falls back to
      *        summed counts.

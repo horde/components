@@ -22,6 +22,7 @@ use Horde\Components\Component;
 use Horde\Components\Output;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use ArrayIterator;
 
 #[CoversClass(DependencyTreeBuilder::class)]
 class DependencyTreeBuilderTest extends TestCase
@@ -43,7 +44,7 @@ class DependencyTreeBuilderTest extends TestCase
         $root = $this->createMockComponent('horde/core', 'pear.horde.org', '3.0.0');
 
         // Return empty array iterator for dependency list
-        $emptyList = new \ArrayIterator([]);
+        $emptyList = new ArrayIterator([]);
         $root->method('getDependencyList')->willReturn($emptyList);
 
         $graph = $this->builder->build($root);
@@ -56,7 +57,7 @@ class DependencyTreeBuilderTest extends TestCase
     public function testBuildWithPluginDetector(): void
     {
         $root = $this->createMockComponent('horde/horde-installer-plugin', 'pear.horde.org', '3.0.0');
-        $root->method('getDependencyList')->willReturn(new \ArrayIterator([]));
+        $root->method('getDependencyList')->willReturn(new ArrayIterator([]));
 
         // Plugin detection will only mark node as plugin if it can detect it
         // In this mock setup, it will use the known plugins list
@@ -72,7 +73,7 @@ class DependencyTreeBuilderTest extends TestCase
     public function testBuildAndExportCreatesFile(): void
     {
         $root = $this->createMockComponent('horde/core', 'pear.horde.org', '3.0.0');
-        $root->method('getDependencyList')->willReturn(new \ArrayIterator([]));
+        $root->method('getDependencyList')->willReturn(new ArrayIterator([]));
 
         $tempFile = tempnam(sys_get_temp_dir(), 'deps_') . '.yml';
 
@@ -100,17 +101,17 @@ class DependencyTreeBuilderTest extends TestCase
         $builder = new DependencyTreeBuilder($detector, $this->output, allowNetworkRequests: true);
 
         $root = $this->createMockComponent('horde/core', 'pear.horde.org', '3.0.0');
-        $root->method('getDependencyList')->willReturn(new \ArrayIterator([]));
+        $root->method('getDependencyList')->willReturn(new ArrayIterator([]));
 
         $graph = $builder->build($root);
 
-        $this->assertInstanceOf(\Horde\Components\Component\DependencyGraph::class, $graph);
+        $this->assertInstanceOf(Component\DependencyGraph::class, $graph);
     }
 
     public function testBuildGraphSetsCorrectMetadata(): void
     {
         $root = $this->createMockComponent('horde/core', 'pear.horde.org', '3.0.0');
-        $root->method('getDependencyList')->willReturn(new \ArrayIterator([]));
+        $root->method('getDependencyList')->willReturn(new ArrayIterator([]));
 
         $graph = $this->builder->build($root);
 

@@ -47,8 +47,8 @@ class MarkDeprecatedHordeCallsFixerTest extends TestCase
     {
         if (!PhpCsFixerLoader::load()) {
             self::markTestSkipped(
-                'PHP-CS-Fixer is not available. Install it to run these tests. ' .
-                'See: https://cs.symfony.com/doc/installation.html'
+                'PHP-CS-Fixer is not available. Install it to run these tests. '
+                . 'See: https://cs.symfony.com/doc/installation.html'
             );
         }
     }

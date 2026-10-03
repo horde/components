@@ -199,10 +199,10 @@ class Foo {
 
         // Build docblock
         $docblock = sprintf(
-            "/**\n%s * ARCHITECTURE VIOLATION: Using deprecated Horde::%s()\n" .
-            "%s * @deprecated Use %s instead\n" .
-            "%s * @see Horde_Deprecated::%s()\n" .
-            "%s */\n%s",
+            "/**\n%s * ARCHITECTURE VIOLATION: Using deprecated Horde::%s()\n"
+            . "%s * @deprecated Use %s instead\n"
+            . "%s * @see Horde_Deprecated::%s()\n"
+            . "%s */\n%s",
             $indent,
             $method,
             $indent,

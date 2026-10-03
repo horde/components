@@ -15,6 +15,9 @@ use Horde\Components\Ci\GitHubAnnotations;
 use Horde\Components\Qc\PhpStanRuleExtractor;
 use Horde\Components\Qc\ToolFinder;
 use Throwable;
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 /**
  * Horde\Components\Qc\Task\Phpstan runs PHPStan static analysis on the component.
@@ -801,10 +804,10 @@ class Phpstan extends Base
                 }
                 continue;
             }
-            $iterator = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator(
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator(
                     $root,
-                    \FilesystemIterator::SKIP_DOTS
+                    FilesystemIterator::SKIP_DOTS
                 )
             );
             foreach ($iterator as $file) {
@@ -835,7 +838,7 @@ class Phpstan extends Base
         $plan = $this->resolveAnalysisPlan($componentPath);
 
         $paths = array_map(
-            static fn (string $p): string => "        - " . $p,
+            static fn(string $p): string => "        - " . $p,
             $plan['paths']
         );
         $pathsYaml = implode("\n", $paths);
@@ -846,7 +849,7 @@ class Phpstan extends Base
         $scanYaml = '';
         if (!empty($plan['scanDirectories'])) {
             $scanLines = array_map(
-                static fn (string $p): string => "        - " . $p,
+                static fn(string $p): string => "        - " . $p,
                 $plan['scanDirectories']
             );
             $scanYaml = "    scanDirectories:\n" . implode("\n", $scanLines) . "\n";
@@ -887,20 +890,20 @@ class Phpstan extends Base
 
         $activeRules = array_filter(
             $customRules,
-            static fn (array $rule): bool => $level >= $rule['minLevel']
+            static fn(array $rule): bool => $level >= $rule['minLevel']
         );
 
         $rulesYaml = '';
         $servicesYaml = '';
         if (!empty($activeRules)) {
             $ruleLines = array_map(
-                static fn (array $rule): string => '    - ' . $rule['class'],
+                static fn(array $rule): string => '    - ' . $rule['class'],
                 $activeRules
             );
             $rulesYaml = "\nrules:\n" . implode("\n", $ruleLines) . "\n";
 
             $serviceLines = array_map(
-                static fn (array $rule): string => "    -\n"
+                static fn(array $rule): string => "    -\n"
                     . "        class: " . $rule['class'] . "\n"
                     . "        tags:\n"
                     . "            - phpstan.rules.rule",
@@ -912,18 +915,18 @@ class Phpstan extends Base
         // Note: Custom Horde rules are loaded via --autoload-file CLI parameter
         // See testLevel() method where phpstan-bootstrap.php is passed
         $config = <<<NEON
-{$includesSection}parameters:
-    level: $level
-    paths:
-$pathsYaml
-{$scanYaml}    excludePaths:
-        - vendor (?)
-        - build (?)
-    tmpDir: build/phpstan
-    bootstrapFiles:
-        - {$componentPath}/vendor/autoload.php
-{$rulesYaml}{$servicesYaml}
-NEON;
+            {$includesSection}parameters:
+                level: $level
+                paths:
+            $pathsYaml
+            {$scanYaml}    excludePaths:
+                    - vendor (?)
+                    - build (?)
+                tmpDir: build/phpstan
+                bootstrapFiles:
+                    - {$componentPath}/vendor/autoload.php
+            {$rulesYaml}{$servicesYaml}
+            NEON;
 
         // Write to temporary file
         $tempFile = $componentPath . '/build/phpstan-temp-' . getmypid() . '.neon';
@@ -931,7 +934,7 @@ NEON;
         // Ensure build directory exists
         $buildDir = $componentPath . '/build';
         if (!is_dir($buildDir)) {
-            mkdir($buildDir, 0755, true);
+            mkdir($buildDir, 0o755, true);
         }
 
         file_put_contents($tempFile, $config);
@@ -1029,7 +1032,7 @@ NEON;
 
         $componentPath = $this->getPath() ?: getcwd();
         if (is_string($componentPath) && $componentPath !== '') {
-            // files_scanned reflects what PHPStan actually analyzed  - 
+            // files_scanned reflects what PHPStan actually analyzed  -
             // i.e. the `paths:` set, not `scanDirectories:` (which are
             // loaded for symbols only).
             $plan = $this->resolveAnalysisPlan($componentPath);

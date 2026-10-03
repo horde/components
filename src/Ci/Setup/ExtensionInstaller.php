@@ -19,6 +19,7 @@ namespace Horde\Components\Ci\Setup;
 use Horde\Components\Exception;
 use Horde\Components\Output;
 use Horde\HordeYmlFile\HordeYmlFile;
+use Throwable;
 
 /**
  * Installs PHP extensions for multiple PHP versions.
@@ -213,7 +214,7 @@ class ExtensionInstaller
         }
         try {
             $hordeYml = new HordeYmlFile($hordeYmlPath);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return [];
         }
         $data = $hordeYml->toArray();

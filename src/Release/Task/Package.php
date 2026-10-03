@@ -17,6 +17,7 @@ use Archive_Tar;
 use Horde_Http_Exception;
 use Horde_Pear_Remote;
 use Horde_Util;
+use Horde\Util\Util;
 
 /**
  * Components_Release_Task_Package:: prepares and uploads a release package.
@@ -58,7 +59,7 @@ class Package extends Base
     public function preValidate($options): array
     {
         $errors = [];
-        $testpkg = Horde_Util::getTempFile();
+        $testpkg = Util::getTempFile();
         $archive = new Archive_Tar($testpkg, 'gz');
         $archive->addString('a', 'a');
         $archive->addString('b', 'b');

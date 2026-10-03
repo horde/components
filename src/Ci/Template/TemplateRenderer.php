@@ -38,7 +38,7 @@ class TemplateRenderer
      * This version is embedded in generated files and used to detect
      * when components are using outdated templates.
      *
-     * 1.5.2: checkout step now sets submodules: recursive. 
+     * 1.5.2: checkout step now sets submodules: recursive.
      *
      * 1.5.1: bootstrap script moved from bin/ci-bootstrap.sh to
      *        .github/bin/ci-bootstrap.sh so /bin/ at component root stays

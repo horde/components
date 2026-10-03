@@ -79,7 +79,7 @@ class NoDeprecatedHordeUtilRule implements Rule
                         $methodName,
                         $this->deprecatedMethods[$methodName]
                     )
-                )->build()
+                )->build(),
             ];
         }
 

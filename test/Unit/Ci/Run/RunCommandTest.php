@@ -21,6 +21,7 @@ use Horde\Components\Ci\Run\ResultCollector;
 use Horde\Components\Output;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use ReflectionMethod;
 
 /**
  * Tests for RunCommand - specifically lane script execution.
@@ -393,7 +394,7 @@ class RunCommandTest extends TestCase
      */
     public function testAnyLaneHasPhpStanAdvisoryDetectsCapturedAdvisory(): void
     {
-        $method = new \ReflectionMethod(RunCommand::class, 'anyLaneHasPhpStanAdvisory');
+        $method = new ReflectionMethod(RunCommand::class, 'anyLaneHasPhpStanAdvisory');
         $method->setAccessible(true);
 
         // Lane with positive advisory count → true.
@@ -440,7 +441,7 @@ class RunCommandTest extends TestCase
 
     public function testFormatPhpStanAdvisoryForTableProducesCompactCell(): void
     {
-        $method = new \ReflectionMethod(RunCommand::class, 'formatPhpStanAdvisoryForTable');
+        $method = new ReflectionMethod(RunCommand::class, 'formatPhpStanAdvisoryForTable');
         $method->setAccessible(true);
 
         // Positive advisory: "+N @ L"

@@ -33,6 +33,7 @@ use Horde\Components\Ci\Config\CiConfig;
 use Horde\Components\Ci\Run\RunCommand;
 use Horde\Components\Ci\Run\ResultCollector;
 use Phar;
+use Throwable;
 
 /**
  * Components_Module_Ci:: manages CI setup and execution for components.
@@ -516,7 +517,7 @@ EXAMPLES:
         if (getenv('GITHUB_TOKEN') !== false) {
             try {
                 $apiClient = $this->dependencies->get(GithubApiClient::class);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Don't silently swallow: a maintainer running into a real
                 // misconfiguration should see why the PR comment didn't post.
                 $output->warn('Could not initialize GitHub API client: ' . $e->getMessage());

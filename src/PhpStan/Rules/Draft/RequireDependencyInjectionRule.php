@@ -104,7 +104,7 @@ class RequireDependencyInjectionRule implements Rule
                             $className
                         )
                     )->tip('Use constructor injection for services')
-                    ->build()
+                    ->build(),
                 ];
             }
         }
