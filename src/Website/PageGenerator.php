@@ -231,7 +231,7 @@ class PageGenerator
         return $grouped;
     }
 
-    private function renderEventSection(array $events, int $maxEvents): string
+    private function renderEventSection(array $events, int $maxEvents, string $linkPrefix = ''): string
     {
         if (empty($events)) {
             return "                    <div class=\"event-item empty\">No recent activity found.</div>\n";
@@ -241,13 +241,13 @@ class PageGenerator
         $displayEvents = array_slice($events, 0, $maxEvents);
 
         foreach ($displayEvents as $event) {
-            $html .= $this->renderEventCard($event);
+            $html .= $this->renderEventCard($event, $linkPrefix);
         }
 
         return $html;
     }
 
-    private function renderEventCard(Event $event): string
+    private function renderEventCard(Event $event, string $linkPrefix = ''): string
     {
         $titleEsc = $this->esc($event->title);
         $repoEsc = $this->esc($event->repo);
@@ -256,9 +256,12 @@ class PageGenerator
         $urlEsc = $this->esc($event->url);
         $timestampEsc = $this->esc($event->timestamp->format('Y-m-d H:i'));
 
-        // Generate safe filename for component link
+        // Generate safe filename for component link. $linkPrefix lets
+        // callers rendering from inside components/<name>.html itself
+        // (where a bare "components/..." link would wrongly resolve to
+        // components/components/...) pass "../" instead.
         $safeName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $event->repo);
-        $componentLink = "components/{$safeName}.html";
+        $componentLink = "{$linkPrefix}components/{$safeName}.html";
 
         return <<<HTML
                                 <div class="event-item type-{$event->type}">
@@ -477,11 +480,13 @@ class PageGenerator
         // Render component details card
         $detailsCard = $this->renderComponentDetailsCard($componentMeta, $hordeYml);
 
-        // Render events
+        // Render events. This page lives at components/<name>.html, one
+        // level below the site root, so component-detail links need a
+        // "../" prefix (see renderEventCard()).
         $eventsHtml = '';
         $displayEvents = array_slice($events, 0, 50); // Show up to 50 events
         foreach ($displayEvents as $event) {
-            $eventsHtml .= $this->renderEventCard($event);
+            $eventsHtml .= $this->renderEventCard($event, '../');
         }
 
         if (empty($eventsHtml)) {
