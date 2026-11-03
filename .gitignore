@@ -64,3 +64,6 @@ run-tests.log
 /.phpstan.cache/
 build/
 data/webhooks/
+# box.json is an optional local override of the committed box.json.dist.
+# Copy box.json.dist to box.json only for local experiments.
+/box.json

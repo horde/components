@@ -1,8 +1,7 @@
 {
   "compression": "GZ",
   "directories": [
-    "src",
-    "data/website"
+    "src"
   ],
   "directories-bin": [
     "data/ci"
@@ -18,7 +17,10 @@
       "name": "*.php",
       "exclude": [
         "tests",
-        "test"
+        "test",
+        "phpunit",
+        "phpstan",
+        "php-cs-fixer"
       ],
       "in": "vendor"
     },

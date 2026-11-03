@@ -87,7 +87,7 @@ class PhpStanRuleExtractor
         $pharRoot = Phar::running(false);
 
         if ($pharRoot === '') {
-            // Developer checkout — the bootstrap is already on disk.
+            // Developer checkout - the bootstrap is already on disk.
             return $this->checkoutBootstrapPath();
         }
 
@@ -102,7 +102,7 @@ class PhpStanRuleExtractor
         $destBootstrap = $destRoot . '/phpstan-bootstrap.php';
 
         if (is_file($destBootstrap)) {
-            // Idempotent — assume a previous extract already populated the tree.
+            // Idempotent - assume a previous extract already populated the tree.
             return $destBootstrap;
         }
 

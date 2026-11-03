@@ -39,9 +39,9 @@ use PHPUnit\Framework\TestCase;
  *    `php-cs-fixer`) as a runtime dependency. Local development uses a
  *    globally installed phpunit; CI downloads one to the tools cache.
  *
- * 2. `box.json` excludes `phpunit`, `phpstan`, and `php-cs-fixer` from
+ * 2. `box.json.dist` excludes `phpunit`, `phpstan`, and `php-cs-fixer` from
  *    the vendor finder. Box's `exclude` matches path components, so the
- *    whole `vendor/phpunit/*` tree is dropped — that catches transitive
+ *    whole `vendor/phpunit/*` tree is dropped - that catches transitive
  *    deps of phpunit too (php-text-template, php-file-iterator, ...).
  *
  * This test pins both invariants. It only inspects on-disk config files,
@@ -85,7 +85,7 @@ class PharBundlingTest extends TestCase
         $vendorFinder = $this->findVendorFinder($box);
         $this->assertNotNull(
             $vendorFinder,
-            'box.json must declare a finder block with "in": "vendor".'
+            'box.json.dist must declare a finder block with "in": "vendor".'
         );
 
         $excluded = $vendorFinder['exclude'] ?? [];
@@ -94,7 +94,7 @@ class PharBundlingTest extends TestCase
                 $tool,
                 $excluded,
                 sprintf(
-                    'box.json vendor finder must exclude "%s" so the tool '
+                    'box.json.dist vendor finder must exclude "%s" so the tool '
                         . 'is not bundled into horde-components.phar (regression guard).',
                     $tool
                 )
@@ -113,7 +113,7 @@ class PharBundlingTest extends TestCase
 
     private function readBoxJson(): array
     {
-        $path = self::COMPONENTS_DIR . '/box.json';
+        $path = self::COMPONENTS_DIR . '/box.json.dist';
         $this->assertFileExists($path);
         $data = json_decode((string) file_get_contents($path), true, flags: JSON_THROW_ON_ERROR);
         $this->assertIsArray($data);

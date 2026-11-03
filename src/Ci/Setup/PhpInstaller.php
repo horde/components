@@ -293,8 +293,8 @@ class PhpInstaller
         // On failure, print the helper's captured output (which is
         // apt-get's own message plus, if the version was rejected by
         // the shape guard in sudo-helper.sh, that rejection line) so
-        // the CI log shows the real reason — e.g. "E: Unable to locate
-        // package php9.0-cli" — instead of a bare "Failed to install
+        // the CI log shows the real reason - e.g. "E: Unable to locate
+        // package php9.0-cli" - instead of a bare "Failed to install
         // PHP 9.0".
         $result = SudoHelper::installPhp($version);
         if (!$result['success']) {

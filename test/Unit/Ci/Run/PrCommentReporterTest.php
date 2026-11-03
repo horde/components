@@ -198,12 +198,13 @@ class PrCommentReporterTest extends TestCase
         $this->assertStringContainsString('❌', $md);
     }
 
-    public function testFailedPhpUnitLinksCountToArtifacts(): void
+    public function testFailedPhpUnitCountIsPlainTextNotArtifactLink(): void
     {
-        // When the run URL is supplied (we're in a real GitHub Actions
-        // context), the failure/error count fragment in the PHPUnit
-        // metric line links to the workflow's artifacts section so a
-        // maintainer can fetch the raw JUnit XML in one click.
+        // The failure/error count must NOT be a bare link to the artifacts
+        // zip - that was poor UX (JSON/XML download, not human-readable).
+        // The human-readable "which tests failed" table renders inline
+        // instead; the artifact link survives only as a secondary "full
+        // stack traces" pointer beneath it.
         $results = [
             'php8.4-dev' => [
                 'phpunit' => [
@@ -223,11 +224,70 @@ class PrCommentReporterTest extends TestCase
 
         $md = $this->generateQualityMetrics($results, [], $runUrl);
 
-        $this->assertStringContainsString(
+        // Count fragment present, but NOT wrapped in an #artifacts link.
+        $this->assertStringContainsString('2 failures, 1 errors out of 100 tests', $md);
+        $this->assertStringNotContainsString(
             "[2 failures, 1 errors]({$runUrl}#artifacts)",
             $md,
-            'Counts should link to the workflow artifacts section.'
+            'The count must no longer be a bare link to the artifacts zip.'
         );
+    }
+
+    public function testFailedPhpUnitRendersFileLinkedDetailTable(): void
+    {
+        // With per-test findings supplied (as the aggregator now provides
+        // on every path), the detail table renders and links each failing
+        // test's file to the exact source on the branch under test.
+        $results = [
+            'php8.6-dev' => [
+                'phpunit' => [
+                    'success' => false,
+                    'exit_code' => 1,
+                    'statistics' => [
+                        'tests' => 55,
+                        'assertions' => 189,
+                        'failures' => 1,
+                        'errors' => 0,
+                        'skipped' => 0,
+                    ],
+                ],
+            ],
+        ];
+        $findingsByTool = [
+            'phpunit' => [
+                [
+                    'type' => 'failure',
+                    'test_class' => 'Horde\\Victim\\Test\\Unit\\PhpVersionMatrixTest',
+                    'test_method' => 'testRunsOnAValidatedPhpMinorVersion',
+                    'file' => 'test/unit/PhpVersionMatrixTest.php',
+                    'line' => 30,
+                    'exception_class' => 'PHPUnit\\Framework\\ExpectationFailedException',
+                    'message' => 'Failed asserting that 6 is equal to 5 or is less than 5.',
+                    'trace' => '',
+                    'lanes' => ['php8.6-dev', 'php8.6-alpha'],
+                ],
+            ],
+        ];
+        $runUrl = 'https://github.com/horde/Victim/actions/runs/999';
+
+        putenv('GITHUB_REPOSITORY=horde/Victim');
+        putenv('GITHUB_SHA=abc123');
+        putenv('GITHUB_SERVER_URL=https://github.com');
+        try {
+            $md = $this->generateQualityMetrics($results, $findingsByTool, $runUrl);
+        } finally {
+            putenv('GITHUB_REPOSITORY');
+            putenv('GITHUB_SHA');
+            putenv('GITHUB_SERVER_URL');
+        }
+
+        $this->assertStringContainsString('Which tests failed', $md);
+        $this->assertStringContainsString(
+            '[test/unit/PhpVersionMatrixTest.php:30](https://github.com/horde/Victim/blob/abc123/test/unit/PhpVersionMatrixTest.php#L30)',
+            $md,
+            'The failing test file should link to the exact source on the branch.'
+        );
+        $this->assertStringContainsString("[raw JUnit XML and JSON]({$runUrl}#artifacts)", $md);
     }
 
     /**

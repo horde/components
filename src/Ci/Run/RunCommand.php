@@ -365,12 +365,11 @@ class RunCommand
         // Lane results table
         $md .= "### Lane Results\n\n";
 
-        // Watermark+1 advisory: add an optional `PHPStan Advisory`
+        // Watermark+1 advisory: Add an optional `PHPStan Advisory`
         // column when at least one lane has captured advisory data.
         // The column is suppressed entirely when every lane is silent
-        // (watermark already at max, or watermark failing across the
-        // board) so non-modernised components don't get a useless
-        // empty column.
+        // (watermark already at max or failing across the board)
+        // so non-modernised components don't get a useless empty column.
         $showAdvisoryColumn = $this->anyLaneHasPhpStanAdvisory($results);
 
         if ($showAdvisoryColumn) {
@@ -603,8 +602,8 @@ class RunCommand
      * Returns `+N @ L` when the PHPStan task captured `N` advisory
      * findings at level `L` above this lane's post-discovery watermark,
      * or `-` when the lane has no advisory data (watermark failed,
-     * watermark is already at the maximum, or auto-raise reached the
-     * maximum). The cell deliberately omits a ✅ icon: the maintainer
+     * watermark is already at the maximum or auto-raise reached the
+     * maximum). The cell deliberately omits a ✅ icon: The maintainer
      * already sees the green status in the adjacent `PHPStan` cell;
      * this column is the climbing budget, not a verdict.
      *
@@ -660,23 +659,18 @@ class RunCommand
             }
 
             $md .= "- Tests per lane: {$totalTests}\n";
-            // When the run URL is available we link the failure and
-            // error counts to the workflow's artifacts section. One
-            // click takes the reader from the count to the raw JUnit
-            // XML and per-lane JSON, where the stack traces and full
-            // messages live. Outside CI (no env) we render plain text.
+            // The deduplicated "which tests failed" table is rendered
+            // immediately below, so the counts here are plain text - the
+            // human-readable detail is on the same page, not behind an
+            // artifact download. The raw JUnit XML / JSON remain available
+            // as workflow artifacts for offline triage, linked from the
+            // table's caption.
             $runUrl = $this->buildRunUrl();
             if ($totalFailures > 0) {
-                $label = $runUrl !== ''
-                    ? sprintf('[%d](%s#artifacts)', $totalFailures, $runUrl)
-                    : (string) $totalFailures;
-                $md .= "- Failures: {$label}\n";
+                $md .= "- Failures: {$totalFailures}\n";
             }
             if ($totalErrors > 0) {
-                $label = $runUrl !== ''
-                    ? sprintf('[%d](%s#artifacts)', $totalErrors, $runUrl)
-                    : (string) $totalErrors;
-                $md .= "- Errors: {$label}\n";
+                $md .= "- Errors: {$totalErrors}\n";
             }
             $md .= "\n";
 
@@ -689,12 +683,13 @@ class RunCommand
                 $aggregator = new FindingsAggregator();
                 $phpunitFindings = $aggregator->aggregatePhpUnit($this->laneBuildDirs);
                 if ($phpunitFindings !== []) {
-                    $hint = 'Per-test detail in the table below. ';
-                    $hint .= ($runUrl !== '')
-                        ? sprintf('[Raw JUnit XML and JSON are uploaded as workflow artifacts](%s#artifacts).', $runUrl)
-                        : 'Raw JUnit XML and JSON are uploaded as workflow artifacts.';
-                    $md .= $hint . "\n\n";
                     $md .= $this->renderPhpUnitFailuresTable($phpunitFindings);
+                    $md .= ($runUrl !== '')
+                        ? sprintf(
+                            "Full stack traces: [raw JUnit XML and JSON](%s#artifacts) (workflow artifacts).\n\n",
+                            $runUrl
+                        )
+                        : "Full stack traces: raw JUnit XML and JSON (workflow artifacts).\n\n";
                 }
             }
         }
@@ -828,14 +823,27 @@ class RunCommand
         if ($findings === []) {
             return '';
         }
-        $md = "<details>\n";
+        $md = "<details open>\n";
         $md .= "<summary>Which tests failed</summary>\n\n";
-        $md .= "| Type | Test | Lanes | Message |\n";
-        $md .= "|------|------|-------|---------|\n";
+        $md .= "| Type | Test | File | Lanes | Message |\n";
+        $md .= "|------|------|------|-------|---------|\n";
         foreach ($findings as $f) {
             $type = $f['type'] === 'failure' ? '❌ failure' : '⚠️ error';
             $testName = $this->escapeMd($f['test_class'] . '::' . $f['test_method']);
             $lanes = $this->escapeMd(implode(', ', $f['lanes']));
+            // Link the file to the exact source on the branch under test
+            // so a reviewer jumps straight to the failing line. Falls back
+            // to plain path text outside GitHub Actions.
+            $fileCell = '-';
+            if ($f['file'] !== '') {
+                $label = $f['line'] > 0
+                    ? $f['file'] . ':' . $f['line']
+                    : $f['file'];
+                $blobUrl = $this->buildBlobUrl($f['file'], $f['line']);
+                $fileCell = $blobUrl !== ''
+                    ? sprintf('[%s](%s)', $this->escapeMd($label), $blobUrl)
+                    : $this->escapeMd($label);
+            }
             $exception = $f['exception_class'] !== ''
                 ? '[' . $this->escapeMd($f['exception_class']) . '] '
                 : '';
@@ -843,7 +851,7 @@ class RunCommand
                 $this->escapeMd($f['message']),
                 300
             );
-            $md .= "| {$type} | {$testName} | {$lanes} | {$message} |\n";
+            $md .= "| {$type} | {$testName} | {$fileCell} | {$lanes} | {$message} |\n";
         }
         return $md . "</details>\n\n";
     }
@@ -877,6 +885,35 @@ class RunCommand
         return (new Uri($serverUrl))
             ->withPath("/{$repo}/actions/runs/{$runId}")
             ->__toString();
+    }
+
+    /**
+     * Build a GitHub blob URL for a component-relative file, pinned to the
+     * commit under test so the link keeps pointing at the exact source the
+     * failure was seen against.
+     *
+     * Returns '' when the file is empty or the GitHub env is absent, so the
+     * caller can fall back to plain text.
+     *
+     * @param string $file Component-relative path (e.g. test/unit/FooTest.php).
+     * @param int $line 1-based line number, or 0 when unknown.
+     */
+    private function buildBlobUrl(string $file, int $line = 0): string
+    {
+        $file = ltrim($file, '/');
+        $repo = getenv('GITHUB_REPOSITORY');
+        $sha = getenv('GITHUB_SHA');
+        if ($file === '' || $repo === false || $repo === '' || $sha === false || $sha === '') {
+            return '';
+        }
+        $serverUrl = getenv('GITHUB_SERVER_URL') ?: 'https://github.com';
+        $url = (new Uri($serverUrl))
+            ->withPath("/{$repo}/blob/{$sha}/{$file}")
+            ->__toString();
+        if ($line > 0) {
+            $url .= '#L' . $line;
+        }
+        return $url;
     }
 
     /**

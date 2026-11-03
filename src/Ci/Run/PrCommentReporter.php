@@ -358,7 +358,7 @@ class PrCommentReporter
 
     /**
      * Render the watermark+1 advisory suffix for the PHPStan PR-comment
-     * line. The maintainer sees "— N advisor{y,ies} at level X" appended
+     * line. The maintainer sees "- N advisor{y,ies} at level X" appended
      * to the success line when the PHPStan task captured advisory data
      * for the first failing level above the post-discovery watermark.
      *
@@ -382,7 +382,7 @@ class PrCommentReporter
         }
 
         return sprintf(
-            ' — %d %s at level %d',
+            ' - %d %s at level %d',
             $errors,
             $errors === 1 ? 'advisory' : 'advisories',
             $level,
@@ -431,7 +431,7 @@ class PrCommentReporter
     private function generateVersionTable(array $results): string
     {
         // Group by PHP version. Also collect the set of stabilities the
-        // run actually exercised — the column headers below come from
+        // run actually exercised - the column headers below come from
         // that set rather than a hardcoded "dev | alpha" pair, which
         // silently dropped non-dev data for components above alpha.
         $byVersion = [];
@@ -510,10 +510,8 @@ class PrCommentReporter
             // Five distinct states.
             //
             //   1. "Library has no PHPUnit test suite." Every lane that
-            //      attempted PHPUnit wrote `mode: no_test_suite` (the
-            //      Unit task's marker when `test/` is absent on disk).
-            //      Render as a skip - neither pass nor fail; the component
-            //      is working as designed.
+            //      attempted PHPUnit wrote `mode: no_test_suite`.
+            //      Render as a skip. Neither pass nor fail.
             //
             //   2. "PHPUnit never produced usable output." Every lane
             //      that tried PHPUnit had `missing: true` (setup-failed
@@ -522,8 +520,7 @@ class PrCommentReporter
             //      Render as a failure with "did not run on any lane".
             //
             //   3. "PHPUnit ran but never collected a test." Lanes were
-            //      counted, but `tests_max === 0`. Parse error during
-            //      suite load, XML-config rejection, etc. Render as a failure
+            //      counted but `tests_max === 0`. Render as a failure
             //      with "exited non-zero with no test output".
             //
             //   4. "PHPUnit ran with failures or errors." Tests were
@@ -558,35 +555,28 @@ class PrCommentReporter
                     ? "- **PHPUnit**: {$testsFragment} passed in {$lanes} lanes ✅\n"
                     : "- **PHPUnit**: {$testsFragment} passed ✅\n";
             } else {
-                // Link the failures/errors counts to the workflow run's
-                // artifacts section so the maintainer can fetch the raw
-                // JUnit XML and per-lane JSON in one click. The deduped
-                // table below answers "which tests" - the artifact link
-                // answers "give me the stack trace and full message".
+                // The deduped "which tests failed" table renders right
+                // below with per-test file links. The human-readable detail is in the comment
+                // The artifact link provides a secondary "full stack traces" pointer under the table.
                 $countFragment = sprintf('%d failures, %d errors', $failures, $errors);
-                $linkedCount = ($runUrl !== '')
-                    ? sprintf('[%s](%s#artifacts)', $countFragment, $runUrl)
-                    : $countFragment;
                 $md .= sprintf(
                     "- **PHPUnit**: %s out of %d tests in %d lane%s ❌\n",
-                    $linkedCount,
+                    $countFragment,
                     $tests,
                     $lanes,
                     $lanes === 1 ? '' : 's'
                 );
                 $phpunitFindings = $findingsByTool['phpunit'] ?? null;
                 if (is_array($phpunitFindings) && $phpunitFindings !== []) {
-                    $hint = 'Per-test detail in the table below. ';
-                    $hint .= ($runUrl !== '')
-                        ? sprintf('[Raw JUnit XML and JSON are uploaded as workflow artifacts](%s#artifacts).', $runUrl)
-                        : 'Raw JUnit XML and JSON are uploaded as workflow artifacts.';
-                    $md .= '  ' . $hint . "\n";
                     $md .= $this->renderPhpUnitFailuresDetails($phpunitFindings);
+                    $md .= ($runUrl !== '')
+                        ? sprintf('  Full stack traces: [raw JUnit XML and JSON](%s#artifacts).' . "\n", $runUrl)
+                        : "  Full stack traces: raw JUnit XML and JSON (workflow artifacts).\n";
                 }
             }
         }
 
-        // PHPStan: prefer deduped finding count when the aggregator
+        // PHPStan: Prefer deduped finding count when the aggregator
         // provided it. "1 unique error in 6 lanes" reads more honestly
         // than "6 errors found" when the same bug repeats across the matrix.
         if (!empty($phpstanStats)) {
@@ -611,7 +601,7 @@ class PrCommentReporter
                 );
             } else {
                 $errors = $phpstanStats['errors'] ?? 0;
-                // Watermark+1 advisory: the maintainer's "promotion
+                // Watermark+1 advisory: The maintainer's "promotion
                 // budget." Shown only when the lane is passing (no
                 // hard errors) and the PHPStan task captured advisory
                 // data for the next level above watermark. When the
@@ -633,10 +623,10 @@ class PrCommentReporter
 
         // PHP-CS-Fixer
         if (!empty($csFixerStats)) {
-            // The tool runs on one designated lane (php8.4-dev by
-            // convention). If no result for any lane was recorded -
+            // The tool runs on one designated lane.
+            // If no result for any lane was recorded
             // because the test config didn't include a designated
-            // lane in this scope - skip the row entirely. The
+            // lane in this scope, then skip the row entirely. The
             // `lanes_run === 0` "did not run" branch below is reserved
             // for the case where a lane DID try to produce a result
             // and didn't (setup-failed, tool crashed, etc.).
@@ -654,8 +644,7 @@ class PrCommentReporter
                     // A lane had a phpcsfixer entry but the aggregator
                     // counted no usable stats: setup-failed, missing
                     // result file, error. Previously this fell through
-                    // to the green "0 files checked, no issues" branch,
-                    // masking the real outcome.
+                    // to the green "0 files checked, no issues" branch
                     $md .= "- **PHP-CS-Fixer**: did not run on any lane ❌\n";
                 } else {
                     $filesChecked = $csFixerStats['files_checked_max'] ?? 0;
@@ -708,8 +697,8 @@ class PrCommentReporter
      * Render the collapsed "which tests failed" block for the PR comment.
      *
      * One row per deduplicated finding; lanes column lists which PHP
-     * versions saw the same test fail the same way. Trace is omitted -
-     * the JUnit XML artifact carries the full stack for offline triage.
+     * versions saw the same test fail the same way.
+     * No trace as the JUnit XML artifact carries the full stack for offline triage.
      *
      * @param list<array{type:string,test_class:string,test_method:string,file:string,line:int,exception_class:string,message:string,trace:string,lanes:list<string>}> $findings
      */
@@ -717,20 +706,57 @@ class PrCommentReporter
     {
         $md = "  <details>\n";
         $md .= "  <summary>Which tests failed</summary>\n\n";
-        $md .= "  | Type | Test | Lanes | Message |\n";
-        $md .= "  |---|---|---|---|\n";
+        $md .= "  | Type | Test | File | Lanes | Message |\n";
+        $md .= "  |---|---|---|---|---|\n";
         foreach ($findings as $f) {
             $type = $f['type'] === 'failure' ? '❌ failure' : '⚠️ error';
             $testName = $this->escapeMd($f['test_class'] . '::' . $f['test_method']);
             $lanes = $this->escapeMd(implode(', ', $f['lanes']));
+            // Link to the exact source on the branch under test so a
+            // reviewer jumps straight to the failing line. Plain text when
+            // the file is unknown or we're not in GitHub Actions.
+            $fileCell = '-';
+            if (($f['file'] ?? '') !== '') {
+                $label = ($f['line'] ?? 0) > 0
+                    ? $f['file'] . ':' . $f['line']
+                    : $f['file'];
+                $blobUrl = $this->buildBlobUrl($f['file'], (int) ($f['line'] ?? 0));
+                $fileCell = $blobUrl !== ''
+                    ? sprintf('[%s](%s)', $this->escapeMd($label), $blobUrl)
+                    : $this->escapeMd($label);
+            }
             $exception = $f['exception_class'] !== ''
                 ? '[' . $this->escapeMd($f['exception_class']) . '] '
                 : '';
             $message = $exception . $this->truncate($this->escapeMd($f['message']), 200);
-            $md .= "  | {$type} | {$testName} | {$lanes} | {$message} |\n";
+            $md .= "  | {$type} | {$testName} | {$fileCell} | {$lanes} | {$message} |\n";
         }
         $md .= "  </details>\n";
         return $md;
+    }
+
+    /**
+     * Build a GitHub blob URL for a component-relative file, pinned to the
+     * commit under test. Returns '' when the file is empty or the GitHub
+     * env is absent, so the caller falls back to plain text.
+     *
+     * @param string $file Component-relative path (e.g. test/unit/FooTest.php).
+     * @param int $line 1-based line number, or 0 when unknown.
+     */
+    private function buildBlobUrl(string $file, int $line = 0): string
+    {
+        $file = ltrim($file, '/');
+        $repo = getenv('GITHUB_REPOSITORY');
+        $sha = getenv('GITHUB_SHA');
+        if ($file === '' || $repo === false || $repo === '' || $sha === false || $sha === '') {
+            return '';
+        }
+        $serverUrl = getenv('GITHUB_SERVER_URL') ?: 'https://github.com';
+        $url = rtrim($serverUrl, '/') . "/{$repo}/blob/{$sha}/{$file}";
+        if ($line > 0) {
+            $url .= '#L' . $line;
+        }
+        return $url;
     }
 
     /**
@@ -784,7 +810,7 @@ class PrCommentReporter
         if (!empty($result['missing'])) {
             $reason = (string) ($result['reason'] ?? 'Missing result file');
             // Keep the reason short. The classifier-tagged category
-            // already names the *kind* of failure; a 2 KB composer
+            // already names the *kind* of failure. A 2 KB composer
             // resolver paragraph adds noise, not signal. Truncate to one
             // sentence (or 200 chars max) so the PR comment stays
             // readable.
@@ -827,13 +853,6 @@ class PrCommentReporter
     /**
      * Compress a setup-failure reason to one short, signal-bearing line.
      *
-     * Defense-in-depth guard. ComposerInstaller::extractError now strips the workflow-
-     * command prefix and picks one informative line, so a freshly-produced
-     * reason already arrives short. But this method runs against whatever
-     * shape the pipeline hands it - including legacy markers written by
-     * older versions of horde-components.phar that the maintainer might
-     * have cached. We belt-and-brace here:
-     *
      *   1. Decode the GitHub Actions `%0A`/`%0D` newline escapes so a
      *      single-line workflow-command payload is treated as the
      *      multi-line text it actually is.
@@ -850,8 +869,8 @@ class PrCommentReporter
     {
         $reason = str_replace(['%0A', '%0D'], "\n", $reason);
 
-        // RunCommand always prefixes "Setup failed: " - the category
-        // tag already conveys this; redundant in the rendered cell.
+        // RunCommand always prefixes "Setup failed: "
+        // The category tag already conveys this.
         if (str_starts_with($reason, 'Setup failed: ')) {
             $reason = substr($reason, strlen('Setup failed: '));
         }
@@ -865,9 +884,7 @@ class PrCommentReporter
             }
         }
 
-        // First non-empty line wins; everything past it is composer's
-        // verbose explanation, which the maintainer can read in the
-        // build log if they need it.
+        // First non-empty line wins.
         foreach (explode("\n", $reason) as $line) {
             $line = trim($line);
             if ($line !== '') {
@@ -881,7 +898,7 @@ class PrCommentReporter
         // and short enough that the PR comment cell stays readable in a
         // table-shaped GitHub render.
         if (mb_strlen($reason) > 200) {
-            $reason = mb_substr($reason, 0, 199) . '…';
+            $reason = mb_substr($reason, 0, 199) . '...';
         }
         return $reason;
     }
@@ -905,11 +922,9 @@ class PrCommentReporter
             $result = $tools[$tool];
 
             // Skip lanes with no usable statistics. `no_test_suite` joins
-            // the missing/error/skip set: the lane technically wrote a
+            // the missing/error/skip set: The lane technically wrote a
             // results JSON (success: true) but there were no tests to
-            // run, so the lane shouldn't contribute to tests_max,
-            // assertions, failures, etc. The fifth-state renderer below
-            // recovers the no-test-suite count from a separate pass.
+            // run
             if (isset($result['missing']) || isset($result['error']) || isset($result['deliberate_skip'])) {
                 continue;
             }
@@ -919,7 +934,7 @@ class PrCommentReporter
 
             $aggregated['lanes_run']++;
             // Track whether the tool itself reported success on
-            // this lane. Without this, a PHPUnit that crashed at parse
+            // this lane. Otherwise a PHPUnit that crashed at parse
             // time (exit 255, tests=0, failures=0, errors=0) was
             // indistinguishable from a clean run with no tests to count.
             if (!empty($result['success'])) {
@@ -931,15 +946,14 @@ class PrCommentReporter
                     continue;
                 }
                 // Two views per numeric stat:
-                //   `$key`        sum across lanes - meaningful for
+                //   `$key`        sum across lanes. Meaningful for
                 //                 finding counts (failures, errors)
                 //                 that legitimately stack.
                 //   `${key}_max`  highest value seen on any single
-                //                 lane - meaningful for unit-of-work
+                //                 lane. Meaningful for unit-of-work
                 //                 counts (tests, assertions, files
                 //                 scanned/checked) which are constant
-                //                 per lane and would otherwise be
-                //                 overstated by the lane count.
+                //                 per lane
                 $aggregated[$key] = ($aggregated[$key] ?? 0) + $value;
                 $maxKey = $key . '_max';
                 $aggregated[$maxKey] = max(
@@ -948,15 +962,12 @@ class PrCommentReporter
                 );
             }
 
-            // PHPStan watermark+1 advisory: capture per-lane level and
-            // error count, then surface the max-across-lanes counts so
-            // the PR comment can show a single "N advisories at level
-            // M" suffix. Different lanes might end up with slightly
-            // different post-discovery watermarks (a fix that's
-            // version-gated could pass level X on PHP 8.3 but not 8.2),
-            // so taking the max errors at the highest advisory level
-            // is the safe upper bound for the maintainer's promotion
-            // budget.
+            // PHPStan watermark+1 advisory:
+            // Capture per-lane level and error count.
+            // Show max-across-lanes counts so the PR comment can
+            // show a single "N advisories at level M" suffix.
+            // Different lanes might end up with slightly
+            // different watermarks.
             $advisory = $result['advisory_next_level'] ?? null;
             if (is_array($advisory)
                 && isset($advisory['level'], $advisory['errors'])
@@ -964,11 +975,7 @@ class PrCommentReporter
                 && is_int($advisory['errors'])
             ) {
                 // Track the highest advisory level seen and its
-                // associated error count. If multiple lanes report
-                // different levels (e.g. lane A says level 4, lane B
-                // says level 5 because B's actual watermark is higher),
-                // pick the level seen and report its max-across-lanes
-                // error count.
+                // associated error count.
                 $currentLevel = $aggregated['advisory_level'] ?? null;
                 if ($currentLevel === null || $advisory['level'] > $currentLevel) {
                     $aggregated['advisory_level'] = $advisory['level'];

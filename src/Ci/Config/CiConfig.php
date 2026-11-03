@@ -165,7 +165,7 @@ class CiConfig
         $testablePhpVersions = $this->getTestablePhpVersions();
 
         foreach ($testablePhpVersions as $phpVersion) {
-            // Dev lane — minimum-stability=dev so transitive deps may
+            // Dev lane - minimum-stability=dev so transitive deps may
             // resolve to dev branches.
             $lanes[] = [
                 'php' => $phpVersion,

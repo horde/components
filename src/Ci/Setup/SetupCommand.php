@@ -166,7 +166,7 @@ class SetupCommand
         $this->phpInstaller->install($testableVersions);
         $this->output->plain('');
 
-        // Resolve the "tool PHP" — the interpreter under which
+        // Resolve the "tool PHP" - the interpreter under which
         // horde-components itself is invoked from each generated lane
         // script. Distinct from the lane PHP (which the tool then
         // hands to PHPUnit/PHPStan/PHP-CS-Fixer via --php). The tool

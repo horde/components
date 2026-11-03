@@ -84,7 +84,7 @@ class PhpUnitMatrix
                 $parsed = $parser->parse($constraint);
             } catch (InvalidVersionException) {
                 // Unparseable constraints fall through to "highest compatible
-                // with PHP version" — preserves behaviour for components
+                // with PHP version" - preserves behaviour for components
                 // whose constraints we don't yet recognise.
                 $parsed = null;
             }

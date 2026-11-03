@@ -485,7 +485,7 @@ class ExtensionInstaller
 
         // Try to install using sudo helper.
         //
-        // Surface apt's captured output on failure — this is the layer
+        // Surface apt's captured output on failure - this is the layer
         // where "Unable to locate package php8.4-imagick" turns into a
         // useful clue for the reader of the CI log. A bare warn() with
         // just the package name used to leave people guessing whether

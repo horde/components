@@ -240,7 +240,7 @@ class Phpcsfixer extends Base
         // First, get total file count using list-files
         $this->stats['files_checked'] = $this->getTotalFileCount($binary, $componentPath, $configPath, $options);
 
-        // Build command — invoke from inside the component dir so relative
+        // Build command - invoke from inside the component dir so relative
         // config paths resolve correctly. We deliberately do NOT pass a
         // positional path argument: passing one would override the config's
         // Finder includes/excludes (PHP-CS-Fixer treats positional paths as
@@ -248,7 +248,7 @@ class Phpcsfixer extends Base
         // would pull in transient directories such as build/ that the config
         // explicitly excludes.
         //
-        // The --php prefix (if any) is placed AFTER `cd && ` — `cd` is
+        // The --php prefix (if any) is placed AFTER `cd && ` - `cd` is
         // a bash builtin, not an executable, so `<php> cd …` would try
         // to run cd as a script and fatal.
         $cmd = [
@@ -423,7 +423,7 @@ class Phpcsfixer extends Base
         }
 
         // PHP-CS-Fixer's JSON output for `--dry-run` lists files in `files`
-        // by name only (no `appliedFixers` key) — they are files that
+        // by name only (no `appliedFixers` key) - they are files that
         // *would* be modified. The fix-mode JSON adds `appliedFixers` per
         // file. Count both shapes as files_with_issues; only fix-mode
         // entries are counted as files_fixed.
@@ -657,7 +657,7 @@ class Phpcsfixer extends Base
         $escapedBase = addslashes($baseConfigPath);
 
         $content = "<?php\n"
-            . "// Generated wrapper — enables risky rewrite fixers for fix mode.\n"
+            . "// Generated wrapper - enables risky rewrite fixers for fix mode.\n"
             . "\$config = require '{$escapedBase}';\n"
             . "\$rules = \$config->getRules();\n"
             . "\$rules['Horde/rewrite_horde_util_to_psr4'] = true;\n"
@@ -863,7 +863,7 @@ class Phpcsfixer extends Base
      *   { files: [ { name: "<path>" }, ... ] }
      * Names are relative to the component path (cwd of the spawn).
      * php-cs-fixer does NOT report line numbers in JSON output, so the
-     * annotation anchors at the file level (sidebar entry only — no
+     * annotation anchors at the file level (sidebar entry only - no
      * diff-line marker).
      *
      * No-op outside GitHub Actions.

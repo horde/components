@@ -177,7 +177,7 @@ class Unit extends Base
      * The subprocess path is engaged when the caller passes `--php`
      * (typically the CI lane script). Its purpose is to decouple the
      * PHP running horde-components itself from the PHP under which the
-     * component's tests must be exercised — the lane PHP may be older
+     * component's tests must be exercised - the lane PHP may be older
      * than horde-components' own composer platform requirement.
      *
      * Contract with the in-process path:
@@ -193,7 +193,7 @@ class Unit extends Base
      * @param string      $php           Absolute path to a PHP binary.
      * @param array       $argv          Fully-assembled PHPUnit argv,
      *                                   with 'phpunit' as element 0
-     *                                   (dropped before exec — the phar
+     *                                   (dropped before exec - the phar
      *                                   path becomes argv[0] instead).
      * @param string      $componentPath Component directory; the
      *                                   subprocess `cd`s here so
@@ -213,8 +213,8 @@ class Unit extends Base
     ): int {
         // Probe the lane PHP's version so ToolFinder can pick a PHPUnit
         // tag that actually runs under it. Without this, resolvePhpUnitTag
-        // would fall back to PHP_MAJOR_VERSION.PHP_MINOR_VERSION — the
-        // tool PHP — and select a PHPUnit newer than the lane PHP can
+        // would fall back to PHP_MAJOR_VERSION.PHP_MINOR_VERSION - the
+        // tool PHP - and select a PHPUnit newer than the lane PHP can
         // execute (e.g. PHPUnit 12.5 chosen for a PHP 8.1 lane).
         $lanePhpVersion = $this->probePhpVersion($php);
         $phpunitPath = $this->resolvePhpUnitPath($toolsDir, $lanePhpVersion);
@@ -230,7 +230,7 @@ class Unit extends Base
         }
 
         // argv[0] is the phpunit command name in the in-process world;
-        // drop it — the real argv[0] is the phar path itself.
+        // drop it - the real argv[0] is the phar path itself.
         $args = array_slice($argv, 1);
         $parts = [escapeshellarg($php), escapeshellarg($phpunitPath)];
         foreach ($args as $arg) {
@@ -604,6 +604,54 @@ class Unit extends Base
         // XML's top-level testsuites attribute).
         $this->stats['assertions'] = self::parseAssertionsFromJunit($junitXmlPath);
 
+        // The JUnit XML is the authoritative record of how many tests ran,
+        // independent of execution path. We read its counts here both to
+        // populate the subprocess-path statistics (see below) and to gate
+        // the "config present but zero tests" failure further down.
+        $junitCounts = self::parseCountsFromJunit($junitXmlPath);
+
+        // On the subprocess path (--php set, e.g. CI lanes) PHPUnit runs in
+        // a separate process, so the in-process event subscribers registered
+        // above never fire and the test/failure/error/skip counts stay zero.
+        // Recover them from the same JUnit XML we already wrote, so lane logs
+        // and the JSON summary report real numbers instead of silence.
+        if ($useSubprocess) {
+            $this->stats['tests'] = $junitCounts['tests'];
+            $this->stats['failures'] = $junitCounts['failures'];
+            $this->stats['errors'] = $junitCounts['errors'];
+            $this->stats['skipped'] = $junitCounts['skipped'];
+
+            // Recover per-failure detail too, so the aggregated PR comment /
+            // Step Summary can name which tests failed. Without this the
+            // subprocess path writes empty failures/errors arrays and the
+            // downstream "which tests failed" table never renders - the
+            // maintainer is left with only an artifact zip.
+            [$this->failureRecords, $this->errorRecords]
+                = self::parseFailureRecordsFromJunit($junitXmlPath);
+        }
+
+        // Policy: a component that ships a test/ directory AND a PHPUnit
+        // configuration file, yet runs zero tests, is misconfigured - the
+        // suite exists but collected nothing (bad testsuite path, empty
+        // directory, discovery failure). PHPUnit itself exits 0 in that
+        // case, so without this gate the lane would report a false "passed".
+        //
+        // This does NOT fire for libraries that are simply out of a PHP
+        // version's scope: those lanes are marked incompatible at setup time
+        // (build/skip.json) and qc unit is never invoked for them. Nor does
+        // it fire for packages with no test/ directory at all - that path
+        // returned early above as a deliberate no_test_suite pass.
+        if (self::isZeroTestFailure($exitCode, $configFile, $junitCounts['tests'])) {
+            $this->getOutput()->error(
+                'Test configuration present (' . basename((string) $configFile)
+                . ') but zero tests ran. Treating as failure.'
+            );
+            $this->writeJsonResults($componentPath, 2);
+            $this->outputStatistics();
+
+            return 2;
+        }
+
         // Write our own JSON results file with additional metadata
         $this->writeJsonResults($componentPath, $exitCode);
 
@@ -840,5 +888,191 @@ class Unit extends Base
             }
         }
         return $assertions;
+    }
+
+    /**
+     * Recover the test/failure/error/skip counts from a JUnit XML log.
+     *
+     * The in-process event subscribers only fire when PHPUnit runs inside
+     * this process. On the subprocess path (CI lanes, --php set) the counts
+     * must instead be read back from the `--log-junit` output, whose
+     * `<testsuites>`/`<testsuite>` elements carry `tests`, `failures`,
+     * `errors` and `skipped` attributes.
+     *
+     * @param string $junitXmlPath Path to the JUnit XML file.
+     * @return array{tests:int,failures:int,errors:int,skipped:int} Counts,
+     *         all zero when the file is missing or unparseable.
+     */
+    public static function parseCountsFromJunit(string $junitXmlPath): array
+    {
+        $zero = ['tests' => 0, 'failures' => 0, 'errors' => 0, 'skipped' => 0];
+        if (!is_file($junitXmlPath) || !is_readable($junitXmlPath)) {
+            return $zero;
+        }
+        $previous = libxml_use_internal_errors(true);
+        try {
+            $xml = simplexml_load_file($junitXmlPath);
+        } finally {
+            libxml_use_internal_errors($previous);
+        }
+        if ($xml === false) {
+            return $zero;
+        }
+        // Root <testsuites> usually carries the aggregated counts. Trust it
+        // when it reports a positive test count; summing nested suites in
+        // that case would double-count.
+        if ($xml->getName() === 'testsuites' && isset($xml['tests']) && (int) $xml['tests'] > 0) {
+            return [
+                'tests' => (int) $xml['tests'],
+                'failures' => isset($xml['failures']) ? (int) $xml['failures'] : 0,
+                'errors' => isset($xml['errors']) ? (int) $xml['errors'] : 0,
+                'skipped' => isset($xml['skipped']) ? (int) $xml['skipped'] : 0,
+            ];
+        }
+        // Fallback: a single <testsuite> root, or a <testsuites> that omits
+        // the aggregate attributes. Sum the direct child suites.
+        $counts = $zero;
+        $suites = $xml->getName() === 'testsuites' ? $xml->children() : [$xml];
+        foreach ($suites as $suite) {
+            $counts['tests'] += isset($suite['tests']) ? (int) $suite['tests'] : 0;
+            $counts['failures'] += isset($suite['failures']) ? (int) $suite['failures'] : 0;
+            $counts['errors'] += isset($suite['errors']) ? (int) $suite['errors'] : 0;
+            $counts['skipped'] += isset($suite['skipped']) ? (int) $suite['skipped'] : 0;
+        }
+        return $counts;
+    }
+
+    /**
+     * Decide whether a clean PHPUnit run that collected zero tests should be
+     * treated as a failure.
+     *
+     * A component that ships a PHPUnit configuration file but runs no tests
+     * is misconfigured (empty testsuite, wrong path, discovery failure).
+     * PHPUnit exits 0 in that case, so the lane would otherwise report a
+     * false pass. When no configuration file is present the component has
+     * opted out of a configured suite, and a non-zero PHPUnit exit already
+     * speaks for itself - neither is forced to fail here.
+     *
+     * @param int $exitCode PHPUnit's exit code (0 = clean).
+     * @param string|null $configFile Resolved phpunit.xml[.dist] path, or null.
+     * @param int $testCount Authoritative test count from the JUnit XML.
+     * @return bool True when the run must be forced to a failure.
+     */
+    public static function isZeroTestFailure(
+        int $exitCode,
+        ?string $configFile,
+        int $testCount
+    ): bool {
+        return $exitCode === 0 && $configFile !== null && $testCount === 0;
+    }
+
+    /**
+     * Recover per-failure and per-error records from a JUnit XML log.
+     *
+     * On the subprocess path the in-process event subscribers never fire,
+     * so the detailed failure records (which downstream renderers use to
+     * name the failing tests) must be rebuilt from the `--log-junit` output.
+     * Each failing `<testcase>` carries a `<failure>` or `<error>` child
+     * whose `type` attribute is the exception class and whose text is the
+     * message followed by the stack trace.
+     *
+     * The returned records match the shape produced in-process by
+     * {@see self::captureRecord()} so {@see FindingsAggregator::aggregatePhpUnit()}
+     * can consume either source identically.
+     *
+     * @param string $junitXmlPath Path to the JUnit XML file.
+     * @return array{0:list<array{type:string,test_class:string,test_method:string,file:string,line:int,exception_class:string,message:string,trace:string}>,1:list<array{type:string,test_class:string,test_method:string,file:string,line:int,exception_class:string,message:string,trace:string}>}
+     *         Tuple of [failureRecords, errorRecords]; both empty when the
+     *         file is missing or unparseable.
+     */
+    public static function parseFailureRecordsFromJunit(string $junitXmlPath): array
+    {
+        $failures = [];
+        $errors = [];
+        if (!is_file($junitXmlPath) || !is_readable($junitXmlPath)) {
+            return [$failures, $errors];
+        }
+        $previous = libxml_use_internal_errors(true);
+        try {
+            $xml = simplexml_load_file($junitXmlPath);
+        } finally {
+            libxml_use_internal_errors($previous);
+        }
+        if ($xml === false) {
+            return [$failures, $errors];
+        }
+
+        foreach ($xml->xpath('//testcase') ?: [] as $testcase) {
+            foreach (['failure' => &$failures, 'error' => &$errors] as $tag => &$bucket) {
+                if (!isset($testcase->{$tag})) {
+                    continue;
+                }
+                $node = $testcase->{$tag};
+                $raw = trim((string) $node);
+                // JUnit text is "<Class::method>\n<message>\n\n<trace>".
+                // The message is the content before the first blank line
+                // (minus the leading test-identifier line PHPUnit prepends);
+                // the remainder is the stack trace.
+                [$message, $trace] = self::splitJunitFailureText(
+                    $raw,
+                    (string) ($testcase['class'] ?? ''),
+                    (string) ($testcase['name'] ?? ''),
+                );
+                $bucket[] = [
+                    'type' => $tag === 'failure' ? 'failure' : 'error',
+                    'test_class' => (string) ($testcase['class'] ?? ''),
+                    'test_method' => (string) ($testcase['name'] ?? ''),
+                    'file' => (string) ($testcase['file'] ?? ''),
+                    'line' => (int) ($testcase['line'] ?? 0),
+                    'exception_class' => (string) ($node['type'] ?? ''),
+                    'message' => $message,
+                    'trace' => $trace,
+                ];
+            }
+            unset($bucket);
+        }
+
+        return [$failures, $errors];
+    }
+
+    /**
+     * Split a JUnit failure/error node's text into (message, trace).
+     *
+     * PHPUnit prepends a "<Class>::<method>" identifier line, then the
+     * human message, a blank line, and the stack trace. We drop the
+     * identifier line (the record already carries class/method as fields)
+     * and treat everything up to the first blank line as the message.
+     *
+     * @return array{0:string,1:string} [message, trace]
+     */
+    private static function splitJunitFailureText(
+        string $raw,
+        string $class,
+        string $method
+    ): array {
+        if ($raw === '') {
+            return ['', ''];
+        }
+        $lines = preg_split('/\r\n|\r|\n/', $raw) ?: [$raw];
+        // Drop a leading "<Class>::<method>" identifier line if present.
+        $identifier = $class !== '' && $method !== '' ? $class . '::' . $method : '';
+        if ($identifier !== '' && isset($lines[0]) && trim($lines[0]) === $identifier) {
+            array_shift($lines);
+        }
+        // Message = lines up to the first blank line; trace = the rest.
+        $messageLines = [];
+        $i = 0;
+        $count = count($lines);
+        for (; $i < $count; $i++) {
+            if (trim($lines[$i]) === '') {
+                break;
+            }
+            $messageLines[] = $lines[$i];
+        }
+        $traceLines = array_slice($lines, $i);
+        return [
+            trim(implode("\n", $messageLines)),
+            trim(implode("\n", $traceLines)),
+        ];
     }
 }

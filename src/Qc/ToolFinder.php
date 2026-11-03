@@ -45,8 +45,8 @@ class ToolFinder
      *                                    PHPUnit tag compatible with the target lane
      *                                    rather than the interpreter currently running
      *                                    horde-components. Null falls back to
-     *                                    `PHP_MAJOR_VERSION.PHP_MINOR_VERSION` — the
-     *                                    tool interpreter — preserving prior behavior
+     *                                    `PHP_MAJOR_VERSION.PHP_MINOR_VERSION` - the
+     *                                    tool interpreter - preserving prior behavior
      *                                    for callers that predate the lane/tool PHP
      *                                    split.
      */
@@ -370,7 +370,7 @@ class ToolFinder
     {
         $matrix = new PhpUnitMatrix();
         // Prefer the lane's PHP when provided. Otherwise fall back to
-        // the current interpreter — same behavior as before this class
+        // the current interpreter - same behavior as before this class
         // learned about lane/tool PHP separation. Callers under the CI
         // harness (Task\Unit via --php) always pass a lane version;
         // ad-hoc callers (local `qc unit` without --php) get the tool
