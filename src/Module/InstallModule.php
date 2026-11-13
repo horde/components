@@ -19,6 +19,7 @@ use Horde\Components\Component;
 use Horde\Components\Dependencies;
 use Horde\Components\Composer\InstallationDirectory;
 use Horde\Components\Output;
+use Horde\Components\Release\BranchRoles;
 use Horde\Components\Runner\InstallRunner;
 use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 
@@ -193,7 +194,8 @@ class InstallModule extends Base
             $runner = new InstallRunner(
                 $gitCheckoutDir,
                 $installDir,
-                $output
+                $output,
+                $this->dependencies->get(BranchRoles::class)
             );
             $runner->run();
 

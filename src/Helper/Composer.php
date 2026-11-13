@@ -17,6 +17,7 @@ namespace Horde\Components\Helper;
 require_once __DIR__ . '/../Polyfill/mb_ucfirst.php';
 
 use Horde\Components\Exception;
+use Horde\Components\Release\BranchRoles;
 use Horde\Components\Wrapper\HordeYml as WrapperHordeYml;
 use RuntimeException;
 use Horde\Components\Component\Task\SystemCallResult;
@@ -238,8 +239,8 @@ class Composer
         }
         $gitHelper = new Git();
         $branch = $gitHelper->getCurrentBranch(dirname($package->getFullPath()));
-        // branch alias
-        if ($branch == 'FRAMEWORK_6_0') {
+        // branch alias: only the release branch gets a dev- branch alias.
+        if ($branch === BranchRoles::load()->releaseBranch()) {
             if (empty($composerDefinition->extra)) {
                 $composerDefinition->extra = new stdClass();
             }

@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Horde\Components\Ci\Config;
 
+use Horde\Components\Release\BranchRoles;
 use InvalidArgumentException;
 
 /**
@@ -114,7 +115,7 @@ class CiConfig
     {
         $this->mode = $config['mode'] ?? 'github';
         $this->componentName = $config['component_name'] ?? '';
-        $this->componentBranch = $config['component_branch'] ?? 'FRAMEWORK_6_0';
+        $this->componentBranch = $config['component_branch'] ?? BranchRoles::load()->releaseBranch();
         $this->componentType = $config['component_type'] ?? 'library';
         $this->workDir = $config['work_dir'] ?? '/tmp/horde-ci';
         $this->componentPath = $config['component_path'] ?? getcwd();

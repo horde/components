@@ -9,6 +9,7 @@ use Horde\Components\Composer\PathRepositoryDefinition;
 use Horde\Components\Composer\RootComposerJsonFile;
 use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 use Horde\Components\Output;
+use Horde\Components\Release\BranchRoles;
 use Horde\Components\Wrapper\HordeYml;
 use Horde\Composer\RecursiveCopy;
 use stdClass;
@@ -20,13 +21,13 @@ class InstallRunner
         private GitCheckoutDirectory $gitCheckoutDirectory,
         private InstallationDirectory $installationDirectory,
         private readonly Output $output,
+        private readonly BranchRoles $branchRoles,
     ) {}
 
     public function run()
     {
-
-        // TODO: Make this more flexbible
-        $targetVersion = 'dev-FRAMEWORK_6_0';
+        // Install the release branch's dev snapshot (dev-<releaseBranch>).
+        $targetVersion = 'dev-' . $this->branchRoles->releaseBranch();
         $baseComponent = 'horde/bundle';
         if (!$this->gitCheckoutDirectory->exists() || $this->gitCheckoutDirectory->getGitDirs()->count() == 0) {
             $this->output->warn("The developer checkout directory is missing or empty: " . $this->gitCheckoutDirectory);

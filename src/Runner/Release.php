@@ -27,6 +27,7 @@ use Horde\Components\Helper\Shell;
 use Horde\Components\Helper\GitHubChecker;
 use Horde\Components\Helper\GitHubReleaseCreator;
 use Horde\Components\Release\HordeRelease;
+use Horde\Components\Release\BranchRoles;
 use Horde\Components\Auth\AuthenticationFactory;
 
 /**
@@ -56,6 +57,8 @@ class Release
      * @param AuthenticationFactory $authFactory Resolves GitHub auth (GitHub
      *   App > GITHUB_TOKEN env > github.token config) for the "release h6"
      *   GitHub release-creation path
+     * @param BranchRoles $branchRoles The resolved branch-role map, used to
+     *   validate the release branch.
      */
     public function __construct(
         private readonly Component $component,
@@ -64,7 +67,8 @@ class Release
         private readonly Output $output,
         private readonly ReleaseTasks $releaseTasks,
         private readonly QcTasks $qcTasks,
-        private readonly AuthenticationFactory $authFactory
+        private readonly AuthenticationFactory $authFactory,
+        private readonly BranchRoles $branchRoles
     ) {}
 
     /**
@@ -118,7 +122,8 @@ class Release
                 $this->output,
                 $githubReleaseCreator,
                 $this->qcTasks,
-                $shell
+                $shell,
+                $this->branchRoles
             );
 
             $release->run($this->component, $this->options);

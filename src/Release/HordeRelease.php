@@ -10,7 +10,10 @@ use Horde\Components\Component\ComponentDirectory;
 use Horde\Components\Exception;
 use Horde\Components\Output;
 use Horde\Components\Component;
+use Horde\Components\Helper\ConventionalCommitHelper;
 use Horde\Components\Qc\Tasks as QcTasks;
+use Horde\Components\Release\BranchReleasePolicy;
+use Horde\Components\Release\BranchRoles;
 use Horde\Components\Task\Context;
 use Horde\Components\Task\Result;
 use Horde\Components\Task\Version\AnalyzeConventionalCommitsTask;
@@ -53,6 +56,7 @@ class HordeRelease
         private GitHubReleaseCreator $githubReleaseCreator,
         private QcTasks $qcTasks,
         private ShellHelper $shellHelper,
+        private BranchRoles $branchRoles,
         private bool $pretend = false
     ) {}
 
@@ -75,7 +79,14 @@ class HordeRelease
 
         try {
             // Pre-flight checks
-            $this->validateReleaseBranch();
+            $role = $this->resolveBranchRole();
+            $force = !empty($options['force']);
+            $this->enforceBranchPolicy(
+                $role,
+                $this->topCommitSeverity(),
+                $component->getState('release'),
+                $force
+            );
             $this->runGitignoreQc($component, $options);
 
             // Determine version (auto-calculate or manual)
@@ -85,6 +96,15 @@ class HordeRelease
             } else {
                 $this->output->info('Auto-calculating version from conventional commits');
                 $this->runTask(new AnalyzeConventionalCommitsTask($this->output, $this->gitHelper, $this->pretend), $context);
+
+                // A supported branch only cuts bugfix releases. The policy
+                // gate above already refused any feat/BC change here, so the
+                // commits are bugfix-level; force a patch bump so a stray
+                // minor classification cannot escalate the release.
+                if ($role === BranchRoles::ROLE_SUPPORTED) {
+                    $this->output->info('Supported branch: forcing a patch release.');
+                    $context->setOption('version_part', 'patch');
+                }
             }
 
             // Calculate/normalize version with reality check
@@ -151,21 +171,100 @@ class HordeRelease
     }
 
     /**
-     * Validate that we're on the correct release branch.
+     * Resolve the current branch's release role and refuse branches that
+     * have no role at all.
      *
-     * @throws Exception if not on release branch
+     * Release, supported and unstable branches may all proceed (the policy
+     * gate decides what kind of release each permits). A branch with no
+     * declared role cannot release anything.
+     *
+     * @return string The current branch's role (a BranchRoles::ROLE_* value).
+     * @throws Exception When the current branch has no release role.
      */
-    private function validateReleaseBranch(): void
+    private function resolveBranchRole(): string
     {
         $currentBranch = $this->gitHelper->getCurrentBranch((string) $this->directory);
+        $role = $this->branchRoles->roleOf($currentBranch);
 
-        if ($currentBranch !== 'FRAMEWORK_6_0') {
+        if ($role === BranchRoles::ROLE_UNKNOWN) {
             throw new Exception(
-                'Not on release branch. Please switch to FRAMEWORK_6_0 branch before running release.'
+                "Current branch '{$currentBranch}' has no release role (not the release, "
+                . 'a supported, or the unstable branch). Refusing to release.'
             );
         }
 
-        $this->output->info('On release branch: ' . $currentBranch);
+        $this->output->info("On {$role} branch: {$currentBranch}");
+
+        return $role;
+    }
+
+    /**
+     * Apply the branch release policy and decide whether to proceed.
+     *
+     * Pure decision helper: all inputs are passed in so it is unit-testable
+     * without git or filesystem access. On a policy violation it throws,
+     * unless $force downgrades the violations to warnings.
+     *
+     * @param string $role The current branch role.
+     * @param string $severity Top Conventional-Commit severity since the
+     *                         last tag (subpatch|patch|minor|major).
+     * @param string $stability The component's current release stability.
+     * @param bool $force Downgrade violations to warnings and proceed.
+     * @throws Exception On a policy violation when $force is false.
+     */
+    private function enforceBranchPolicy(
+        string $role,
+        string $severity,
+        string $stability,
+        bool $force
+    ): void {
+        $decision = (new BranchReleasePolicy())->evaluate($role, $severity, $stability);
+        if ($decision->isAllowed()) {
+            return;
+        }
+
+        foreach ($decision->violations() as $violation) {
+            if ($force) {
+                $this->output->warn($violation);
+            } else {
+                $this->output->error($violation);
+            }
+        }
+
+        if ($force) {
+            $this->output->warn('Proceeding despite branch policy violations (--force).');
+            return;
+        }
+
+        throw new Exception('Release refused by branch policy. Re-run with --force to override.');
+    }
+
+    /**
+     * Classify the top Conventional-Commit severity since the last tag.
+     *
+     * Uses the reader-based classifier (ConventionalCommitHelper) rather
+     * than AnalyzeConventionalCommitsTask, because the latter throws when
+     * there are no commits since the last tag and only runs on the
+     * auto-version path. Returns 'patch' (the most permissive bugfix level)
+     * when the history cannot be classified.
+     */
+    private function topCommitSeverity(): string
+    {
+        $previousCwd = getcwd();
+        $componentPath = (string) $this->directory;
+        $changed = is_string($previousCwd) && $previousCwd !== $componentPath
+            && @chdir($componentPath);
+        try {
+            return (new ConventionalCommitHelper($this->gitHelper))
+                ->commitReader->getTopSeverity();
+        } catch (\Throwable $e) {
+            $this->output->warn('Could not classify commits for branch policy: ' . $e->getMessage());
+            return 'patch';
+        } finally {
+            if ($changed && is_string($previousCwd)) {
+                @chdir($previousCwd);
+            }
+        }
     }
 
     /**

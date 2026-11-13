@@ -14,6 +14,7 @@ use Horde\Cli\Modular\Module;
 use Horde\Cli\Modular\Modules;
 use Horde\Components\Module\Composer;
 use Horde\Components\Module\ConventionalCommit;
+use Horde\Components\Module\Branches;
 use Horde\Components\Module\Change;
 use Horde\Components\Module\DatabaseModule;
 use Horde\Components\Module\Dependencies;
@@ -54,6 +55,7 @@ class ModuleProvider implements CliModuleProvider
     public function getModules(): Modules
     {
         return new Modules([
+            $this->injector->get(Branches::class),
             $this->injector->get(Change::class),
             $this->injector->get(Ci::class),
             $this->injector->get(ConfigModule::class),

@@ -134,7 +134,7 @@ class Package extends Base
             SUBCOMMANDS:
                 status                  Show package information
                 dependencies list       List all dependencies by type
-                dependencies update     Update Horde dependency versions from FRAMEWORK_6_0
+                dependencies update     Update Horde dependency versions from the release branch
 
             EXAMPLES:
                 # Show helpful recommendations (no subcommand)
@@ -155,9 +155,9 @@ class Package extends Base
 
             DEPENDENCY UPDATE BEHAVIOR:
                 - Only updates horde/* composer dependencies
-                - Reads versions from FRAMEWORK_6_0 branches in git checkout
+                - Reads versions from the release branch in git checkout
                 - Uses checkout.dir config or ~/git by default
-                - Skips components not found or not on FRAMEWORK_6_0
+                - Skips components not found or not on the release branch
                 - Updates .horde.yml and regenerates composer.json
                 - Uses constraint pattern: version 3.0.5 → constraint ^3
                 - Supports global --pretend|-P flag for preview

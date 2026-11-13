@@ -24,6 +24,7 @@ use Horde\Components\Helper\GitHubChecker;
 use Horde\Components\Helper\GitHubReleaseCreator;
 use Horde\Components\Helper\PullRequestManager;
 use Horde\Components\Pear\Factory as PearFactory;
+use Horde\Components\Release\BranchRoles;
 use Horde\Components\Release\Notes as ReleaseNotes;
 use Horde\Components\Release\Tasks as ReleaseTasks;
 use Horde\Components\Runner\Change as RunnerChange;
@@ -125,6 +126,12 @@ class Injector extends HordeInjector implements Dependencies
         $this->bindFactory(
             GitHubChecker::class,
             GitHubCheckerFactory::class,
+            '__invoke'
+        );
+        // Branch-role map: resolves CLI/config/bundled precedence once.
+        $this->bindFactory(
+            BranchRoles::class,
+            BranchRolesFactory::class,
             '__invoke'
         );
         $this->bindFactory(

@@ -172,6 +172,35 @@ class Components
                 ['action' => 'store', 'help' => 'Specify component name to operate on (e.g., "Data" or "horde/Data").']
             )
         );
+        // Highest-precedence override for the branch-role map file. The
+        // dotted dest lands it on the same setting key as the
+        // branches.roles_file config option, so CliConfigProvider surfaces
+        // it above env/user-config/builtin.
+        $parser->addOption(
+            new Option(
+                '--branches-file',
+                [
+                    'action' => 'store',
+                    'dest' => 'branches.roles_file',
+                    'help' => 'Path to a custom branch-role map YAML (overrides the branches.roles_file config setting and the bundled default).',
+                ]
+            )
+        );
+        // Global --force: downgrades policy/overwrite guards to warnings and
+        // proceeds. Shared by several commands (e.g. ci init file overwrite,
+        // release branch-policy violations). Declared once here to avoid
+        // per-module option-string conflicts in the merged parser.
+        $parser->addOption(
+            new Option(
+                '--force',
+                '--allow-policy-violation',
+                [
+                    'action' => 'store_true',
+                    'dest' => 'force',
+                    'help' => 'Proceed despite guard checks (overwrite existing files, release branch-policy violations). `--allow-policy-violation` is an alias.',
+                ]
+            )
+        );
 
         [$parsedOptions, $parsedArgs] = $parser->parseArgs();
 

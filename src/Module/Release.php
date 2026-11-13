@@ -23,6 +23,7 @@ use Horde\Components\RuntimeContext\CurrentWorkingDirectory;
 use Horde\Components\Runner\Release as RunnerRelease;
 use Horde\Components\Output;
 use Horde\Components\Release\Tasks as ReleaseTasks;
+use Horde\Components\Release\BranchRoles;
 use Horde\Components\Qc\Tasks as QcTasks;
 use Horde\Components\Auth\AuthenticationFactory;
 
@@ -223,6 +224,7 @@ The following example would generate the package and add the release tag to git 
             $releaseTasks = $this->dependencies->get(ReleaseTasks::class);
             $qcTasks = $this->dependencies->get(QcTasks::class);
             $authFactory = $this->dependencies->get(AuthenticationFactory::class);
+            $branchRoles = $this->dependencies->get(BranchRoles::class);
 
             // Handle --dump option (sets pretend mode)
             if (!empty($options['dump'])) {
@@ -237,7 +239,8 @@ The following example would generate the package and add the release tag to git 
                 $output,
                 $releaseTasks,
                 $qcTasks,
-                $authFactory
+                $authFactory,
+                $branchRoles
             );
             $runner->run();
             return true;

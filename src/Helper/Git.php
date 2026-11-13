@@ -857,6 +857,35 @@ class Git
     }
 
     /**
+     * Get the repository default branch as known locally.
+     *
+     * Reads the symbolic ref refs/remotes/origin/HEAD
+     *
+     * @param string $localDir Full path to the repo.
+     * @param string $remote The remote name (default: origin).
+     * @return string|null The default branch name or null when unknown.
+     */
+    public function getDefaultBranch(string $localDir, string $remote = 'origin'): ?string
+    {
+        $cmd = $this->gitBin
+            . ' symbolic-ref --short -q refs/remotes/' . $remote . '/HEAD';
+        $result = $this->execInDirectory($cmd, $localDir);
+
+        if ($result->getReturnValue() !== 0) {
+            return null;
+        }
+
+        $ref = trim($result->getOutputString());
+        if ($ref === '') {
+            return null;
+        }
+
+        // "origin/FRAMEWORK_6_0" -> "FRAMEWORK_6_0"
+        $slash = strrpos($ref, '/');
+        return $slash === false ? $ref : substr($ref, $slash + 1);
+    }
+
+    /**
      * Get git describe output with tags
      *
      * @param string $localDir Full path to local git repository

@@ -86,7 +86,7 @@ class PackageDependencies
         $this->output->plain('');
         $this->output->plain('Actions:');
         $this->output->plain('  list    List all dependencies by category');
-        $this->output->plain('  update  Update Horde dependency versions from FRAMEWORK_6_0');
+        $this->output->plain('  update  Update Horde dependency versions from the release branch');
         $this->output->plain('');
         $this->output->plain('Examples:');
         $this->output->plain('  horde-components package dependencies list');

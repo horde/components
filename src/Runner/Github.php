@@ -17,6 +17,7 @@ namespace Horde\Components\Runner;
 
 use Horde\Components\ConfigProvider\EffectiveConfigProvider;
 use Horde\Components\Exception;
+use Horde\Components\Release\BranchRoles;
 use RuntimeException;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Output;
@@ -93,8 +94,10 @@ class Github
             }
 
             // Original github-clone-org behavior
-            // TODO: Configure this
-            $headBranch = 'FRAMEWORK_6_0';
+            $rolesFile = $this->config->hasSetting('branches.roles_file')
+                ? $this->config->getSetting('branches.roles_file')
+                : null;
+            $headBranch = BranchRoles::load($rolesFile)->releaseBranch();
             $this->output->ok('About the clone a complete github org.');
             $this->output->plain('Trying to get the catalog');
             $repoMeta = $this->client->listRepositoriesInOrganization(new GithubOrganizationId('horde'));

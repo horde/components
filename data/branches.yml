@@ -1,0 +1,17 @@
+# Synchronized branch roles for the Horde collection.
+#
+# Horde uses the same branch names across every repository, so branch
+# roles can be managed centrally here instead of per repository.
+#
+# release:   the single release branch. Must be each repository's default
+#            branch. Accepts feat/fix/test/docs/chore/ci. May cut bugfix or
+#            feature releases, and may carry BC breaks only while the
+#            component is still pre-stable (alpha/beta or 0.x.y).
+# supported: maintenance branches. Bugfix commits only (no feat, no BC
+#            break). Releasing produces a bugfix release.
+# unstable:  optional branch for BC-breaking work not suitable for the
+#            running release. Leave empty or omit when there is none.
+release: FRAMEWORK_6_0
+supported:
+  - FRAMEWORK_5_2
+unstable: null

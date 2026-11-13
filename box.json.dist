@@ -10,7 +10,8 @@
     "LICENSE",
     "bin/horde-components",
     "phpstan-bootstrap.php",
-    ".php-cs-fixer.dist.php"
+    ".php-cs-fixer.dist.php",
+    "data/branches.yml"
   ],
   "finder": [
     {

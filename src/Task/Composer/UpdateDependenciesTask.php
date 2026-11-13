@@ -19,6 +19,7 @@ namespace Horde\Components\Task\Composer;
 use Horde\Components\Helper\Composer;
 use Horde\Components\Helper\Git;
 use Horde\Components\Output;
+use Horde\Components\Release\BranchRoles;
 use Horde\Components\Task\AbstractTask;
 use Horde\Components\Task\Context;
 use Horde\Components\Task\Result;
@@ -32,10 +33,11 @@ use Horde\Version\RelaxedSemanticVersion;
 use Exception;
 
 /**
- * Update Horde dependency versions from FRAMEWORK_6_0 branches.
+ * Update Horde dependency versions from the release branch.
  *
  * Scans all Horde dependencies in .horde.yml, checks their current version
- * in FRAMEWORK_6_0 branches, and updates version constraints accordingly.
+ * on the release branch (resolved from the branch-role map), and updates
+ * version constraints accordingly.
  *
  * Emitted Facts:
  * - dependencies.updated (bool) - True if updates were applied
@@ -89,7 +91,8 @@ class UpdateDependenciesTask extends AbstractTask
         // Load wrapper for array access to dependencies
         $wrapper = new WrapperHordeYml($componentPath);
 
-        $this->output->plain('Checking dependency versions in FRAMEWORK_6_0 branches...');
+        $releaseBranch = BranchRoles::load()->releaseBranch();
+        $this->output->plain("Checking dependency versions in {$releaseBranch} branches...");
         $this->output->plain('');
 
         // Collect changes across all dependency categories
@@ -230,11 +233,12 @@ class UpdateDependenciesTask extends AbstractTask
             return null;
         }
 
-        // Check if on FRAMEWORK_6_0 branch
+        // Only read dependency versions from a checkout on the release branch.
         try {
+            $releaseBranch = BranchRoles::load()->releaseBranch();
             $branch = $this->gitHelper->getCurrentBranch($componentPath);
-            if ($branch !== 'FRAMEWORK_6_0') {
-                $this->output->warn("  {$packageName}: Not on FRAMEWORK_6_0 (on: {$branch})");
+            if ($branch !== $releaseBranch) {
+                $this->output->warn("  {$packageName}: Not on {$releaseBranch} (on: {$branch})");
                 return null;
             }
         } catch (Exception $e) {

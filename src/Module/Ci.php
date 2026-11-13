@@ -84,13 +84,8 @@ class Ci extends Base
                     'help' => 'Local component path (local mode)',
                 ]
             ),
-            new Option(
-                '--force',
-                [
-                    'action' => 'store_true',
-                    'help' => 'Force overwrite existing files (ci init)',
-                ]
-            ),
+            // --force is provided globally (see Components::__construct);
+            // ci init reads options['force'].
             // Preview mode is provided globally via -P / --pretend / --dry-run
             // (see Components::__construct). ci init reads options['pretend'].
         ];

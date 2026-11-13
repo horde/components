@@ -17,6 +17,7 @@ namespace Horde\Components\Runner;
 
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Output;
+use Horde\Components\Release\BranchRoles;
 use Horde\Components\Report\DifferenceReport;
 use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 use Horde\GithubApiClient\GithubApiClient;
@@ -89,12 +90,16 @@ class GithubSync
      * Sync missing repositories by cloning them from GitHub.
      *
      * @param array $reposToClone List of repository names to clone
-     * @param string $branch Branch to checkout (default: FRAMEWORK_6_0)
+     * @param string $branch Branch to checkout. Empty string (default)
+     *   resolves to the release branch from the branch-role map.
      *
      * @return void
      */
-    public function syncMissingRepositories(array $reposToClone, string $branch = 'FRAMEWORK_6_0'): void
+    public function syncMissingRepositories(array $reposToClone, string $branch = ''): void
     {
+        if ($branch === '') {
+            $branch = BranchRoles::load()->releaseBranch();
+        }
         if (empty($reposToClone)) {
             $this->output->info('No repositories to clone.');
             return;

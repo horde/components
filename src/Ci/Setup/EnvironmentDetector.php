@@ -18,6 +18,7 @@ namespace Horde\Components\Ci\Setup;
 
 use Horde\Components\Exception;
 use Horde\Components\Helper\Git;
+use Horde\Components\Release\BranchRoles;
 use Phar;
 
 /**
@@ -112,8 +113,9 @@ class EnvironmentDetector
             }
         }
 
-        // Default
-        return 'FRAMEWORK_6_0';
+        // Default: the release branch from the branch-role map (bundled
+        // default unless a custom roles file is configured).
+        return BranchRoles::load()->releaseBranch();
     }
 
     /**
