@@ -21,7 +21,13 @@
             "role": "contributor"
         }
     ],
-    "time": "2026-07-21",
+    "keywords": [
+        "developer",
+        "ci",
+        "release",
+        "static site generator"
+    ],
+    "time": "2026-11-13",
     "repositories": [],
     "require": {
         "horde/horde-installer-plugin": "^2.6 || dev-FRAMEWORK_6_0",
