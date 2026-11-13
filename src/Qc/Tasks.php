@@ -10,12 +10,15 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  */
 
+declare(strict_types=1);
+
 namespace Horde\Components\Qc;
 
 use Horde\Components\Component;
 use Horde\Components\Dependencies;
 use Horde\Components\Output;
 use Horde\Components\Qc\Task\Base as TaskBase;
+use Horde\Components\Task\Result;
 
 /**
  * Components_Qc_Tasks:: organizes the different tasks required for
@@ -85,15 +88,15 @@ class Tasks
      * @param Component $component The component to be checked.
      * @param array                $options  Additional options.
      *
-     * @return int Sum of error counts reported by each task. Zero when
-     *             every task ran cleanly. Used by Module\Qc to decide
-     *             whether to throw and make the process exit non-zero.
+     * @return PipelineResult Per-task results keyed by task name. Used by
+     *                        Module\Qc to decide whether to throw and to name
+     *                        the failing modules in the summary.
      */
     public function run(
         array $sequence,
         Component $component,
         $options = []
-    ): int {
+    ): PipelineResult {
         $this->_options = $options;
         $this->_sequence = $sequence;
 
@@ -102,6 +105,7 @@ class Tasks
             $task_sequence[] = $this->getTask($name, $component);
         }
         $selected_tasks = [];
+        $results = [];
         foreach ($task_sequence as $task) {
             $task_errors = $task->validate($options);
             if (!empty($task_errors)) {
@@ -117,12 +121,14 @@ class Tasks
                 );
                 $output->bold(str_repeat('-', 30));
                 $output->plain('');
+                $results[$task->getName()] = Result::skipped(
+                    join("\n", $task_errors)
+                );
             } else {
                 $selected_tasks[] = $task;
             }
         }
         $output = $this->_dependencies->getInstance(Output::class);
-        $totalErrors = 0;
         foreach ($selected_tasks as $task) {
             $output->bold(str_repeat('-', 30));
             $output->ok(
@@ -130,8 +136,8 @@ class Tasks
             );
             $output->plain('');
 
-            $numErrors = $task->run($options);
-            $totalErrors += max(0, (int) $numErrors);
+            $numErrors = max(0, (int) $task->run($options));
+            $results[$task->getName()] = Result::qc($numErrors);
 
             $output->plain('');
             if ($numErrors == 1) {
@@ -141,6 +147,6 @@ class Tasks
             }
             $output->bold(str_repeat('-', 30) . "\n");
         }
-        return $totalErrors;
+        return new PipelineResult($results);
     }
 }

@@ -930,14 +930,54 @@ class Unit extends Base
             ];
         }
         // Fallback: a single <testsuite> root, or a <testsuites> that omits
-        // the aggregate attributes. Sum the direct child suites.
+        // the aggregate attributes. PHPUnit may wrap the real aggregate in
+        // one or more intermediate <testsuite> elements (e.g. a suite named
+        // after the configuration file whose only child carries the counts),
+        // so descend until we reach suites that actually declare `tests` and
+        // sum those. Taking a suite's own attributes means we never also
+        // descend into its per-class children, which would double-count.
+        $roots = $xml->getName() === 'testsuites' ? $xml->children() : [$xml];
         $counts = $zero;
-        $suites = $xml->getName() === 'testsuites' ? $xml->children() : [$xml];
-        foreach ($suites as $suite) {
-            $counts['tests'] += isset($suite['tests']) ? (int) $suite['tests'] : 0;
-            $counts['failures'] += isset($suite['failures']) ? (int) $suite['failures'] : 0;
-            $counts['errors'] += isset($suite['errors']) ? (int) $suite['errors'] : 0;
-            $counts['skipped'] += isset($suite['skipped']) ? (int) $suite['skipped'] : 0;
+        foreach ($roots as $root) {
+            $suiteCounts = self::sumSuiteCounts($root);
+            $counts['tests'] += $suiteCounts['tests'];
+            $counts['failures'] += $suiteCounts['failures'];
+            $counts['errors'] += $suiteCounts['errors'];
+            $counts['skipped'] += $suiteCounts['skipped'];
+        }
+        return $counts;
+    }
+
+    /**
+     * Recursively resolve the aggregate counts for one <testsuite> element.
+     *
+     * A suite that declares its own `tests` attribute is authoritative for
+     * the subtree beneath it, so its counts are returned without descending
+     * further. A suite without that attribute is a structural wrapper
+     * (PHPUnit emits these around the configuration file and testsuite
+     * groupings); in that case the counts are summed from its child suites.
+     *
+     * @param \SimpleXMLElement $suite A <testsuite> element.
+     * @return array{tests:int,failures:int,errors:int,skipped:int} Counts.
+     */
+    private static function sumSuiteCounts(\SimpleXMLElement $suite): array
+    {
+        if (isset($suite['tests'])) {
+            return [
+                'tests' => (int) $suite['tests'],
+                'failures' => isset($suite['failures']) ? (int) $suite['failures'] : 0,
+                'errors' => isset($suite['errors']) ? (int) $suite['errors'] : 0,
+                'skipped' => isset($suite['skipped']) ? (int) $suite['skipped'] : 0,
+            ];
+        }
+
+        $counts = ['tests' => 0, 'failures' => 0, 'errors' => 0, 'skipped' => 0];
+        foreach ($suite->testsuite as $child) {
+            $childCounts = self::sumSuiteCounts($child);
+            $counts['tests'] += $childCounts['tests'];
+            $counts['failures'] += $childCounts['failures'];
+            $counts['errors'] += $childCounts['errors'];
+            $counts['skipped'] += $childCounts['skipped'];
         }
         return $counts;
     }

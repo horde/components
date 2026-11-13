@@ -340,12 +340,12 @@ NOTE:
                 $output,
                 $qcTasks
             );
-            $numErrors = $runner->run();
-            if ($numErrors > 0) {
+            $result = $runner->run();
+            if ($result->hasFailures()) {
                 // Per the Module::handle() contract: bool=matched, exception=failure.
                 // The shell exit code is the exception's getCode() (W1).
                 throw new Exception(
-                    "qc reported {$numErrors} error" . ($numErrors === 1 ? '' : 's'),
+                    'qc failed: ' . $result->summary(),
                     1
                 );
             }

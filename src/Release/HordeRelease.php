@@ -32,6 +32,7 @@ use Horde\Components\Task\GitHub\CreateGitHubReleaseTask;
 use Horde\Components\Task\Build\BuildPharTask;
 use Horde\Components\Task\GitHub\UploadGitHubAssetTask;
 use ReflectionClass;
+use Throwable;
 
 /**
  * Horde 6 Release pipeline using modernized task architecture
@@ -257,7 +258,7 @@ class HordeRelease
         try {
             return (new ConventionalCommitHelper($this->gitHelper))
                 ->commitReader->getTopSeverity();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->output->warn('Could not classify commits for branch policy: ' . $e->getMessage());
             return 'patch';
         } finally {

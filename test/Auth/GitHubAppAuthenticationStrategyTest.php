@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Horde\Components\Test\Auth;
 
 use Horde\Components\Auth\GitHubAppAuthenticationStrategy;
-use Horde\Components\Auth\GitHubAppAuthenticationService;
+use Horde\GithubApiClient\Auth\GitHubAppAuthenticationService;
 use Horde\GithubApiClient\GithubApiClient;
 use RuntimeException;
 use PHPUnit\Framework\TestCase;

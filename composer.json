@@ -50,9 +50,9 @@
         "horde/githubapiclient": "* || dev-FRAMEWORK_6_0",
         "horde/composer": "* || dev-FRAMEWORK_6_0",
         "horde/phpconfigfile": "^0.0.1-alpha4 || dev-FRAMEWORK_6_0",
-        "psr/log": "*"
+        "psr/log": "*",
+        "pear/archive_tar": "^1.4"
     },
-    "require-dev": {},
     "suggest": {
         "horde/test": "^3 || dev-FRAMEWORK_6_0",
         "squizlabs/php_codesniffer": "^3.5",

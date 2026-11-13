@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace Horde\Components\Auth;
 
-use Horde\Core\Auth\Jwt\GeneratedJwt as CoreGeneratedJwt;
-use Horde\Core\Auth\Jwt\PrivateKey as CorePrivateKey;
-use Horde\Core\Auth\Jwt\Rs256Generator;
 use RuntimeException;
 
 /**
  * GitHub-specific JWT generator wrapper
  *
- * Wraps the Core Rs256Generator with GitHub App constraints (max 600 second expiry).
- * This maintains GitHub-specific business logic while using the shared JWT implementation.
+ * Wraps the local Rs256Generator with GitHub App constraints (max 600 second expiry).
+ * This keeps GitHub-specific business logic in one place while delegating the
+ * actual RS256 signing to the shared implementation.
  *
  * Copyright 2026 The Horde Project (http://www.horde.org/)
  *
@@ -26,11 +24,11 @@ use RuntimeException;
  */
 class GitHubJwtGenerator implements JwtGeneratorInterface
 {
-    private Rs256Generator $generator;
+    private Rs256JwtGenerator $generator;
 
     public function __construct()
     {
-        $this->generator = new Rs256Generator();
+        $this->generator = new Rs256JwtGenerator();
     }
 
     /**
@@ -47,19 +45,6 @@ class GitHubJwtGenerator implements JwtGeneratorInterface
         PrivateKey $privateKey,
         int $expirySeconds = 600
     ): GeneratedJwt {
-        if ($expirySeconds > 600) {
-            throw new RuntimeException(
-                'GitHub App JWTs cannot have expiry greater than 600 seconds (10 minutes)'
-            );
-        }
-
-        // Convert components types to Core types
-        $corePrivateKey = CorePrivateKey::fromString($privateKey->content);
-
-        // Generate JWT using Core implementation
-        $coreJwt = $this->generator->generate($appId, $corePrivateKey, $expirySeconds);
-
-        // Convert Core result back to components type
-        return new GeneratedJwt($coreJwt->token, $coreJwt->expiresAt);
+        return $this->generator->generate($appId, $privateKey, $expirySeconds);
     }
 }

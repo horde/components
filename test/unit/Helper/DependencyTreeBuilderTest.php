@@ -19,6 +19,7 @@ namespace Horde\Components\Test\Unit\Helper;
 use Horde\Components\Helper\DependencyTreeBuilder;
 use Horde\Components\Helper\PluginDetector;
 use Horde\Components\Component;
+use Horde\Components\Component\Factory as ComponentFactory;
 use Horde\Components\Output;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -29,13 +30,19 @@ class DependencyTreeBuilderTest extends TestCase
 {
     private DependencyTreeBuilder $builder;
     private PluginDetector $pluginDetector;
+    private ComponentFactory $componentFactory;
     private Output $output;
 
     protected function setUp(): void
     {
+        $this->componentFactory = $this->createMock(ComponentFactory::class);
         $this->pluginDetector = new PluginDetector();
         $this->output = $this->createMock(Output::class);
-        $this->builder = new DependencyTreeBuilder($this->pluginDetector, $this->output);
+        $this->builder = new DependencyTreeBuilder(
+            $this->componentFactory,
+            $this->pluginDetector,
+            $this->output
+        );
     }
 
     public function testBuildSimpleGraph(): void
@@ -98,7 +105,12 @@ class DependencyTreeBuilderTest extends TestCase
     public function testBuildWithNetworkRequestsOption(): void
     {
         $detector = new PluginDetector(allowNetworkRequests: true);
-        $builder = new DependencyTreeBuilder($detector, $this->output, allowNetworkRequests: true);
+        $builder = new DependencyTreeBuilder(
+            $this->componentFactory,
+            $detector,
+            $this->output,
+            allowNetworkRequests: true
+        );
 
         $root = $this->createMockComponent('horde/core', 'pear.horde.org', '3.0.0');
         $root->method('getDependencyList')->willReturn(new ArrayIterator([]));

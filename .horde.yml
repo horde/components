@@ -64,6 +64,9 @@ dependencies:
       phploc/phploc: ^7
       phpmd/phpmd: ^2.9
       phpunit/phpunit: ^9
+  dev:
+    composer:
+      pear/archive_tar: 1.4
 nocommands:
   - bin/horde-bootstrap
   - bin/horde-components-prototype-transpile

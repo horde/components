@@ -133,6 +133,33 @@ class UnitJunitParserTest extends TestCase
         );
     }
 
+    /**
+     * PHPUnit 13 wraps the real aggregate in intermediate <testsuite>
+     * elements: a root <testsuites> with no attributes, an inner suite
+     * named after the configuration file (no counts), and only the
+     * innermost "default" suite carrying the totals. The parser must
+     * descend past the attribute-less wrappers instead of summing them
+     * to zero - otherwise a passing run is misreported as "zero tests".
+     */
+    public function testCountsDescendIntoNestedWrapperSuites(): void
+    {
+        file_put_contents($this->tempPath, <<<'XML'
+            <?xml version="1.0" encoding="UTF-8"?>
+            <testsuites>
+              <testsuite name="/path/to/phpunit.xml.dist">
+                <testsuite name="default" tests="964" assertions="2088" failures="0" errors="0" skipped="11">
+                  <testsuite name="SomeTest" tests="3" />
+                </testsuite>
+              </testsuite>
+            </testsuites>
+            XML);
+
+        $this->assertSame(
+            ['tests' => 964, 'failures' => 0, 'errors' => 0, 'skipped' => 11],
+            Unit::parseCountsFromJunit($this->tempPath),
+        );
+    }
+
     public function testCountsFromSingleTestsuiteRoot(): void
     {
         file_put_contents($this->tempPath, <<<'XML'
@@ -145,7 +172,6 @@ class UnitJunitParserTest extends TestCase
             Unit::parseCountsFromJunit($this->tempPath),
         );
     }
-
     public function testCountsMissingFileReturnsZeroes(): void
     {
         $this->assertSame(

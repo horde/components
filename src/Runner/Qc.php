@@ -17,6 +17,7 @@ namespace Horde\Components\Runner;
 
 use Horde\Components\Component;
 use Horde\Components\Output;
+use Horde\Components\Qc\PipelineResult;
 use Horde\Components\Qc\Tasks as QcTasks;
 
 /**
@@ -51,7 +52,7 @@ class Qc
         private readonly QcTasks $qc
     ) {}
 
-    public function run(): int
+    public function run(): PipelineResult
     {
         $sequence = [];
 
@@ -112,7 +113,7 @@ class Qc
             );
         }
         $this->output->warn('Huh?! No tasks selected... All done!');
-        return 0;
+        return new PipelineResult([]);
     }
 
     /**

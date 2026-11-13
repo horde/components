@@ -85,12 +85,12 @@ class PrCommentReporterTest extends TestCase
 
     public function testSummariseReasonCapsAt200Chars(): void
     {
-        // 250 chars of letters: should be cut at 199 + ellipsis (1) = 200 total.
+        // 250 chars of letters: should be cut at 199 + '...' (3 chars) = 202 total.
         $longLine = str_repeat('A', 250);
         $result = $this->summariseReason($longLine);
-        // 199 'A' + '…' (one multibyte char) = 200 visual characters.
-        $this->assertSame(200, mb_strlen($result));
-        $this->assertStringEndsWith('…', $result);
+        // 199 'A' + '...' (three ASCII chars) = 202 characters.
+        $this->assertSame(202, mb_strlen($result));
+        $this->assertStringEndsWith('...', $result);
     }
 
     public function testSummariseReasonShortInputIsUnchanged(): void

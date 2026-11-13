@@ -69,8 +69,8 @@ class BranchReleasePolicy
 
             case BranchRoles::ROLE_RELEASE:
                 if ($severity === 'major' && Version::isStable($stability)) {
-                    $violations[] =
-                        'BC-breaking change on the release branch is not allowed '
+                    $violations[]
+                        = 'BC-breaking change on the release branch is not allowed '
                         . 'once the component is stable. Cut it on the unstable branch.';
                 }
                 break;
@@ -80,8 +80,8 @@ class BranchReleasePolicy
                 break;
 
             default:
-                $violations[] =
-                    'Current branch has no declared role (release, supported, '
+                $violations[]
+                    = 'Current branch has no declared role (release, supported, '
                     . 'or unstable). Refusing to release.';
                 break;
         }
