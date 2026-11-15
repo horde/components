@@ -3,14 +3,59 @@
 # Horde uses the same branch names across every repository, so branch
 # roles can be managed centrally here instead of per repository.
 #
+# A branch can be a bare string or it can be a map entry, see below for examples.
+#
+# Map properties (all optional):
+#   min_php_version: <string, composer-like version constraint, e.g. "^8.2">
+#      If not set, packages are free to set or not set any minimum PHP version
+#      in their .horde.yml file.
+#      If set, each package must have a minimum PHP constraint; a missing or
+#      lower one gets raised to this caret (e.g. "^8.2"). Higher constraints are
+#      allowed for individual packages.
+#   sync_min_php_version: (true|false)
+#      If true, every package is pinned to exactly this caret (possibly extended
+#      by max_php_version), with no exceptions allowed.
+#   max_php_version: <string, composer-like version constraint, e.g. "<=8.6">
+#      If not set, packages are free to define or not define an upper PHP bound.
+#      If set, every package must have an upper bound at this version or tighter.
+#      Write an upper-bound form ("<=8.6", "<8.7", or an exact "8.6") to cap at a
+#      specific minor. A caret/tilde here only bounds the major: "^8.6" means
+#      >=8.6 <9.0.0, which still allows PHP 8.7+.
+#   sync_max_php_version: (true|false)
+#      If true, every package gets this exact upper bound (no tighter ones).
+#
+# Quote version constraints so YAML does not read "8.1" as a float.
+#
 # release:   the single release branch. Must be each repository's default
 #            branch. Accepts feat/fix/test/docs/chore/ci. May cut bugfix or
 #            feature releases, and may carry BC breaks only while the
 #            component is still pre-stable (alpha/beta or 0.x.y).
-# supported: maintenance branches. Bugfix commits only (no feat, no BC
-#            break). Releasing produces a bugfix release.
+#            It can be a bare string or a single-key map.
+#
+#            Simple format:
+#
+#            release: FRAMEWORK_6_1
+#
+#            Enhanced format (note the branch name is a key one level in):
+#
+#            release:
+#              FRAMEWORK_6_1:
+#                min_php_version: "^8.1"
+#                max_php_version: "<=8.6"
+#
+# supported: A list (items with "-") of maintenance branches. Bugfix commits
+#            only (no feat, no BC break). Releasing produces a bugfix release.
+#            Each item is a bare string or a single-key map:
+#
+#            supported:
+#              - FRAMEWORK_6_0
+#              - FRAMEWORK_5_2:
+#                  min_php_version: "^7.4"
+#
 # unstable:  optional branch for BC-breaking work not suitable for the
-#            running release. Leave empty or omit when there is none.
+#            running release. Leave empty or omit when there is none. May also
+#            use the map form. A bare string is just a map entry with no
+#            properties set.
 release: FRAMEWORK_6_0
 supported:
   - FRAMEWORK_5_2

@@ -19,8 +19,10 @@ namespace Horde\Components\Release\Branches;
 use Horde\Components\Helper\ConventionalCommitHelper;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Output;
+use Horde\Components\Release\Branch\BranchDefinition;
+use Horde\Components\Release\Branch\BranchRoleMap;
+use Horde\Components\Release\Branch\PhpPolicyFitter;
 use Horde\Components\Release\BranchReleasePolicy;
-use Horde\Components\Release\BranchRoles;
 use Horde\Components\Wrapper\HordeYml;
 use Throwable;
 
@@ -68,7 +70,8 @@ class CheckCommand
     ): bool {
         $this->output->bold('=== Horde Branch Check ===');
 
-        $roles = BranchRoles::load($rolesFile);
+        $map = BranchRoleMap::load($rolesFile);
+        $roles = $map->toBranchRoles();
         $currentBranch = trim($this->git->getCurrentBranch($componentPath));
         $role = $roles->roleOf($currentBranch);
 
@@ -102,7 +105,14 @@ class CheckCommand
 
         $issues = array_merge($issues, $decision->violations());
 
-        if ($issues === []) {
+        // PHP-version policy compliance. This is independent of --force:
+        // it is reported and, when the component drifts, fails the command
+        // like any other unmet condition. Keyed to the current branch's
+        // definition when it has one, else the release branch's.
+        $def = $map->definitionFor($currentBranch) ?? $map->release();
+        $phpCompliant = $this->checkPhpPolicy($componentPath, $def);
+
+        if ($issues === [] && $phpCompliant) {
             $this->output->ok('Branch check passed.');
             return true;
         }
@@ -115,12 +125,64 @@ class CheckCommand
             }
         }
 
-        if ($force) {
-            $this->output->warn('Proceeding despite violations (--force).');
+        // Role/release issues are force-overridable; PHP-policy drift is not.
+        if ($issues !== [] && $force) {
+            $this->output->warn('Proceeding despite branch-role violations (--force).');
+        }
+
+        if (!$phpCompliant) {
+            $this->output->error('Branch check failed: PHP-version policy is not satisfied (not subject to --force).');
+            return false;
+        }
+
+        if ($issues !== [] && !$force) {
+            $this->output->error('Branch check failed. Re-run with --force to override branch-role violations.');
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Report whether the component's required PHP constraint satisfies the
+     * branch's PHP-version policy.
+     *
+     * No mutation. Returns true (compliant) when there is no policy, and
+     * also when .horde.yml cannot be read (cannot assess — do not fail on
+     * an unrelated read error).
+     *
+     * @param BranchDefinition|null $def The branch definition carrying the
+     *                                   policy, or null when none applies.
+     */
+    private function checkPhpPolicy(string $componentPath, ?BranchDefinition $def): bool
+    {
+        if ($def === null || !$def->hasPolicy()) {
             return true;
         }
 
-        $this->output->error('Branch check failed. Re-run with --force to override.');
+        try {
+            $current = (new HordeYml($componentPath))->getHordeYmlFile()->getRequiredPhp();
+        } catch (Throwable $e) {
+            $this->output->warn('Could not read .horde.yml PHP requirement; skipping policy check: ' . $e->getMessage());
+            return true;
+        }
+
+        $fitter = new PhpPolicyFitter();
+        if ($fitter->complies($def->policy(), $current)) {
+            $shown = $current === '' ? '(none)' : $current;
+            $this->output->ok("PHP policy OK for {$def->name()}: {$shown} satisfies the policy.");
+            return true;
+        }
+
+        $target = $fitter->target($def->policy(), $current);
+        $shown = $current === '' ? '(none)' : $current;
+        $this->output->error(sprintf(
+            'PHP policy drift for %s: dependencies.required.php is %s but the policy requires %s.',
+            $def->name(),
+            $shown,
+            $target
+        ));
+
         return false;
     }
 

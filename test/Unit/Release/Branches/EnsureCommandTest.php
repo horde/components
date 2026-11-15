@@ -20,6 +20,7 @@ use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Helper\GitHubChecker;
 use Horde\Components\Output;
 use Horde\Components\Release\Branches\EnsureCommand;
+use Horde\Components\Wrapper\HordeYml;
 use Horde\GithubApiClient\GithubApiConfig;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -252,6 +253,88 @@ class EnsureCommandTest extends TestCase
         $this->assertSame($original, file_get_contents($componentDir . '/.horde.yml'));
     }
 
+    private function requiredPhp(string $componentDir): string
+    {
+        return (new HordeYml($componentDir))->getHordeYmlFile()->getRequiredPhp();
+    }
+
+    public function testPolicyRaisesRequiredPhpOnAlreadyExists(): void
+    {
+        $componentDir = $this->componentDirWithPhp('FRAMEWORK_6_0', '^8.0');
+        $roles = $this->rolesFileWithPolicy('FRAMEWORK_6_0', '^8.2');
+
+        $ok = $this->command($this->gitExistingBranch(), $this->checkerNotGitHub())
+            ->execute($componentDir, $roles, false);
+
+        $this->assertTrue($ok);
+        $this->assertSame('^8.2', $this->requiredPhp($componentDir));
+    }
+
+    public function testPolicyTightensCeilingWithExplicitMax(): void
+    {
+        $componentDir = $this->componentDirWithPhp('FRAMEWORK_6_0', '^8.1');
+        $roles = $this->rolesFileWithPolicy('FRAMEWORK_6_0', '^8.1', false, '<=8.6');
+
+        $ok = $this->command($this->gitExistingBranch(), $this->checkerNotGitHub())
+            ->execute($componentDir, $roles, false);
+
+        $this->assertTrue($ok);
+        $this->assertSame('>=8.1.0 <=8.6.0', $this->requiredPhp($componentDir));
+    }
+
+    public function testPolicyPretendPrintsButDoesNotWrite(): void
+    {
+        $componentDir = $this->componentDirWithPhp('FRAMEWORK_6_0', '^8.0');
+        $roles = $this->rolesFileWithPolicy('FRAMEWORK_6_0', '^8.2');
+        $original = file_get_contents($componentDir . '/.horde.yml');
+
+        $ok = $this->command($this->gitExistingBranch(), $this->checkerNotGitHub())
+            ->execute($componentDir, $roles, true);
+
+        $this->assertTrue($ok);
+        $this->assertSame($original, file_get_contents($componentDir . '/.horde.yml'));
+    }
+
+    public function testNoPolicyLeavesHordeYmlUnchanged(): void
+    {
+        $componentDir = $this->componentDirWithPhp('FRAMEWORK_6_0', '^8.0');
+        $roles = $this->rolesFileFor('FRAMEWORK_6_0'); // bare string, no policy
+        $original = file_get_contents($componentDir . '/.horde.yml');
+
+        $ok = $this->command($this->gitExistingBranch(), $this->checkerNotGitHub())
+            ->execute($componentDir, $roles, false);
+
+        $this->assertTrue($ok);
+        $this->assertSame($original, file_get_contents($componentDir . '/.horde.yml'));
+    }
+
+    public function testSyncMinPinsRequiredPhp(): void
+    {
+        // Existing floor ^8.3 is stricter than min ^8.1, but syncMin pins
+        // it down to exactly ^8.1.
+        $componentDir = $this->componentDirWithPhp('FRAMEWORK_6_0', '^8.3');
+        $roles = $this->rolesFileWithPolicy('FRAMEWORK_6_0', '^8.1', true);
+
+        $ok = $this->command($this->gitExistingBranch(), $this->checkerNotGitHub())
+            ->execute($componentDir, $roles, false);
+
+        $this->assertTrue($ok);
+        $this->assertSame('^8.1', $this->requiredPhp($componentDir));
+    }
+
+    public function testCompliantRequiredPhpIsNotRewritten(): void
+    {
+        $componentDir = $this->componentDirWithPhp('FRAMEWORK_6_0', '^8.2');
+        $roles = $this->rolesFileWithPolicy('FRAMEWORK_6_0', '^8.2');
+        $original = file_get_contents($componentDir . '/.horde.yml');
+
+        $ok = $this->command($this->gitExistingBranch(), $this->checkerNotGitHub())
+            ->execute($componentDir, $roles, false);
+
+        $this->assertTrue($ok);
+        $this->assertSame($original, file_get_contents($componentDir . '/.horde.yml'));
+    }
+
     private function componentDir(string $version, string $stability): string
     {
         $dir = sys_get_temp_dir() . '/ensure-cmp-' . bin2hex(random_bytes(6));
@@ -284,6 +367,83 @@ class EnsureCommandTest extends TestCase
         file_put_contents($path, "release: {$release}\nsupported: []\nunstable: null\n");
         $this->cleanup[] = $path;
         return $path;
+    }
+
+    /**
+     * A component dir whose .horde.yml carries a dependencies.required.php
+     * constraint (plus a composer dep, so preservation can be asserted).
+     */
+    private function componentDirWithPhp(string $release, string $php): string
+    {
+        $dir = sys_get_temp_dir() . '/ensure-cmp-' . bin2hex(random_bytes(6));
+        mkdir($dir, 0o755, true);
+        file_put_contents($dir . '/.horde.yml', <<<YML
+            ---
+            id: sbx
+            name: Sbx
+            full: Sandbox
+            description: Sandbox
+            list: horde
+            type: library
+            authors:
+              - { name: T, user: t, email: t@t, active: true, role: lead }
+            version:
+              release: {$release}
+              api: {$release}
+            state:
+              release: stable
+              api: stable
+            license: { identifier: LGPL-2.1-only, uri: x }
+            dependencies:
+              required:
+                php: "{$php}"
+                composer:
+                  horde/exception: ^3
+            YML);
+        $this->cleanupDirs[] = $dir;
+        return $dir;
+    }
+
+    /**
+     * A roles file whose release branch carries a PHP-version policy.
+     */
+    private function rolesFileWithPolicy(
+        string $release,
+        ?string $min,
+        bool $syncMin = false,
+        ?string $max = null
+    ): string {
+        $lines = ["release:", "  {$release}:"];
+        if ($min !== null) {
+            $lines[] = "    min_php_version: \"{$min}\"";
+        }
+        if ($syncMin) {
+            $lines[] = '    sync_min_php_version: true';
+        }
+        if ($max !== null) {
+            $lines[] = "    max_php_version: \"{$max}\"";
+        }
+        $lines[] = 'supported: []';
+        $lines[] = 'unstable: null';
+
+        $path = tempnam(sys_get_temp_dir(), 'roles-') . '.yml';
+        file_put_contents($path, implode("\n", $lines) . "\n");
+        $this->cleanup[] = $path;
+        return $path;
+    }
+
+    /**
+     * Git double for the "branch already exists locally and remotely"
+     * arm, so policy enforcement is the only interesting behavior. A stub
+     * (not a mock) since these tests assert on .horde.yml, not git calls.
+     */
+    private function gitExistingBranch(): GitHelper
+    {
+        $git = $this->createStub(GitHelper::class);
+        $git->method('hasRemotes')->willReturn(true);
+        $git->method('localBranchExists')->willReturn(true);
+        $git->method('remoteBranchExists')->willReturn(true);
+        return $git;
     }
 
     private function rolesFile(): string

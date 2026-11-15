@@ -20,7 +20,9 @@ use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Helper\GitHubChecker;
 use Horde\Components\Helper\Version;
 use Horde\Components\Output;
-use Horde\Components\Release\BranchRoles;
+use Horde\Components\Release\Branch\BranchDefinition;
+use Horde\Components\Release\Branch\BranchRoleMap;
+use Horde\Components\Release\Branch\PhpPolicyFitter;
 use Horde\Components\Wrapper\HordeYml;
 use Horde\GithubApiClient\GithubApiAccessDeniedException;
 use Horde\GithubApiClient\GithubApiClient;
@@ -93,8 +95,12 @@ class EnsureCommand
             $this->output->warn('[PRETEND MODE] No changes will be made');
         }
 
-        $roles = BranchRoles::load($rolesFile);
-        $release = $roles->releaseBranch();
+        // The branch-role map reads both the simple (bare string) and the
+        // enhanced (per-branch policy) formats. Use it for the release
+        // branch name and for the release branch's PHP-version policy.
+        $map = BranchRoleMap::load($rolesFile);
+        $releaseDef = $map->release();
+        $release = $releaseDef->name();
         if ($release === '') {
             $this->output->error('No release branch is declared in the branch-role map.');
             return false;
@@ -120,6 +126,11 @@ class EnsureCommand
         }
 
         $this->ensureRemoteBranch($componentPath, $release, $pretend, $changed);
+
+        // Enforce the release branch's PHP-version policy on .horde.yml.
+        // Idempotent: runs whether the branch was just created or already
+        // existed. The command owns the save(); it does not commit.
+        $this->enforcePhpPolicy($componentPath, $releaseDef, $pretend, $changed);
 
         $defaultChanged = $this->ensureDefaultBranch($componentPath, $release, $pretend);
         if ($defaultChanged === null) {
@@ -223,6 +234,61 @@ class EnsureCommand
             $this->git->push($componentPath, 'origin', $release);
         }
         $changed = true;
+    }
+
+    /**
+     * Enforce the release branch's PHP-version policy on .horde.yml.
+     *
+     * Reads the component's current dependencies.required.php, reconciles
+     * it against the branch policy (raise floor to min, tighten ceiling to
+     * max, pin on sync), and rewrites it when it drifts. Persists with
+     * {@see HordeYml::save()} but does not git-commit — the change is left
+     * in the working tree for review. No-op when the branch has no policy.
+     *
+     * @param BranchDefinition|null $releaseDef The release branch
+     *        definition from the role map, or null when the release branch
+     *        is absent from the map.
+     * @param bool $changed Set to true (by reference) when .horde.yml is
+     *        rewritten.
+     */
+    private function enforcePhpPolicy(
+        string $componentPath,
+        ?BranchDefinition $releaseDef,
+        bool $pretend,
+        bool &$changed
+    ): void {
+        if ($releaseDef === null || !$releaseDef->hasPolicy()) {
+            return;
+        }
+
+        try {
+            $yml = new HordeYml($componentPath);
+            $file = $yml->getHordeYmlFile();
+            $current = $file->getRequiredPhp();
+        } catch (Throwable $e) {
+            $this->output->warn('Could not read .horde.yml PHP requirement; skipping policy: ' . $e->getMessage());
+            return;
+        }
+
+        $fitter = new PhpPolicyFitter();
+        $target = $fitter->target($releaseDef->policy(), $current);
+        $shownCurrent = $current === '' ? '(none)' : $current;
+
+        if ($target === $current || $target === '') {
+            $this->output->info("PHP requirement already matches the {$releaseDef->name()} policy ({$shownCurrent}).");
+            return;
+        }
+
+        $this->output->info("Updating dependencies.required.php from {$shownCurrent} to {$target} per {$releaseDef->name()} policy.");
+        if ($pretend) {
+            $this->output->warn("[PRETEND] Would set dependencies.required.php to {$target}.");
+            return;
+        }
+
+        if ($fitter->fit($file, $target)) {
+            $yml->save();
+            $changed = true;
+        }
     }
 
     /**

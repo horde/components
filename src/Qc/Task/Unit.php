@@ -22,6 +22,7 @@ use PHPUnit\Event\Test\Skipped;
 use ReflectionClass;
 use ReflectionException;
 use Throwable;
+use SimpleXMLElement;
 
 /**
  * Components_Qc_Task_Unit:: runs the test suite of the component.
@@ -957,10 +958,10 @@ class Unit extends Base
      * (PHPUnit emits these around the configuration file and testsuite
      * groupings); in that case the counts are summed from its child suites.
      *
-     * @param \SimpleXMLElement $suite A <testsuite> element.
+     * @param SimpleXMLElement $suite A <testsuite> element.
      * @return array{tests:int,failures:int,errors:int,skipped:int} Counts.
      */
-    private static function sumSuiteCounts(\SimpleXMLElement $suite): array
+    private static function sumSuiteCounts(SimpleXMLElement $suite): array
     {
         if (isset($suite['tests'])) {
             return [

@@ -50,6 +50,15 @@ class Phpstan extends Base
     private ?array $nativeResults = null;
 
     /**
+     * Flattened findings (file/line/message/identifier) from the most
+     * recent analysed level, repo-relative. Printed to the console and
+     * embedded in the summary JSON so a failing run shows what failed.
+     *
+     * @var list<array{file:string,line:int|null,message:string,identifier:string|null}>
+     */
+    private array $findings = [];
+
+    /**
      * PHPStan configuration path.
      */
     private ?string $configPath = null;
@@ -190,6 +199,16 @@ class Phpstan extends Base
                         . ($watermarkResult['errors'] !== 1 ? 's' : '') . ')'
                     );
                     $this->getOutput()->warn('Watermark level MUST pass - fix these errors!');
+
+                    // Surface the concrete findings on the console. The
+                    // GitHub Actions annotations below are invisible in a
+                    // local terminal, so without this a developer sees only
+                    // the count and has no idea which file/line/rule failed.
+                    $this->findings = $this->collectFindings(
+                        $watermarkResult['results'] ?? null,
+                        $componentPath
+                    );
+                    $this->printFindings($this->findings);
 
                     // Annotate each finding on the PR diff for GitHub Actions.
                     $this->emitPhpStanAnnotations(
@@ -1097,6 +1116,10 @@ class Phpstan extends Base
             'success' => $this->advisory ? true : ($exitCode === 0),
             'mode' => $this->advisory ? 'advisory' : 'enforced',
             'statistics' => $this->stats,
+            // Concrete findings (file/line/message/identifier) for the
+            // analysed level, so the summary JSON holds the actual errors
+            // rather than only counts. Empty when the level passed.
+            'findings' => $this->findings,
             // Watermark+1 advisory: surfaces the smallest failing level
             // above the post-discovery watermark, so the PR comment can
             // show "you'd pass level N if you fixed M things." Null
@@ -1147,6 +1170,98 @@ class Phpstan extends Base
                 $this->getOutput()->ok($message);
             }
         }
+    }
+
+    /**
+     * Flatten the native PHPStan JSON into a list of findings.
+     *
+     * The native JSON nests messages under per-file keys:
+     *   { files: { "<absolute path>": { messages: [
+     *       { message, line, identifier, ... }, ... ] } } }
+     *
+     * This produces a flat list of
+     *   { file, line, message, identifier }
+     * entries with repo-relative paths, suitable both for printing to the
+     * console and for embedding in the summary JSON. Returns an empty list
+     * when there are no file findings.
+     *
+     * @param array<string,mixed>|null $native The decoded PHPStan JSON.
+     * @param string $componentPath Component root directory.
+     * @return list<array{file:string,line:int|null,message:string,identifier:string|null}>
+     */
+    private function collectFindings(?array $native, string $componentPath): array
+    {
+        $findings = [];
+        if (!is_array($native) || !isset($native['files']) || !is_array($native['files'])) {
+            return $findings;
+        }
+
+        $root = rtrim($componentPath, '/') . '/';
+        foreach ($native['files'] as $absolutePath => $fileEntry) {
+            if (!is_string($absolutePath) || !is_array($fileEntry)) {
+                continue;
+            }
+            $relPath = str_starts_with($absolutePath, $root)
+                ? substr($absolutePath, strlen($root))
+                : $absolutePath;
+            $messages = $fileEntry['messages'] ?? [];
+            if (!is_array($messages)) {
+                continue;
+            }
+            foreach ($messages as $msg) {
+                if (!is_array($msg)) {
+                    continue;
+                }
+                $line = isset($msg['line']) && is_int($msg['line']) && $msg['line'] > 0
+                    ? $msg['line']
+                    : null;
+                $identifier = isset($msg['identifier']) && is_string($msg['identifier']) && $msg['identifier'] !== ''
+                    ? $msg['identifier']
+                    : null;
+                $findings[] = [
+                    'file' => $relPath,
+                    'line' => $line,
+                    'message' => (string) ($msg['message'] ?? ''),
+                    'identifier' => $identifier,
+                ];
+            }
+        }
+
+        return $findings;
+    }
+
+    /**
+     * Print each PHPStan finding to the console.
+     *
+     * The GitHub Actions annotations emitted by {@see emitPhpStanAnnotations()}
+     * are invisible in a local terminal, so a developer running
+     * `qc phpstan` by hand would otherwise see only an error count with no
+     * indication of which file, line, or rule failed. This renders the
+     * findings in a grep-friendly `file:line  message [identifier]` form.
+     *
+     * @param list<array{file:string,line:int|null,message:string,identifier:string|null}> $findings
+     * @return void
+     */
+    private function printFindings(array $findings): void
+    {
+        if (empty($findings)) {
+            return;
+        }
+
+        $output = $this->getOutput();
+        $output->plain('');
+        foreach ($findings as $finding) {
+            $location = $finding['file'];
+            if ($finding['line'] !== null) {
+                $location .= ':' . $finding['line'];
+            }
+            $identifier = $finding['identifier'] !== null
+                ? ' [' . $finding['identifier'] . ']'
+                : '';
+            $output->error('  ' . $location);
+            $output->plain('    ' . $finding['message'] . $identifier);
+        }
+        $output->plain('');
     }
 
     /**
