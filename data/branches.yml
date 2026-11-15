@@ -56,7 +56,9 @@
 #            running release. Leave empty or omit when there is none. May also
 #            use the map form. A bare string is just a map entry with no
 #            properties set.
-release: FRAMEWORK_6_0
+release: FRAMEWORK_6_1
+min_php_version: "^8.2"
+max_php_version: "<=8.6"
 supported:
-  - FRAMEWORK_5_2
+  - FRAMEWORK_6_0
 unstable: null
