@@ -40,13 +40,20 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(EnsureCommand::class)]
 class EnsureCommandTest extends TestCase
 {
-    private function command(GitHelper $git, GitHubChecker $checker, string $token = ''): EnsureCommand
-    {
+    private function command(
+        GitHelper $git,
+        GitHubChecker $checker,
+        string $token = '',
+        bool $usedGitHubApp = false,
+        string $fallbackPat = ''
+    ): EnsureCommand {
         return new EnsureCommand(
             $this->createStub(Output::class),
             $git,
             $checker,
-            new GithubApiConfig(accessToken: $token)
+            new GithubApiConfig(accessToken: $token),
+            $usedGitHubApp,
+            $fallbackPat
         );
     }
 
@@ -131,6 +138,49 @@ class EnsureCommandTest extends TestCase
         $checker->method('parseGitHubUrl')->willReturn(['owner' => 'horde', 'repo' => 'Victim']);
 
         $ok = $this->command($git, $checker, '')->execute('/x', $this->rolesFile(), false);
+
+        $this->assertTrue($ok);
+    }
+
+    public function testFallbackArmedButRemoteNotGitHubStaysOffline(): void
+    {
+        // The PAT fallback is armed (GitHub App auth + a PAT), but the remote
+        // is not on GitHub, so the default-branch step - and thus any
+        // fallback - is never reached. The git side is already consistent, so
+        // the command still succeeds without touching the network.
+        $git = $this->createStub(GitHelper::class);
+        $git->method('hasRemotes')->willReturn(true);
+        $git->method('localBranchExists')->willReturn(true);
+        $git->method('remoteBranchExists')->willReturn(true);
+
+        $ok = $this->command(
+            $git,
+            $this->checkerNotGitHub(),
+            'app-installation-token',
+            true,
+            'ghp_fallback_pat'
+        )->execute('/x', $this->rolesFile(), false);
+
+        $this->assertTrue($ok);
+    }
+
+    public function testFallbackPatIgnoredWhenAuthWasNotGitHubApp(): void
+    {
+        // A PAT is present but the active auth was NOT a GitHub App token, so
+        // the fallback must not apply. With a non-GitHub remote the API path
+        // is not reached at all; the offline git work still succeeds.
+        $git = $this->createStub(GitHelper::class);
+        $git->method('hasRemotes')->willReturn(true);
+        $git->method('localBranchExists')->willReturn(true);
+        $git->method('remoteBranchExists')->willReturn(true);
+
+        $ok = $this->command(
+            $git,
+            $this->checkerNotGitHub(),
+            'ghp_direct_pat',
+            false,
+            'ghp_fallback_pat'
+        )->execute('/x', $this->rolesFile(), false);
 
         $this->assertTrue($ok);
     }

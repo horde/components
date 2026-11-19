@@ -34,6 +34,14 @@ if (!class_exists('Horde\Components\Components')) {
 // Detect execution mode
 if (php_sapi_name() === 'cli' || php_sapi_name() === 'cli-server') {
     // CLI mode - normal components operation
+    if (!defined('CURLAUTH_ANY')) {
+        file_put_contents(
+            'php://stderr',
+            "horde-components requires the PHP cURL extension. Install php-curl for the PHP version running this command and enable it in your CLI configuration.\n"
+        );
+        exit(1);
+    }
+
     Horde\Components\Components::main();
 } else {
     // Web server mode - webhook handler

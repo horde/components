@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Horde\Components\Module;
 
 use Horde\Argv\Option;
+use Horde\Components\Auth\AuthenticationFactory;
 use Horde\Components\Component;
 use Horde\Components\ConfigProvider\ConfigProvider;
 use Horde\Components\Exception;
@@ -182,11 +183,14 @@ BRANCHES ENSURE:
                 return true;
 
             case 'ensure':
+                $authFactory = $this->dependencies->get(AuthenticationFactory::class);
                 $ensureCommand = new EnsureCommand(
                     $output,
                     $this->dependencies->get(GitHelper::class),
                     $this->dependencies->get(GitHubChecker::class),
-                    $this->dependencies->get(GithubApiConfig::class)
+                    $this->dependencies->get(GithubApiConfig::class),
+                    $authFactory->hasGitHubAppAuth(),
+                    $this->resolveFallbackPat()
                 );
                 if (!$ensureCommand->execute($componentPath, $rolesFile, $pretend)) {
                     throw new Exception('branches ensure failed', 1);
@@ -198,5 +202,33 @@ BRANCHES ENSURE:
                 $output->info('Valid subcommands: check, ensure');
                 throw new Exception("Unknown branches subcommand: {$subcommand}", 2);
         }
+    }
+
+    /**
+     * Resolve a Personal Access Token for the branch-ensure PAT fallback.
+     *
+     * Mirrors the PAT precedence in
+     * {@see AuthenticationFactory::createConfig()} (GITHUB_TOKEN env over
+     * github.token config) but returns the PAT specifically - independent of
+     * any GitHub App auth that createConfig() would otherwise prefer - so the
+     * fallback can retry with it when the App token is rejected. Returns an
+     * empty string when no PAT is configured.
+     */
+    private function resolveFallbackPat(): string
+    {
+        $patFromEnv = getenv('GITHUB_TOKEN');
+        if ($patFromEnv !== false && trim($patFromEnv) !== '') {
+            return $patFromEnv;
+        }
+
+        $config = $this->dependencies->get(ConfigProvider::class);
+        if ($config->hasSetting('github.token')) {
+            $patFromConfig = $config->getSetting('github.token');
+            if (trim($patFromConfig) !== '') {
+                return $patFromConfig;
+            }
+        }
+
+        return '';
     }
 }

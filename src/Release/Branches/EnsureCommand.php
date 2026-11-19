@@ -40,7 +40,7 @@ use Throwable;
  * Ensure a repository's release branch exists locally and remotely and is
  * the repository default branch.
  *
- * Steps (each idempotent, each gated by --pretend):
+ * Steps:
  * 1. Resolve the release branch from the central branch-role map.
  * 2. If the local branch is missing, create it: from the remote branch of
  *    the same name when that exists, otherwise from the current local
@@ -48,9 +48,14 @@ use Throwable;
  * 3. If the remote branch is missing, push the local branch with upstream
  *    tracking.
  * 4. Make the remote branch the repository default branch via the GitHub
- *    API. When the API authorization is insufficient, print a helpful
- *    message and the manual settings link; when no auth is configured, do
- *    the git work and point at the same link.
+ *    API.
+ *
+ * 5. Retry once when the API call fails and the active authorization was a GitHub
+ *    App token while a Personal Access Token is also available (GITHUB_TOKEN
+ *    env or github.token config).
+ *
+ * When no auth is configured, do the git work and point at the same link.
+ * These steps are supposed to be idempotent (rerun-safe) and support pretend mode.
  *
  * @category Horde
  * @package  Components
@@ -67,12 +72,21 @@ class EnsureCommand
      * @param GitHubChecker $checker GitHub remote/owner resolver.
      * @param GithubApiConfig $apiConfig Resolved GitHub API config (token
      *                                   may be empty when unauthenticated).
+     * @param bool $usedGitHubApp True when $apiConfig carries a GitHub App
+     *                            installation token (as opposed to a PAT or
+     *                            no auth). Gates the PAT fallback below.
+     * @param string $fallbackPat A Personal Access Token to retry the
+     *                            default-branch change with when the primary
+     *                            (GitHub App) attempt fails. Empty when none
+     *                            is configured.
      */
     public function __construct(
         private readonly Output $output,
         private readonly GitHelper $git,
         private readonly GitHubChecker $checker,
-        private readonly GithubApiConfig $apiConfig
+        private readonly GithubApiConfig $apiConfig,
+        private readonly bool $usedGitHubApp = false,
+        private readonly string $fallbackPat = ''
     ) {}
 
     /**
@@ -129,15 +143,14 @@ class EnsureCommand
 
         // Enforce the release branch's PHP-version policy on .horde.yml.
         // Idempotent: runs whether the branch was just created or already
-        // existed. The command owns the save(); it does not commit.
+        // existed.
         $this->enforcePhpPolicy($componentPath, $releaseDef, $pretend, $changed);
 
         $defaultChanged = $this->ensureDefaultBranch($componentPath, $release, $pretend);
         if ($defaultChanged === null) {
-            // The git side is consistent; only the default-branch step could
-            // not be completed (missing or insufficient auth). The helpful
-            // message was already printed. Treat as success so the git work
-            // is not reported as a failure.
+            // The git side is consistent. Only the default-branch step could
+            // not be completed. A helpful message was already printed.
+            // Treat as success.
             return true;
         }
         $changed = $changed || $defaultChanged;
@@ -158,7 +171,7 @@ class EnsureCommand
      * @param string|null $createdFromBranch Set (by reference) to the former
      *        branch name when the release branch was created from scratch off
      *        the current default branch, else left null. Signals the opening
-     *        version-bump step; a branch that already existed locally or was
+     *        version-bump step. A branch that already existed locally or was
      *        created tracking an existing remote branch is not "from scratch".
      * @return bool False only on an unrecoverable error.
      */
@@ -183,15 +196,7 @@ class EnsureCommand
             return true;
         }
 
-        // Neither local nor remote exists: pick the branch to fork from.
-        //
-        // Prefer the current checked-out branch when it is itself a
-        // FRAMEWORK_A_B branch: that is the release branch of the generation
-        // being superseded, and it makes the opening version-bump delta
-        // meaningful. Fall back to the detected default branch (local
-        // origin/HEAD), which can be stale or point at a now-deleted branch
-        // on long-lived checkouts, then to the current branch as a last
-        // resort.
+        // Neither local nor remote exists: Pick the branch to fork from.
         $sourceBranch = trim((string) $this->git->getCurrentBranch($componentPath));
         if (!preg_match('/^FRAMEWORK_\d+_\d+$/', $sourceBranch)) {
             $sourceBranch = trim((string) (
@@ -237,16 +242,17 @@ class EnsureCommand
     }
 
     /**
-     * Enforce the release branch's PHP-version policy on .horde.yml.
+     * Enforce the release branch PHP-version policy on .horde.yml.
      *
-     * Reads the component's current dependencies.required.php, reconciles
-     * it against the branch policy (raise floor to min, tighten ceiling to
-     * max, pin on sync), and rewrites it when it drifts. Persists with
-     * {@see HordeYml::save()} but does not git-commit — the change is left
-     * in the working tree for review. No-op when the branch has no policy.
+     * Reads the component's current dependencies.required.php
+     * Then reconciles it against the branch policy.
+     * - raise floor to min
+     * - tighten ceiling to max
+     * - if Sync clause is set, rewrite to the exact values we require.
+     * Persists with {@see HordeYml::save()}
      *
      * @param BranchDefinition|null $releaseDef The release branch
-     *        definition from the role map, or null when the release branch
+     *        definition from the role map or null when the release branch
      *        is absent from the map.
      * @param bool $changed Set to true (by reference) when .horde.yml is
      *        rewritten.
@@ -266,7 +272,7 @@ class EnsureCommand
             $file = $yml->getHordeYmlFile();
             $current = $file->getRequiredPhp();
         } catch (Throwable $e) {
-            $this->output->warn('Could not read .horde.yml PHP requirement; skipping policy: ' . $e->getMessage());
+            $this->output->warn('Could not read .horde.yml PHP requirement. Skipping policy: ' . $e->getMessage());
             return;
         }
 
@@ -316,7 +322,7 @@ class EnsureCommand
         try {
             $currentVersion = (new HordeYml($componentPath))->getReleaseVersion()->toFullSemVerV2();
         } catch (Throwable $e) {
-            $this->output->warn('Could not read .horde.yml release version; skipping the opening version bump: ' . $e->getMessage());
+            $this->output->warn('Could not read .horde.yml release version. Skipping the opening version bump: ' . $e->getMessage());
             return;
         }
 
@@ -362,8 +368,8 @@ class EnsureCommand
      *
      * Pure helper (no IO): decides minor-vs-major from the FRAMEWORK_A_B
      * delta between the former branch and the new release branch, bumps the
-     * component's current version core accordingly, and opens it at alpha
-     * (stability count 0, so it renders as a bare "-alpha").
+     * component's current version core accordingly.
+     * Opens at alpha stability count 0, i.e. a bare "-alpha").
      *
      * @param string $formerBranch The branch the release branch was made from.
      * @param string $newReleaseBranch The new release branch name.
@@ -403,9 +409,7 @@ class EnsureCommand
         }
 
         // Build directly with stability count 0 so the opening version is a
-        // bare "-alpha" (fromComposerString("...-alpha") would default the
-        // count to 1 and render "-alpha1"). Constructor order: original,
-        // prefix, major, minor, patch, subpatch, stability, stabilityVersion.
+        // bare "-alpha" (stability count 0).
         return new Version('', '', $major, $minor, 0, 0, 'alpha', 0);
     }
 
@@ -413,9 +417,7 @@ class EnsureCommand
      * Ensure the remote branch is the repository default branch.
      *
      * @return bool|null True when the default branch was changed, false when
-     *                   it was already correct, null when the step could not
-     *                   be completed (no auth or insufficient permission) and
-     *                   a manual-action message was printed instead.
+     *                   it was already correct. Null when the step wasn't completed.
      */
     private function ensureDefaultBranch(
         string $componentPath,
@@ -423,7 +425,7 @@ class EnsureCommand
         bool $pretend
     ): ?bool {
         if (!$this->checker->isOnGitHub($componentPath)) {
-            $this->output->warn('Remote is not on GitHub; cannot manage the default branch.');
+            $this->output->warn('Remote is not on GitHub. Cannot manage the default branch.');
             return null;
         }
 
@@ -438,7 +440,7 @@ class EnsureCommand
         $settingsUrl = "https://github.com/{$owner}/{$repoName}/settings/branches";
 
         if ($this->apiConfig->accessToken === '' && $this->apiConfig->jwt === '') {
-            $this->output->warn('No GitHub authorization configured; skipping the default-branch change.');
+            $this->output->warn('No GitHub authorization configured. Skipping the default-branch change.');
             $this->output->info("Set {$release} as the default branch manually: {$settingsUrl}");
             return null;
         }
@@ -463,10 +465,18 @@ class EnsureCommand
             $client->updateRepository($repo, new RepositoryUpdate(defaultBranch: $release));
             return true;
         } catch (GithubApiAccessDeniedException $e) {
+            $fallback = $this->tryPatFallback($repo, $release, $pretend);
+            if ($fallback !== null) {
+                return $fallback ? true : null;
+            }
             $this->output->error($e->hint);
             $this->output->info("Set {$release} as the default branch manually: {$settingsUrl}");
             return null;
         } catch (Throwable $e) {
+            $fallback = $this->tryPatFallback($repo, $release, $pretend);
+            if ($fallback !== null) {
+                return $fallback ? true : null;
+            }
             $this->output->error('GitHub API error while setting the default branch: ' . $e->getMessage());
             $this->output->info("Set {$release} as the default branch manually: {$settingsUrl}");
             return null;
@@ -474,16 +484,61 @@ class EnsureCommand
     }
 
     /**
-     * Build a GitHub API client from the resolved config and the Horde HTTP
-     * stack, mirroring GitHubReleaseCreator / PullRequestManager.
+     * Retry the default-branch change once with a Personal Access Token.
+     *
+     * Applies only when the primary attempt used a GitHub App token (which
+     * commonly lacks administration:write) and a PAT is configured. Reports
+     * to the user that the PAT fallback was used and whether it succeeded.
+     *
+     * @param GithubRepository $repo The target repository.
+     * @param string $release The release branch to set as default.
+     * @param bool $pretend Preview the retry without performing it.
+     * @return bool|null True when the PAT fallback set the default branch
+     *                   (or would, under --pretend); false when the fallback
+     *                   ran but failed; null when the fallback does not apply
+     *                   (not a GitHub App token, or no PAT configured).
      */
-    private function buildClient(): GithubApiClient
+    private function tryPatFallback(
+        GithubRepository $repo,
+        string $release,
+        bool $pretend
+    ): ?bool {
+        if (!$this->usedGitHubApp || trim($this->fallbackPat) === '') {
+            return null;
+        }
+
+        $this->output->warn(
+            'GitHub App token could not set the default branch. Retrying once with the configured PAT.'
+        );
+
+        if ($pretend) {
+            $this->output->warn('[PRETEND] Would retry the default-branch change with the PAT.');
+            return true;
+        }
+
+        try {
+            $client = $this->buildClient(new GithubApiConfig(accessToken: $this->fallbackPat));
+            $client->updateRepository($repo, new RepositoryUpdate(defaultBranch: $release));
+            $this->output->ok("PAT fallback succeeded: default branch set to {$release}.");
+            return true;
+        } catch (Throwable $e) {
+            $this->output->error('PAT fallback failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Build a GitHub API client from the resolved config and the Horde HTTP stack
+     *
+     * @param GithubApiConfig|null $config Config override (e.g. a PAT config for the fallback).
+     */
+    private function buildClient(?GithubApiConfig $config = null): GithubApiClient
     {
         $httpClient = new CurlClient(new ResponseFactory(), new StreamFactory(), new Options());
         return new GithubApiClient(
             $httpClient,
             new RequestFactory(),
-            $this->apiConfig,
+            $config ?? $this->apiConfig,
             new StreamFactory()
         );
     }
