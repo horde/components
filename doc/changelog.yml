@@ -1,4 +1,19 @@
 ---
+1.0.0-RC14:
+  api: 1.0.0-RC14
+  state:
+    release: RC
+    api: RC
+  date: 2026-11-19
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: |-
+    feat: If a Github App is configured, use it for git clone and git fetch operations
+    feat: Fallback from Github App Token to PAT on permission issue
+    chore: Promote FRAMEWORK_6_1 to the default branch and make FRAMEWORK_6_0 a "maintained" branch
+    feat: php version constraint policies.
+    refactor(qc): Make components pass its own unit test pipeline again
 1.0.0-RC13:
   api: 1.0.0-RC13
   state:
