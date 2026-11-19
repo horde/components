@@ -16,6 +16,7 @@ declare(strict_types=1);
 namespace Horde\Components\Runner;
 
 use Exception;
+use RuntimeException;
 use Horde\Components\ConventionalCommit;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Helper\Shell;
@@ -119,8 +120,10 @@ class GitSyncAll
         // 1. Fetch all remotes and tags
         if (!$dryRun) {
             try {
-                $this->gitHelper->fetch($repoPath);
-                $this->shell->shellExec('git fetch --all --tags --force', workingDir: $repoPath);
+                $fetch = $this->gitHelper->fetch($repoPath, force: true);
+                if ($fetch->getReturnValue() !== 0) {
+                    throw new RuntimeException('Git fetch failed (exit status ' . $fetch->getReturnValue() . ').');
+                }
             } catch (Exception $e) {
                 $result->skipReason = 'Fetch failed: ' . $e->getMessage();
                 return $result;
@@ -367,7 +370,9 @@ class GitSyncAll
     {
         $name = 'horde/' . $result->name;
 
-        if (!$result->isClean) {
+        if ($result->skipReason !== null) {
+            $this->output->error(sprintf('[ ERROR! ] %s (%s, skipped)', $name, $result->skipReason));
+        } elseif (!$result->isClean) {
             $this->output->error(sprintf('[ ERROR! ] %s (dirty state, skipped)', $name));
         } elseif ($result->rebaseConflict) {
             $this->output->error(sprintf('[ ERROR! ] %s (rebase conflict on %s)', $name, $result->currentBranch));

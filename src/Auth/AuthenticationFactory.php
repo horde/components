@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace Horde\Components\Auth;
 
 use Horde\Components\ConfigProvider\ConfigProvider;
+use Horde\Components\Output;
 use Horde\GithubApiClient\Auth\GitHubAppAuthenticationService;
 use Horde\GithubApiClient\Auth\GitHubAppConfig;
 use Horde\GithubApiClient\Auth\GitHubJwtGenerator;
 use Horde\GithubApiClient\GithubApiConfig;
+use Horde\GithubApiClient\GithubApiClient;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use RuntimeException;
 use InvalidArgumentException;
+use Exception;
 
 /**
  * Authentication factory that determines which authentication method to use
@@ -34,6 +37,8 @@ use InvalidArgumentException;
  */
 class AuthenticationFactory
 {
+    private ?GitHubAppAuthenticationService $appAuthService = null;
+
     /**
      * @param ConfigProvider $config Components configuration
      * @param ClientInterface $httpClient HTTP client for API calls
@@ -122,7 +127,7 @@ class AuthenticationFactory
             return null;
         }
 
-        return new GitHubAppAuthenticationService(
+        return $this->appAuthService ??= new GitHubAppAuthenticationService(
             $appConfig,
             new GitHubJwtGenerator(),
             $this->httpClient,
@@ -170,6 +175,42 @@ class AuthenticationFactory
         // No auth configured anywhere - anonymous/unauthenticated config,
         // matching the previous bootstrap default.
         return new GithubApiConfig();
+    }
+
+    /**
+     * Retry one remote operation with the environment PAT if App authentication
+     * or the App-authenticated operation fails. Callers opt in per command.
+     *
+     * @template T
+     * @param callable(GithubApiConfig): T $operation
+     * @return T
+     */
+    public function withEnvironmentPatFallback(callable $operation, Output $output): mixed
+    {
+        $usingApp = $this->hasGitHubAppAuth();
+        $pat = getenv('GITHUB_TOKEN');
+
+        try {
+            return $operation($this->createConfig());
+        } catch (Exception $e) {
+            if (!$usingApp || $pat === false || trim($pat) === '') {
+                throw $e;
+            }
+
+            $output->warn('GitHub App authentication or operation failed; retrying once with GITHUB_TOKEN.');
+        }
+
+        return $operation(new GithubApiConfig(accessToken: $pat));
+    }
+
+    public function createClient(GithubApiConfig $config): GithubApiClient
+    {
+        return new GithubApiClient(
+            $this->httpClient,
+            $this->requestFactory,
+            $config,
+            $this->streamFactory
+        );
     }
 
     /**

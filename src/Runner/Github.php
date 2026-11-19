@@ -16,13 +16,14 @@ declare(strict_types=1);
 namespace Horde\Components\Runner;
 
 use Horde\Components\ConfigProvider\EffectiveConfigProvider;
+use Horde\Components\Auth\AuthenticationFactory;
 use Horde\Components\Exception;
 use Horde\Components\Release\BranchRoles;
 use RuntimeException;
 use Horde\Components\Helper\Git as GitHelper;
 use Horde\Components\Output;
 use Horde\Components\Runner\GithubSync;
-use Horde\GithubApiClient\GithubApiClient;
+use Horde\GithubApiClient\GithubApiConfig;
 use Horde\GithubApiClient\GithubOrganizationId;
 use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 
@@ -59,7 +60,7 @@ class Github
      * @param array $options CLI options
      * @param Output $output The output handler
      * @param GitHelper $gitHelper Git helper for operations
-     * @param GithubApiClient $client Github API client
+     * @param AuthenticationFactory $authentication GitHub authentication
      * @param GitCheckoutDirectory $gitCheckoutDirectory Default checkout directory
      */
     public function __construct(
@@ -68,7 +69,7 @@ class Github
         private readonly array $options,
         private readonly Output $output,
         private readonly GitHelper $gitHelper,
-        private readonly GithubApiClient $client,
+        private readonly AuthenticationFactory $authentication,
         private readonly GitCheckoutDirectory $gitCheckoutDirectory
     ) {
         // Try new name first, then fall back to old name for backwards compatibility
@@ -100,7 +101,11 @@ class Github
             $headBranch = BranchRoles::load($rolesFile)->releaseBranch();
             $this->output->ok('About the clone a complete github org.');
             $this->output->plain('Trying to get the catalog');
-            $repoMeta = $this->client->listRepositoriesInOrganization(new GithubOrganizationId('horde'));
+            $repoMeta = $this->authentication->withEnvironmentPatFallback(
+                fn(GithubApiConfig $config) => $this->authentication->createClient($config)
+                    ->listRepositoriesInOrganization(new GithubOrganizationId('horde')),
+                $this->output
+            );
             // TODO: Build a helper object for checking if repo dir exists
             if (!file_exists($this->localCheckoutDir)) {
                 $this->output->plain('Trying to create local checkout directory: ' . $this->localCheckoutDir);
@@ -147,7 +152,7 @@ class Github
     private function runDetectDifferences(): void
     {
         $sync = new GithubSync(
-            $this->client,
+            $this->authentication,
             $this->gitCheckoutDirectory,
             $this->gitHelper,
             $this->output,

@@ -61,6 +61,32 @@ class ShellTest extends TestCase
         $this->assertSame(42, $result->getReturnValue());
     }
 
+    public function testExecWithEnvironmentIsChildOnlyAndPreservesExitStatus(): void
+    {
+        $name = 'HORDE_COMPONENTS_TEST_CHILD_TOKEN';
+        $before = getenv($name);
+        $shell = new Shell();
+        $command = escapeshellarg(PHP_BINARY) . ' -r '
+            . escapeshellarg('echo getenv("' . $name . '"); exit(42);');
+
+        $result = $shell->execWithEnvironment($command, [$name => 'temporary-token']);
+
+        $this->assertSame('temporary-token', $result->getOutputString());
+        $this->assertSame(42, $result->getReturnValue());
+        $this->assertSame($before, getenv($name));
+    }
+
+    public function testPretendWithEnvironmentDoesNotRunOrPrintCredentials(): void
+    {
+        $output = $this->createMock(Output::class);
+        $output->expects($this->once())->method('info')->with('Would run: "exit 42"');
+        $shell = new Shell($output, true);
+
+        $result = $shell->execWithEnvironment('exit 42', ['TOKEN' => 'do-not-print']);
+
+        $this->assertSame(0, $result->getReturnValue());
+    }
+
     public function testSystemReturnsString(): void
     {
         $shell = new Shell();

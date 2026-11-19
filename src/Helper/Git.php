@@ -13,11 +13,13 @@ declare(strict_types=1);
 namespace Horde\Components\Helper;
 
 use Horde\Components\Component;
+use Horde\Components\Auth\AuthenticationFactory;
 use Horde\Components\Component\Task\SystemCallResult;
 use Horde\Components\Output;
 use Horde\Components\GitCommit;
 use Horde\Components\GitCommitLog;
 use Horde\Components\Helper\Shell;
+use Horde\GithubApiClient\GithubApiConfig;
 use RuntimeException;
 
 /**
@@ -59,7 +61,9 @@ class Git
     /**
      * A variable potentially holding the output tool
      */
-    public ?Output $output;
+    public ?Output $output = null;
+
+    private ?AuthenticationFactory $authentication = null;
 
     /**
      * Shell executor for running commands
@@ -86,6 +90,14 @@ class Git
             $pretend = !empty($options['pretend']);
             $this->shell = new Shell($this->output ?? null, $pretend);
         }
+    }
+
+    public function withGitHubAuthentication(AuthenticationFactory $authentication, Output $output): self
+    {
+        $helper = clone $this;
+        $helper->authentication = $authentication;
+        $helper->output = $output;
+        return $helper;
     }
 
     public function getGitLog(string $localDir, int $limit = 5): GitCommitLog
@@ -508,20 +520,16 @@ class Git
      */
     public function clone(string $uri, string $localDir, string $branch = ''): SystemCallResult
     {
-        $options = '';
-        if ($branch) {
-            $options .= '-b ' . $branch;
-        }
         $cmd = sprintf(
-            '%s %s clone %s %s',
+            '%s clone %s%s %s',
             $this->gitBin,
-            $options,
-            $uri,
-            $localDir
+            $branch !== '' ? '--branch ' . escapeshellarg($branch) . ' ' : '',
+            escapeshellarg($uri),
+            escapeshellarg($localDir)
         );
         echo $cmd;
 
-        return $this->exec($cmd);
+        return $this->execNetwork($cmd, null, $this->isGitHubHttpsUrl($uri));
     }
 
     /**
@@ -595,13 +603,73 @@ class Git
      *
      * @param string $localDir Full path to repo
      */
-    public function fetch(string $localDir): SystemCallResult
+    public function fetch(string $localDir, bool $force = false): SystemCallResult
     {
         $cmd = sprintf(
             '%s fetch --all --tags',
             $this->gitBin
         );
-        return $this->execInDirectory($cmd, $localDir);
+        if ($force) {
+            $cmd .= ' --force';
+        }
+
+        $githubHttps = false;
+        if ($this->authentication !== null && !$this->shell->isPretend()) {
+            $remotes = $this->execInDirectory($this->gitBin . ' remote -v', $localDir);
+            if ($remotes->getReturnValue() !== 0) {
+                throw new RuntimeException('Could not read Git remotes.');
+            }
+            foreach ($remotes->getOutputArray() as $remote) {
+                if (preg_match('/^\S+\s+(\S+)\s+\(fetch\)$/', $remote, $matches)
+                    && $this->isGitHubHttpsUrl($matches[1])) {
+                    $githubHttps = true;
+                    break;
+                }
+            }
+        }
+
+        return $this->execNetwork($cmd, $localDir, $githubHttps);
+    }
+
+    private function isGitHubHttpsUrl(string $url): bool
+    {
+        return strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https'
+            && strtolower((string) parse_url($url, PHP_URL_HOST)) === 'github.com';
+    }
+
+    private function execNetwork(string $command, ?string $directory, bool $githubHttps): SystemCallResult
+    {
+        if ($this->authentication === null || $this->output === null || $this->shell->isPretend()) {
+            return $this->shell->exec($command, $directory);
+        }
+
+        $execute = function (?GithubApiConfig $config = null) use ($command, $directory): SystemCallResult {
+            if ($config === null || $config->accessToken === '') {
+                $result = $this->shell->exec($command, $directory);
+            } else {
+                $environment = [
+                    'GIT_TERMINAL_PROMPT' => '0',
+                    'HORDE_COMPONENTS_GITHUB_AUTHORIZATION' => 'Authorization: Basic ' . base64_encode('x-access-token:' . $config->accessToken),
+                ];
+                $authenticatedCommand = sprintf(
+                    '%s -c %s -c %s --config-env=%s%s',
+                    $this->gitBin,
+                    escapeshellarg('http.https://github.com/.extraHeader='),
+                    escapeshellarg('credential.https://github.com.helper='),
+                    escapeshellarg('http.https://github.com/.extraHeader=HORDE_COMPONENTS_GITHUB_AUTHORIZATION'),
+                    substr($command, strlen($this->gitBin))
+                );
+                $result = $this->shell->execWithEnvironment($authenticatedCommand, $environment, $directory);
+            }
+            if ($result->getReturnValue() !== 0) {
+                throw new RuntimeException('Git remote operation failed (exit status ' . $result->getReturnValue() . ').');
+            }
+            return $result;
+        };
+
+        return $githubHttps
+            ? $this->authentication->withEnvironmentPatFallback($execute, $this->output)
+            : $execute();
     }
 
     public function addRemote(): void

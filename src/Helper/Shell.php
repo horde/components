@@ -18,6 +18,7 @@ namespace Horde\Components\Helper;
 
 use Horde\Components\Output;
 use Horde\Components\Component\Task\SystemCallResult;
+use RuntimeException;
 
 use function exec;
 use function shell_exec;
@@ -79,6 +80,44 @@ class Shell
         }
 
         return new SystemCallResult($output, $exitCode);
+    }
+
+    /**
+     * Run with child-only environment overrides, keeping credentials out of
+     * command arguments and the parent process environment.
+     *
+     * @param array<string, string> $environment
+     */
+    public function execWithEnvironment(string $command, array $environment, ?string $workingDir = null): SystemCallResult
+    {
+        if ($this->pretend) {
+            return $this->exec($command, $workingDir);
+        }
+
+        $process = proc_open(
+            $command,
+            [
+                0 => ['file', 'php://stdin', 'r'],
+                1 => ['pipe', 'w'],
+                2 => ['file', 'php://stderr', 'w'],
+            ],
+            $pipes,
+            $workingDir,
+            array_merge(getenv(), $environment)
+        );
+        if (!is_resource($process)) {
+            throw new RuntimeException('Could not start command.');
+        }
+
+        $stdout = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+        $exitCode = proc_close($process);
+        if ($stdout === false) {
+            throw new RuntimeException('Could not read command output.');
+        }
+
+        $lines = $stdout === '' ? [] : explode("\n", rtrim($stdout, "\n"));
+        return new SystemCallResult($lines, $exitCode);
     }
 
     /**

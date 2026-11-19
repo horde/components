@@ -20,6 +20,7 @@ namespace Horde\Components\Module;
 
 use Horde\Argv\Option;
 use Horde\Components\Component;
+use Horde\Components\Auth\AuthenticationFactory;
 use Horde\Components\ConfigProvider\ConfigProviderFactory;
 use Horde\Components\Helper\Shell;
 use Horde\Components\Runner\Git as RunnerGit;
@@ -27,7 +28,6 @@ use Horde\Components\Runner\Github as RunnerGithub;
 use Horde\Components\Runner\GitSyncAll;
 use Horde\Components\Output;
 use Horde\Components\Helper\Git as GitHelper;
-use Horde\GithubApiClient\GithubApiClient;
 use Horde\Components\RuntimeContext\GitCheckoutDirectory;
 
 /**
@@ -277,7 +277,8 @@ NOTE: --all-repos and --pattern are mutually exclusive.
         // Handle github-clone-org and github commands
         if ((isset($arguments[0]) && $arguments[0] == 'github-clone-org')
             || (isset($arguments[0]) && $arguments[0] == 'github')) {
-            $client = $this->dependencies->get(GithubApiClient::class);
+            $authentication = $this->dependencies->get(AuthenticationFactory::class);
+            $gitHelper = $gitHelper->withGitHubAuthentication($authentication, $output);
             $checkoutDir = $this->dependencies->get(GitCheckoutDirectory::class);
 
             $runner = new RunnerGithub(
@@ -286,7 +287,7 @@ NOTE: --all-repos and --pattern are mutually exclusive.
                 $options,
                 $output,
                 $gitHelper,
-                $client,
+                $authentication,
                 $checkoutDir
             );
             $runner->run();
@@ -298,6 +299,10 @@ NOTE: --all-repos and --pattern are mutually exclusive.
             && isset($arguments[1]) && ($arguments[1] == 'sync' || $arguments[1] == 'sync-all')) {
             $checkoutDir = $this->dependencies->get(GitCheckoutDirectory::class);
             $shell = $this->dependencies->get(Shell::class);
+            $gitHelper = $gitHelper->withGitHubAuthentication(
+                $this->dependencies->get(AuthenticationFactory::class),
+                $output
+            );
 
             $runner = new GitSyncAll(
                 $checkoutDir,

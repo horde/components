@@ -16,11 +16,12 @@ declare(strict_types=1);
 namespace Horde\Components\Runner;
 
 use Horde\Components\Helper\Git as GitHelper;
+use Horde\Components\Auth\AuthenticationFactory;
 use Horde\Components\Output;
 use Horde\Components\Release\BranchRoles;
 use Horde\Components\Report\DifferenceReport;
 use Horde\Components\RuntimeContext\GitCheckoutDirectory;
-use Horde\GithubApiClient\GithubApiClient;
+use Horde\GithubApiClient\GithubApiConfig;
 use Horde\GithubApiClient\GithubOrganizationId;
 use RuntimeException;
 
@@ -42,7 +43,7 @@ class GithubSync
     /**
      * Constructor.
      *
-     * @param GithubApiClient $githubClient GitHub API client
+     * @param AuthenticationFactory $authentication GitHub authentication
      * @param GitCheckoutDirectory $checkoutDir Local checkout directory
      * @param GitHelper $gitHelper Git operations helper
      * @param Output $output Output handler
@@ -51,7 +52,7 @@ class GithubSync
      * @param string $gitRepoBase Git repository base URL
      */
     public function __construct(
-        private readonly GithubApiClient $githubClient,
+        private readonly AuthenticationFactory $authentication,
         private readonly GitCheckoutDirectory $checkoutDir,
         private readonly GitHelper $gitHelper,
         private readonly Output $output,
@@ -191,8 +192,10 @@ class GithubSync
      */
     private function fetchRemoteRepositories(): array
     {
-        $repos = $this->githubClient->listRepositoriesInOrganization(
-            new GithubOrganizationId($this->organizationName)
+        $repos = $this->authentication->withEnvironmentPatFallback(
+            fn(GithubApiConfig $config) => $this->authentication->createClient($config)
+                ->listRepositoriesInOrganization(new GithubOrganizationId($this->organizationName)),
+            $this->output
         );
 
         $names = [];
