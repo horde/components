@@ -27,7 +27,7 @@
         "release",
         "static site generator"
     ],
-    "time": "2026-11-19",
+    "time": "2026-11-20",
     "repositories": [],
     "require": {
         "horde/horde-installer-plugin": "^2.6 || dev-FRAMEWORK_6_1",

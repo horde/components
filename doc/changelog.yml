@@ -1,4 +1,14 @@
 ---
+1.0.0-RC15:
+  api: 1.0.0-RC15
+  state:
+    release: RC
+    api: RC
+  date: 2026-11-20
+  license:
+    identifier: LGPL-2.1-only
+    uri: https://spdx.org/licenses/LGPL-2.1-only.html
+  notes: 'feat: Add an option for --clean-release'
 1.0.0-RC14:
   api: 1.0.0-RC14
   state:
