@@ -97,9 +97,11 @@ class Release
         && $this->arguments[0] == 'release'
         && $this->arguments[1] == 'h6') {
             $path = new ComponentDirectory($this->component->getComponentDirectory());
-            $gitHelper = new GitHelper();
+            $pretend = !empty($this->options['pretend']);
+            $gitHelper = (new GitHelper(options: ['pretend' => $pretend]))
+                ->withGitHubAuthentication($this->authFactory, $this->output);
             $composerHelper = new ComposerHelper();
-            $shell = new Shell();
+            $shell = new Shell($this->output, $pretend);
 
             // Get GitHubChecker and GitHubReleaseCreator from dependencies
             $githubChecker = new GitHubChecker($gitHelper);
@@ -123,7 +125,8 @@ class Release
                 $githubReleaseCreator,
                 $this->qcTasks,
                 $shell,
-                $this->branchRoles
+                $this->branchRoles,
+                $pretend
             );
 
             $release->run($this->component, $this->options);

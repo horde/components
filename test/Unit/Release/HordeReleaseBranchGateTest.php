@@ -149,4 +149,31 @@ class HordeReleaseBranchGateTest extends TestCase
         $this->enforce($release, BranchRoles::ROLE_RELEASE, 'minor', 'stable', false);
         $this->addToAssertionCount(1);
     }
+
+    // --- clean-release preflight ---------------------------------------
+
+    public function testCleanReleaseResetsOntoCurrentBranchRemoteTip(): void
+    {
+        $git = $this->createMock(GitHelper::class);
+        $git->method('getCurrentBranch')->willReturn('FRAMEWORK_9_9');
+        $git->expects($this->once())->method('cleanRelease')
+            ->with('/path/to/component', 'FRAMEWORK_9_9');
+
+        $directory = $this->createStub(ComponentDirectory::class);
+        $directory->method('__toString')->willReturn('/path/to/component');
+
+        $release = new HordeRelease(
+            $this->createStub(ComposerHelper::class),
+            $git,
+            $directory,
+            $this->createStub(Output::class),
+            $this->createStub(GitHubReleaseCreator::class),
+            $this->createStub(QcTasks::class),
+            $this->createStub(ShellHelper::class),
+            new BranchRoles('FRAMEWORK_9_9'),
+            true
+        );
+
+        (new ReflectionMethod($release, 'runCleanRelease'))->invoke($release);
+    }
 }

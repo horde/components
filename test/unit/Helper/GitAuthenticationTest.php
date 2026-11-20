@@ -121,6 +121,98 @@ class GitAuthenticationTest extends TestCase
         $this->assertSame(0, $git->fetch('/checkout')->getReturnValue());
     }
 
+    #[DataProvider('fetchResults')]
+    public function testHttpsPushUsesAppThenAtMostOnePatRetry(array $exitCodes): void
+    {
+        $authentication = $this->createPartialMock(AuthenticationFactory::class, ['hasGitHubAppAuth', 'createConfig']);
+        $authentication->method('hasGitHubAppAuth')->willReturn(true);
+        $authentication->expects($this->once())->method('createConfig')
+            ->willReturn(new GithubApiConfig(accessToken: 'short-lived-app-token'));
+        $output = $this->createMock(Output::class);
+        $output->expects(count($exitCodes) === 1 ? $this->never() : $this->once())->method('warn');
+        $shell = $this->createMock(Shell::class);
+        $shell->method('isPretend')->willReturn(false);
+        // One exec() for the `remote -v` probe used to decide the remote is
+        // an HTTPS github.com URL. getCurrentBranch is not reached because the
+        // ref is passed explicitly.
+        $shell->expects($this->once())->method('exec')
+            ->with($this->stringContains('remote -v'), '/checkout')
+            ->willReturn(new SystemCallResult(['origin https://github.com/horde/components.git (push)'], 0));
+        $attempt = 0;
+        $shell->expects($this->exactly(count($exitCodes)))->method('execWithEnvironment')
+            ->willReturnCallback(function (string $command, array $environment, string $directory) use (&$attempt, $exitCodes) {
+                $token = $attempt === 0 ? 'short-lived-app-token' : 'environment-pat';
+                $this->assertStringContainsString('push', $command);
+                $this->assertStringContainsString("--set-upstream 'origin' 'FRAMEWORK_6_1'", $command);
+                $this->assertStringContainsString('--follow-tags', $command);
+                $this->assertStringNotContainsString($token, $command);
+                $this->assertSame('/checkout', $directory);
+                $this->assertSame(
+                    'Authorization: Basic ' . base64_encode('x-access-token:' . $token),
+                    $environment['HORDE_COMPONENTS_GITHUB_AUTHORIZATION']
+                );
+                return new SystemCallResult([], $exitCodes[$attempt++]);
+            });
+        $git = (new Git(shell: $shell))->withGitHubAuthentication($authentication, $output);
+
+        if (end($exitCodes) !== 0) {
+            $this->expectException(RuntimeException::class);
+            $this->expectExceptionMessage('Git remote operation failed');
+        }
+        $git->push('/checkout', 'origin', 'FRAMEWORK_6_1', false, true);
+    }
+
+    public function testPretendPushRunsNothing(): void
+    {
+        $authentication = $this->createMock(AuthenticationFactory::class);
+        $authentication->expects($this->never())->method('withEnvironmentPatFallback');
+        $shell = $this->createMock(Shell::class);
+        $shell->method('isPretend')->willReturn(true);
+        $shell->expects($this->never())->method('execWithEnvironment');
+        // In pretend mode remote detection is skipped and execNetwork prints
+        // the command via exec() without running it.
+        $shell->expects($this->once())->method('exec')
+            ->with($this->stringContains('push'), '/checkout')
+            ->willReturn(new SystemCallResult([], 0));
+        $git = (new Git(shell: $shell))
+            ->withGitHubAuthentication($authentication, $this->createStub(Output::class));
+
+        $git->push('/checkout', 'origin', 'FRAMEWORK_6_1', false, true);
+    }
+
+    public function testCleanReleaseRunsFetchResetAndClean(): void
+    {
+        $shell = $this->createMock(Shell::class);
+        $shell->method('isPretend')->willReturn(false);
+        $commands = [];
+        $shell->expects($this->exactly(3))->method('exec')
+            ->willReturnCallback(function (string $command, ?string $directory) use (&$commands) {
+                $commands[] = $command;
+                $this->assertSame('/checkout', $directory);
+                return new SystemCallResult([], 0);
+            });
+        $git = new Git(shell: $shell);
+
+        $git->cleanRelease('/checkout', 'FRAMEWORK_6_1');
+
+        // fetch, reset --hard origin/<branch>, clean -fdx — in that order.
+        $this->assertCount(3, $commands);
+        $this->assertStringContainsString("fetch 'origin'", $commands[0]);
+        $this->assertStringContainsString("reset --hard 'origin/FRAMEWORK_6_1'", $commands[1]);
+        $this->assertStringContainsString('clean -fdx', $commands[2]);
+    }
+
+    public function testCleanReleasePretendRunsNothing(): void
+    {
+        $realShell = new Shell(pretend: true);
+        $git = new Git(shell: $realShell);
+
+        // No exception and no mutation: the pretend Shell prints instead of
+        // executing, so this is a pure smoke check that the path is wired.
+        $git->cleanRelease('/nonexistent-checkout', 'FRAMEWORK_6_1');
+        $this->assertTrue($realShell->isPretend());
+    }
+
     public function testCloneUsesTransientConfigWithoutChangingStoredRemote(): void
     {
         $directory = sys_get_temp_dir() . '/components-git-auth-' . bin2hex(random_bytes(6));

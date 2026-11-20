@@ -105,6 +105,16 @@ class Release extends Base
                     . 'for offline hotfix releases where the Packagist round-trips for '
                     . 'the platform resolver are unwelcome.',
             ]
+        ), new Option(
+            '--clean-release',
+            [
+                'action' => 'store_true',
+                'help'   => 'Force the checkout to a pristine state '
+                    . 'matching the remote: "git fetch origin && git reset --hard '
+                    . 'origin/<current-branch> && git clean -fdx". DESTRUCTIVE: permanently '
+                    . 'removes all untracked and ignored files (vendor/, build output, '
+                    . 'local configs). Only prints in --pretend mode.',
+            ]
         )];
     }
 
@@ -196,7 +206,7 @@ The following example would generate the package and add the release tag to git 
      */
     public function getContextOptionHelp(): array
     {
-        return ['--pretend' => '', '--config' => '', '--releaseserver' => '', '--releasedir' => '', '--next-note' => '', '--next-version' => '', '--version-part' => '', '--next-relstate' => '', '--next-apistate' => '', '--from' => '', '--horde-user' => '', '--horde-pass' => '', '--web-dir' => '', '--dump' => '', '--skip-ci-refresh' => ''];
+        return ['--pretend' => '', '--config' => '', '--releaseserver' => '', '--releasedir' => '', '--next-note' => '', '--next-version' => '', '--version-part' => '', '--next-relstate' => '', '--next-apistate' => '', '--from' => '', '--horde-user' => '', '--horde-pass' => '', '--web-dir' => '', '--dump' => '', '--skip-ci-refresh' => '', '--clean-release' => ''];
     }
 
     /**
