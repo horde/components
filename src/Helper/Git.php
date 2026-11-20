@@ -613,28 +613,89 @@ class Git
             $cmd .= ' --force';
         }
 
-        $githubHttps = false;
-        if ($this->authentication !== null && !$this->shell->isPretend()) {
-            $remotes = $this->execInDirectory($this->gitBin . ' remote -v', $localDir);
-            if ($remotes->getReturnValue() !== 0) {
-                throw new RuntimeException('Could not read Git remotes.');
-            }
-            foreach ($remotes->getOutputArray() as $remote) {
-                if (preg_match('/^\S+\s+(\S+)\s+\(fetch\)$/', $remote, $matches)
-                    && $this->isGitHubHttpsUrl($matches[1])) {
-                    $githubHttps = true;
-                    break;
-                }
-            }
-        }
-
-        return $this->execNetwork($cmd, $localDir, $githubHttps);
+        return $this->execNetwork($cmd, $localDir, $this->remoteIsGitHubHttps($localDir));
     }
 
     private function isGitHubHttpsUrl(string $url): bool
     {
         return strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https'
             && strtolower((string) parse_url($url, PHP_URL_HOST)) === 'github.com';
+    }
+
+    /**
+     * Determine whether a configured remote points at an HTTPS github.com URL
+     *
+     * Only inspects remotes when authentication is attached and we are not in
+     * pretend mode. Otherwise there is nothing to authenticate and no command
+     * will actually run.
+     *
+     * @param string $localDir Full path to repo
+     * @param string|null $remote Restrict the check to this remote name or
+     *                            null to match any configured remote (used by
+     *                            `fetch --all`).
+     */
+    private function remoteIsGitHubHttps(string $localDir, ?string $remote = null): bool
+    {
+        if ($this->authentication === null || $this->shell->isPretend()) {
+            return false;
+        }
+
+        $remotes = $this->execInDirectory($this->gitBin . ' remote -v', $localDir);
+        if ($remotes->getReturnValue() !== 0) {
+            throw new RuntimeException('Could not read Git remotes.');
+        }
+        foreach ($remotes->getOutputArray() as $line) {
+            if (preg_match('/^(\S+)\s+(\S+)\s+\((?:fetch|push)\)$/', $line, $matches)
+                && ($remote === null || $matches[1] === $remote)
+                && $this->isGitHubHttpsUrl($matches[2])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Enforce a pristine state of the checkout
+     *
+     * WARNING: This is destructive.
+     *
+     * - remote tip of a branch: fetch,
+     * - hard-reset onto origin/<branch>
+     * - remove every untracked or ignored file
+     *
+     * `git clean -fdx` permanently deletes untracked and ignored
+     * files (vendor/, build output, local configs).
+     *
+     *
+     * In pretend mode the shell prints the commands instead of running them
+     * and token-authenticates the fetch when a GitHub HTTPS remote is configured.
+     *
+     * @param string $localDir Full path to repo
+     * @param string $branch   Branch whose origin tip to reset onto
+     * @param string $remote   Remote name, defaults to origin
+     */
+    public function cleanRelease(string $localDir, string $branch, string $remote = 'origin'): void
+    {
+        $fetchCmd = sprintf('%s fetch %s', $this->gitBin, escapeshellarg($remote));
+        $this->execNetwork(
+            $fetchCmd,
+            $localDir,
+            $this->remoteIsGitHubHttps($localDir, $remote)
+        );
+
+        $this->shell->exec(
+            sprintf(
+                '%s reset --hard %s',
+                $this->gitBin,
+                escapeshellarg($remote . '/' . $branch)
+            ),
+            $localDir
+        );
+        $this->shell->exec(
+            sprintf('%s clean -fdx', $this->gitBin),
+            $localDir
+        );
     }
 
     private function execNetwork(string $command, ?string $directory, bool $githubHttps): SystemCallResult
@@ -798,18 +859,19 @@ class Git
      */
     public function push(string $localDir, $remote = 'origin', ?string $ref = null, bool $force = false, bool $tags = false): void
     {
-        $forceCmd = $force ? '--force' : '';
-        $tagsCmd = $tags ? '--tags' : '';
         $cmd = sprintf(
-            'git push %s %s --set-upstream %s %s --follow-tags',
-            $forceCmd,
-            $tagsCmd,
-            $remote,
-            $ref ?? $this->getCurrentBranch($localDir)
+            '%s push %s%s--set-upstream %s %s --follow-tags',
+            $this->gitBin,
+            $force ? '--force ' : '',
+            $tags ? '--tags ' : '',
+            escapeshellarg((string) $remote),
+            escapeshellarg($ref ?? $this->getCurrentBranch($localDir))
         );
-        $this->shell->system(
+
+        $this->execNetwork(
             $cmd,
-            $localDir
+            $localDir,
+            $this->remoteIsGitHubHttps($localDir, (string) $remote)
         );
     }
 

@@ -75,6 +75,12 @@ class HordeRelease
             $this->output->warn('[PRETEND MODE] No changes will be made');
         }
 
+        // Optional:
+        // Force a clean repo state, potentially destroying any vendor dir or configs
+        if (!empty($options['clean_release'])) {
+            $this->runCleanRelease();
+        }
+
         // Create context for task execution
         $context = new Context($component, $options);
 
@@ -169,6 +175,24 @@ class HordeRelease
             $this->output->fail('Release failed: ' . $e->getMessage());
             throw $e;
         }
+    }
+
+    /**
+     * Enforce a pristine state matching the remote tip of the current branch
+     *
+     * Resets onto origin/<current branch> and removes every untracked and
+     * ignored file. DESTRUCTIVE: Warns loudly first. --pretend mode only prints what would be done.
+     */
+    private function runCleanRelease(): void
+    {
+        $localDir = (string) $this->directory;
+        $branch = $this->gitHelper->getCurrentBranch($localDir);
+
+        $this->output->warn('[CLEAN RELEASE] Forcing a pristine checkout. This is DESTRUCTIVE:');
+        $this->output->warn("  git fetch origin && git reset --hard origin/{$branch} && git clean -fdx");
+        $this->output->warn('  All untracked and ignored files (vendor/, build output, local configs) will be removed.');
+
+        $this->gitHelper->cleanRelease($localDir, $branch);
     }
 
     /**
