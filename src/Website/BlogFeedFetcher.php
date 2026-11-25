@@ -68,6 +68,7 @@ class BlogFeedFetcher
             return [];
         }
 
+        $raw = self::stripLeadingPhpWarnings($raw);
         $previous = libxml_use_internal_errors(true);
         $xml = simplexml_load_string($raw);
         libxml_use_internal_errors($previous);
@@ -111,6 +112,27 @@ class BlogFeedFetcher
         usort($all, static fn(BlogPost $a, BlogPost $b): int => $b->date <=> $a->date);
 
         return array_slice($all, 0, $limit);
+    }
+
+    private static function stripLeadingPhpWarnings(string $response): string
+    {
+        $xmlStart = stripos($response, '<?xml');
+        if ($xmlStart === false) {
+            $xmlStart = stripos($response, '<rss');
+        }
+        if ($xmlStart === false || $xmlStart === 0) {
+            return $response;
+        }
+
+        $prefix = substr($response, 0, $xmlStart);
+        $warningPattern = '/\A(?:\s*<br\s*\/?>\s*<b>Warning<\/b>:[\s\S]*?\s+in\s+<b>[^<]*<\/b>'
+            . '\s+on line\s+<b>\d+<\/b>\s*<br\s*\/?>\s*)+\z/i';
+
+        if (preg_match($warningPattern, $prefix) !== 1) {
+            return $response;
+        }
+
+        return substr($response, $xmlStart);
     }
 
     /**
